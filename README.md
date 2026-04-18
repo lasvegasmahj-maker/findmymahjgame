@@ -17,31 +17,25 @@ Find My Mahj Game serves 600,000–750,000 American mahjong players by helping t
 
 [Las Vegas Mahjong](https://lasvegasmahj.com) — mahjong lessons, events, and open play in Las Vegas. ([GitHub repo](https://github.com/lasvegasmahj-maker/lasvegasmahj))
 
-## Pages
-
-- `index.html` — Homepage with interactive US map
-- `nevada.html` — Nevada state landing page
-- `florida.html` — Florida state landing page
-- `about.html` — About page
-- `how-it-works.html` — How it works
-- `advertise.html` — Advertising info
-- `contact.html` — Contact page
-- `terms.html` — Terms of use
-- `advertiser-terms.html` — Advertiser terms
-
 ## Tech Stack
 
-- Static HTML/CSS/JavaScript (self-contained pages)
-- No build step required
-- Each page is a standalone HTML file
+- Next.js 16 (React, TypeScript)
+- Tailwind CSS 4 + shadcn/ui
+- Supabase (database + auth)
+- Vercel (hosting, auto-deploy from GitHub)
 
-## Preview Locally
+## Development
 
 ```bash
-open index.html
-# or
-python3 -m http.server 8000
+pnpm install
+pnpm dev
 ```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Deploy
+
+Pushes to `main` auto-deploy via Vercel.
 
 ## Connect
 

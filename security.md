@@ -1,8 +1,8 @@
 # Security — Find My Mahj Game
 
-## Firebase Security Rules (Firestore)
+## Supabase Row Level Security (RLS)
 
-All data access is controlled through Firestore Security Rules. No client can read or write data without passing these rules.
+All data access is controlled through PostgreSQL Row Level Security policies.
 
 ### Rule Principles
 
@@ -11,132 +11,102 @@ All data access is controlled through Firestore Security Rules. No client can re
 3. **Write restrictions** — only admins or the owning user can write data
 4. **No direct deletes from client** — deletions go through admin review
 
-### Firestore Rules
+### RLS Policies
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
+```sql
+-- CONNECTORS (people/groups who host games)
+ALTER TABLE connectors ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can view published connectors" ON connectors
+  FOR SELECT USING (status = 'published');
+CREATE POLICY "Owners can manage their connectors" ON connectors
+  FOR ALL USING (auth.uid() = owner_id OR is_admin());
+CREATE POLICY "Auth users can create connectors" ON connectors
+  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 
-    // --- CONNECTORS (people/groups who host games) ---
-    match /connectors/{connectorId} {
-      // Anyone can view published connectors
-      allow read: if resource.data.status == 'published';
-      // Only the connector owner or admin can edit
-      allow write: if request.auth != null &&
-        (request.auth.uid == resource.data.ownerId || isAdmin());
-      // Only authenticated users can create
-      allow create: if request.auth != null;
-    }
+-- CONNECTIONS (player-to-connector relationships)
+ALTER TABLE connections ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Parties can view their connections" ON connections
+  FOR SELECT USING (auth.uid() = player_id OR auth.uid() = connector_id);
+CREATE POLICY "Auth users can create connections" ON connections
+  FOR INSERT WITH CHECK (auth.uid() = player_id);
+CREATE POLICY "Parties can update connections" ON connections
+  FOR UPDATE USING (auth.uid() = player_id OR auth.uid() = connector_id);
 
-    // --- CONNECTIONS (player-to-connector relationships) ---
-    match /connections/{connectionId} {
-      // Only the two parties involved can read
-      allow read: if request.auth != null &&
-        (request.auth.uid == resource.data.playerId ||
-         request.auth.uid == resource.data.connectorId);
-      // Only authenticated users can create a connection
-      allow create: if request.auth != null &&
-        request.auth.uid == request.resource.data.playerId;
-      // Only the parties involved can update
-      allow update: if request.auth != null &&
-        (request.auth.uid == resource.data.playerId ||
-         request.auth.uid == resource.data.connectorId);
-      // No client-side deletes
-      allow delete: if false;
-    }
+-- REFERRALS
+ALTER TABLE referrals ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Parties can view their referrals" ON referrals
+  FOR SELECT USING (auth.uid() = referrer_id OR auth.uid() = referred_id);
+CREATE POLICY "Auth users can create referrals" ON referrals
+  FOR INSERT WITH CHECK (auth.uid() = referrer_id);
+CREATE POLICY "Only admins manage referrals" ON referrals
+  FOR UPDATE USING (is_admin());
 
-    // --- REFERRALS ---
-    match /referrals/{referralId} {
-      // Only the referrer or referred user can read
-      allow read: if request.auth != null &&
-        (request.auth.uid == resource.data.referrerId ||
-         request.auth.uid == resource.data.referredId);
-      // Only authenticated users can create
-      allow create: if request.auth != null &&
-        request.auth.uid == request.resource.data.referrerId;
-      // No client edits or deletes — admin only
-      allow update, delete: if isAdmin();
-    }
+-- EVENTS
+ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can view published events" ON events
+  FOR SELECT USING (status = 'published');
+CREATE POLICY "Owners and admins can manage events" ON events
+  FOR ALL USING (auth.uid() = owner_id OR is_admin());
 
-    // --- EVENTS ---
-    match /events/{eventId} {
-      // Anyone can read published events
-      allow read: if resource.data.status == 'published';
-      // Only admin or event owner can write
-      allow write: if request.auth != null &&
-        (request.auth.uid == resource.data.ownerId || isAdmin());
-    }
+-- VENUES
+ALTER TABLE venues ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can view published venues" ON venues
+  FOR SELECT USING (status = 'published');
+CREATE POLICY "Owners and admins can manage venues" ON venues
+  FOR ALL USING (auth.uid() = owner_id OR is_admin());
 
-    // --- VENUES ---
-    match /venues/{venueId} {
-      // Anyone can read published venues
-      allow read: if resource.data.status == 'published';
-      // Only admin or venue owner can write
-      allow write: if request.auth != null &&
-        (request.auth.uid == resource.data.ownerId || isAdmin());
-    }
+-- STATES (map data)
+ALTER TABLE states ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can view states" ON states FOR SELECT USING (true);
+CREATE POLICY "Only admins manage states" ON states FOR ALL USING (is_admin());
 
-    // --- STATES (map data) ---
-    match /states/{stateId} {
-      // Public read — powers the homepage map
-      allow read: if true;
-      // Only admins can modify state data
-      allow write: if isAdmin();
-    }
+-- SPONSORS
+ALTER TABLE sponsors ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can view sponsors" ON sponsors FOR SELECT USING (true);
+CREATE POLICY "Only admins manage sponsors" ON sponsors FOR ALL USING (is_admin());
 
-    // --- SPONSORS ---
-    match /sponsors/{sponsorId} {
-      // Public read — displayed on pages
-      allow read: if true;
-      // Only admins can manage sponsors
-      allow write: if isAdmin();
-    }
+-- PRICING TIERS
+ALTER TABLE pricing_tiers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can view pricing" ON pricing_tiers FOR SELECT USING (true);
+CREATE POLICY "Only admins manage pricing" ON pricing_tiers FOR ALL USING (is_admin());
 
-    // --- PRICING TIERS ---
-    match /pricing_tiers/{tierId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
+-- INQUIRIES (contact form)
+ALTER TABLE inquiries ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can submit inquiry" ON inquiries FOR INSERT WITH CHECK (true);
+CREATE POLICY "Only admins view inquiries" ON inquiries FOR SELECT USING (is_admin());
 
-    // --- INQUIRIES (contact form) ---
-    match /inquiries/{inquiryId} {
-      // Anyone can submit a contact form
-      allow create: if true;
-      // Only admins can read submissions
-      allow read, update, delete: if isAdmin();
-    }
+-- STATS
+ALTER TABLE stats ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can view stats" ON stats FOR SELECT USING (true);
+CREATE POLICY "Only admins manage stats" ON stats FOR ALL USING (is_admin());
 
-    // --- STATS ---
-    match /stats/{statId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // --- ADMIN HELPER ---
-    function isAdmin() {
-      return request.auth != null &&
-        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
-    }
-  }
-}
+-- ADMIN HELPER FUNCTION
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS boolean AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM admins WHERE id = auth.uid()
+  );
+$$ LANGUAGE sql SECURITY DEFINER;
 ```
 
 ### Authentication
 
-- **Firebase Authentication** handles sign-in
+- **Supabase Auth** handles sign-in
 - Supported providers: Email/password, Google
-- Admin users are stored in an `admins` collection with `role: 'admin'`
+- Admin users are stored in an `admins` table with `role = 'admin'`
 
-### Data Validation
+### Next.js Security Headers
 
-- All user-submitted data is validated in security rules using `request.resource.data`
-- Required fields are enforced at the rule level
-- String lengths and data types are checked before writes are allowed
+Configured in `next.config.ts`:
+- **Content Security Policy (CSP)**
+- **HSTS** (force HTTPS)
+- **X-Frame-Options** (block iframes)
+- **X-Content-Type-Options** (block MIME sniffing)
+- **X-Powered-By** — disabled
 
 ### Sensitive Data
 
-- **Never store** passwords, payment info, or API keys in Firestore
-- Keep Firebase config keys in the client (they are safe — security rules protect the data)
-- Store secrets (API keys for third-party services) in Firebase environment config, not in code
-- W9s, contracts, and financial documents stay **off GitHub** — never commit these
+- **Never commit** `.env.local` — contains Supabase keys
+- Supabase `anon` key is safe in client code — RLS policies protect the data
+- Service role key stays **server-side only**
+- Store third-party API keys in Vercel environment variables
