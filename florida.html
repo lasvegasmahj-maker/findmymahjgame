@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mahjong Players &amp; Groups in Florida | Find My Mahj Game</title>
+<meta name="description" content="Find mahjong players, groups, open plays, venues and events in Florida. Connect with local mahjong players near you in Miami, Boca Raton, Orlando and more.">
+<meta property="og:title" content="Mahjong in Florida | Find My Mahj Game">
+<meta property="og:url" content="https://findmymahjgame.com/florida">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:#1a1f5e; --pink:#e91e8c; --green:#2ec95c;
+    --gold:#f5c842; --text:#1a1a2e; --muted:#6b7280;
+    --border:#e8eaf0; --bg:#f4f6ff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:white;color:var(--text);font-family:"DM Sans",sans-serif;overflow-x:hidden;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0.8rem 2rem;background:white;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(26,31,94,0.06);}
+  .logo{font-family:"Playfair Display",serif;font-size:1.1rem;color:var(--navy);text-decoration:none;}
+  .logo span{color:var(--pink);}
+  .btn-login{background:var(--pink);color:white;font-size:0.78rem;font-weight:700;text-decoration:none;padding:0.5rem 1rem;border-radius:6px;}
+  .nav-bar{background:var(--navy);padding:0.55rem 2rem;display:flex;align-items:center;justify-content:center;gap:2rem;flex-wrap:wrap;}
+  .nav-bar a{color:rgba(255,255,255,0.85);text-decoration:none;font-size:0.82rem;font-weight:600;transition:color 0.2s;}
+  .nav-bar a:hover{color:white;}
+  .nav-bar span{color:rgba(255,255,255,0.2);}
+  .state-hero{background:linear-gradient(135deg,var(--navy) 0%,#252b7a 100%);padding:3rem 2rem;text-align:center;}
+  .breadcrumb{font-size:0.78rem;color:rgba(255,255,255,0.5);margin-bottom:1rem;}
+  .breadcrumb a{color:var(--pink);text-decoration:none;}
+  .state-hero h1{font-family:"Playfair Display",serif;font-size:clamp(2rem,5vw,3.5rem);color:white;margin-bottom:0.5rem;}
+  .state-hero h1 span{color:var(--pink);}
+  .state-hero p{font-size:1rem;color:rgba(255,255,255,0.65);max-width:500px;margin:0 auto 2rem;}
+  .state-stats{display:flex;gap:2.5rem;justify-content:center;flex-wrap:wrap;}
+  .stat-num{font-family:"Playfair Display",serif;font-size:2rem;color:white;font-weight:900;}
+  .stat-label{font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:0.2rem;}
+  .search-bar{background:var(--navy);padding:1.2rem 2rem;border-top:1px solid rgba(255,255,255,0.1);}
+  .search-inner{max-width:1100px;margin:0 auto;display:flex;align-items:flex-end;gap:1rem;flex-wrap:wrap;justify-content:center;}
+  .search-group{display:flex;flex-direction:column;gap:0.3rem;}
+  .search-label{font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.5);}
+  .search-select{background:white;border:none;border-radius:6px;padding:0.6rem 1rem;font-family:"DM Sans",sans-serif;font-size:0.88rem;color:var(--navy);outline:none;cursor:pointer;min-width:190px;}
+  .radius-btns{display:flex;gap:0.4rem;}
+  .radius-btn{background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);border-radius:6px;padding:0.5rem 0.8rem;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:"DM Sans",sans-serif;transition:all 0.2s;}
+  .radius-btn:hover,.radius-btn.active{background:var(--pink);border-color:var(--pink);color:white;}
+  .zip-row{display:flex;gap:0.5rem;}
+  .zip-input{background:white;border:none;border-radius:6px;padding:0.6rem 1rem;font-family:"DM Sans",sans-serif;font-size:0.88rem;color:var(--navy);outline:none;width:120px;}
+  .zip-btn{background:var(--pink);color:white;border:none;border-radius:6px;padding:0.6rem 1rem;font-weight:700;font-size:0.85rem;cursor:pointer;font-family:"DM Sans",sans-serif;}
+  .filter-status{text-align:center;margin-top:0.8rem;font-size:0.8rem;color:rgba(255,255,255,0.55);}
+  .main{max-width:1100px;margin:0 auto;padding:3rem 2rem;display:grid;grid-template-columns:1fr 260px;gap:2rem;align-items:start;}
+  .section-label{font-size:0.72rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--pink);margin-bottom:0.4rem;}
+  .section-title{font-family:"Playfair Display",serif;font-size:1.8rem;color:var(--navy);margin-bottom:0.3rem;}
+  .section-sub{font-size:0.9rem;color:var(--muted);margin-bottom:1.5rem;}
+  .tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:1.5rem;}
+  .tab{padding:0.7rem 1.4rem;font-size:0.88rem;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.2s;}
+  .tab.active{color:var(--navy);border-bottom-color:var(--pink);}
+  .players-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem;}
+  .player-card{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:1.2rem;transition:all 0.2s;}
+  .player-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(26,31,94,0.08);}
+  .player-top{display:flex;align-items:center;gap:0.8rem;margin-bottom:0.8rem;}
+  .avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:1rem;flex-shrink:0;}
+  .player-name{font-weight:700;font-size:0.95rem;color:var(--navy);}
+  .player-loc{font-size:0.78rem;color:var(--muted);}
+  .tags{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.8rem;}
+  .tag{background:white;border:1px solid var(--border);border-radius:50px;padding:0.2rem 0.7rem;font-size:0.72rem;font-weight:600;color:var(--muted);}
+  .player-note{font-size:0.8rem;color:var(--muted);line-height:1.5;margin-bottom:0.8rem;}
+  .btn-connect{width:100%;background:transparent;border:1.5px solid var(--pink);color:var(--pink);border-radius:6px;padding:0.45rem;font-weight:700;font-size:0.78rem;cursor:pointer;transition:all 0.2s;font-family:"DM Sans",sans-serif;}
+  .btn-connect:hover{background:var(--pink);color:white;}
+  .sponsored-card{background:linear-gradient(135deg,rgba(233,30,140,0.04),rgba(233,30,140,0.08));border:1px solid rgba(233,30,140,0.2);border-radius:16px;padding:1.2rem;margin-bottom:1rem;}
+  .sponsored-tag{font-size:0.62rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--pink);display:block;margin-bottom:0.5rem;}
+  .sponsored-name{font-weight:700;font-size:0.9rem;color:var(--navy);margin-bottom:0.3rem;}
+  .sponsored-desc{font-size:0.78rem;color:var(--muted);margin-bottom:0.8rem;line-height:1.5;}
+  .btn-sponsored{display:block;background:var(--pink);color:white;border-radius:6px;padding:0.5rem;font-weight:700;font-size:0.78rem;text-align:center;text-decoration:none;}
+  .events-list{display:flex;flex-direction:column;gap:0.8rem;margin-bottom:2rem;}
+  .event-card{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:1.2rem;display:flex;gap:1rem;align-items:flex-start;transition:all 0.2s;}
+  .event-card:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(26,31,94,0.08);}
+  .date-box{background:var(--navy);border-radius:10px;padding:0.6rem 0.8rem;text-align:center;flex-shrink:0;min-width:52px;}
+  .date-month{font-size:0.62rem;font-weight:700;text-transform:uppercase;color:rgba(255,255,255,0.6);letter-spacing:0.1em;}
+  .date-day{font-size:1.4rem;font-weight:900;color:white;line-height:1;font-family:"Playfair Display",serif;}
+  .event-type{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--pink);margin-bottom:0.2rem;}
+  .event-name{font-weight:700;font-size:0.95rem;color:var(--navy);margin-bottom:0.2rem;}
+  .event-meta{font-size:0.78rem;color:var(--muted);}
+  .event-link{display:inline-block;background:var(--navy);color:white;padding:0.35rem 0.9rem;border-radius:6px;font-size:0.75rem;font-weight:700;text-decoration:none;margin-top:0.6rem;}
+  .venues-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem;}
+  .venue-card{background:var(--bg);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:all 0.2s;}
+  .venue-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(26,31,94,0.08);}
+  .venue-accent{height:5px;}
+  .venue-body{padding:1.1rem;}
+  .venue-type{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--pink);margin-bottom:0.3rem;}
+  .venue-name{font-family:"Playfair Display",serif;font-size:1rem;color:var(--navy);margin-bottom:0.3rem;}
+  .venue-meta{font-size:0.78rem;color:var(--muted);margin-bottom:0.8rem;}
+  .venue-link{display:inline-block;background:var(--pink);color:white;padding:0.4rem 1rem;border-radius:6px;font-size:0.75rem;font-weight:700;text-decoration:none;}
+  .cta-bar{background:var(--navy);border-radius:16px;padding:1.5rem;text-align:center;margin-bottom:2rem;}
+  .cta-bar h3{font-family:"Playfair Display",serif;font-size:1.2rem;color:white;margin-bottom:0.4rem;}
+  .cta-bar p{font-size:0.82rem;color:rgba(255,255,255,0.55);margin-bottom:1rem;}
+  .btn-cta{display:inline-block;background:var(--pink);color:white;padding:0.7rem 1.8rem;border-radius:6px;font-weight:700;font-size:0.88rem;text-decoration:none;}
+  .sidebar{position:sticky;top:80px;}
+  .sidebar-card{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:1.4rem;margin-bottom:1rem;}
+  .sidebar-card h3{font-family:"Playfair Display",serif;font-size:1rem;color:var(--navy);margin-bottom:1rem;}
+  .ad-box{background:linear-gradient(135deg,rgba(233,30,140,0.04),rgba(233,30,140,0.08));border:2px dashed rgba(233,30,140,0.2);border-radius:14px;padding:1.5rem;text-align:center;margin-bottom:1rem;}
+  .ad-box p{font-size:0.8rem;color:var(--muted);margin-bottom:0.6rem;}
+  .ad-box a{font-size:0.78rem;font-weight:700;color:var(--pink);text-decoration:none;}
+  .nearby{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;}
+  .state-chip{background:white;border:1.5px solid var(--border);border-radius:50px;padding:0.35rem 0.9rem;font-size:0.78rem;font-weight:600;color:var(--navy);text-decoration:none;transition:all 0.2s;}
+  .state-chip:hover{border-color:var(--pink);color:var(--pink);}
+  footer{background:var(--navy);padding:2rem;text-align:center;margin-top:4rem;}
+  .footer-logo{font-family:"Playfair Display",serif;font-size:1.2rem;color:white;margin-bottom:0.5rem;}
+  .footer-logo span{color:var(--pink);}
+  footer p{font-size:0.82rem;color:rgba(255,255,255,0.4);}
+  footer a{color:var(--pink);text-decoration:none;}
+  @media(max-width:768px){
+    .main{grid-template-columns:1fr;}
+    .players-grid,.venues-grid{grid-template-columns:1fr;}
+    .sidebar{position:static;}
+    .search-inner{flex-direction:column;align-items:stretch;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/index.html" class="logo">Find My <span>Mahj Game</span></a>
+  <div style="display:flex;gap:0.8rem;align-items:center;">
+    <a href="/index.html#map" style="font-size:0.78rem;font-weight:600;color:var(--pink);text-decoration:none;">&larr; Back to Map</a>
+    <a href="#" class="btn-login">Log In</a>
+  </div>
+</nav>
+
+<div class="nav-bar">
+  <a href="/index.html#map">Find My Local Mahj Game / Events</a>
+  <span>|</span>
+  <a href="/index.html#retreats">Retreats &amp; Tournaments</a>
+  <span>|</span>
+  <a href="/index.html#anywhere">Traveling and Want to Play?</a>
+  <span>|</span>
+  <a href="/index.html#advertise">Advertise Your Company or Event</a>
+</div>
+
+<section class="state-hero">
+  <p class="breadcrumb"><a href="/index.html">Home</a> &rsaquo; <a href="/index.html#map">Find Players</a> &rsaquo; Florida</p>
+  <h1>Mahjong in <span>Florida</span></h1>
+  <p>Find players, groups, open plays and events across Florida — from Miami to Fort Lauderdale and everywhere in between.</p>
+  <div class="state-stats">
+    <div><div class="stat-num">—</div><div class="stat-label">Players Listed</div></div>
+    <div><div class="stat-num">—</div><div class="stat-label">Groups</div></div>
+    <div><div class="stat-num">—</div><div class="stat-label">Events</div></div>
+    <div><div class="stat-num">—</div><div class="stat-label">Venues</div></div>
+  </div>
+</section>
+
+<div class="search-bar">
+  <div class="search-inner">
+    <div class="search-group">
+      <div class="search-label">City / Town</div>
+      <select class="search-select" id="city-select" onchange="filterLocation()">
+        <option value="all">All of Florida</option>
+            <option value="miami">Miami</option>
+            <option value="boca-raton">Boca Raton</option>
+            <option value="orlando">Orlando</option>
+            <option value="tampa">Tampa</option>
+            <option value="naples">Naples</option>
+            <option value="sarasota">Sarasota</option>
+            <option value="fort-lauderdale">Fort Lauderdale</option>
+      </select>
+    </div>
+    <div class="search-group">
+      <div class="search-label">Distance</div>
+      <div class="radius-btns">
+        <button class="radius-btn active" onclick="setRadius(5,this)">5 mi</button>
+        <button class="radius-btn" onclick="setRadius(10,this)">10 mi</button>
+        <button class="radius-btn" onclick="setRadius(25,this)">25 mi</button>
+        <button class="radius-btn" onclick="setRadius(50,this)">50 mi</button>
+      </div>
+    </div>
+    <div class="search-group">
+      <div class="search-label">Or Enter Zip Code</div>
+      <div class="zip-row">
+        <input type="text" class="zip-input" id="zip-input" placeholder="Enter zip" maxlength="5">
+        <button class="zip-btn" onclick="searchByZip()">Search</button>
+      </div>
+    </div>
+  </div>
+  <div class="filter-status" id="filter-display">
+    Showing all players, events &amp; venues across <strong style="color:white;">Florida</strong>
+  </div>
+</div>
+
+<div class="main">
+  <div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('players',this)">&#x1F465; Players</div>
+      <div class="tab" onclick="switchTab('events',this)">&#x1F3AB; Events</div>
+      <div class="tab" onclick="switchTab('venues',this)">&#x1F3DB; Where to Play</div>
+    </div>
+
+    <!-- PLAYERS -->
+    <div id="tab-players">
+      <p class="section-label">Looking for a Group</p>
+      <h2 class="section-title">Players in Florida</h2>
+      <p class="section-sub">Connect with mahjong players across Florida looking for their perfect weekly game.</p>
+      <div class="players-grid">
+        <div class="sponsored-card" style="grid-column:1/-1;">
+          <span class="sponsored-tag">Sponsored</span>
+          <div class="sponsored-name">Oh My Mahjong — Beautiful Sets &amp; Accessories</div>
+          <div class="sponsored-desc">Shop mahjong sets, bags, racks and gifts. Use code FINDMYMAHJ for 10% off your first order!</div>
+          <a href="https://ohmymahjong.com?sca_ref=9661578.Ks3olHSQzr" target="_blank" class="btn-sponsored">Shop Now &rarr;</a>
+        </div>
+      </div>
+      <div class="cta-bar">
+        <h3>Looking for your Mahj Game in Florida?</h3>
+        <p>Add your free listing and let local players find you!</p>
+        <a href="/index.html#map" class="btn-cta">Create My Listing &rarr;</a>
+      </div>
+    </div>
+
+    <!-- EVENTS -->
+    <div id="tab-events" style="display:none;">
+      <p class="section-label">Happening in Florida</p>
+      <h2 class="section-title">Events Near You</h2>
+      <p class="section-sub">Open plays, game nights, and mahjong events happening across Florida.</p>
+      <div class="cta-bar">
+        <h3>Hosting an event in Florida?</h3>
+        <p>List your open play, class or event and reach local players!</p>
+        <a href="/index.html#advertise" class="btn-cta">List Your Event &rarr;</a>
+      </div>
+    </div>
+
+    <!-- VENUES -->
+    <div id="tab-venues" style="display:none;">
+      <p class="section-label">Where to Play</p>
+      <h2 class="section-title">Mahjong-Friendly Venues</h2>
+      <p class="section-sub">Restaurants, clubs and community spaces in Florida that welcome mahjong players.</p>
+      <div class="venues-grid">
+        <div class="venue-card" style="border:2px dashed var(--border);grid-column:1/-1;">
+          <div class="venue-body" style="text-align:center;padding:2rem;">
+            <div style="font-size:2rem;margin-bottom:0.5rem;">+</div>
+            <div class="venue-name">List Your Florida Venue</div>
+            <div class="venue-meta" style="margin-bottom:1rem;">Restaurant, studio or community space? Reach local players!</div>
+            <a href="/index.html#advertise" class="venue-link">Get Listed &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-card" style="padding:0;overflow:hidden;">
+      <div style="background:var(--navy);padding:0.8rem 1.2rem;">
+        <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.5);">Featured Partner</div>
+      </div>
+      <div style="padding:1.2rem;">
+        <div style="font-weight:700;font-size:0.9rem;color:var(--navy);margin-bottom:0.3rem;">Oh My Mahjong</div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.8rem;">Beautiful sets &amp; accessories</div>
+        <a href="https://ohmymahjong.com?sca_ref=9661578.Ks3olHSQzr" target="_blank" style="display:block;background:var(--pink);color:white;border-radius:6px;padding:0.45rem;text-align:center;font-size:0.78rem;font-weight:700;text-decoration:none;">Shop Now &rarr;</a>
+      </div>
+    </div>
+
+    <div class="ad-box">
+      <p>Your ad here — reach mahjong players across Florida!</p>
+      <a href="/index.html#advertise">Advertise &rarr;</a>
+    </div>
+
+    <div class="sidebar-card">
+      <h3>Nearby States</h3>
+      <div class="nearby">
+        <a href="/georgia.html" class="state-chip">Georgia</a>
+        <a href="/alabama.html" class="state-chip">Alabama</a>
+      </div>
+    </div>
+
+    <div class="sidebar-card" style="background:var(--bg);">
+      <h3>Las Vegas Mahjong</h3>
+      <p style="font-size:0.82rem;color:var(--muted);line-height:1.6;margin-bottom:1rem;">Learn mahjong with Shauna, certified OMM instructor. Online lessons available nationwide!</p>
+      <a href="https://lasvegasmahj.com" target="_blank" style="display:block;background:var(--pink);color:white;border-radius:6px;padding:0.5rem;text-align:center;font-size:0.82rem;font-weight:700;text-decoration:none;">Book a Lesson &rarr;</a>
+    </div>
+  </aside>
+</div>
+
+<footer>
+  <div class="footer-logo">Find My <span>Mahj Game</span></div>
+  <p style="margin-bottom:0.5rem;">
+    <a href="/index.html">Home</a> &nbsp;&bull;&nbsp;
+    <a href="/index.html#retreats">Retreats &amp; Tournaments</a> &nbsp;&bull;&nbsp;
+    <a href="/index.html#advertise">Advertise</a> &nbsp;&bull;&nbsp;
+    <a href="https://lasvegasmahj.com">Las Vegas Mahjong</a>
+  </p>
+  <p>findmymahjgame.com</p>
+</footer>
+
+<script>
+let currentRadius = 5;
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['players','events','venues'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t === tab ? 'block' : 'none';
+  });
+}
+function setRadius(r, btn) {
+  currentRadius = r;
+  document.querySelectorAll('.radius-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterLocation();
+}
+function filterLocation() {
+  const city = document.getElementById('city-select').value;
+  const sel = document.getElementById('city-select');
+  const label = sel.options[sel.selectedIndex].text;
+  const display = document.getElementById('filter-display');
+  display.innerHTML = city === 'all'
+    ? 'Showing all players, events &amp; venues across <strong style="color:white;">Florida</strong>'
+    : 'Showing results within <strong style="color:white;">' + currentRadius + ' miles</strong> of <strong style="color:white;">' + label + '</strong>';
+}
+function searchByZip() {
+  const zip = document.getElementById('zip-input').value.trim();
+  if (!zip || zip.length !== 5) return;
+  document.getElementById('filter-display').innerHTML =
+    'Searching within <strong style="color:white;">' + currentRadius + ' miles</strong> of zip <strong style="color:white;">' + zip + '</strong>';
+}
+</script>
+</body>
+</html>
