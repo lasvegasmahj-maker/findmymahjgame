@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## IMPORTANT: Session Startup
+
+**Before you do anything, read `architecture.md`, `security.md`, and `schema.md`.** These three files define how the app is built, how data is secured, and how the database is structured. Every decision you make should align with these docs.
+
 ## Project
 
 Static marketing site for **Find My Mahj Game** (findmymahjgame.com) — a directory that connects mahjong players to local groups, venues, retreats, and tournaments. No backend, no build step, no package manager: each page is a single self-contained HTML file served directly.
