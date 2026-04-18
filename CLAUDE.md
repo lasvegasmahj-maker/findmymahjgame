@@ -59,7 +59,7 @@ The pages use root-absolute hrefs like `/index.html#map`, so a static server is 
 **Each HTML page is fully self-contained.** Styles live in an inline `<style>` block and behavior in an inline `<script>` block at the bottom of the same file — there are no shared CSS, JS, image, or template files. Changes to layout, nav, or theme must be applied to every page individually.
 
 **Page inventory:**
-- `index.html` — home. Contains hand-drawn inline SVG US map (`#us-map`) where each state is a `<path class="state" id="XX" data-name="…">`. Clicking a state opens a popup driven by the `stateData` JS object near the bottom of the file (players + events per state). `findmymahjgame_final.html` is a byte-identical duplicate of `index.html` — keep the two in sync or consolidate if touching either.
+- `index.html` — home. Contains hand-drawn inline SVG US map (`#us-map`) where each state is a `<path class="state" id="XX" data-name="…">`. Clicking a state opens a popup driven by the `stateData` JS object near the bottom of the file (players + events per state).
 - `nevada.html`, `florida.html` — per-state landing pages, fully hand-coded (not generated from `stateData`). Adding a new state = new hand-authored HTML file plus linking it from the map popup / nav.
 - `about.html`, `advertise.html`, `advertiser-terms.html`, `contact.html`, `how-it-works.html`, `terms.html` — standard marketing/legal pages.
 - `feedback_qr_card.html` — standalone printable card, not linked from main nav.
