@@ -124,17 +124,17 @@ export default function AdvertisePage() {
         </div>
 
         {/* Founding Partner */}
-        <div className="bg-gradient-to-br from-[#fffdf0] to-[#fff8dc] border-2 border-gold rounded-2xl p-8 text-center my-8">
-          <h3 className="font-heading text-[1.4rem] text-[#5a4000] mb-2">
+        <div style={{ background: "linear-gradient(135deg, #fffdf0, #fff8dc)", border: "2px solid #f5c842", borderRadius: 16, padding: "2rem", textAlign: "center", margin: "2rem 0" }}>
+          <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "#5a4000", marginBottom: "0.5rem" }}>
             ⭐ Founding Partner &mdash; Limited Spots
           </h3>
-          <p className="text-[0.9rem] text-[#7a6020] max-w-[500px] mx-auto mb-5">
+          <p style={{ fontSize: "0.9rem", color: "#7a6020", maxWidth: 500, margin: "0 auto 1.2rem" }}>
             Lock in early pricing + priority placement + Founding Partner badge featured in all
             launch marketing. Only a few spots available.
           </p>
           <a
             href="#inquire"
-            className="inline-block bg-gold text-[#5a4000] rounded-md py-2.5 px-7 font-bold text-[0.9rem] no-underline"
+            style={{ display: "inline-block", background: "#f5c842", color: "#5a4000", borderRadius: 6, padding: "0.7rem 1.8rem", fontWeight: 700, fontSize: "0.9rem", textDecoration: "none" }}
           >
             Apply Now &rarr;
           </a>
