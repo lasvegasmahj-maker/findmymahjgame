@@ -9,7 +9,7 @@ export default function Home() {
         <h1>Find Your <em>Perfect</em><br />Mahjong Game</h1>
         <p>Find players, join a group, and discover local events &mdash; all in one place.</p>
         <div className="hero-btns">
-          <Link href="#map" className="btn-cta-primary">Find a Game</Link>
+          <Link href="/#map" className="btn-cta-primary">Find a Game</Link>
           <Link href="/how-it-works" className="btn-cta-outline">How It Works</Link>
         </div>
         <div className="hero-stats">
