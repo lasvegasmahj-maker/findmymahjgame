@@ -31,12 +31,10 @@ export default function AboutPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4 my-10 max-sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-4 my-10" style={{ maxWidth: 400 }}>
           {[
-            { num: "750K+", label: "US Players" },
             { num: "50", label: "States Covered" },
-            { num: "Free", label: "For Players" },
-            { num: "100%", label: "Mahj-Focused" },
+            { num: "Free", label: "For Players Always" },
           ].map((stat) => (
             <div
               key={stat.label}

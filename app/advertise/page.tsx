@@ -4,7 +4,7 @@ import { FORMSPREE_URL, AD_EMAIL } from "@/lib/constants";
 export const metadata: Metadata = {
   title: "Advertise",
   description:
-    "Reach 750,000+ US mahjong players with advertising on Find My Mahj Game. Brand placements, venue listings, event promotions and more.",
+    "Advertise on Find My Mahj Game — the only national directory built exclusively for the American mahjong community. Brand placements, venue listings, event promotions and more.",
 };
 
 export default function AdvertisePage() {
@@ -14,19 +14,16 @@ export default function AdvertisePage() {
         <div className="eyebrow">Advertise</div>
         <h1>Reach the Mahjong Community</h1>
         <p>
-          Connect your brand, venue or event with 750,000+ US mahjong players actively searching for
-          their next game.
+          Put your brand, venue, or event in front of mahjong players actively searching for their next game.
         </p>
       </div>
 
       <div className="page-body" style={{ maxWidth: 900 }}>
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4 my-10 max-sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-4 my-10" style={{ maxWidth: 400 }}>
           {[
-            { num: "750K+", label: "US Players" },
             { num: "50", label: "State Pages" },
-            { num: "23.4%", label: "Global Mahj Clicks" },
-            { num: "100%", label: "Niche Audience" },
+            { num: "100%", label: "Mahjong Audience" },
           ].map((stat) => (
             <div key={stat.label} className="bg-bg border border-border rounded-xl p-5 text-center">
               <div className="font-heading text-[1.8rem] text-navy font-black">{stat.num}</div>
