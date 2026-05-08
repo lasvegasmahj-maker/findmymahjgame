@@ -22,7 +22,7 @@ export default function AdvertisePage() {
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 my-10" style={{ maxWidth: 400 }}>
           {[
-            { num: "50", label: "State Pages" },
+            { num: "All 50", label: "State Pages" },
             { num: "100%", label: "Mahjong Audience" },
           ].map((stat) => (
             <div key={stat.label} className="bg-bg border border-border rounded-xl p-5 text-center">

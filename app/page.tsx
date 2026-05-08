@@ -13,7 +13,7 @@ export default function Home() {
           <Link href="/how-it-works" className="btn-cta-outline">How It Works</Link>
         </div>
         <div className="hero-stats">
-          <div><div className="stat-num">50</div><div className="stat-label">States Covered</div></div>
+          <div><div className="stat-num">All 50</div><div className="stat-label">States Covered</div></div>
           <div><div className="stat-num">Free</div><div className="stat-label">For Players Always</div></div>
         </div>
       </section>

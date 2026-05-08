@@ -33,7 +33,7 @@ export default function AboutPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 my-10" style={{ maxWidth: 400 }}>
           {[
-            { num: "50", label: "States Covered" },
+            { num: "All 50", label: "States Covered" },
             { num: "Free", label: "For Players Always" },
           ].map((stat) => (
             <div
