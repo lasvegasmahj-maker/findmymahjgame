@@ -4,18 +4,95 @@ import { useState } from "react";
 import Link from "next/link";
 import type { StateData } from "@/lib/states-data";
 
+interface Player {
+  id: string;
+  name: string;
+  city: string;
+  state: string;
+  skill_level: string;
+  availability: string | null;
+  bio: string | null;
+  avatar_color: string;
+}
+
+interface Event {
+  id: string;
+  event_name: string;
+  event_type: string;
+  city: string;
+  state: string;
+  venue: string | null;
+  description: string | null;
+  event_date: string | null;
+  price: string | null;
+  registration_url: string | null;
+  tier: string;
+}
+
+interface Venue {
+  id: string;
+  business_name: string;
+  venue_type: string;
+  city: string;
+  state: string;
+  description: string | null;
+  website: string | null;
+  tier: string;
+}
+
+interface Props {
+  stateData: StateData;
+  players: Player[];
+  events: Event[];
+  venues: Venue[];
+}
+
 function LevelBadge({ level }: { level: string }) {
-  const bg = level === "Beginner" ? "rgba(46,201,92,0.1)" : level === "Intermediate" ? "rgba(245,200,66,0.15)" : "rgba(233,30,140,0.1)";
-  const color = level === "Beginner" ? "#1a9648" : level === "Intermediate" ? "#a07800" : "var(--pink)";
+  const bg = level === "beginner" ? "rgba(46,201,92,0.1)" : level === "intermediate" ? "rgba(245,200,66,0.15)" : "rgba(233,30,140,0.1)";
+  const color = level === "beginner" ? "#1a9648" : level === "intermediate" ? "#a07800" : "var(--pink)";
+  const label = level.charAt(0).toUpperCase() + level.slice(1);
   return (
-    <span style={{ display: "inline-block", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", padding: "0.2rem 0.7rem", borderRadius: 50, background: bg, color }}>{level}</span>
+    <span style={{ display: "inline-block", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", padding: "0.2rem 0.7rem", borderRadius: 50, background: bg, color }}>{label}</span>
   );
 }
 
-export default function StatePageClient({ stateData }: { stateData: StateData }) {
+function formatEventDate(dateStr: string | null) {
+  if (!dateStr) return "TBD";
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function EventTypeBadge({ type }: { type: string }) {
+  const labels: Record<string, { label: string; color: string }> = {
+    open_play: { label: "Open Play", color: "var(--green)" },
+    lesson: { label: "Lesson", color: "var(--pink)" },
+    tournament: { label: "Tournament", color: "var(--navy)" },
+    retreat: { label: "Retreat", color: "#7c5cbf" },
+    social: { label: "Social", color: "#00c9b1" },
+  };
+  const t = labels[type] || { label: type, color: "var(--muted)" };
+  return <span style={{ fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: t.color }}>{t.label}</span>;
+}
+
+const AVATAR_COLORS = ["#e91e8c","#2ec95c","#f5c842","#7c5cbf","#00c9b1","#1a1f5e","#e91e8c"];
+
+export default function StatePageClient({ stateData, players, events, venues }: Props) {
   const [activeTab, setActiveTab] = useState<"players" | "events" | "venues">("players");
   const [selectedCity, setSelectedCity] = useState(`All of ${stateData.name}`);
   const allCities = [`All of ${stateData.name}`, ...stateData.cities];
+
+  // Filter by city if selected
+  const filteredPlayers = selectedCity === `All of ${stateData.name}`
+    ? players
+    : players.filter(p => p.city.toLowerCase() === selectedCity.toLowerCase());
+
+  const filteredEvents = selectedCity === `All of ${stateData.name}`
+    ? events
+    : events.filter(e => e.city.toLowerCase() === selectedCity.toLowerCase());
+
+  const filteredVenues = selectedCity === `All of ${stateData.name}`
+    ? venues
+    : venues.filter(v => v.city.toLowerCase() === selectedCity.toLowerCase());
 
   return (
     <>
@@ -33,10 +110,9 @@ export default function StatePageClient({ stateData }: { stateData: StateData })
         <p style={{ maxWidth: 520 }}>{stateData.desc}</p>
         <div style={{ display: "flex", gap: "3rem", justifyContent: "center", marginTop: "2.5rem", flexWrap: "wrap" }}>
           {[
-            { num: "—", label: "Players Listed" },
-            { num: "—", label: "Groups" },
-            { num: "—", label: "Events" },
-            { num: "—", label: "Venues" },
+            { num: players.length || "—", label: "Players Listed" },
+            { num: events.length || "—", label: "Events" },
+            { num: venues.length || "—", label: "Venues" },
           ].map((s) => (
             <div key={s.label} style={{ textAlign: "center" }}>
               <div style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2rem", color: "white", fontWeight: 900 }}>{s.num}</div>
@@ -81,12 +157,13 @@ export default function StatePageClient({ stateData }: { stateData: StateData })
         {/* Tabs */}
         <div style={{ display: "flex", gap: 0, borderBottom: "2px solid var(--border)", marginBottom: "2.5rem" }}>
           {([
-            { id: "players" as const, label: "Players", icon: "👥" },
-            { id: "events" as const, label: "Events", icon: "🎫" },
-            { id: "venues" as const, label: "Where to Play", icon: "🏛" },
+            { id: "players" as const, label: "Players", icon: "👥", count: filteredPlayers.length },
+            { id: "events" as const, label: "Events", icon: "🎫", count: filteredEvents.length },
+            { id: "venues" as const, label: "Where to Play", icon: "🏛", count: filteredVenues.length },
           ]).map((tab) => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ padding: "0.9rem 1.8rem", fontSize: "0.95rem", fontWeight: 600, cursor: "pointer", background: "transparent", border: "none", borderBottom: "2px solid", borderBottomColor: activeTab === tab.id ? "var(--pink)" : "transparent", marginBottom: -2, color: activeTab === tab.id ? "var(--navy)" : "var(--muted)", fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s" }}>
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ padding: "0.9rem 1.8rem", fontSize: "0.95rem", fontWeight: 600, cursor: "pointer", background: "transparent", border: "none", borderBottom: "2px solid", borderBottomColor: activeTab === tab.id ? "var(--pink)" : "transparent", marginBottom: -2, color: activeTab === tab.id ? "var(--navy)" : "var(--muted)", fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s", display: "flex", alignItems: "center", gap: "0.4rem" }}>
               {tab.icon} {tab.label}
+              {tab.count > 0 && <span style={{ background: "var(--pink)", color: "white", borderRadius: 50, fontSize: "0.65rem", fontWeight: 700, padding: "0.1rem 0.5rem", minWidth: 18, textAlign: "center" }}>{tab.count}</span>}
             </button>
           ))}
         </div>
@@ -100,52 +177,74 @@ export default function StatePageClient({ stateData }: { stateData: StateData })
               Connect with mahjong players across {stateData.name} looking for their perfect weekly game.
             </p>
 
-            {/* Empty state — no players yet */}
-            <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center", marginBottom: "2.5rem" }}>
-              <div style={{ fontSize: "3.5rem", marginBottom: "1.2rem" }}>🀄</div>
-              <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>
-                No players listed in {stateData.name} yet
-              </h3>
-              <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 420, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>
-                Be the first! Create a free listing and let other players in {stateData.name} find you.
-              </p>
-              <Link href="/#map" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>
-                Create My Free Listing &rarr;
-              </Link>
-            </div>
+            {filteredPlayers.length > 0 ? (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "2rem" }}>
+                {filteredPlayers.map((player, i) => (
+                  <div key={player.id} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.4rem", transition: "all 0.2s", cursor: "pointer" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", marginBottom: "0.8rem" }}>
+                      <div style={{ width: 42, height: 42, borderRadius: "50%", background: player.avatar_color || AVATAR_COLORS[i % AVATAR_COLORS.length], display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "white", fontSize: "1rem", flexShrink: 0 }}>
+                        {player.name.charAt(0)}
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: "0.92rem", color: "var(--navy)" }}>{player.name}</div>
+                        <div style={{ fontSize: "0.78rem", color: "var(--muted)" }}>{player.city}, {player.state}</div>
+                      </div>
+                    </div>
+                    <LevelBadge level={player.skill_level} />
+                    {player.availability && <div style={{ fontSize: "0.8rem", color: "var(--muted)", margin: "0.6rem 0 0.9rem" }}>📅 {player.availability}</div>}
+                    {player.bio && <div style={{ fontSize: "0.78rem", color: "var(--muted)", lineHeight: 1.5, marginBottom: "0.9rem" }}>{player.bio}</div>}
+                    <button style={{ width: "100%", background: "transparent", border: "1.5px solid var(--pink)", color: "var(--pink)", borderRadius: 6, padding: "0.5rem", fontWeight: 700, fontSize: "0.8rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s" }}>
+                      Connect
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center", marginBottom: "2.5rem" }}>
+                <div style={{ fontSize: "3.5rem", marginBottom: "1.2rem" }}>🀄</div>
+                <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>
+                  No players listed in {stateData.name} yet
+                </h3>
+                <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 420, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>
+                  Be the first! Create a free listing and let other players in {stateData.name} find you.
+                </p>
+                <Link href="/#map" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>
+                  Create My Free Listing &rarr;
+                </Link>
+              </div>
+            )}
 
-            {/* Sponsored — Instructors */}
+            {/* Sponsored — instructor ad */}
             <div style={{ background: "linear-gradient(135deg, rgba(233,30,140,0.04), rgba(233,30,140,0.08))", border: "1px solid rgba(233,30,140,0.18)", borderRadius: 16, padding: "1.5rem 2rem", marginBottom: "2rem" }}>
               <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--pink)", display: "block", marginBottom: "0.6rem" }}>Sponsored</span>
               <div style={{ display: "flex", alignItems: "center", gap: "1.2rem", flexWrap: "wrap" }}>
                 <div style={{ width: 48, height: 48, borderRadius: 10, background: "white", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem", flexShrink: 0 }}>🎓</div>
                 <div style={{ flex: 1, minWidth: 200 }}>
                   <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--navy)" }}>Teach Mahjong in {stateData.name}?</div>
-                  <div style={{ fontSize: "0.82rem", color: "var(--muted)", lineHeight: 1.5, marginTop: "0.2rem" }}>Get your instructor listing in front of players actively searching for lessons. Reach students in {stateData.cities[0]} and beyond.</div>
+                  <div style={{ fontSize: "0.82rem", color: "var(--muted)", lineHeight: 1.5, marginTop: "0.2rem" }}>Get your instructor listing in front of players actively searching for lessons in {stateData.cities[0]} and beyond.</div>
                 </div>
                 <Link href="/advertise" style={{ background: "var(--pink)", color: "white", borderRadius: 6, padding: "0.6rem 1.4rem", fontWeight: 700, fontSize: "0.82rem", textDecoration: "none", whiteSpace: "nowrap" }}>Get Listed &rarr;</Link>
               </div>
             </div>
 
-            {/* Ad cards — Mahjong companies + Studios */}
+            {/* Ad cards */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "2.5rem" }}>
               <div style={{ background: "white", border: "2px dashed rgba(233,30,140,0.2)", borderRadius: 12, padding: "1.8rem", textAlign: "center" }}>
                 <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(233,30,140,0.5)", marginBottom: "0.5rem", display: "block" }}>Advertisement</span>
                 <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🛍️</div>
                 <div style={{ fontWeight: 700, fontSize: "0.92rem", color: "var(--navy)", marginBottom: "0.3rem" }}>Sell Mahjong Sets or Accessories?</div>
-                <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginBottom: "1.2rem", lineHeight: 1.5 }}>Reach players in {stateData.name} who are actively looking for sets, tiles, racks and more.</div>
+                <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginBottom: "1.2rem", lineHeight: 1.5 }}>Reach players in {stateData.name} actively looking for sets, tiles, racks and more.</div>
                 <Link href="/advertise" style={{ display: "block", background: "var(--pink)", color: "white", borderRadius: 6, padding: "0.5rem 1rem", fontWeight: 700, fontSize: "0.82rem", textDecoration: "none" }}>Advertise Here &rarr;</Link>
               </div>
               <div style={{ background: "white", border: "2px dashed rgba(233,30,140,0.2)", borderRadius: 12, padding: "1.8rem", textAlign: "center" }}>
                 <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(233,30,140,0.5)", marginBottom: "0.5rem", display: "block" }}>Advertisement</span>
                 <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🏠</div>
                 <div style={{ fontWeight: 700, fontSize: "0.92rem", color: "var(--navy)", marginBottom: "0.3rem" }}>Mahjong Studio in {stateData.name}?</div>
-                <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginBottom: "1.2rem", lineHeight: 1.5 }}>Get listed and reach players searching for a dedicated place to play near them.</div>
+                <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginBottom: "1.2rem", lineHeight: 1.5 }}>Get listed and reach players searching for a dedicated place to play.</div>
                 <Link href="/advertise" style={{ display: "block", background: "var(--pink)", color: "white", borderRadius: 6, padding: "0.5rem 1rem", fontWeight: 700, fontSize: "0.82rem", textDecoration: "none" }}>Get Listed &rarr;</Link>
               </div>
             </div>
 
-            {/* CTA */}
             <div style={{ background: "var(--navy)", borderRadius: 16, padding: "2.5rem", textAlign: "center" }}>
               <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.3rem", color: "white", marginBottom: "0.5rem" }}>
                 Want to be listed here? It&rsquo;s free!
@@ -169,27 +268,50 @@ export default function StatePageClient({ stateData }: { stateData: StateData })
               Open plays, game nights, and mahjong events happening across {stateData.name}.
             </p>
 
-            <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center" }}>
-              <div style={{ fontSize: "3.5rem", marginBottom: "1.2rem" }}>🎫</div>
-              <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>
-                No events listed in {stateData.name} yet
-              </h3>
-              <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>
-                Host an open play, tournament, or mahjong night? List your event and reach players actively searching for games. Starting at just $10/event.
-              </p>
-              <Link href="/advertise" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>
-                List Your Event &rarr;
-              </Link>
-            </div>
+            {filteredEvents.length > 0 ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "2rem" }}>
+                {filteredEvents.map((event) => (
+                  <div key={event.id} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.5rem 2rem", transition: "all 0.2s", cursor: "pointer" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
+                      <div>
+                        <EventTypeBadge type={event.event_type} />
+                        <h3 style={{ fontWeight: 700, fontSize: "1.05rem", color: "var(--navy)", margin: "0.3rem 0" }}>{event.event_name}</h3>
+                        <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
+                          📅 {formatEventDate(event.event_date)}
+                          {event.venue && <> &nbsp;&middot;&nbsp; 📍 {event.venue}, {event.city}</>}
+                        </div>
+                        {event.description && <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginTop: "0.4rem", lineHeight: 1.5 }}>{event.description}</div>}
+                      </div>
+                      <div style={{ textAlign: "right", flexShrink: 0 }}>
+                        <div style={{ fontSize: "0.88rem", fontWeight: 700, color: event.price === "Free" ? "var(--green)" : "var(--navy)", marginBottom: "0.5rem" }}>{event.price || "Free"}</div>
+                        {event.registration_url ? (
+                          <a href={event.registration_url} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", background: "var(--navy)", color: "white", padding: "0.5rem 1.2rem", borderRadius: 6, fontSize: "0.78rem", fontWeight: 700, textDecoration: "none" }}>Register &rarr;</a>
+                        ) : (
+                          <Link href="/contact" style={{ display: "inline-block", background: "var(--navy)", color: "white", padding: "0.5rem 1.2rem", borderRadius: 6, fontSize: "0.78rem", fontWeight: 700, textDecoration: "none" }}>Details &rarr;</Link>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center", marginBottom: "2rem" }}>
+                <div style={{ fontSize: "3.5rem", marginBottom: "1.2rem" }}>🎫</div>
+                <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>No events listed yet</h3>
+                <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>
+                  Host an open play, tournament, or mahjong night? List it and reach players searching for games. Starting at $10/event.
+                </p>
+                <Link href="/advertise" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>List Your Event &rarr;</Link>
+              </div>
+            )}
 
-            {/* Sponsored */}
-            <div style={{ background: "linear-gradient(135deg, rgba(233,30,140,0.04), rgba(233,30,140,0.08))", border: "1px solid rgba(233,30,140,0.18)", borderRadius: 16, padding: "1.5rem 2rem", marginTop: "2rem" }}>
+            <div style={{ background: "linear-gradient(135deg, rgba(233,30,140,0.04), rgba(233,30,140,0.08))", border: "1px solid rgba(233,30,140,0.18)", borderRadius: 16, padding: "1.5rem 2rem" }}>
               <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--pink)", display: "block", marginBottom: "0.6rem" }}>Sponsored</span>
               <div style={{ display: "flex", alignItems: "center", gap: "1.2rem", flexWrap: "wrap" }}>
                 <div style={{ width: 48, height: 48, borderRadius: 10, background: "white", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem", flexShrink: 0 }}>📅</div>
                 <div style={{ flex: 1, minWidth: 200 }}>
                   <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--navy)" }}>Promote Your Mahjong Event in {stateData.name}</div>
-                  <div style={{ fontSize: "0.82rem", color: "var(--muted)", lineHeight: 1.5, marginTop: "0.2rem" }}>Reach players in {stateData.cities[0]}, {stateData.cities[1] || stateData.cities[0]} and across the state. Event listings start at $10.</div>
+                  <div style={{ fontSize: "0.82rem", color: "var(--muted)", lineHeight: 1.5, marginTop: "0.2rem" }}>Reach players in {stateData.cities[0]}{stateData.cities[1] ? ` and ${stateData.cities[1]}` : ""}. Event listings from $10.</div>
                 </div>
                 <Link href="/advertise" style={{ background: "var(--pink)", color: "white", borderRadius: 6, padding: "0.6rem 1.4rem", fontWeight: 700, fontSize: "0.82rem", textDecoration: "none", whiteSpace: "nowrap" }}>Get Listed &rarr;</Link>
               </div>
@@ -206,21 +328,37 @@ export default function StatePageClient({ stateData }: { stateData: StateData })
               Restaurants, studios, and community spaces in {stateData.name} that welcome mahjong players.
             </p>
 
-            <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center" }}>
-              <div style={{ fontSize: "3.5rem", marginBottom: "1.2rem" }}>🏛</div>
-              <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>
-                No venues listed in {stateData.name} yet
-              </h3>
-              <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>
-                Own a mahjong-friendly venue? Get discovered by players searching for places to play. Listings start at $19/mo.
-              </p>
-              <Link href="/advertise" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>
-                List Your Venue &rarr;
-              </Link>
-            </div>
+            {filteredVenues.length > 0 ? (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "2rem" }}>
+                {filteredVenues.map((venue) => (
+                  <div key={venue.id} className="venue-card">
+                    <div className="venue-stripe" style={{ background: "var(--pink)" }} />
+                    <div className="venue-body">
+                      <div className="venue-type" style={{ color: "var(--pink)" }}>{venue.venue_type} &middot; {venue.city}</div>
+                      <h3 className="venue-name">{venue.business_name}</h3>
+                      <p className="venue-meta">📍 {venue.city}, {venue.state}</p>
+                      {venue.description && <p className="venue-desc">{venue.description}</p>}
+                      {venue.website ? (
+                        <a href={venue.website} target="_blank" rel="noopener noreferrer" className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Visit Website &rarr;</a>
+                      ) : (
+                        <Link href="/contact" className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Get Info &rarr;</Link>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center", marginBottom: "2rem" }}>
+                <div style={{ fontSize: "3.5rem", marginBottom: "1.2rem" }}>🏛</div>
+                <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>No venues listed yet</h3>
+                <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>
+                  Own a mahjong-friendly venue? Get discovered by players searching for places to play. Listings from $19/mo.
+                </p>
+                <Link href="/advertise" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>List Your Venue &rarr;</Link>
+              </div>
+            )}
 
-            {/* Ad cards — Venues + Studios */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginTop: "2rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
               <div style={{ background: "white", border: "2px dashed rgba(233,30,140,0.2)", borderRadius: 12, padding: "1.8rem", textAlign: "center" }}>
                 <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(233,30,140,0.5)", marginBottom: "0.5rem", display: "block" }}>Advertisement</span>
                 <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🍽️</div>

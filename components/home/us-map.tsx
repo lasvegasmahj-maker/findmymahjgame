@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
+import { STATES } from "@/lib/states-data";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 
@@ -48,10 +49,10 @@ const STATE_CENTERS: Record<string, [number, number]> = {
 
 const ACTIVE_STATES = new Set(["NV","FL","TX","NY","CA","IL","AZ","CO","GA","PA","OH","NJ","MA"]);
 
-const STATE_SLUGS: Record<string, string> = {
-  NV: "/states/nevada",
-  FL: "/states/florida",
-};
+// Build slug map from all 50 states in states-data
+const STATE_SLUGS: Record<string, string> = Object.fromEntries(
+  Object.values(STATES).map((s) => [s.abbr, `/states/${s.slug}`])
+);
 
 export default function USMap() {
   const [hovered, setHovered] = useState<string | null>(null);
