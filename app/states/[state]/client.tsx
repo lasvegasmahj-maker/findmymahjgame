@@ -76,10 +76,46 @@ function EventTypeBadge({ type }: { type: string }) {
 
 const AVATAR_COLORS = ["#e91e8c","#2ec95c","#f5c842","#7c5cbf","#00c9b1","#1a1f5e","#e91e8c"];
 
+interface ConnectForm {
+  player: Player;
+  name: string;
+  email: string;
+  message: string;
+  submitted: boolean;
+  submitting: boolean;
+}
+
 export default function StatePageClient({ stateData, players, events, venues }: Props) {
   const [activeTab, setActiveTab] = useState<"players" | "events" | "venues">("players");
   const [selectedCity, setSelectedCity] = useState(`All of ${stateData.name}`);
   const allCities = [`All of ${stateData.name}`, ...stateData.cities];
+  const [connectForm, setConnectForm] = useState<ConnectForm | null>(null);
+
+  async function handleConnectSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!connectForm) return;
+    setConnectForm({ ...connectForm, submitting: true });
+
+    await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/inquiries`, {
+      method: "POST",
+      headers: {
+        "apikey": process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        "Authorization": `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal",
+      },
+      body: JSON.stringify({
+        name: connectForm.name,
+        email: connectForm.email,
+        inquiry_type: "player_connect",
+        interest: `Connect with ${connectForm.player.name} in ${connectForm.player.city}, ${connectForm.player.state}`,
+        message: connectForm.message,
+        status: "new",
+      }),
+    });
+
+    setConnectForm({ ...connectForm, submitting: false, submitted: true });
+  }
 
   // Filter by city if selected
   const filteredPlayers = selectedCity === `All of ${stateData.name}`
@@ -180,7 +216,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             {filteredPlayers.length > 0 ? (
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "2rem" }}>
                 {filteredPlayers.map((player, i) => (
-                  <div key={player.id} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.4rem", transition: "all 0.2s", cursor: "pointer" }}>
+                  <div key={player.id} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.4rem", transition: "all 0.2s", display: "flex", flexDirection: "column" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", marginBottom: "0.8rem" }}>
                       <div style={{ width: 42, height: 42, borderRadius: "50%", background: player.avatar_color || AVATAR_COLORS[i % AVATAR_COLORS.length], display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "white", fontSize: "1rem", flexShrink: 0 }}>
                         {player.name.charAt(0)}
@@ -191,9 +227,15 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                       </div>
                     </div>
                     <LevelBadge level={player.skill_level} />
-                    {player.availability && <div style={{ fontSize: "0.8rem", color: "var(--muted)", margin: "0.6rem 0 0.9rem" }}>📅 {player.availability}</div>}
-                    {player.bio && <div style={{ fontSize: "0.78rem", color: "var(--muted)", lineHeight: 1.5, marginBottom: "0.9rem" }}>{player.bio}</div>}
-                    <button style={{ width: "100%", background: "transparent", border: "1.5px solid var(--pink)", color: "var(--pink)", borderRadius: 6, padding: "0.5rem", fontWeight: 700, fontSize: "0.8rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s" }}>
+                    {player.availability && <div style={{ fontSize: "0.8rem", color: "var(--muted)", margin: "0.6rem 0 0.5rem" }}>📅 {player.availability}</div>}
+                    {player.bio && <div style={{ fontSize: "0.78rem", color: "var(--muted)", lineHeight: 1.5, marginBottom: "0.5rem", flex: 1 }}>{player.bio}</div>}
+                    <div style={{ flex: 1 }} />
+                    <button
+                      onClick={() => setConnectForm({ player, name: "", email: "", message: "", submitted: false, submitting: false })}
+                      style={{ width: "100%", background: "transparent", border: "1.5px solid var(--pink)", color: "var(--pink)", borderRadius: 6, padding: "0.55rem", fontWeight: 700, fontSize: "0.8rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s", marginTop: "0.8rem" }}
+                      onMouseOver={e => { (e.target as HTMLButtonElement).style.background = "var(--pink)"; (e.target as HTMLButtonElement).style.color = "white"; }}
+                      onMouseOut={e => { (e.target as HTMLButtonElement).style.background = "transparent"; (e.target as HTMLButtonElement).style.color = "var(--pink)"; }}
+                    >
                       Connect
                     </button>
                   </div>
@@ -389,6 +431,87 @@ export default function StatePageClient({ stateData, players, events, venues }: 
           </div>
         </div>
       </div>
+
+      {/* ══════════ CONNECT MODAL ══════════ */}
+      {connectForm && (
+        <div
+          onClick={() => setConnectForm(null)}
+          style={{ position: "fixed", inset: 0, background: "rgba(26,31,94,0.6)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: "white", borderRadius: 20, padding: "2.5rem", maxWidth: 480, width: "100%", position: "relative", boxShadow: "0 20px 60px rgba(26,31,94,0.25)" }}
+          >
+            {/* Close */}
+            <button onClick={() => setConnectForm(null)} style={{ position: "absolute", top: "1rem", right: "1rem", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontSize: "1.1rem", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif" }}>×</button>
+
+            {connectForm.submitted ? (
+              <div style={{ textAlign: "center", padding: "1rem 0" }}>
+                <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>✅</div>
+                <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.5rem" }}>Request Sent!</h3>
+                <p style={{ color: "var(--muted)", fontSize: "0.95rem", lineHeight: 1.7 }}>
+                  Your connection request to <strong>{connectForm.player.name}</strong> has been received. We&rsquo;ll pass your message along and you&rsquo;ll hear back via email.
+                </p>
+                <button onClick={() => setConnectForm(null)} style={{ marginTop: "1.5rem", background: "var(--pink)", color: "white", border: "none", borderRadius: 8, padding: "0.8rem 2rem", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>Done</button>
+              </div>
+            ) : (
+              <>
+                {/* Header */}
+                <div style={{ display: "flex", alignItems: "center", gap: "0.9rem", marginBottom: "1.5rem" }}>
+                  <div style={{ width: 48, height: 48, borderRadius: "50%", background: connectForm.player.avatar_color || "#e91e8c", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "white", fontSize: "1.2rem", flexShrink: 0 }}>
+                    {connectForm.player.name.charAt(0)}
+                  </div>
+                  <div>
+                    <p style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--pink)", marginBottom: "0.2rem" }}>Connect with</p>
+                    <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.3rem", color: "var(--navy)", margin: 0 }}>{connectForm.player.name}</h3>
+                    <p style={{ fontSize: "0.8rem", color: "var(--muted)", margin: 0 }}>{connectForm.player.city}, {connectForm.player.state} &middot; <LevelBadge level={connectForm.player.skill_level} /></p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleConnectSubmit}>
+                  <div style={{ marginBottom: "1rem" }}>
+                    <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "var(--navy)", marginBottom: "0.4rem" }}>Your Name</label>
+                    <input
+                      type="text" required placeholder="Jane Smith"
+                      value={connectForm.name}
+                      onChange={e => setConnectForm({ ...connectForm, name: e.target.value })}
+                      style={{ width: "100%", padding: "0.7rem 1rem", border: "1.5px solid var(--border)", borderRadius: 8, fontFamily: "'DM Sans', sans-serif", fontSize: "0.9rem", outline: "none", color: "var(--text)" }}
+                    />
+                  </div>
+                  <div style={{ marginBottom: "1rem" }}>
+                    <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "var(--navy)", marginBottom: "0.4rem" }}>Your Email</label>
+                    <input
+                      type="email" required placeholder="jane@example.com"
+                      value={connectForm.email}
+                      onChange={e => setConnectForm({ ...connectForm, email: e.target.value })}
+                      style={{ width: "100%", padding: "0.7rem 1rem", border: "1.5px solid var(--border)", borderRadius: 8, fontFamily: "'DM Sans', sans-serif", fontSize: "0.9rem", outline: "none", color: "var(--text)" }}
+                    />
+                  </div>
+                  <div style={{ marginBottom: "1.5rem" }}>
+                    <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "var(--navy)", marginBottom: "0.4rem" }}>Message <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span></label>
+                    <textarea
+                      placeholder={`Hi ${connectForm.player.name.split(" ")[0]}! I'm looking for a mahjong group in ${connectForm.player.city}...`}
+                      value={connectForm.message}
+                      onChange={e => setConnectForm({ ...connectForm, message: e.target.value })}
+                      style={{ width: "100%", padding: "0.7rem 1rem", border: "1.5px solid var(--border)", borderRadius: 8, fontFamily: "'DM Sans', sans-serif", fontSize: "0.9rem", outline: "none", color: "var(--text)", height: 100, resize: "vertical" }}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={connectForm.submitting}
+                    style={{ width: "100%", background: "var(--pink)", color: "white", border: "none", borderRadius: 8, padding: "0.9rem", fontWeight: 700, fontSize: "1rem", cursor: connectForm.submitting ? "not-allowed" : "pointer", fontFamily: "'DM Sans', sans-serif", opacity: connectForm.submitting ? 0.7 : 1 }}
+                  >
+                    {connectForm.submitting ? "Sending..." : "Send Connection Request →"}
+                  </button>
+                  <p style={{ fontSize: "0.75rem", color: "var(--muted)", textAlign: "center", marginTop: "0.8rem" }}>
+                    Free for players. We&rsquo;ll pass your request along to {connectForm.player.name.split(" ")[0]}.
+                  </p>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }
