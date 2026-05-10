@@ -1,49 +1,85 @@
-@AGENTS.md
+## Posture
 
-# CLAUDE.md
+- Auto mode by default: execute, don't plan unless asked. Make reasonable assumptions and proceed end-to-end. Don't ask clarifying questions for routine decisions.
+- After meaningful code changes, deploy 3 parallel verification agents with non-overlapping lenses (e.g., internal-routes, external-URLs, live-UX). Catches hallucinations and regressions.
+- Prefer editing existing files over creating new ones. Don't create README, planning, or summary files unless asked.
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Code quality
 
-## IMPORTANT: Session Startup
+- Typecheck before every commit. `npx tsc --noEmit` (or project equivalent).
+- No premature abstractions. Three similar lines beats a generic helper for two callers.
+- No defensive code for impossible cases. Validate at boundaries (user input, external APIs), not at every layer.
+- Default to NO comments. Add one only when the WHY is non-obvious. Never explain WHAT the code does.
+- No backward-compat shims for code being actively rewritten. Delete unused code; don't rename to `_unused`.
 
-**Before you do anything, read `architecture.md`, `security.md`, and `schema.md`.** These three files define how the app is built, how data is secured, and how the database is structured. Every decision you make should align with these docs.
+## Testing
 
-## Project
+Organize Playwright specs by lens, run on every push via GitHub Actions matrix:
 
-Next.js 16 website for **Find My Mahj Game** (findmymahjgame.com) — a directory that connects mahjong players to local groups, venues, retreats, and tournaments across all 50 states.
+- Critical flows (200s, sitemap, robots, 404s)
+- Interactive flows (search/filter clicks at desktop AND mobile viewports)
+- Forms (validation, submit handlers, success states)
+- SEO metadata (title length, description length, canonical, schema markup)
+- Auth + protected routes (anon redirects, 401/403 enforcement)
+- Dynamic pages (sample first/middle/last entry per data source)
+- API contracts (JSON errors not stack traces, security headers)
+- Visual regression (bounding-box checks, elementFromPoint() overlay detection, hydration error capture)
 
-## Sister Business
+Test as a real user (clicks, not just HTTP 200). Multi-viewport. Free-tier tools only by default (Playwright, GitHub Actions, Lighthouse).
 
-Las Vegas Mahjong (lasvegasmahj.com) is a mahjong instruction business. Separate project at `~/Projects/lasvegasmahj`.
+## Security
 
-## Commands
+- Service-role secrets are SERVER-ONLY. Never `NEXT_PUBLIC_*` for anything sensitive.
+- Admin gating: server-side checks via allowlist email or session role. UI hide-button is convenience, not security.
+- HMAC-signed tokens for one-click email actions (approval, unsubscribe). Timing-safe validation, 7-day TTL default.
+- Rate limit public endpoints: 20 req/min per IP baseline.
+- Secrets in chat = compromised. If a key gets pasted, ROTATE immediately.
+- OAuth: keep basic auth (email/profile) in a separate Google Cloud project from sensitive-scope (Gmail, Drive). Sensitive scope drags the whole project into Google's verification queue.
+- Security headers: CSP, HSTS, X-Content-Type-Options nosniff, X-Frame-Options DENY, Referrer-Policy, Permissions-Policy.
+- New user-facing surfaces (prompts, banners, OS permissions) ship flag-gated OFF by default until confirmed.
 
-```bash
-pnpm dev          # Start dev server at localhost:3000
-pnpm build        # Production build
-pnpm lint         # Run ESLint
-```
+## AI / hallucination guards
 
-## Architecture
+When the project uses LLMs:
 
-See `architecture.md` for full details. Key points:
-- Next.js 16 + Tailwind CSS 4 + shadcn/ui + Supabase
-- No hard-coded data — everything dynamic comes from Supabase
-- Core model: connectors → connections → referrals
-- Vercel auto-deploys from GitHub on push to main
-- Secrets in `.env.local` (never commit)
+- System prompts forbid trivializing language ("easily", "guaranteed", "more than enough"). These trigger hallucinations.
+- Runtime verifier: cheap second model (Haiku) audits each main response for hallucination markers. Persist to DB.
+- Eval harness with golden Q/A cases. Must-contain and must-not-contain phrase lists. Run before deploy.
+- Don't fine-tune unless prompt + tool use + RAG can't reach the target.
+- Verify before publish: outbound AI content cross-checks claims against scraped + primary sources before going live.
 
-## Design System
+## Process
 
-- Navy: `--navy: #1a1f5e`
-- Pink accent: `--pink: #e91e8c`
-- Green accent: `--green: #2ec95c`
-- Gold accent: `--gold: #f5c842`
-- Fonts: Playfair Display (headings), DM Sans (body)
+- Feature branches, PR to main. NEVER push directly to main.
+- Commit messages: WHY in the body, not WHAT.
+- Auto-deploy on push creates preview URLs; verify the preview before merging.
+- 3-agent verification on significant changes: parallel Explore agents, non-overlapping lenses, structured reports.
+- Run typecheck + linter + tests before pushing. If any fail, don't push.
 
-## Conventions
+## Style
 
-- All database column names use snake_case
-- State pages use dynamic `[state]` route, with custom pages for Nevada/Florida
-- "Traveling and Want to Play?" and "Retreats & Tournaments" are separate nav items (not combined)
-- Original static HTML files preserved in `static-backup/` for reference
+- NO em dashes (--). NO en dashes. Use commas, periods, semicolons, parentheses. Em dashes read as AI-generated.
+- Numeric ranges use ASCII hyphen: `5-7 days`, not `5-7 days`.
+- Active voice. State decisions directly.
+- Plain language over jargon.
+
+## Memory
+
+Persistent memory across Claude sessions:
+
+- Directory: `~/.claude/projects/<encoded-cwd>/memory/`
+- Index: `MEMORY.md` (one line per memory, max ~150 chars)
+- Per-topic files: `feedback_<topic>.md`, `user_<topic>.md`, `project_<topic>.md`, `reference_<topic>.md`
+- Save corrections AND validated approaches. Save why, not just what.
+- Don't save credentials, in-progress task state, or anything derivable from the repo.
+
+## Don't add
+
+- Backwards-compat layers I didn't ask for
+- Observability libraries (Sentry, Datadog) unless asked
+- Framework migrations
+- Refactors adjacent to a bug fix
+
+## When in doubt
+
+Ask once, briefly. Then proceed with a reasonable default and tell me what you picked.
