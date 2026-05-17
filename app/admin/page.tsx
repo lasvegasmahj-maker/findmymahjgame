@@ -171,14 +171,28 @@ export default function AdminPage() {
   const [events, setEvents] = useState<EventListing[]>([]);
   const [ads, setAds] = useState<AdListing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [newInquiryCount, setNewInquiryCount] = useState(0);
 
   useEffect(() => {
     setAuthed(sessionStorage.getItem("admin_auth") === "true");
   }, []);
 
   useEffect(() => {
-    if (authed) loadData();
+    if (authed) {
+      loadData();
+      loadBannerCounts();
+    }
   }, [tab, authed]);
+
+  async function loadBannerCounts() {
+    const [{ count: pending }, { count: newInq }] = await Promise.all([
+      supabase.from("player_listings").select("id", { count: "exact", head: true }).eq("status", "pending_review"),
+      supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("status", "new"),
+    ]);
+    setPendingCount(pending ?? 0);
+    setNewInquiryCount(newInq ?? 0);
+  }
 
   async function loadData() {
     setLoading(true);
@@ -187,7 +201,13 @@ export default function AdminPage() {
       setInquiries((data as Inquiry[]) || []);
     } else if (tab === "players") {
       const { data } = await supabase.from("player_listings").select("*").order("created_at", { ascending: false });
-      setPlayers((data as PlayerListing[]) || []);
+      const sorted = ((data as PlayerListing[]) || []).sort((a, b) => {
+        const order: Record<string, number> = { pending_review: 0, flagged: 1, published: 2 };
+        const ao = order[a.status] ?? 3;
+        const bo = order[b.status] ?? 3;
+        return ao - bo;
+      });
+      setPlayers(sorted);
     } else if (tab === "venues") {
       const { data } = await supabase.from("venue_listings").select("*").order("created_at", { ascending: false });
       setVenues((data as VenueListing[]) || []);
@@ -204,11 +224,13 @@ export default function AdminPage() {
   async function updateStatus(table: string, id: string, status: string) {
     await supabase.from(table).update({ status, reviewed_at: new Date().toISOString() }).eq("id", id);
     loadData();
+    loadBannerCounts();
   }
 
   async function updateInquiryStatus(id: string, status: string) {
     await supabase.from("inquiries").update({ status }).eq("id", id);
     loadData();
+    loadBannerCounts();
   }
 
   function formatDate(d: string) {
@@ -223,6 +245,7 @@ export default function AdminPage() {
       replied: { bg: "rgba(46,201,92,0.1)", color: "#1a9648" },
       flagged: { bg: "rgba(245,200,66,0.15)", color: "#a07800" },
       rejected: { bg: "rgba(220,38,38,0.1)", color: "#dc2626" },
+      pending_review: { bg: "rgba(245,200,66,0.15)", color: "#a07800" },
     };
     const c = colors[status] || colors.new;
     return (
@@ -235,8 +258,30 @@ export default function AdminPage() {
   if (authed === null) return null;
   if (!authed) return <LoginGate onAuth={() => setAuthed(true)} />;
 
+  const showBanner = pendingCount > 0 || newInquiryCount > 0;
+
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "2rem" }}>
+      {showBanner && (
+        <div style={{
+          background: "linear-gradient(135deg, rgba(233,30,140,0.08), rgba(245,200,66,0.12))",
+          border: "1px solid rgba(233,30,140,0.25)",
+          borderRadius: 12,
+          padding: "1rem 1.5rem",
+          marginBottom: "1.5rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.6rem",
+          fontSize: "0.9rem",
+          fontWeight: 600,
+          color: "var(--navy)",
+        }}>
+          <span style={{ fontSize: "1.1rem" }}>⚡</span>
+          You have{pendingCount > 0 ? ` ${pendingCount} pending listing${pendingCount !== 1 ? "s" : ""}` : ""}
+          {pendingCount > 0 && newInquiryCount > 0 ? " and" : ""}
+          {newInquiryCount > 0 ? ` ${newInquiryCount} new ${newInquiryCount !== 1 ? "inquiries" : "inquiry"}` : ""} to review.
+        </div>
+      )}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "2rem" }}>
         <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.8rem", color: "var(--navy)" }}>Admin Dashboard</h1>
         <div style={{ display: "flex", gap: "0.75rem" }}>
@@ -290,6 +335,11 @@ export default function AdminPage() {
                       <strong style={{ color: "var(--navy)", fontSize: "1rem" }}>{inq.name}</strong>
                       <span style={{ color: "var(--muted)", fontSize: "0.82rem", marginLeft: "0.8rem" }}>{inq.email}</span>
                       {inq.company && <span style={{ color: "var(--muted)", fontSize: "0.82rem", marginLeft: "0.8rem" }}>({inq.company})</span>}
+                      {(inq.inquiry_type === "advertising" || inq.inquiry_type === "get_listed") && (
+                        <span style={{ marginLeft: "0.8rem", fontSize: "0.78rem", fontWeight: 700, color: "#a07800", background: "rgba(245,200,66,0.15)", borderRadius: 4, padding: "0.15rem 0.6rem" }}>
+                          Action needed: review and create listing
+                        </span>
+                      )}
                     </div>
                     <StatusBadge status={inq.status} />
                   </div>
@@ -333,11 +383,15 @@ export default function AdminPage() {
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{p.city}, {p.state}</td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{p.skill_level}</td>
                     <td style={{ padding: "0.8rem 1rem" }}><StatusBadge status={p.status} /></td>
-                    <td style={{ padding: "0.8rem 1rem" }}>
-                      {p.status === "published" ? (
+                    <td style={{ padding: "0.8rem 1rem", display: "flex", gap: "0.4rem" }}>
+                      {p.status === "published" && (
                         <button onClick={() => updateStatus("player_listings", p.id, "flagged")} style={{ background: "#fef3c7", border: "1px solid #f5c842", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Flag</button>
-                      ) : (
-                        <button onClick={() => updateStatus("player_listings", p.id, "published")} style={{ background: "var(--green)", color: "white", border: "none", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Publish</button>
+                      )}
+                      {(p.status === "pending_review" || p.status === "flagged") && (
+                        <>
+                          <button onClick={() => updateStatus("player_listings", p.id, "published")} style={{ background: "var(--green)", color: "white", border: "none", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Approve</button>
+                          <button onClick={() => updateStatus("player_listings", p.id, "rejected")} style={{ background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif", color: "#dc2626" }}>Reject</button>
+                        </>
                       )}
                     </td>
                   </tr>

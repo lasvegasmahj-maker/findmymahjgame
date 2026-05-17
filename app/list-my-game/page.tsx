@@ -64,7 +64,7 @@ export default function ListMyGamePage() {
             availability: form.availability || null,
             bio: form.bio || null,
             email: form.email,
-            status: "published",
+            status: "pending_review",
           }),
         }
       );
@@ -97,11 +97,10 @@ export default function ListMyGamePage() {
             marginBottom: "0.8rem",
           }}
         >
-          You&rsquo;re listed!
+          Thanks for submitting!
         </h1>
         <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.7 }}>
-          Players in <strong style={{ color: "var(--navy)" }}>{selectedStateName}</strong> can now find you. We&rsquo;ll send
-          connection requests to the email you provided.
+          Thanks! Your listing has been submitted for review. We&rsquo;ll approve it within 1-2 business days and you&rsquo;ll appear on your state page once approved.
         </p>
       </div>
     );
