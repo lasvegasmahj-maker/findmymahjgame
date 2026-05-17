@@ -43,7 +43,7 @@ export default function Home() {
                 <button>Search</button>
               </div>
               <div style={{ textAlign: "center", marginTop: "1.2rem", paddingTop: "1.2rem", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-                <Link href="#" className="listing-cta">Create My Own Listing to Find My Mahj Game</Link>
+                <Link href="/list-my-game" className="listing-cta">Create My Own Listing to Find My Mahj Game</Link>
               </div>
             </div>
           </div>

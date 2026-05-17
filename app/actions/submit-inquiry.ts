@@ -32,5 +32,26 @@ export async function submitInquiry(formData: FormData) {
     return { success: false, error: error.message };
   }
 
+  const subjectLabel = inquiry_type === "advertising" ? "Advertise Inquiry" : "Contact Form";
+  const bodyLines = [
+    `From: ${name} (${email})`,
+    company ? `Company: ${company}` : null,
+    interest ? `Interest: ${interest}` : null,
+    topic ? `Topic: ${topic}` : null,
+    `\nMessage:\n${message || "(no message)"}`,
+  ].filter(Boolean).join("\n");
+
+  // Fire-and-forget notify — use absolute URL for server actions
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  await fetch(`${baseUrl}/api/notify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      type: "inquiry",
+      subject: `New ${subjectLabel}: ${name}`,
+      body: bodyLines,
+    }),
+  }).catch(() => {});
+
   return { success: true };
 }

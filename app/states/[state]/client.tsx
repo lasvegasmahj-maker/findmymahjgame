@@ -114,6 +114,16 @@ export default function StatePageClient({ stateData, players, events, venues }: 
       }),
     });
 
+    await fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "connect",
+        subject: `New Connect Request: ${connectForm.name} wants to play with ${connectForm.player.name}`,
+        body: `From: ${connectForm.name} (${connectForm.email})\nPlayer: ${connectForm.player.name} — ${connectForm.player.city}, ${connectForm.player.state}\nSkill Level: ${connectForm.player.skill_level}\n\nMessage:\n${connectForm.message || "(no message)"}`,
+      }),
+    });
+
     setConnectForm({ ...connectForm, submitting: false, submitted: true });
   }
 
@@ -250,7 +260,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                 <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 420, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>
                   Be the first! Create a free listing and let other players in {stateData.name} find you.
                 </p>
-                <Link href="/#map" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>
+                <Link href="/list-my-game" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>
                   Create My Free Listing &rarr;
                 </Link>
               </div>
@@ -294,7 +304,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
               <p style={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.55)", marginBottom: "1.5rem" }}>
                 Add your free listing and let local players in {stateData.name} find you.
               </p>
-              <Link href="/#map" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>
+              <Link href="/list-my-game" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>
                 Create My Free Listing &rarr;
               </Link>
             </div>

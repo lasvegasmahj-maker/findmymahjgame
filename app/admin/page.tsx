@@ -64,7 +64,106 @@ interface AdListing {
   created_at: string;
 }
 
+function LoginGate({ onAuth }: { onAuth: () => void }) {
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(false);
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
+      sessionStorage.setItem("admin_auth", "true");
+      onAuth();
+    } else {
+      setError(true);
+      setPassword("");
+    }
+  }
+
+  return (
+    <div style={{
+      minHeight: "100vh",
+      background: "var(--bg)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontFamily: "'DM Sans', sans-serif",
+    }}>
+      <div style={{
+        background: "white",
+        border: "1px solid var(--border)",
+        borderRadius: 20,
+        padding: "3rem 2.5rem",
+        width: "100%",
+        maxWidth: 380,
+        boxShadow: "0 8px 40px rgba(26,31,94,0.10)",
+        textAlign: "center",
+      }}>
+        <div style={{
+          fontFamily: "var(--font-playfair), 'Playfair Display', serif",
+          fontSize: "1.5rem",
+          fontWeight: 700,
+          color: "var(--navy)",
+          marginBottom: "0.3rem",
+          letterSpacing: "-0.01em",
+        }}>
+          Find My Mahj Game
+        </div>
+        <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginBottom: "2rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+          Admin
+        </div>
+
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => { setPassword(e.target.value); setError(false); }}
+            placeholder="Password"
+            autoFocus
+            style={{
+              padding: "0.85rem 1.1rem",
+              borderRadius: 10,
+              border: error ? "1.5px solid #dc2626" : "1.5px solid var(--border)",
+              fontSize: "0.95rem",
+              fontFamily: "'DM Sans', sans-serif",
+              color: "var(--navy)",
+              outline: "none",
+              background: "var(--bg)",
+              transition: "border-color 0.15s",
+            }}
+          />
+          {error && (
+            <p style={{ fontSize: "0.82rem", color: "#dc2626", margin: "-0.4rem 0 0", textAlign: "left" }}>
+              Incorrect password
+            </p>
+          )}
+          <button
+            type="submit"
+            style={{
+              background: "var(--pink)",
+              color: "white",
+              border: "none",
+              borderRadius: 10,
+              padding: "0.9rem 1.5rem",
+              fontSize: "0.95rem",
+              fontWeight: 700,
+              cursor: "pointer",
+              fontFamily: "'DM Sans', sans-serif",
+              letterSpacing: "0.02em",
+              transition: "opacity 0.15s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+          >
+            Sign In
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPage() {
+  const [authed, setAuthed] = useState<boolean | null>(null);
   const [tab, setTab] = useState<Tab>("inquiries");
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [players, setPlayers] = useState<PlayerListing[]>([]);
@@ -74,8 +173,12 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadData();
-  }, [tab]);
+    setAuthed(sessionStorage.getItem("admin_auth") === "true");
+  }, []);
+
+  useEffect(() => {
+    if (authed) loadData();
+  }, [tab, authed]);
 
   async function loadData() {
     setLoading(true);
@@ -129,13 +232,24 @@ export default function AdminPage() {
     );
   }
 
+  if (authed === null) return null;
+  if (!authed) return <LoginGate onAuth={() => setAuthed(true)} />;
+
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "2rem" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "2rem" }}>
         <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.8rem", color: "var(--navy)" }}>Admin Dashboard</h1>
-        <button onClick={loadData} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 6, padding: "0.5rem 1rem", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
-          Refresh
-        </button>
+        <div style={{ display: "flex", gap: "0.75rem" }}>
+          <button onClick={loadData} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 6, padding: "0.5rem 1rem", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+            Refresh
+          </button>
+          <button
+            onClick={() => { sessionStorage.removeItem("admin_auth"); setAuthed(false); }}
+            style={{ background: "transparent", border: "1px solid var(--border)", borderRadius: 6, padding: "0.5rem 1rem", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", color: "var(--muted)" }}
+          >
+            Sign Out
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}

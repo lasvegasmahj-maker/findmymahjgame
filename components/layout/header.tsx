@@ -7,6 +7,7 @@ export default function Header() {
         Find My <span>Mahj Game</span>
       </Link>
       <div className="nav-right">
+        <Link href="/list-my-game" className="nav-advertise" style={{ color: "var(--pink)" }}>List Your Game</Link>
         <Link href="/advertise" className="nav-advertise">Advertise</Link>
         <Link href="#" className="btn-login">Log In</Link>
       </div>
