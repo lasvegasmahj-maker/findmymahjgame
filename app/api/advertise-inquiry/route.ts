@@ -19,9 +19,18 @@ const PRICING_HTML = `
 
   <div style="background: #f4f6ff; padding: 28px 32px; border-radius: 0 0 12px 12px; border: 1px solid #e8eaf0; border-top: none;">
 
-    <p style="font-size: 0.95rem; color: #6b7280; line-height: 1.7; margin-bottom: 24px;">
+    <p style="font-size: 0.95rem; color: #6b7280; line-height: 1.7; margin-bottom: 20px;">
       Thanks for your interest in advertising on Find My Mahj Game! Here are our current options. Reply to this email and we'll get your listing set up.
     </p>
+
+    <!-- Founding Partner highlight -->
+    <div style="background: linear-gradient(135deg, #fffdf0, #fff8dc); border: 2px solid #f5c842; border-radius: 10px; padding: 18px 20px; margin-bottom: 24px;">
+      <div style="font-family: Georgia, serif; font-size: 1rem; color: #5a4000; margin-bottom: 6px;">Founding Partner Offer</div>
+      <p style="font-size: 0.88rem; color: #7a6020; margin: 0 0 8px; line-height: 1.6;">
+        You're getting in early. Use code <strong>FINDMYMAHJ</strong> to unlock <strong>6 months free</strong> on any listing. After your free period, Founding Partners lock in <strong>30% off their rate for life</strong> -- as long as you stay listed. Only a limited number of spots are available.
+      </p>
+      <p style="font-size: 0.82rem; color: #a07800; margin: 0;">Just mention the code when you reply and we'll apply it to your listing.</p>
+    </div>
 
     <!-- Venue Listings -->
     <h2 style="font-family: Georgia, serif; font-size: 1.1rem; color: #1a1f5e; border-bottom: 2px solid #e8eaf0; padding-bottom: 8px; margin-bottom: 16px;">Venue Listings</h2>
