@@ -266,36 +266,20 @@ export default function StatePageClient({ stateData, players, events, venues }: 
               </div>
             )}
 
-            {/* Sponsored — instructor ad */}
-            <div style={{ background: "linear-gradient(135deg, rgba(233,30,140,0.04), rgba(233,30,140,0.08))", border: "1px solid rgba(233,30,140,0.18)", borderRadius: 16, padding: "1.5rem 2rem", marginBottom: "2rem" }}>
-              <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--pink)", display: "block", marginBottom: "0.6rem" }}>Sponsored</span>
-              <div style={{ display: "flex", alignItems: "center", gap: "1.2rem", flexWrap: "wrap" }}>
-                <div style={{ width: 48, height: 48, borderRadius: 10, background: "white", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem", flexShrink: 0 }}>🎓</div>
-                <div style={{ flex: 1, minWidth: 200 }}>
-                  <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--navy)" }}>Teach Mahjong in {stateData.name}?</div>
-                  <div style={{ fontSize: "0.82rem", color: "var(--muted)", lineHeight: 1.5, marginTop: "0.2rem" }}>Get your instructor listing in front of players actively searching for lessons in {stateData.cities[0]} and beyond.</div>
+            {/* Las Vegas Mahjong — sponsored only on Nevada */}
+            {stateData.abbr === "NV" && (
+              <div style={{ background: "linear-gradient(135deg, rgba(233,30,140,0.04), rgba(233,30,140,0.08))", border: "1px solid rgba(233,30,140,0.18)", borderRadius: 16, padding: "1.5rem 2rem", marginBottom: "2rem" }}>
+                <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--pink)", display: "block", marginBottom: "0.6rem" }}>Sponsored</span>
+                <div style={{ display: "flex", alignItems: "center", gap: "1.2rem", flexWrap: "wrap" }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 10, background: "white", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem", flexShrink: 0 }}>🀄</div>
+                  <div style={{ flex: 1, minWidth: 200 }}>
+                    <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--navy)" }}>Las Vegas Mahjong</div>
+                    <div style={{ fontSize: "0.82rem", color: "var(--muted)", lineHeight: 1.5, marginTop: "0.2rem" }}>Lessons, open play and events with certified instructor Shauna in Las Vegas. All levels welcome.</div>
+                  </div>
+                  <a href="https://lasvegasmahj.com" target="_blank" rel="noopener noreferrer" style={{ background: "var(--pink)", color: "white", borderRadius: 6, padding: "0.6rem 1.4rem", fontWeight: 700, fontSize: "0.82rem", textDecoration: "none", whiteSpace: "nowrap" }}>Visit &rarr;</a>
                 </div>
-                <Link href="/advertise" style={{ background: "var(--pink)", color: "white", borderRadius: 6, padding: "0.6rem 1.4rem", fontWeight: 700, fontSize: "0.82rem", textDecoration: "none", whiteSpace: "nowrap" }}>Get Listed &rarr;</Link>
               </div>
-            </div>
-
-            {/* Ad cards */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "2.5rem" }}>
-              <div style={{ background: "white", border: "2px dashed rgba(233,30,140,0.2)", borderRadius: 12, padding: "1.8rem", textAlign: "center" }}>
-                <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(233,30,140,0.5)", marginBottom: "0.5rem", display: "block" }}>Advertisement</span>
-                <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🛍️</div>
-                <div style={{ fontWeight: 700, fontSize: "0.92rem", color: "var(--navy)", marginBottom: "0.3rem" }}>Sell Mahjong Sets or Accessories?</div>
-                <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginBottom: "1.2rem", lineHeight: 1.5 }}>Reach players in {stateData.name} actively looking for sets, tiles, racks and more.</div>
-                <Link href="/advertise" style={{ display: "block", background: "var(--pink)", color: "white", borderRadius: 6, padding: "0.5rem 1rem", fontWeight: 700, fontSize: "0.82rem", textDecoration: "none" }}>Advertise Here &rarr;</Link>
-              </div>
-              <div style={{ background: "white", border: "2px dashed rgba(233,30,140,0.2)", borderRadius: 12, padding: "1.8rem", textAlign: "center" }}>
-                <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(233,30,140,0.5)", marginBottom: "0.5rem", display: "block" }}>Advertisement</span>
-                <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🏠</div>
-                <div style={{ fontWeight: 700, fontSize: "0.92rem", color: "var(--navy)", marginBottom: "0.3rem" }}>Mahjong Studio in {stateData.name}?</div>
-                <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginBottom: "1.2rem", lineHeight: 1.5 }}>Get listed and reach players searching for a dedicated place to play.</div>
-                <Link href="/advertise" style={{ display: "block", background: "var(--pink)", color: "white", borderRadius: 6, padding: "0.5rem 1rem", fontWeight: 700, fontSize: "0.82rem", textDecoration: "none" }}>Get Listed &rarr;</Link>
-              </div>
-            </div>
+            )}
 
             <div style={{ background: "var(--navy)", borderRadius: 16, padding: "2.5rem", textAlign: "center" }}>
               <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.3rem", color: "white", marginBottom: "0.5rem" }}>
@@ -357,17 +341,6 @@ export default function StatePageClient({ stateData, players, events, venues }: 
               </div>
             )}
 
-            <div style={{ background: "linear-gradient(135deg, rgba(233,30,140,0.04), rgba(233,30,140,0.08))", border: "1px solid rgba(233,30,140,0.18)", borderRadius: 16, padding: "1.5rem 2rem" }}>
-              <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--pink)", display: "block", marginBottom: "0.6rem" }}>Sponsored</span>
-              <div style={{ display: "flex", alignItems: "center", gap: "1.2rem", flexWrap: "wrap" }}>
-                <div style={{ width: 48, height: 48, borderRadius: 10, background: "white", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem", flexShrink: 0 }}>📅</div>
-                <div style={{ flex: 1, minWidth: 200 }}>
-                  <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--navy)" }}>Promote Your Mahjong Event in {stateData.name}</div>
-                  <div style={{ fontSize: "0.82rem", color: "var(--muted)", lineHeight: 1.5, marginTop: "0.2rem" }}>Reach players in {stateData.cities[0]}{stateData.cities[1] ? ` and ${stateData.cities[1]}` : ""}. Event listings from $10.</div>
-                </div>
-                <Link href="/advertise" style={{ background: "var(--pink)", color: "white", borderRadius: 6, padding: "0.6rem 1.4rem", fontWeight: 700, fontSize: "0.82rem", textDecoration: "none", whiteSpace: "nowrap" }}>Get Listed &rarr;</Link>
-              </div>
-            </div>
           </div>
         )}
 
@@ -410,22 +383,6 @@ export default function StatePageClient({ stateData, players, events, venues }: 
               </div>
             )}
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-              <div style={{ background: "white", border: "2px dashed rgba(233,30,140,0.2)", borderRadius: 12, padding: "1.8rem", textAlign: "center" }}>
-                <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(233,30,140,0.5)", marginBottom: "0.5rem", display: "block" }}>Advertisement</span>
-                <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🍽️</div>
-                <div style={{ fontWeight: 700, fontSize: "0.92rem", color: "var(--navy)", marginBottom: "0.3rem" }}>Restaurant or Caf&eacute; in {stateData.name}?</div>
-                <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginBottom: "1.2rem", lineHeight: 1.5 }}>Welcome mahjong groups? Get listed and they&rsquo;ll find you.</div>
-                <Link href="/advertise" style={{ display: "block", background: "var(--pink)", color: "white", borderRadius: 6, padding: "0.5rem 1rem", fontWeight: 700, fontSize: "0.82rem", textDecoration: "none" }}>Get Listed &rarr;</Link>
-              </div>
-              <div style={{ background: "white", border: "2px dashed rgba(233,30,140,0.2)", borderRadius: 12, padding: "1.8rem", textAlign: "center" }}>
-                <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(233,30,140,0.5)", marginBottom: "0.5rem", display: "block" }}>Advertisement</span>
-                <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🀄</div>
-                <div style={{ fontWeight: 700, fontSize: "0.92rem", color: "var(--navy)", marginBottom: "0.3rem" }}>Mahjong Studio or JCC?</div>
-                <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginBottom: "1.2rem", lineHeight: 1.5 }}>Reach players searching for dedicated mahjong spaces in {stateData.name}.</div>
-                <Link href="/advertise" style={{ display: "block", background: "var(--pink)", color: "white", borderRadius: 6, padding: "0.5rem 1rem", fontWeight: 700, fontSize: "0.82rem", textDecoration: "none" }}>Get Listed &rarr;</Link>
-              </div>
-            </div>
           </div>
         )}
 
