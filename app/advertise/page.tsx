@@ -1,13 +1,25 @@
-import type { Metadata } from "next";
-import { FORMSPREE_URL, AD_EMAIL } from "@/lib/constants";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Advertise",
-  description:
-    "Advertise on Find My Mahj Game — the only national directory built exclusively for the American mahjong community. Brand placements, venue listings, event promotions and more.",
-};
+import { useState } from "react";
+import { AD_EMAIL } from "@/lib/constants";
 
 export default function AdvertisePage() {
+  const [form, setForm] = useState({ name: "", email: "", company: "", interest: "", message: "" });
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setStatus("submitting");
+
+    const res = await fetch("/api/advertise-inquiry", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+
+    setStatus(res.ok ? "success" : "error");
+  }
+
   return (
     <>
       <div className="page-hero">
@@ -18,231 +30,118 @@ export default function AdvertisePage() {
         </p>
       </div>
 
-      <div className="page-body" style={{ maxWidth: 900 }}>
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-4 my-10" style={{ maxWidth: 400 }}>
+      <div className="page-body" style={{ maxWidth: 860 }}>
+
+        {/* What you can advertise */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", margin: "2.5rem 0" }}>
           {[
-            { num: "All 50", label: "State Pages" },
-            { num: "100%", label: "Mahjong Audience" },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-bg border border-border rounded-xl p-5 text-center">
-              <div className="font-heading text-[1.8rem] text-navy font-black">{stat.num}</div>
-              <div className="text-[0.75rem] text-muted mt-0.5">{stat.label}</div>
+            { icon: "🏛", title: "Venues", desc: "Restaurants, studios, JCCs and community spaces that welcome mahjong players." },
+            { icon: "🎓", title: "Instructors", desc: "Mahjong teachers and certified instructors reaching students in their area." },
+            { icon: "🎫", title: "Events", desc: "Open plays, tournaments, retreats and game nights reaching local and national players." },
+            { icon: "🛍️", title: "Brands", desc: "Mahjong sets, accessories, and products reaching an engaged niche audience." },
+          ].map((item) => (
+            <div key={item.title} className="highlight-box" style={{ borderLeft: "4px solid var(--pink)", display: "flex", gap: "1rem", alignItems: "flex-start" }}>
+              <span style={{ fontSize: "1.5rem", flexShrink: 0 }}>{item.icon}</span>
+              <div>
+                <strong style={{ color: "var(--navy)", display: "block", marginBottom: "0.2rem" }}>{item.title}</strong>
+                <span style={{ fontSize: "0.88rem", color: "var(--muted)" }}>{item.desc}</span>
+              </div>
             </div>
           ))}
         </div>
 
-        {/* Brand Advertising */}
-        <h2>Brand &amp; Company Advertising</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse my-4">
-            <thead>
-              <tr>
-                <th className="bg-navy text-white py-3 px-4 text-left text-[0.82rem] font-bold">Placement</th>
-                <th className="bg-navy text-white py-3 px-4 text-left text-[0.82rem] font-bold">Description</th>
-                <th className="bg-navy text-white py-3 px-4 text-left text-[0.82rem] font-bold">Reach</th>
-                <th className="bg-navy text-white py-3 px-4 text-left text-[0.82rem] font-bold">Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { place: "Top Partner Bar", desc: "Premium placement at top of every page", reach: "All visitors", price: "$299/mo" },
-                { place: "Featured Partner Card", desc: "Logo, tagline + CTA next to the map", reach: "All visitors", price: "$229/mo" },
-                { place: "Sponsored Banner", desc: "Full-width banner between page sections", reach: "All visitors", price: "$149/mo" },
-                { place: "Sponsored Map Card", desc: "Appears in player search results by state", reach: "By state", price: "$99/mo" },
-              ].map((row, i) => (
-                <tr key={row.place} className={i % 2 === 1 ? "bg-bg" : ""}>
-                  <td className="py-3 px-4 border-b border-border text-[0.88rem] font-bold text-navy">{row.place}</td>
-                  <td className="py-3 px-4 border-b border-border text-[0.88rem] text-muted">{row.desc}</td>
-                  <td className="py-3 px-4 border-b border-border text-[0.88rem] text-muted">{row.reach}</td>
-                  <td className="py-3 px-4 border-b border-border text-[0.95rem] text-pink font-bold">{row.price}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Venue Listings */}
-        <h2>Where to Play &mdash; Venue Listings</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse my-4">
-            <thead>
-              <tr>
-                <th className="bg-navy text-white py-3 px-4 text-left text-[0.82rem] font-bold">Tier</th>
-                <th className="bg-navy text-white py-3 px-4 text-left text-[0.82rem] font-bold">Features</th>
-                <th className="bg-navy text-white py-3 px-4 text-left text-[0.82rem] font-bold">Monthly</th>
-                <th className="bg-navy text-white py-3 px-4 text-left text-[0.82rem] font-bold">Annual</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { tier: "Starter Listing", feat: "Name, city, hours, description, website link", monthly: "$19/mo", annual: "$129/yr" },
-                { tier: "Featured Spot ⭐", feat: "Top placement, highlighted listing, photo", monthly: "$39/mo", annual: "$329/yr" },
-                { tier: "Official Mahj Spot", feat: "Featured + homepage placement + displayable badge", monthly: "$79/mo", annual: "$699/yr" },
-              ].map((row, i) => (
-                <tr key={row.tier} className={i % 2 === 1 ? "bg-bg" : ""}>
-                  <td className="py-3 px-4 border-b border-border text-[0.88rem] font-bold text-navy">{row.tier}</td>
-                  <td className="py-3 px-4 border-b border-border text-[0.88rem] text-muted">{row.feat}</td>
-                  <td className="py-3 px-4 border-b border-border text-[0.95rem] text-pink font-bold">{row.monthly}</td>
-                  <td className="py-3 px-4 border-b border-border text-[0.95rem] text-[#1a6e3a] font-bold bg-[#f0fff4]">{row.annual}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Event Listings */}
-        <h2>Event &amp; Tournament Listings</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse my-4">
-            <thead>
-              <tr>
-                <th className="bg-navy text-white py-3 px-4 text-left text-[0.82rem] font-bold">Type</th>
-                <th className="bg-navy text-white py-3 px-4 text-left text-[0.82rem] font-bold">Description</th>
-                <th className="bg-navy text-white py-3 px-4 text-left text-[0.82rem] font-bold">Reach</th>
-                <th className="bg-navy text-white py-3 px-4 text-left text-[0.82rem] font-bold">Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { type: "Local Event", desc: "Open play or city event (30 days)", reach: "Regional", price: "$10/event or $199/yr" },
-                { type: "National Event", desc: "Retreats & tournaments (60 days)", reach: "US audience", price: "$199/listing or $500/yr" },
-                { type: "Featured Event", desc: "Top placement on all event pages", reach: "US audience", price: "$299/mo" },
-              ].map((row, i) => (
-                <tr key={row.type} className={i % 2 === 1 ? "bg-bg" : ""}>
-                  <td className="py-3 px-4 border-b border-border text-[0.88rem] font-bold text-navy">{row.type}</td>
-                  <td className="py-3 px-4 border-b border-border text-[0.88rem] text-muted">{row.desc}</td>
-                  <td className="py-3 px-4 border-b border-border text-[0.88rem] text-muted">{row.reach}</td>
-                  <td className="py-3 px-4 border-b border-border text-[0.95rem] text-pink font-bold">{row.price}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Founding Partner */}
-        <div style={{ background: "linear-gradient(135deg, #fffdf0, #fff8dc)", border: "2px solid #f5c842", borderRadius: 16, padding: "2rem", textAlign: "center", margin: "2rem 0" }}>
-          <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "#5a4000", marginBottom: "0.5rem" }}>
-            ⭐ Founding Partner &mdash; Limited Spots
-          </h3>
-          <p style={{ fontSize: "0.9rem", color: "#7a6020", maxWidth: 500, margin: "0 auto 1.2rem" }}>
-            Lock in early pricing + priority placement + Founding Partner badge featured in all
-            launch marketing. Only a few spots available.
-          </p>
-          <a
-            href="#inquire"
-            style={{ display: "inline-block", background: "#f5c842", color: "#5a4000", borderRadius: 6, padding: "0.7rem 1.8rem", fontWeight: 700, fontSize: "0.9rem", textDecoration: "none" }}
-          >
-            Apply Now &rarr;
-          </a>
-        </div>
-
-        {/* How It Works Steps */}
+        {/* How it works */}
         <h2>How It Works</h2>
-        <div className="flex my-6 max-sm:flex-col">
+        <div style={{ display: "flex", margin: "1.5rem 0 2.5rem" }}>
           {[
-            { icon: "📝", title: "1. Submit Inquiry", desc: "Fill out the form below — takes 2 minutes" },
-            { icon: "✅", title: "2. Review & Approve", desc: "We respond within 1-2 business days" },
-            { icon: "💳", title: "3. Receive Invoice", desc: "Monthly or annual — your choice" },
-            { icon: "🚀", title: "4. Go Live!", desc: "Within 24-48 hrs of payment" },
+            { icon: "📝", title: "1. Send an inquiry", desc: "Fill out the form below. Takes 2 minutes." },
+            { icon: "📬", title: "2. Get pricing", desc: "We email you options tailored to what you need." },
+            { icon: "✅", title: "3. Go live", desc: "Once approved and paid, you're listed within 24 hrs." },
           ].map((step, i) => (
-            <div
-              key={step.title}
-              className={`flex-1 text-center p-5 ${
-                i < 3
-                  ? "border-r border-border max-sm:border-r-0 max-sm:border-b"
-                  : ""
-              }`}
-            >
-              <div className="text-[1.5rem] mb-1">{step.icon}</div>
-              <div className="font-bold text-[0.88rem] text-navy mb-1">{step.title}</div>
-              <div className="text-[0.78rem] text-muted">{step.desc}</div>
+            <div key={step.title} style={{ flex: 1, textAlign: "center", padding: "1.2rem", borderRight: i < 2 ? "1px solid var(--border)" : "none" }}>
+              <div style={{ fontSize: "1.5rem", marginBottom: "0.4rem" }}>{step.icon}</div>
+              <div style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--navy)", marginBottom: "0.3rem" }}>{step.title}</div>
+              <div style={{ fontSize: "0.78rem", color: "var(--muted)" }}>{step.desc}</div>
             </div>
           ))}
+        </div>
+
+        {/* Founding Partner box */}
+        <div style={{ background: "linear-gradient(135deg, #fffdf0, #fff8dc)", border: "2px solid #f5c842", borderRadius: 16, padding: "2rem", textAlign: "center", marginBottom: "2.5rem" }}>
+          <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "#5a4000", marginBottom: "0.5rem" }}>
+            Founding Partner Spots Available
+          </h3>
+          <p style={{ fontSize: "0.9rem", color: "#7a6020", maxWidth: 500, margin: "0 auto 0.5rem" }}>
+            Get in early. Founding Partners receive priority placement, locked-in rates, and a Founding Partner badge featured across the site and in launch marketing.
+          </p>
+          <p style={{ fontSize: "0.82rem", color: "#a07800" }}>Use code <strong>FINDMYMAHJ</strong> in your inquiry.</p>
         </div>
 
         {/* Inquiry Form */}
         <div className="bg-bg border border-border rounded-2xl p-8 my-8" id="inquire">
-          <h2 style={{ border: "none", marginTop: 0 }}>Start Your Inquiry</h2>
-          <form action={FORMSPREE_URL} method="POST">
-            <div className="grid grid-cols-2 gap-4 mb-5 max-sm:grid-cols-1">
-              <div>
-                <label className="block text-[0.82rem] font-bold text-navy mb-1">Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  required
-                  placeholder="Your name"
-                  className="w-full py-2.5 px-4 border-[1.5px] border-border rounded-lg font-body text-[0.9rem] text-text bg-white outline-none focus:border-pink transition-colors"
-                />
+          <h2 style={{ border: "none", marginTop: 0 }}>Get in Touch</h2>
+          <p className="page-body p" style={{ marginBottom: "1.5rem" }}>
+            Tell us what you&rsquo;re looking for and we&rsquo;ll send you tailored pricing options within 1-2 business days.
+          </p>
+
+          {status === "success" ? (
+            <div style={{ textAlign: "center", padding: "2rem 0" }}>
+              <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>✅</div>
+              <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.3rem", color: "var(--navy)", marginBottom: "0.5rem" }}>Inquiry received!</h3>
+              <p style={{ color: "var(--muted)", fontSize: "0.95rem" }}>
+                Check your inbox -- we just sent you our advertising options. We&rsquo;ll follow up personally within 1-2 business days.
+              </p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.2rem" }}>
+                <div>
+                  <label className="block text-[0.82rem] font-bold text-navy mb-1">Your Name</label>
+                  <input type="text" required placeholder="Jane Smith" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
+                    className="w-full py-2.5 px-4 border-[1.5px] border-border rounded-lg font-body text-[0.9rem] text-text bg-white outline-none" />
+                </div>
+                <div>
+                  <label className="block text-[0.82rem] font-bold text-navy mb-1">Email Address</label>
+                  <input type="email" required placeholder="you@company.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
+                    className="w-full py-2.5 px-4 border-[1.5px] border-border rounded-lg font-body text-[0.9rem] text-text bg-white outline-none" />
+                </div>
               </div>
-              <div>
-                <label className="block text-[0.82rem] font-bold text-navy mb-1">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  placeholder="you@company.com"
-                  className="w-full py-2.5 px-4 border-[1.5px] border-border rounded-lg font-body text-[0.9rem] text-text bg-white outline-none focus:border-pink transition-colors"
-                />
+              <div style={{ marginBottom: "1.2rem" }}>
+                <label className="block text-[0.82rem] font-bold text-navy mb-1">Business / Brand Name</label>
+                <input type="text" placeholder="Your venue, company, or event name" value={form.company} onChange={e => setForm({ ...form, company: e.target.value })}
+                  className="w-full py-2.5 px-4 border-[1.5px] border-border rounded-lg font-body text-[0.9rem] text-text bg-white outline-none" />
               </div>
-            </div>
-            <div className="mb-5">
-              <label className="block text-[0.82rem] font-bold text-navy mb-1">
-                Company / Business Name
-              </label>
-              <input
-                type="text"
-                name="company"
-                placeholder="Your company or venue name"
-                className="w-full py-2.5 px-4 border-[1.5px] border-border rounded-lg font-body text-[0.9rem] text-text bg-white outline-none focus:border-pink transition-colors"
-              />
-            </div>
-            <div className="mb-5">
-              <label className="block text-[0.82rem] font-bold text-navy mb-1">
-                What are you interested in?
-              </label>
-              <select
-                name="interest"
-                required
-                className="w-full py-2.5 px-4 border-[1.5px] border-border rounded-lg font-body text-[0.9rem] text-text bg-white outline-none focus:border-pink transition-colors"
-              >
-                <option value="">Select an option...</option>
-                <option>Brand / Company Advertising</option>
-                <option>Where to Play — Venue Listing</option>
-                <option>Local Event Listing</option>
-                <option>National Event / Retreat / Tournament</option>
-                <option>Founding Partner</option>
-                <option>Bundle Package</option>
-                <option>Other / Not Sure</option>
-              </select>
-            </div>
-            <div className="mb-5">
-              <label className="block text-[0.82rem] font-bold text-navy mb-1">
-                Tell us about your brand, venue or event
-              </label>
-              <textarea
-                name="message"
-                placeholder="What do you offer? Where are you located? What are you hoping to achieve?"
-                className="w-full py-2.5 px-4 border-[1.5px] border-border rounded-lg font-body text-[0.9rem] text-text bg-white outline-none focus:border-pink transition-colors h-[100px] resize-y"
-              />
-            </div>
-            <button
-              type="submit"
-              className="bg-pink text-white border-none rounded-lg py-3.5 px-10 font-body text-[1rem] font-bold cursor-pointer w-full"
-            >
-              Submit Inquiry &rarr;
-            </button>
-          </form>
+              <div style={{ marginBottom: "1.2rem" }}>
+                <label className="block text-[0.82rem] font-bold text-navy mb-1">What are you interested in?</label>
+                <select required value={form.interest} onChange={e => setForm({ ...form, interest: e.target.value })}
+                  className="w-full py-2.5 px-4 border-[1.5px] border-border rounded-lg font-body text-[0.9rem] text-text bg-white outline-none">
+                  <option value="">Select one...</option>
+                  <option>Venue Listing</option>
+                  <option>Instructor Listing</option>
+                  <option>Event / Tournament Listing</option>
+                  <option>Brand Advertising</option>
+                  <option>Founding Partner</option>
+                  <option>Not sure yet</option>
+                </select>
+              </div>
+              <div style={{ marginBottom: "1.5rem" }}>
+                <label className="block text-[0.82rem] font-bold text-navy mb-1">Tell us about what you offer <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span></label>
+                <textarea placeholder="Where are you located? What are you hoping to achieve?" value={form.message} onChange={e => setForm({ ...form, message: e.target.value })}
+                  className="w-full py-2.5 px-4 border-[1.5px] border-border rounded-lg font-body text-[0.9rem] text-text bg-white outline-none"
+                  style={{ height: 100, resize: "vertical" }} />
+              </div>
+              {status === "error" && <p style={{ color: "#dc2626", fontSize: "0.85rem", marginBottom: "1rem" }}>Something went wrong. Email us directly at <a href={`mailto:${AD_EMAIL}`}>{AD_EMAIL}</a>.</p>}
+              <button type="submit" disabled={status === "submitting"}
+                className="bg-pink text-white border-none rounded-lg py-3.5 px-10 font-body text-[1rem] font-bold cursor-pointer w-full"
+                style={{ opacity: status === "submitting" ? 0.7 : 1 }}>
+                {status === "submitting" ? "Sending..." : "Get Advertising Options →"}
+              </button>
+            </form>
+          )}
         </div>
 
         <p className="text-[0.82rem] text-muted text-center">
-          Questions? Email us at <a href={`mailto:${AD_EMAIL}`}>{AD_EMAIL}</a>. See full pricing
-          details in our{" "}
-          <a href="/findmymahjgame_mediakit.pdf" target="_blank">
-            Media Kit PDF
-          </a>
-          .
+          Questions? Email <a href={`mailto:${AD_EMAIL}`}>{AD_EMAIL}</a> directly.
         </p>
       </div>
     </>
