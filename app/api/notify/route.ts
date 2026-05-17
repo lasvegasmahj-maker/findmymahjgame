@@ -16,8 +16,8 @@ export async function POST(req: NextRequest) {
     }
 
     const { error } = await resend.emails.send({
-      from: "noreply@findmymahjgame.com",
-      to: "lasvegasmahj@gmail.com",
+      from: "Find My Mahj Game <hello@findmymahjgame.com>",
+      to: "hello@findmymahjgame.com",
       subject,
       html: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
   <h2 style="color: #1a1f5e; margin-bottom: 16px;">${subject}</h2>
