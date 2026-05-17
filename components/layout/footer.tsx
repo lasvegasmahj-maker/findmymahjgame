@@ -29,7 +29,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="footer-bottom">
-        <p>&copy; 2026 Find My Mahj Game. All rights reserved. &nbsp;|&nbsp; <a href="mailto:lasvegasmahj@gmail.com">lasvegasmahj@gmail.com</a></p>
+        <p>&copy; 2026 Find My Mahj Game. All rights reserved. &nbsp;|&nbsp; <a href="mailto:hello@findmymahjgame.com">hello@findmymahjgame.com</a></p>
       </div>
     </footer>
   );

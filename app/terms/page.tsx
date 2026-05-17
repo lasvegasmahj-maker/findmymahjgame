@@ -139,7 +139,7 @@ export default function TermsPage() {
           <li>
             <strong>Report concerns.</strong> If you encounter a user who makes you feel unsafe or
             who is behaving inappropriately, please report them immediately at{" "}
-            <a href="mailto:lasvegasmahj@gmail.com">lasvegasmahj@gmail.com</a> so we can remove
+            <a href="mailto:hello@findmymahjgame.com">hello@findmymahjgame.com</a> so we can remove
             them from the platform.
           </li>
         </ul>
