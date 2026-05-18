@@ -36,6 +36,7 @@ export default function GetListedPage() {
     state: "",
     email: "",
     website: "",
+    instagram: "",
     description: "",
     promo_code: "",
   });
@@ -69,6 +70,13 @@ export default function GetListedPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+
+    // Instructors must have at least a website or Instagram
+    if (form.type === "Mahjong Instructor" && !form.website && !form.instagram) {
+      setError("Please add a website or Instagram handle so players can reach you.");
+      return;
+    }
+
     setSubmitting(true);
 
     const isPromoValid = promoStatus === "valid";
@@ -96,6 +104,7 @@ export default function GetListedPage() {
             city: form.city,
             state: form.state,
             website: form.website || null,
+            instagram: form.instagram || null,
             message: form.description,
             promo_code: form.promo_code.trim().toUpperCase() || null,
             is_founding_member: isPromoValid,
@@ -243,18 +252,39 @@ export default function GetListedPage() {
               />
             </div>
 
-            {/* Website */}
-            <div style={{ marginBottom: "1.2rem" }}>
-              <label style={labelStyle}>
-                Website <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span>
-              </label>
-              <input
-                type="url"
-                placeholder="https://yoursite.com"
-                value={form.website}
-                onChange={(e) => setForm({ ...form, website: e.target.value })}
-                style={inputStyle}
-              />
+            {/* Website + Instagram */}
+            {form.type === "Mahjong Instructor" && (
+              <div style={{ background: "rgba(233,30,140,0.05)", border: "1px solid rgba(233,30,140,0.2)", borderRadius: 8, padding: "0.8rem 1rem", marginBottom: "1rem", fontSize: "0.85rem", color: "var(--navy)" }}>
+                Players will see your email, website, and Instagram on your listing. Please provide at least one way for them to reach you.
+              </div>
+            )}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.2rem" }}>
+              <div>
+                <label style={labelStyle}>
+                  Website <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span>
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://yoursite.com"
+                  value={form.website}
+                  onChange={(e) => setForm({ ...form, website: e.target.value })}
+                  style={inputStyle}
+                />
+              </div>
+              <div>
+                <label style={labelStyle}>
+                  Instagram {form.type === "Mahjong Instructor"
+                    ? <span style={{ fontWeight: 400, color: "var(--muted)" }}>(recommended)</span>
+                    : <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span>}
+                </label>
+                <input
+                  type="text"
+                  placeholder="@yourhandle"
+                  value={form.instagram}
+                  onChange={(e) => setForm({ ...form, instagram: e.target.value })}
+                  style={inputStyle}
+                />
+              </div>
             </div>
 
             {/* Description */}

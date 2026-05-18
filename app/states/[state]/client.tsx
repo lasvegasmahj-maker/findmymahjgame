@@ -37,6 +37,8 @@ interface Venue {
   state: string;
   description: string | null;
   website: string | null;
+  instagram: string | null;
+  display_email: string | null;
   tier: string;
 }
 
@@ -373,8 +375,18 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                       <h3 className="venue-name">{venue.business_name}</h3>
                       <p className="venue-meta">📍 {venue.city}, {venue.state}</p>
                       {venue.description && <p className="venue-desc">{venue.description}</p>}
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem", alignItems: "center", marginBottom: "0.9rem" }}>
+                        {venue.display_email && (
+                          <a href={`mailto:${venue.display_email}`} style={{ fontSize: "0.78rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>✉️ {venue.display_email}</a>
+                        )}
+                        {venue.instagram && (
+                          <a href={`https://instagram.com/${venue.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.78rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>📸 {venue.instagram.startsWith("@") ? venue.instagram : `@${venue.instagram}`}</a>
+                        )}
+                      </div>
                       {venue.website ? (
                         <a href={venue.website} target="_blank" rel="noopener noreferrer" className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Visit Website &rarr;</a>
+                      ) : venue.instagram ? (
+                        <a href={`https://instagram.com/${venue.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer" className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Visit Instagram &rarr;</a>
                       ) : (
                         <Link href={`/contact?venue=${encodeURIComponent(venue.business_name)}`} className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Get Info &rarr;</Link>
                       )}
