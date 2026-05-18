@@ -269,14 +269,24 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             {/* Las Vegas Mahjong — sponsored only on Nevada */}
             {stateData.abbr === "NV" && (
               <div style={{ background: "linear-gradient(135deg, rgba(233,30,140,0.04), rgba(233,30,140,0.08))", border: "1px solid rgba(233,30,140,0.18)", borderRadius: 16, padding: "1.5rem 2rem", marginBottom: "2rem" }}>
-                <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--pink)", display: "block", marginBottom: "0.6rem" }}>Sponsored</span>
-                <div style={{ display: "flex", alignItems: "center", gap: "1.2rem", flexWrap: "wrap" }}>
+                <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--pink)", display: "block", marginBottom: "0.8rem" }}>Sponsored</span>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "1.2rem", flexWrap: "wrap" }}>
                   <div style={{ width: 48, height: 48, borderRadius: 10, background: "white", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem", flexShrink: 0 }}>🀄</div>
                   <div style={{ flex: 1, minWidth: 200 }}>
-                    <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--navy)" }}>Las Vegas Mahjong</div>
-                    <div style={{ fontSize: "0.82rem", color: "var(--muted)", lineHeight: 1.5, marginTop: "0.2rem" }}>Lessons, open play and events with certified instructor Shauna in Las Vegas. All levels welcome.</div>
+                    <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--navy)", marginBottom: "0.3rem" }}>Las Vegas Mahjong</div>
+                    <div style={{ fontSize: "0.82rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "0.6rem" }}>Lessons, open play and events with certified instructor Shauna in Las Vegas. All levels welcome.</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem" }}>
+                      <a href="https://lasvegasmahj.com" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>
+                        🌐 lasvegasmahj.com
+                      </a>
+                      <a href="mailto:lasvegasmahj@gmail.com" style={{ fontSize: "0.8rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>
+                        ✉️ lasvegasmahj@gmail.com
+                      </a>
+                      <a href="https://instagram.com/lasvegasmahjong" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>
+                        📸 @lasvegasmahjong
+                      </a>
+                    </div>
                   </div>
-                  <a href="https://lasvegasmahj.com" target="_blank" rel="noopener noreferrer" style={{ background: "var(--pink)", color: "white", borderRadius: 6, padding: "0.6rem 1.4rem", fontWeight: 700, fontSize: "0.82rem", textDecoration: "none", whiteSpace: "nowrap" }}>Visit &rarr;</a>
                 </div>
               </div>
             )}
@@ -366,7 +376,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                       {venue.website ? (
                         <a href={venue.website} target="_blank" rel="noopener noreferrer" className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Visit Website &rarr;</a>
                       ) : (
-                        <Link href="/contact" className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Get Info &rarr;</Link>
+                        <Link href={`/contact?venue=${encodeURIComponent(venue.business_name)}`} className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Get Info &rarr;</Link>
                       )}
                     </div>
                   </div>
