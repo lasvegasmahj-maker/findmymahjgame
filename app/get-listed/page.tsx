@@ -39,8 +39,38 @@ export default function GetListedPage() {
     instagram: "",
     description: "",
     promo_code: "",
+    logo_url: "",
   });
   const [promoStatus, setPromoStatus] = useState<PromoStatus>("idle");
+  const [logoUploading, setLogoUploading] = useState(false);
+
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLogoUploading(true);
+
+    const ext = file.name.split(".").pop();
+    const filename = `${Date.now()}.${ext}`;
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/logos/${filename}`,
+      {
+        method: "POST",
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+          "Content-Type": file.type,
+        },
+        body: file,
+      }
+    );
+
+    if (res.ok) {
+      const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/${filename}`;
+      setForm(prev => ({ ...prev, logo_url: url }));
+    }
+    setLogoUploading(false);
+  }
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
@@ -105,6 +135,7 @@ export default function GetListedPage() {
             state: form.state,
             website: form.website || null,
             instagram: form.instagram || null,
+            logo_url: form.logo_url || null,
             message: form.description,
             promo_code: form.promo_code.trim().toUpperCase() || null,
             is_founding_member: isPromoValid,
@@ -189,6 +220,22 @@ export default function GetListedPage() {
                 onChange={(e) => setForm({ ...form, business_name: e.target.value })}
                 style={inputStyle}
               />
+            </div>
+
+            {/* Logo upload */}
+            <div style={{ marginBottom: "1.2rem" }}>
+              <label style={labelStyle}>
+                Logo or Photo <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional — JPG, PNG, max 2MB)</span>
+              </label>
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                {form.logo_url && (
+                  <img src={form.logo_url} alt="Logo preview" style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover", border: "1px solid var(--border)" }} />
+                )}
+                <label style={{ display: "inline-block", background: "var(--bg)", border: "1.5px solid var(--border)", borderRadius: 8, padding: "0.6rem 1.2rem", fontSize: "0.88rem", fontWeight: 600, color: "var(--navy)", cursor: "pointer" }}>
+                  {logoUploading ? "Uploading..." : form.logo_url ? "Change Photo" : "Upload Logo / Photo"}
+                  <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: "none" }} disabled={logoUploading} />
+                </label>
+              </div>
             </div>
 
             {/* Type */}
