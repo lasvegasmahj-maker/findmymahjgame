@@ -1,21 +1,32 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FORMSPREE_URL } from "@/lib/constants";
+import { buildContactPageSchema, schemaScriptProps } from "@/lib/schema";
 
 export const metadata: Metadata = {
-  title: "Contact",
+  title: "Contact Find My Mahj Game | Player Listings and Advertising Help",
   description:
-    "Get in touch with Find My Mahj Game. Questions about listings, advertising, partnerships or general inquiries.",
+    "Questions about listing your game, advertising your venue, or partnering with us? We respond within 1-2 business days. Reach out anytime.",
+  alternates: {
+    canonical: "https://findmymahjgame.com/contact",
+  },
+  openGraph: {
+    title: "Contact Find My Mahj Game | Player Listings and Advertising Help",
+    description:
+      "Questions about listing your game, advertising your venue, or partnering with us? We respond within 1-2 business days. Reach out anytime.",
+    url: "https://findmymahjgame.com/contact",
+  },
 };
 
 export default function ContactPage() {
   return (
     <>
+      <script {...schemaScriptProps(buildContactPageSchema())} />
       <div className="page-hero">
         <div className="eyebrow">Contact</div>
-        <h1>Get in Touch</h1>
+        <h1>Contact Find My Mahj Game</h1>
         <p>
-          Questions about listings, advertising or anything else we&rsquo;d love to hear from you.
+          Questions about listings, advertising or anything else? We&rsquo;d love to hear from you.
         </p>
       </div>
 

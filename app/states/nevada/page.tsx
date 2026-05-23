@@ -5,8 +5,16 @@ import StatePageClient from "../[state]/client";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Mahjong Players & Groups in Nevada",
-  description: "Find mahjong players, groups, open plays, venues and events in Nevada. Connect with local mahjong players near you in Las Vegas, Summerlin, Henderson and more.",
+  title: "Mahjong Players, Lessons and Events in Nevada | Find My Mahj Game",
+  description:
+    "Find mahjong players, open play nights, instructors and events in Nevada. Las Vegas, Henderson, Summerlin and Reno. Free for players. Lessons available.",
+  alternates: { canonical: "https://findmymahjgame.com/states/nevada" },
+  openGraph: {
+    title: "Mahjong Players, Lessons and Events in Nevada | Find My Mahj Game",
+    description:
+      "Find mahjong players, open play nights, instructors and events in Nevada. Las Vegas, Henderson, Summerlin and Reno. Free for players. Lessons available.",
+    url: "https://findmymahjgame.com/states/nevada",
+  },
 };
 
 export default async function NevadaPage() {

@@ -17,7 +17,16 @@ export default function Footer() {
             <Link href="/contact">Contact</Link>
           </div>
           <div>
-            <h4>Advertisers</h4>
+            <h4>Players</h4>
+            <Link href="/list-my-game">Create a Free Listing</Link>
+            <Link href="/states/florida">Florida</Link>
+            <Link href="/states/california">California</Link>
+            <Link href="/states/new-york">New York</Link>
+            <Link href="/states/nevada">Nevada</Link>
+          </div>
+          <div>
+            <h4>Businesses</h4>
+            <Link href="/get-listed">Get Listed</Link>
             <Link href="/advertise">Advertise</Link>
             <Link href="/advertiser-terms">Advertiser Terms</Link>
           </div>

@@ -1,11 +1,31 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, Suspense } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { STATES } from "@/lib/states-data";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
+
+// Dynamic import so the entire react-simple-maps + d3 bundle (~180 KB gzipped)
+// is split into its own chunk and only loaded after hydration.
+// This keeps the initial JS payload small and LCP unblocked.
+const ComposableMap = dynamic(
+  () => import("react-simple-maps").then((m) => m.ComposableMap),
+  { ssr: false }
+);
+const Geographies = dynamic(
+  () => import("react-simple-maps").then((m) => m.Geographies),
+  { ssr: false }
+);
+const Geography = dynamic(
+  () => import("react-simple-maps").then((m) => m.Geography),
+  { ssr: false }
+);
+const Marker = dynamic(
+  () => import("react-simple-maps").then((m) => m.Marker),
+  { ssr: false }
+);
 
 const FIPS_TO_ABBR: Record<string, string> = {
   "01":"AL","02":"AK","04":"AZ","05":"AR","06":"CA","08":"CO","09":"CT",
@@ -49,10 +69,24 @@ const STATE_CENTERS: Record<string, [number, number]> = {
 
 const ACTIVE_STATES = new Set(["NV","FL","TX","NY","CA","IL","AZ","CO","GA","PA","OH","NJ","MA"]);
 
-// Build slug map from all 50 states in states-data
 const STATE_SLUGS: Record<string, string> = Object.fromEntries(
   Object.values(STATES).map((s) => [s.abbr, `/states/${s.slug}`])
 );
+
+// Shown while react-simple-maps bundle + topojson are fetching.
+// Fixed aspect ratio (980:600) prevents CLS when the real map renders.
+// The shimmer animation is defined in globals.css (@keyframes mapShimmer).
+function MapSkeleton() {
+  return (
+    <div
+      aria-label="Loading map..."
+      className="map-skeleton"
+    >
+      <span aria-hidden="true" style={{ fontSize: "1.5rem" }}>🗺</span>
+      <span style={{ color: "#9ca3af", fontSize: "0.88rem" }}>Loading map...</span>
+    </div>
+  );
+}
 
 export default function USMap() {
   const [hovered, setHovered] = useState<string | null>(null);
@@ -73,135 +107,135 @@ export default function USMap() {
   const stateLink = selected ? STATE_SLUGS[selected] : null;
 
   return (
-    <div className="us-map-container" ref={containerRef} onMouseMove={handleContainerMouseMove}>
-      <ComposableMap
-        projection="geoAlbersUsa"
-        projectionConfig={{ scale: 1050 }}
-        width={980}
-        height={600}
-        style={{ width: "100%", height: "auto" }}
-      >
-        <Geographies geography={GEO_URL}>
-          {({ geographies }) =>
-            geographies.map((geo) => {
-              const fips = geo.id;
-              const abbr = FIPS_TO_ABBR[fips] || "";
-              const isSelected = selected === abbr;
-              const isHovered = hovered === abbr;
-              const isActive = ACTIVE_STATES.has(abbr);
+    <Suspense fallback={<MapSkeleton />}>
+      <div className="us-map-container" ref={containerRef} onMouseMove={handleContainerMouseMove}>
+        <ComposableMap
+          projection="geoAlbersUsa"
+          projectionConfig={{ scale: 1050 }}
+          width={980}
+          height={600}
+          style={{ width: "100%", height: "auto" }}
+        >
+          <Geographies geography={GEO_URL}>
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            {({ geographies }: { geographies: any[] }) =>
+              geographies.map((geo) => {
+                const fips = geo.id;
+                const abbr = FIPS_TO_ABBR[fips] || "";
+                const isSelected = selected === abbr;
+                const isHovered = hovered === abbr;
+                const isActive = ACTIVE_STATES.has(abbr);
 
-              let fill = "#dce8fc";
-              if (isSelected) fill = "#e91e8c";
-              else if (isHovered && isActive) fill = "#b3ccf5";
-              else if (isHovered) fill = "#c5d5f5";
-              else if (isActive) fill = "#c5d8fc";
+                let fill = "#dce8fc";
+                if (isSelected) fill = "#e91e8c";
+                else if (isHovered && isActive) fill = "#b3ccf5";
+                else if (isHovered) fill = "#c5d5f5";
+                else if (isActive) fill = "#c5d8fc";
 
-              return (
-                <Geography
-                  key={geo.rsmKey}
-                  geography={geo}
-                  onMouseEnter={() => setHovered(abbr)}
-                  onMouseLeave={() => setHovered(null)}
-                  onMouseDown={() => handleClick(abbr)}
-                  style={{
-                    default: {
-                      fill,
-                      stroke: isSelected ? "#c4168a" : "white",
-                      strokeWidth: isSelected ? 1.8 : 0.8,
-                      outline: "none",
-                      transition: "fill 0.2s ease, stroke 0.2s ease",
-                      cursor: "pointer",
-                    },
-                    hover: {
-                      fill: isSelected ? "#e91e8c" : isActive ? "#a8c2f0" : "#baceee",
-                      stroke: isSelected ? "#c4168a" : "rgba(26,31,94,0.35)",
-                      strokeWidth: isSelected ? 1.8 : 1.2,
-                      outline: "none",
-                      cursor: "pointer",
-                    },
-                    pressed: {
-                      fill: "#e91e8c",
-                      stroke: "#c4168a",
-                      strokeWidth: 1.8,
-                      outline: "none",
-                      cursor: "pointer",
-                    },
-                  }}
-                />
-              );
-            })
-          }
-        </Geographies>
+                return (
+                  <Geography
+                    key={geo.rsmKey}
+                    geography={geo}
+                    onMouseEnter={() => setHovered(abbr)}
+                    onMouseLeave={() => setHovered(null)}
+                    onMouseDown={() => handleClick(abbr)}
+                    style={{
+                      default: {
+                        fill,
+                        stroke: isSelected ? "#c4168a" : "white",
+                        strokeWidth: isSelected ? 1.8 : 0.8,
+                        outline: "none",
+                        transition: "fill 0.2s ease, stroke 0.2s ease",
+                        cursor: "pointer",
+                      },
+                      hover: {
+                        fill: isSelected ? "#e91e8c" : isActive ? "#a8c2f0" : "#baceee",
+                        stroke: isSelected ? "#c4168a" : "rgba(26,31,94,0.35)",
+                        strokeWidth: isSelected ? 1.8 : 1.2,
+                        outline: "none",
+                        cursor: "pointer",
+                      },
+                      pressed: {
+                        fill: "#e91e8c",
+                        stroke: "#c4168a",
+                        strokeWidth: 1.8,
+                        outline: "none",
+                        cursor: "pointer",
+                      },
+                    }}
+                  />
+                );
+              })
+            }
+          </Geographies>
 
-        {/* State abbreviation labels on each state */}
-        {Object.entries(STATE_CENTERS).map(([abbr, coords]) => (
-          <Marker key={`label-${abbr}`} coordinates={coords}>
-            <text
-              textAnchor="middle"
-              dominantBaseline="middle"
-              style={{
-                fontSize: ["TX","CA","MT","AK"].includes(abbr) ? 14 : ["HI","RI","CT","DE","NH","VT","MA","NJ","MD"].includes(abbr) ? 8 : 10,
-                fill: selected === abbr ? "white" : "rgba(26,31,94,0.55)",
-                fontFamily: "'DM Sans', sans-serif",
-                fontWeight: 600,
-                pointerEvents: "none",
-                userSelect: "none",
-              }}
-            >
-              {abbr}
-            </text>
-          </Marker>
-        ))}
-      </ComposableMap>
+          {Object.entries(STATE_CENTERS).map(([abbr, coords]) => (
+            <Marker key={`label-${abbr}`} coordinates={coords}>
+              <text
+                textAnchor="middle"
+                dominantBaseline="middle"
+                style={{
+                  fontSize: ["TX","CA","MT","AK"].includes(abbr) ? 14 : ["HI","RI","CT","DE","NH","VT","MA","NJ","MD"].includes(abbr) ? 8 : 10,
+                  fill: selected === abbr ? "white" : "rgba(26,31,94,0.55)",
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontWeight: 600,
+                  pointerEvents: "none",
+                  userSelect: "none",
+                }}
+              >
+                {abbr}
+              </text>
+            </Marker>
+          ))}
+        </ComposableMap>
 
-      {/* Floating Tooltip */}
-      {hovered && !selected && hoveredName && (
-        <div className="map-tooltip" style={{ left: mousePos.x, top: mousePos.y - 52 }}>
-          {hoveredName}
-          {ACTIVE_STATES.has(hovered) && (
-            <span className="map-tooltip-badge">Active</span>
-          )}
-        </div>
-      )}
-
-      {/* State Detail Popup */}
-      {selected && selectedName && (
-        <div className="state-popup">
-          <div className="state-popup-header">
-            <div>
-              <h3>{selectedName}</h3>
-              <p>Players, events &amp; venues</p>
-            </div>
-            <button className="state-popup-close" onClick={() => setSelected(null)}>&times;</button>
+        {hovered && !selected && hoveredName && (
+          <div className="map-tooltip" style={{ left: mousePos.x, top: mousePos.y - 52 }}>
+            {hoveredName}
+            {ACTIVE_STATES.has(hovered) && (
+              <span className="map-tooltip-badge">Active</span>
+            )}
           </div>
-          <div className="state-popup-body">
-            <div className="state-popup-stats">
-              <div><strong>&mdash;</strong><span>Players</span></div>
-              <div><strong>&mdash;</strong><span>Events</span></div>
-              <div><strong>&mdash;</strong><span>Venues</span></div>
+        )}
+
+        {selected && selectedName && (
+          <div className="state-popup">
+            <div className="state-popup-header">
+              <div>
+                <h3>{selectedName}</h3>
+                <p>Players, events &amp; venues</p>
+              </div>
+              <button className="state-popup-close" onClick={() => setSelected(null)}>&times;</button>
             </div>
-            <p className="state-popup-desc">
-              {ACTIVE_STATES.has(selected)
-                ? `Explore mahjong players, events, and venues in ${selectedName}. Click below to see the full state page.`
-                : `Be the first to list yourself in ${selectedName}! Create a free player listing and connect with mahjong players near you.`}
-            </p>
-            <div className="state-popup-actions">
-              {stateLink ? (
-                <Link href={stateLink} className="rt-btn" style={{ marginRight: 8 }}>
-                  View {selectedName} &rarr;
+            <div className="state-popup-body">
+              <div className="state-popup-stats">
+                <div><strong>&mdash;</strong><span>Players</span></div>
+                <div><strong>&mdash;</strong><span>Events</span></div>
+                <div><strong>&mdash;</strong><span>Venues</span></div>
+              </div>
+              <p className="state-popup-desc">
+                {ACTIVE_STATES.has(selected)
+                  ? `Explore mahjong players, events, and venues in ${selectedName}. Click below to see the full state page.`
+                  : `Be the first to list yourself in ${selectedName}! Create a free player listing and connect with mahjong players near you.`}
+              </p>
+              <div className="state-popup-actions">
+                {stateLink ? (
+                  <Link href={stateLink} className="rt-btn" style={{ marginRight: 8 }}>
+                    View {selectedName} &rarr;
+                  </Link>
+                ) : (
+                  <Link href="/#map" className="rt-btn" style={{ marginRight: 8 }}>
+                    View {selectedName} &rarr;
+                  </Link>
+                )}
+                <Link href="/list-my-game" className="rt-btn" style={{ background: "var(--navy)" }}>
+                  Create Listing
                 </Link>
-              ) : (
-                <Link href="/#map" className="rt-btn" style={{ marginRight: 8 }}>
-                  View {selectedName} &rarr;
-                </Link>
-              )}
-              <Link href="#" className="rt-btn" style={{ background: "var(--navy)" }}>
-                Create Listing
-              </Link>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </Suspense>
   );
 }

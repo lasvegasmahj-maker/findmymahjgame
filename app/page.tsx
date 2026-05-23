@@ -1,13 +1,29 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import USMap from "@/components/home/us-map";
+
+export const metadata: Metadata = {
+  title: "Find My Mahj Game | Mahjong Players, Groups and Events Nationwide",
+  description:
+    "Find mahjong players, groups, open plays, venues and events in all 50 states. Free for players. Click your state to get started.",
+  alternates: {
+    canonical: "https://findmymahjgame.com",
+  },
+  openGraph: {
+    title: "Find My Mahj Game | Mahjong Players, Groups and Events Nationwide",
+    description:
+      "Find mahjong players, groups, open plays, venues and events in all 50 states. Free for players. Click your state to get started.",
+    url: "https://findmymahjgame.com",
+  },
+};
 
 export default function Home() {
   return (
     <>
       {/* HERO */}
       <section className="hero">
-        <h1>Find Your <em>Perfect</em><br />Mahjong Game</h1>
-        <p>Find players, join a group, and discover local events &mdash; all in one place.</p>
+        <h1>Find Your <em>Perfect</em><br />Mahjong Game Nationwide</h1>
+        <p>Find mahjong players, join a local group, and discover open plays and events near you &mdash; free in all 50 states.</p>
         <div className="hero-btns">
           <Link href="/#map" className="btn-cta-primary">Find a Game</Link>
           <Link href="/how-it-works" className="btn-cta-outline">How It Works</Link>

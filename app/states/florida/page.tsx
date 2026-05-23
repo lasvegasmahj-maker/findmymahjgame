@@ -5,8 +5,16 @@ import StatePageClient from "../[state]/client";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Mahjong Players & Groups in Florida",
-  description: "Find mahjong players, groups, open plays, venues and events in Florida. Connect with local mahjong players near you in Miami, Boca Raton, Orlando and more.",
+  title: "Mahjong Players and Groups in Florida | Find My Mahj Game",
+  description:
+    "Find mahjong players, clubs, open plays and events in Florida. Search Miami, Boca Raton, Orlando, Tampa, Naples and more. Free directory for players.",
+  alternates: { canonical: "https://findmymahjgame.com/states/florida" },
+  openGraph: {
+    title: "Mahjong Players and Groups in Florida | Find My Mahj Game",
+    description:
+      "Find mahjong players, clubs, open plays and events in Florida. Search Miami, Boca Raton, Orlando, Tampa, Naples and more. Free directory for players.",
+    url: "https://findmymahjgame.com/states/florida",
+  },
 };
 
 export default async function FloridaPage() {

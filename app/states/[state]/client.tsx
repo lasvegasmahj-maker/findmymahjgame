@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import type { StateData } from "@/lib/states-data";
 
 interface Player {
@@ -53,12 +54,17 @@ interface Props {
 function SponsorLogo({ src, name }: { src: string | null; name: string }) {
   if (src) {
     return (
-      <img
-        src={src}
-        alt={name}
-        style={{ width: 48, height: 48, borderRadius: 10, objectFit: "cover", border: "1px solid var(--border)", flexShrink: 0, background: "white" }}
-        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-      />
+      // next/image handles lazy loading, WebP conversion, and explicit dimensions
+      // which eliminates the CLS caused by unsized <img> tags.
+      <div style={{ width: 48, height: 48, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border)", flexShrink: 0, background: "white", position: "relative" }}>
+        <Image
+          src={src}
+          alt={name}
+          fill
+          sizes="48px"
+          style={{ objectFit: "cover" }}
+        />
+      </div>
     );
   }
   return (
@@ -381,7 +387,17 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                 {filteredVenues.map((venue) => (
                   <div key={venue.id} className="venue-card">
                     {venue.logo_url
-                      ? <img src={venue.logo_url} alt={venue.business_name} style={{ width: "100%", height: 80, objectFit: "cover" }} />
+                      ? (
+                        <div style={{ position: "relative", width: "100%", height: 80 }}>
+                          <Image
+                            src={venue.logo_url}
+                            alt={venue.business_name}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 50vw"
+                            style={{ objectFit: "cover" }}
+                          />
+                        </div>
+                      )
                       : <div className="venue-stripe" style={{ background: "var(--pink)" }} />
                     }
                     <div className="venue-body">

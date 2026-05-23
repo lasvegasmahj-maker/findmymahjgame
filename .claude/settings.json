@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(source ~/.claude/tokens.env)",
+      "Bash(npx vercel whoami *)",
+      "Bash(npx vercel ls *)",
+      "Bash(npx vercel env ls *)",
+      "Bash(npx vercel --version *)",
+      "Bash(npx tsc --noEmit)",
+      "Bash(dig *)",
+      "Bash(curl -s \"https://api.supabase.com/v1/projects/prvsqhtxubjhljrrbkcj\")",
+      "Bash(curl -s \"https://api.supabase.com/v1/projects/prvsqhtxubjhljrrbkcj\" *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://*)",
+      "Bash(curl -s \"https://api.vercel.com/v2/user\" *)"
+    ]
+  }
+}

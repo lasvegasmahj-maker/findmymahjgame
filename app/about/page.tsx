@@ -1,20 +1,31 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { buildAboutPageSchema, schemaScriptProps } from "@/lib/schema";
 
 export const metadata: Metadata = {
-  title: "About",
+  title: "About Find My Mahj Game | National Mahjong Player Directory",
   description:
-    "Find My Mahj Game connects mahjong players across all 50 states with local games, events, retreats, tournaments and places to play.",
+    "Find My Mahj Game was created by Shauna, a certified mahjong instructor, to help players find local games across all 50 states. Learn our story.",
+  alternates: {
+    canonical: "https://findmymahjgame.com/about",
+  },
+  openGraph: {
+    title: "About Find My Mahj Game | National Mahjong Player Directory",
+    description:
+      "Find My Mahj Game was created by Shauna, a certified mahjong instructor, to help players find local games across all 50 states. Learn our story.",
+    url: "https://findmymahjgame.com/about",
+  },
 };
 
 export default function AboutPage() {
   return (
     <>
+      <script {...schemaScriptProps(buildAboutPageSchema())} />
       <div className="page-hero">
         <div className="eyebrow">About Us</div>
-        <h1>What is Find My Mahj Game?</h1>
+        <h1>The National Mahjong Player Directory</h1>
         <p>
-          The go-to platform connecting mahjong players, venues and events across all 50 states.
+          Find My Mahj Game connects players, venues and events across all 50 states &mdash; free for players, always.
         </p>
       </div>
 
@@ -81,18 +92,22 @@ export default function AboutPage() {
         <h3>Players</h3>
         <p>
           Find a game near you, discover open play nights, connect with local players, and explore
-          mahjong events across the country all for free.
+          mahjong events across the country &mdash; all for free.{" "}
+          <Link href="/list-my-game">Create your free player listing</Link> and let players in your
+          area find you.
         </p>
         <h3>Venues &amp; Studios</h3>
         <p>
           Get discovered by players actively searching for places to play. Our &ldquo;Where to
           Play&rdquo; directory puts your restaurant, studio, JCC or community space in front of the
-          right audience.
+          right audience.{" "}
+          <Link href="/get-listed">Submit a venue listing</Link> to get started.
         </p>
         <h3>Event Organizers</h3>
         <p>
           Reach hundreds of engaged mahjong players with your retreat, tournament or local open play
-          listing.
+          listing. <Link href="/get-listed">List your event</Link> and we&rsquo;ll promote it on
+          your state page.
         </p>
         <h3>Brands &amp; Retailers</h3>
         <p>
@@ -103,7 +118,8 @@ export default function AboutPage() {
         <div className="highlight-box">
           <p>
             Want to advertise or partner with us? See our{" "}
-            <Link href="/advertise">Advertise page</Link> or email us at{" "}
+            <Link href="/advertise">Advertise page</Link> or{" "}
+            <Link href="/how-it-works">learn how it works</Link>. Questions? Email{" "}
             <a href="mailto:hello@findmymahjgame.com">hello@findmymahjgame.com</a>.
           </p>
         </div>

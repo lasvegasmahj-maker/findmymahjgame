@@ -2,7 +2,13 @@ import type { Metadata } from "next";
 import { AD_EMAIL } from "@/lib/constants";
 
 export const metadata: Metadata = {
-  title: "Advertiser Terms",
+  title: "Advertiser Terms | Find My Mahj Game",
+  description:
+    "Advertiser Terms for Find My Mahj Game. Covers approval, payments, cancellations and content standards for paid listings.",
+  robots: {
+    index: false,
+    follow: true,
+  },
 };
 
 export default function AdvertiserTermsPage() {
