@@ -9,7 +9,7 @@ export default function Header() {
       <div className="nav-right">
         <Link href="/list-my-game" className="nav-advertise" style={{ color: "var(--pink)" }}>List Your Game</Link>
         <Link href="/advertise" className="nav-advertise">Advertise</Link>
-        <Link href="#" className="btn-login">Log In</Link>
+        <Link href="/states" className="nav-advertise">Browse States</Link>
       </div>
     </nav>
   );

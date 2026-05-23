@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import USMap from "@/components/home/us-map";
+import SearchBox from "@/components/home/search-box";
 
 export const metadata: Metadata = {
   title: "Find My Mahj Game | Mahjong Players, Groups and Events Nationwide",
@@ -45,24 +46,7 @@ export default function Home() {
           </div>
 
           {/* Search below map */}
-          <div className="inline-search">
-            <div className="inline-search-inner">
-              <p className="inline-search-label">🔍 Search by city or zip &mdash; find players, groups &amp; events near you</p>
-              <div className="inline-search-box">
-                <input type="text" placeholder="Enter your city or zip code..." />
-                <select>
-                  <option>Any Level</option>
-                  <option>Beginner</option>
-                  <option>Intermediate</option>
-                  <option>Advanced</option>
-                </select>
-                <button>Search</button>
-              </div>
-              <div style={{ textAlign: "center", marginTop: "1.2rem", paddingTop: "1.2rem", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-                <Link href="/list-my-game" className="listing-cta">Create My Own Listing to Find My Mahj Game</Link>
-              </div>
-            </div>
-          </div>
+          <SearchBox />
 
         </div>
       </section>
@@ -112,7 +96,7 @@ export default function Home() {
               <div className="anywhere-icon">🚢</div>
               <h3>Going on a Cruise?</h3>
               <p>Setting sail? Don&rsquo;t forget your tiles! Post your cruise ship and dates to find fellow passengers who play &mdash; someone might even bring a set. Your perfect sea-day game is waiting!</p>
-              <Link href="#" className="btn-anywhere">Find Cruise Passengers &rarr;</Link>
+              <Link href="/list-my-game" className="btn-anywhere">Find Cruise Passengers &rarr;</Link>
             </div>
           </div>
         </div>

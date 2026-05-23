@@ -14,6 +14,7 @@ export default function Footer() {
             <Link href="/">Home</Link>
             <Link href="/about">About</Link>
             <Link href="/how-it-works">How It Works</Link>
+            <Link href="/faq">FAQ</Link>
             <Link href="/contact">Contact</Link>
           </div>
           <div>
@@ -32,7 +33,7 @@ export default function Footer() {
           </div>
           <div>
             <h4>Legal</h4>
-            <Link href="#">Privacy Policy</Link>
+            <Link href="/privacy">Privacy Policy</Link>
             <Link href="/terms">Terms of Use</Link>
           </div>
         </div>

@@ -86,6 +86,7 @@ export default function ListMyGameClient() {
     STATE_OPTIONS.find((s) => s.abbr === form.state)?.name || form.state;
 
   if (submitted) {
+    const stateSlug = STATE_OPTIONS.find((s) => s.abbr === form.state)?.slug;
     return (
       <div className="page-body" style={{ maxWidth: 600, textAlign: "center", paddingTop: "4rem" }}>
         <div style={{ fontSize: "3.5rem", marginBottom: "1rem" }}>🀄</div>
@@ -97,11 +98,33 @@ export default function ListMyGameClient() {
             marginBottom: "0.8rem",
           }}
         >
-          Thanks for submitting!
+          Listing submitted!
         </h1>
-        <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.7 }}>
-          Thanks! Your listing has been submitted for review. We&rsquo;ll approve it within 1-2 business days and you&rsquo;ll appear on your state page once approved.
+        <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.7, marginBottom: "2rem" }}>
+          We&rsquo;ll review and approve your listing within 1-2 business days. Once live, you&rsquo;ll appear on your state page so local players can find you.
         </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", alignItems: "center" }}>
+          {stateSlug && (
+            <a
+              href={`/states/${stateSlug}`}
+              style={{ display: "inline-block", padding: "0.75rem 1.8rem", background: "var(--navy)", color: "white", borderRadius: 10, fontWeight: 700, textDecoration: "none", fontSize: "0.95rem" }}
+            >
+              Browse Players in {selectedStateName} &rarr;
+            </a>
+          )}
+          <a
+            href="/states"
+            style={{ color: "var(--pink)", fontWeight: 600, textDecoration: "none", fontSize: "0.9rem" }}
+          >
+            Browse all 50 states &rarr;
+          </a>
+          <a
+            href="/"
+            style={{ color: "var(--muted)", fontSize: "0.85rem", textDecoration: "none" }}
+          >
+            Back to home
+          </a>
+        </div>
       </div>
     );
   }

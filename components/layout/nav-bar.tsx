@@ -5,6 +5,8 @@ export default function NavBar() {
     <div className="nav-bar">
       <Link href="/#map">Find My Local Mahj Game / Events</Link>
       <span className="sep">|</span>
+      <Link href="/states">Browse All 50 States</Link>
+      <span className="sep">|</span>
       <Link href="/#retreats">Retreats &amp; Tournaments</Link>
       <span className="sep">|</span>
       <Link href="/#anywhere">Traveling and Want to Play?</Link>

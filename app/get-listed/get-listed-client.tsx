@@ -170,14 +170,34 @@ export default function GetListedClient() {
             marginBottom: "0.8rem",
           }}
         >
-          Thanks for applying!
+          Application received!
         </h1>
-        <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.7 }}>
+        <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.7, marginBottom: "2rem" }}>
           We&rsquo;ll review your listing and be in touch within 1-2 business days.
           {promoStatus === "valid" && (
             <> Your 6 months free starts on your approval date.</>
           )}
         </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", alignItems: "center" }}>
+          <a
+            href="/states"
+            style={{ display: "inline-block", padding: "0.75rem 1.8rem", background: "var(--navy)", color: "white", borderRadius: 10, fontWeight: 700, textDecoration: "none", fontSize: "0.95rem" }}
+          >
+            Browse Players by State &rarr;
+          </a>
+          <a
+            href="/advertise"
+            style={{ color: "var(--pink)", fontWeight: 600, textDecoration: "none", fontSize: "0.9rem" }}
+          >
+            See advertising options
+          </a>
+          <a
+            href="/"
+            style={{ color: "var(--muted)", fontSize: "0.85rem", textDecoration: "none" }}
+          >
+            Back to home
+          </a>
+        </div>
       </div>
     );
   }
