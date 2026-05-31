@@ -20,7 +20,7 @@ const PRICING_HTML = `
   <div style="background: #f4f6ff; padding: 28px 32px; border-radius: 0 0 12px 12px; border: 1px solid #e8eaf0; border-top: none;">
 
     <p style="font-size: 0.95rem; color: #6b7280; line-height: 1.7; margin-bottom: 20px;">
-      Thanks for your interest in advertising on Find My Mahj Game! Here are our current options. Reply to this email and we'll get your listing set up.
+      Thanks for your interest in advertising on Find My Mahj Game! Here are our current options. Once you've picked a plan, click the button at the bottom to submit your full listing details.
     </p>
 
     <!-- Founding Partner highlight -->
@@ -113,8 +113,8 @@ const PRICING_HTML = `
     </div>
 
     <div style="background: #1a1f5e; border-radius: 10px; padding: 20px 24px; text-align: center;">
-      <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin: 0 0 12px;">Ready to get listed? Just reply to this email and we'll get started.</p>
-      <a href="mailto:hello@findmymahjgame.com" style="background: #e91e8c; color: white; padding: 10px 28px; border-radius: 6px; font-weight: 700; font-size: 0.9rem; text-decoration: none; display: inline-block;">Reply to Get Started</a>
+      <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin: 0 0 12px;">Ready to proceed? Click below to fill out your full listing details. Takes about 3 minutes.</p>
+      <a href="https://findmymahjgame.com/advertise/submit" style="background: #e91e8c; color: white; padding: 12px 32px; border-radius: 6px; font-weight: 700; font-size: 0.95rem; text-decoration: none; display: inline-block;">Submit My Listing Details &rarr;</a>
     </div>
 
     <p style="font-size: 0.75rem; color: #9ca3af; text-align: center; margin-top: 24px;">
