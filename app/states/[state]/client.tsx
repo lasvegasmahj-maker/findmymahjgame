@@ -67,8 +67,9 @@ function SponsorLogo({ src, name }: { src: string | null; name: string }) {
       </div>
     );
   }
+  const initial = name.trim().charAt(0).toUpperCase();
   return (
-    <div style={{ width: 48, height: 48, borderRadius: 10, background: "white", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem", flexShrink: 0 }}>🀄</div>
+    <div style={{ width: 48, height: 48, borderRadius: 10, background: "var(--navy)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.25rem", fontWeight: 700, color: "white", flexShrink: 0 }}>{initial || "🀄"}</div>
   );
 }
 
