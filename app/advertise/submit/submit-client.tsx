@@ -21,6 +21,11 @@ export default function SubmitClient() {
     setForm(prev => ({ ...prev, [key]: value }));
   }
 
+  function setHandle(key: string, raw: string) {
+    const v = raw.replace(/^@+/, "").trimStart();
+    set(key, v ? "@" + v : "");
+  }
+
   const [logoUploading, setLogoUploading] = useState(false);
   const [logoError, setLogoError] = useState("");
 
@@ -66,10 +71,14 @@ export default function SubmitClient() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("submitting");
+    const payload: Record<string, string> = { listingType, ...form };
+    if (payload.facebook && payload.facebook.startsWith("@")) {
+      payload.facebook = `https://facebook.com/${payload.facebook.slice(1)}`;
+    }
     const res = await fetch("/api/advertise-submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ listingType, ...form }),
+      body: JSON.stringify(payload),
     });
     setStatus(res.ok ? "success" : "error");
   }
@@ -169,12 +178,12 @@ export default function SubmitClient() {
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label">Instagram <span className="form-optional">(optional)</span></label>
                   <input type="text" placeholder="@yourhandle" value={form.instagram || ""}
-                    onChange={e => set("instagram", e.target.value)} className="form-input" />
+                    onChange={e => setHandle("instagram", e.target.value)} className="form-input" />
                 </div>
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Facebook URL <span className="form-optional">(optional)</span></label>
-                  <input type="url" placeholder="https://facebook.com/yourpage" value={form.facebook || ""}
-                    onChange={e => set("facebook", e.target.value)} className="form-input" />
+                  <label className="form-label">Facebook <span className="form-optional">(optional)</span></label>
+                  <input type="text" placeholder="@yourpage" value={form.facebook || ""}
+                    onChange={e => setHandle("facebook", e.target.value)} className="form-input" />
                 </div>
               </div>
               <div className="form-group" style={{ marginTop: "1rem" }}>
@@ -192,7 +201,7 @@ export default function SubmitClient() {
                   <p style={{ fontSize: "0.78rem", color: "#dc2626", marginTop: "0.35rem" }}>{logoError}</p>
                 )}
                 <p style={{ fontSize: "0.78rem", color: "var(--muted)", marginTop: "0.35rem" }}>
-                  JPEG, PNG, or WebP, up to 5 MB. Or email it to <a href={`mailto:${AD_EMAIL}`}>{AD_EMAIL}</a> and we'll add it for you.
+                  JPEG, PNG, or WebP, up to 5 MB.
                 </p>
               </div>
               <div className="form-group">
