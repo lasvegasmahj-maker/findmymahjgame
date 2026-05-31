@@ -21,6 +21,48 @@ export default function SubmitClient() {
     setForm(prev => ({ ...prev, [key]: value }));
   }
 
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoError, setLogoError] = useState("");
+
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLogoError("");
+    const accepted = ["image/jpeg", "image/png", "image/webp"];
+    if (!accepted.includes(file.type)) {
+      setLogoError("Please upload a JPEG, PNG, or WebP image.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setLogoError("That image is over 5 MB. Please upload a smaller file.");
+      return;
+    }
+    setLogoUploading(true);
+    const ext = (file.name.split(".").pop() || "png").toLowerCase();
+    const filename = `${Date.now()}.${ext}`;
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/logos/${filename}`,
+        {
+          method: "POST",
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+            "Content-Type": file.type,
+          },
+          body: file,
+        }
+      );
+      if (!res.ok) throw new Error("upload failed");
+      const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/${filename}`;
+      set("logoUrl", url);
+    } catch {
+      setLogoError("Upload failed. Please try again, or email it to us.");
+    } finally {
+      setLogoUploading(false);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("submitting");
@@ -136,11 +178,21 @@ export default function SubmitClient() {
                 </div>
               </div>
               <div className="form-group" style={{ marginTop: "1rem" }}>
-                <label className="form-label">Logo or Image URL <span className="form-optional">(optional)</span></label>
-                <input type="url" placeholder="https://yourwebsite.com/logo.png" value={form.logoUrl || ""}
-                  onChange={e => set("logoUrl", e.target.value)} className="form-input" />
+                <label className="form-label">Logo or Image <span className="form-optional">(optional)</span></label>
+                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                  {form.logoUrl && (
+                    <img src={form.logoUrl} alt="Logo preview" style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover", border: "1px solid var(--border)" }} />
+                  )}
+                  <label className="form-input" style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", width: "auto", padding: "0.6rem 1.1rem", margin: 0 }}>
+                    {logoUploading ? "Uploading..." : form.logoUrl ? "Change image" : "Upload image"}
+                    <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleLogoUpload} style={{ display: "none" }} disabled={logoUploading} />
+                  </label>
+                </div>
+                {logoError && (
+                  <p style={{ fontSize: "0.78rem", color: "#dc2626", marginTop: "0.35rem" }}>{logoError}</p>
+                )}
                 <p style={{ fontSize: "0.78rem", color: "var(--muted)", marginTop: "0.35rem" }}>
-                  Paste a direct link to your logo. Or email it to <a href={`mailto:${AD_EMAIL}`}>{AD_EMAIL}</a> and we'll add it for you.
+                  JPEG, PNG, or WebP, up to 5 MB. Or email it to <a href={`mailto:${AD_EMAIL}`}>{AD_EMAIL}</a> and we'll add it for you.
                 </p>
               </div>
               <div className="form-group">
