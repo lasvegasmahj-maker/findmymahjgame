@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { escapeHtml, isValidEmail, clampText } from "@/lib/sanitize";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -126,11 +127,20 @@ const PRICING_HTML = `
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, company, interest, message } = await req.json();
+    const raw = await req.json();
 
-    if (!name || !email || !interest) {
+    if (!raw?.name || !raw?.email || !raw?.interest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
+    if (!isValidEmail(raw.email)) {
+      return NextResponse.json({ error: "Invalid email" }, { status: 400 });
+    }
+
+    const name = clampText(raw.name, 120);
+    const email = clampText(raw.email, 254);
+    const company = clampText(raw.company, 160);
+    const interest = clampText(raw.interest, 80);
+    const message = clampText(raw.message, 2000);
 
     // Save to Supabase
     await supabase.from("inquiries").insert({
@@ -159,13 +169,13 @@ export async function POST(req: NextRequest) {
       html: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
         <h2 style="color: #1a1f5e;">New Advertising Inquiry</h2>
         <div style="background: #f4f6ff; border-left: 4px solid #e91e8c; padding: 16px; border-radius: 4px; font-size: 14px; line-height: 1.8; color: #333;">
-          <strong>Name:</strong> ${name}<br/>
-          ${company ? `<strong>Company:</strong> ${company}<br/>` : ""}
-          <strong>Email:</strong> ${email}<br/>
-          <strong>Interest:</strong> ${interest}<br/>
-          ${message ? `<strong>Message:</strong> ${message}` : ""}
+          <strong>Name:</strong> ${escapeHtml(name)}<br/>
+          ${company ? `<strong>Company:</strong> ${escapeHtml(company)}<br/>` : ""}
+          <strong>Email:</strong> ${escapeHtml(email)}<br/>
+          <strong>Interest:</strong> ${escapeHtml(interest)}<br/>
+          ${message ? `<strong>Message:</strong> ${escapeHtml(message)}` : ""}
         </div>
-        <p style="color: #888; font-size: 12px; margin-top: 16px;">Pricing email was automatically sent to ${email}.</p>
+        <p style="color: #888; font-size: 12px; margin-top: 16px;">Pricing email was automatically sent to ${escapeHtml(email)}.</p>
       </div>`,
     });
 

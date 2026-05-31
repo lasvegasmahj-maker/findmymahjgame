@@ -1,5 +1,6 @@
 {
   "permissions": {
+    "defaultMode": "bypassPermissions",
     "allow": [
       "Bash(source ~/.claude/tokens.env)",
       "Bash(npx vercel whoami *)",
@@ -11,7 +12,19 @@
       "Bash(curl -s \"https://api.supabase.com/v1/projects/prvsqhtxubjhljrrbkcj\")",
       "Bash(curl -s \"https://api.supabase.com/v1/projects/prvsqhtxubjhljrrbkcj\" *)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://*)",
-      "Bash(curl -s \"https://api.vercel.com/v2/user\" *)"
+      "Bash(curl -s \"https://api.vercel.com/v2/user\" *)",
+      "Bash(npx tsc --noEmit*)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push)",
+      "Bash(git push *)",
+      "Bash(git checkout *)",
+      "Bash(git branch *)",
+      "Bash(git pull *)",
+      "Bash(gh pr create *)",
+      "Bash(gh pr merge *)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm build)"
     ]
   }
 }
