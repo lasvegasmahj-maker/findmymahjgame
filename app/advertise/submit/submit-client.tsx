@@ -93,6 +93,9 @@ export default function SubmitClient() {
         <p style={{ color: "var(--muted)", lineHeight: 1.7, marginBottom: "0.5rem" }}>
           We'll review your details and send you an approval confirmation within 24 hours. Once approved, you'll be live.
         </p>
+        <p style={{ color: "var(--muted)", fontSize: "0.88rem", marginBottom: "0.5rem" }}>
+          No logo yet? Email it to <a href={`mailto:${AD_EMAIL}`}>{AD_EMAIL}</a> anytime and we'll add it for you.
+        </p>
         <p style={{ color: "var(--muted)", fontSize: "0.88rem" }}>
           Questions? <a href={`mailto:${AD_EMAIL}`}>{AD_EMAIL}</a>
         </p>
