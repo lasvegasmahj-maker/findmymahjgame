@@ -265,7 +265,7 @@ export default function GetListedClient() {
                 required
                 value={form.type}
                 onChange={(e) => setForm({ ...form, type: e.target.value })}
-                style={inputStyle}
+                className="form-select"
               >
                 <option value="">Select a type...</option>
                 <option value="Mahjong Instructor">Mahjong Instructor</option>
@@ -294,7 +294,7 @@ export default function GetListedClient() {
                   required
                   value={form.state}
                   onChange={(e) => setForm({ ...form, state: e.target.value })}
-                  style={inputStyle}
+                  className="form-select"
                 >
                   <option value="">Select a state...</option>
                   {STATE_OPTIONS.map((s) => (

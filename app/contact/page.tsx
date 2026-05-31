@@ -120,7 +120,7 @@ export default function ContactPage() {
               <select
                 name="topic"
                 required
-                className="w-full py-2.5 px-4 border-[1.5px] border-border rounded-lg font-body text-[0.9rem] text-text bg-white outline-none focus:border-pink transition-colors"
+                className="form-select"
               >
                 <option value="">Select a topic...</option>
                 <option>Player listing question</option>

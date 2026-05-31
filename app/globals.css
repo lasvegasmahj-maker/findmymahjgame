@@ -373,12 +373,18 @@ body {
 .inline-search-box select {
   border: none;
   border-left: 1px solid #eee;
-  padding: 0.9rem 1rem;
+  padding: 0.9rem 2.4rem 0.9rem 1rem;
   font-family: var(--font-dm-sans), "DM Sans", sans-serif;
   font-size: 0.85rem;
-  color: var(--muted);
+  color: var(--navy);
+  font-weight: 600;
   outline: none;
-  background: white;
+  background-color: white;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23e91e8c' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  appearance: none;
+  -webkit-appearance: none;
   cursor: pointer;
 }
 .inline-search-box button {
@@ -751,6 +757,15 @@ body {
   background-position: right 1rem center;
   padding-right: 2.5rem;
 }
-.form-select option { color: var(--text); }
+.form-select option,
+select option {
+  background-color: #ffffff;
+  color: var(--navy);
+}
+select option:checked,
+select option:hover {
+  background-color: var(--pink);
+  color: #ffffff;
+}
 .form-textarea { height: 110px; resize: vertical; line-height: 1.6; }
 .form-optional { font-weight: 400; color: var(--muted); font-size: 0.78rem; margin-left: 0.3rem; }

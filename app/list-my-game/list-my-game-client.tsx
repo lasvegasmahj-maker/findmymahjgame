@@ -191,7 +191,7 @@ export default function ListMyGameClient() {
                   required
                   value={form.state}
                   onChange={(e) => setForm({ ...form, state: e.target.value })}
-                  style={inputStyle}
+                  className="form-select"
                 >
                   <option value="">Select a state...</option>
                   {STATE_OPTIONS.map((s) => (
@@ -210,7 +210,7 @@ export default function ListMyGameClient() {
                 required
                 value={form.skill_level}
                 onChange={(e) => setForm({ ...form, skill_level: e.target.value })}
-                style={inputStyle}
+                className="form-select"
               >
                 <option value="">Select your level...</option>
                 <option value="Beginner">Beginner</option>
