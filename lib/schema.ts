@@ -94,7 +94,6 @@ export interface VenueInput {
   state: string;
   description: string | null;
   website: string | null;
-  display_email: string | null;
   logo_url: string | null;
 }
 
@@ -146,8 +145,8 @@ export function buildStatePageSchema({ stateName, stateSlug, stateDesc, venues, 
       {
         "@type": "ListItem",
         position: 2,
-        name: "Find Players",
-        item: `${SITE_URL}/#map`,
+        name: "Browse States",
+        item: `${SITE_URL}/states`,
       },
       {
         "@type": "ListItem",
@@ -193,7 +192,6 @@ export function buildStatePageSchema({ stateName, stateSlug, stateDesc, venues, 
           description: venue.description ?? undefined,
           image: venue.logo_url ?? undefined,
           url: venue.website ?? pageUrl,
-          email: venue.display_email ?? undefined,
           address: {
             "@type": "PostalAddress",
             addressLocality: venue.city,
