@@ -67,8 +67,6 @@ const STATE_CENTERS: Record<string, [number, number]> = {
   WI:[-89.8,44.6],WY:[-107.5,43.0],
 };
 
-const ACTIVE_STATES = new Set(["NV","FL","TX","NY","CA","IL","AZ","CO","GA","PA","OH","NJ","MA"]);
-
 const STATE_SLUGS: Record<string, string> = Object.fromEntries(
   Object.values(STATES).map((s) => [s.abbr, `/states/${s.slug}`])
 );
@@ -88,7 +86,9 @@ function MapSkeleton() {
   );
 }
 
-export default function USMap() {
+type StateCounts = Record<string, { players: number; events: number; venues: number }>;
+
+export default function USMap({ stateCounts = {} }: { stateCounts?: StateCounts }) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -101,6 +101,14 @@ export default function USMap() {
   const handleClick = useCallback((abbr: string) => {
     setSelected(prev => prev === abbr ? null : abbr);
   }, []);
+
+  const isActiveState = useCallback(
+    (abbr: string) => {
+      const c = stateCounts[abbr];
+      return !!c && c.players + c.events + c.venues > 0;
+    },
+    [stateCounts]
+  );
 
   const selectedName = selected ? ABBR_TO_NAME[selected] : null;
   const hoveredName = hovered ? ABBR_TO_NAME[hovered] : null;
@@ -124,7 +132,7 @@ export default function USMap() {
                 const abbr = FIPS_TO_ABBR[fips] || "";
                 const isSelected = selected === abbr;
                 const isHovered = hovered === abbr;
-                const isActive = ACTIVE_STATES.has(abbr);
+                const isActive = isActiveState(abbr);
 
                 let fill = "#dce8fc";
                 if (isSelected) fill = "#e91e8c";
@@ -192,7 +200,7 @@ export default function USMap() {
         {hovered && !selected && hoveredName && (
           <div className="map-tooltip" style={{ left: mousePos.x, top: mousePos.y - 52 }}>
             {hoveredName}
-            {ACTIVE_STATES.has(hovered) && (
+            {isActiveState(hovered) && (
               <span className="map-tooltip-badge">Active</span>
             )}
           </div>
@@ -209,12 +217,12 @@ export default function USMap() {
             </div>
             <div className="state-popup-body">
               <div className="state-popup-stats">
-                <div><strong>&mdash;</strong><span>Players</span></div>
-                <div><strong>&mdash;</strong><span>Events</span></div>
-                <div><strong>&mdash;</strong><span>Venues</span></div>
+                <div><strong>{stateCounts[selected]?.players ?? 0}</strong><span>Players</span></div>
+                <div><strong>{stateCounts[selected]?.events ?? 0}</strong><span>Events</span></div>
+                <div><strong>{stateCounts[selected]?.venues ?? 0}</strong><span>Venues</span></div>
               </div>
               <p className="state-popup-desc">
-                {ACTIVE_STATES.has(selected)
+                {isActiveState(selected)
                   ? `Explore mahjong players, events, and venues in ${selectedName}. Click below to see the full state page.`
                   : `Be the first to list yourself in ${selectedName}! Create a free player listing and connect with mahjong players near you.`}
               </p>

@@ -203,21 +203,6 @@ export default function StatePageClient({ stateData, players, events, venues }: 
               {allCities.map((city) => (<option key={city} value={city}>{city}</option>))}
             </select>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-            <div style={{ fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)" }}>Distance</div>
-            <div style={{ display: "flex", gap: "0.4rem" }}>
-              {["5 mi", "10 mi", "25 mi", "50 mi"].map((d, i) => (
-                <button key={d} style={{ background: i === 0 ? "var(--pink)" : "rgba(255,255,255,0.1)", border: i === 0 ? "1.5px solid var(--pink)" : "1.5px solid rgba(255,255,255,0.2)", color: i === 0 ? "white" : "rgba(255,255,255,0.7)", borderRadius: 6, padding: "0.6rem 1rem", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>{d}</button>
-              ))}
-            </div>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-            <div style={{ fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)" }}>Or Enter Zip Code</div>
-            <div style={{ display: "flex", gap: "0.5rem" }}>
-              <input type="text" placeholder="Enter zip" maxLength={5} style={{ background: "white", border: "none", borderRadius: 6, padding: "0.7rem 1.2rem", fontFamily: "'DM Sans', sans-serif", fontSize: "0.9rem", color: "var(--navy)", outline: "none", width: 130 }} />
-              <button style={{ background: "var(--pink)", color: "white", border: "none", borderRadius: 6, padding: "0.7rem 1.2rem", fontWeight: 700, fontSize: "0.88rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>Search</button>
-            </div>
-          </div>
         </div>
         <p style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.82rem", color: "rgba(255,255,255,0.55)" }}>
           Showing all players, events &amp; venues across <strong style={{ color: "white" }}>{stateData.name}</strong>
