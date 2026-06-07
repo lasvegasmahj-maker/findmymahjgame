@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 import { escapeHtml, isValidEmail, clampText, safeHttpUrl } from "@/lib/sanitize";
+import { getHmacSecret } from "@/lib/hmac";
 
 const LISTING_TYPES = ["venue", "instructor", "event", "brand"];
 
@@ -16,7 +17,7 @@ const supabase = createClient(
 function signToken(submissionId: string, action: string): string {
   const expires = Date.now() + 7 * 24 * 60 * 60 * 1000;
   const payload = `${submissionId}:${action}:${expires}`;
-  const sig = crypto.createHmac("sha256", process.env.HMAC_SECRET!).update(payload).digest("hex");
+  const sig = crypto.createHmac("sha256", getHmacSecret()).update(payload).digest("hex");
   return Buffer.from(`${payload}:${sig}`).toString("base64url");
 }
 

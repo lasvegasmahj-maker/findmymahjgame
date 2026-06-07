@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import crypto from "crypto";
 import { escapeHtml } from "@/lib/sanitize";
+import { getHmacSecret } from "@/lib/hmac";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -18,7 +19,7 @@ function verifyToken(token: string): { submissionId: string; action: string } | 
     if (parts.length !== 4) return null;
     const [submissionId, action, expiresStr, sig] = parts;
     const payload = `${submissionId}:${action}:${expiresStr}`;
-    const expected = crypto.createHmac("sha256", process.env.HMAC_SECRET!).update(payload).digest("hex");
+    const expected = crypto.createHmac("sha256", getHmacSecret()).update(payload).digest("hex");
     const sigBuf = Buffer.from(sig, "hex");
     const expBuf = Buffer.from(expected, "hex");
     if (sigBuf.length !== expBuf.length) return null;
