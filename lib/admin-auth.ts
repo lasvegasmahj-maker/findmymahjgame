@@ -1,11 +1,12 @@
 import crypto from "crypto";
+import { getHmacSecret } from "@/lib/hmac";
 
 export const ADMIN_COOKIE = "fmg_admin";
 const TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
 export const ADMIN_COOKIE_MAX_AGE = Math.floor(TTL_MS / 1000);
 
 function sign(payload: string): string {
-  return crypto.createHmac("sha256", process.env.HMAC_SECRET!).update(payload).digest("hex");
+  return crypto.createHmac("sha256", getHmacSecret()).update(payload).digest("hex");
 }
 
 export function createAdminSessionToken(): string {

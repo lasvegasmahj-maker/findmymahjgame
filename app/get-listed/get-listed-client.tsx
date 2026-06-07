@@ -49,24 +49,12 @@ export default function GetListedClient() {
     if (!file) return;
     setLogoUploading(true);
 
-    const ext = file.name.split(".").pop();
-    const filename = `${Date.now()}.${ext}`;
-
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/logos/${filename}`,
-      {
-        method: "POST",
-        headers: {
-          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-          "Content-Type": file.type,
-        },
-        body: file,
-      }
-    );
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch("/api/upload-logo", { method: "POST", body: fd });
 
     if (res.ok) {
-      const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/${filename}`;
+      const { url } = await res.json();
       setForm(prev => ({ ...prev, logo_url: url }));
     }
     setLogoUploading(false);
