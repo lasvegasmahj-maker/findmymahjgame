@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
 
 type Tab = "inquiries" | "players" | "venues" | "events" | "ads";
 
@@ -68,10 +67,18 @@ function LoginGate({ onAuth }: { onAuth: () => void }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-      sessionStorage.setItem("admin_auth", "true");
+    setSubmitting(true);
+    const res = await fetch("/api/admin/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+    setSubmitting(false);
+    if (res.ok) {
       onAuth();
     } else {
       setError(true);
@@ -174,63 +181,55 @@ export default function AdminPage() {
   const [pendingCount, setPendingCount] = useState(0);
   const [newInquiryCount, setNewInquiryCount] = useState(0);
 
+  // Probe the session once on mount. The data route returns 401 without a valid cookie.
   useEffect(() => {
-    setAuthed(sessionStorage.getItem("admin_auth") === "true");
+    fetch("/api/admin/data?tab=inquiries", { cache: "no-store" }).then((res) => setAuthed(res.ok));
   }, []);
 
   useEffect(() => {
-    if (authed) {
-      loadData();
-      loadBannerCounts();
-    }
+    if (authed) loadData();
   }, [tab, authed]);
-
-  async function loadBannerCounts() {
-    const [{ count: pending }, { count: newInq }] = await Promise.all([
-      supabase.from("player_listings").select("id", { count: "exact", head: true }).eq("status", "pending_review"),
-      supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("status", "new"),
-    ]);
-    setPendingCount(pending ?? 0);
-    setNewInquiryCount(newInq ?? 0);
-  }
 
   async function loadData() {
     setLoading(true);
+    const res = await fetch(`/api/admin/data?tab=${tab}`, { cache: "no-store" });
+    if (res.status === 401) {
+      setAuthed(false);
+      setLoading(false);
+      return;
+    }
+    const json = await res.json().catch(() => null);
+    const items = (json?.items ?? []) as unknown[];
     if (tab === "inquiries") {
-      const { data } = await supabase.from("inquiries").select("*").order("created_at", { ascending: false });
-      setInquiries((data as Inquiry[]) || []);
+      setInquiries(items as Inquiry[]);
     } else if (tab === "players") {
-      const { data } = await supabase.from("player_listings").select("*").order("created_at", { ascending: false });
-      const sorted = ((data as PlayerListing[]) || []).sort((a, b) => {
-        const order: Record<string, number> = { pending_review: 0, flagged: 1, published: 2 };
-        const ao = order[a.status] ?? 3;
-        const bo = order[b.status] ?? 3;
-        return ao - bo;
-      });
-      setPlayers(sorted);
+      const order: Record<string, number> = { pending_review: 0, flagged: 1, published: 2 };
+      setPlayers((items as PlayerListing[]).slice().sort((a, b) => (order[a.status] ?? 3) - (order[b.status] ?? 3)));
     } else if (tab === "venues") {
-      const { data } = await supabase.from("venue_listings").select("*").order("created_at", { ascending: false });
-      setVenues((data as VenueListing[]) || []);
+      setVenues(items as VenueListing[]);
     } else if (tab === "events") {
-      const { data } = await supabase.from("event_listings").select("*").order("created_at", { ascending: false });
-      setEvents((data as EventListing[]) || []);
+      setEvents(items as EventListing[]);
     } else if (tab === "ads") {
-      const { data } = await supabase.from("ad_listings").select("*").order("created_at", { ascending: false });
-      setAds((data as AdListing[]) || []);
+      setAds(items as AdListing[]);
+    }
+    if (json?.counts) {
+      setPendingCount(json.counts.pending ?? 0);
+      setNewInquiryCount(json.counts.newInquiries ?? 0);
     }
     setLoading(false);
   }
 
   async function updateStatus(table: string, id: string, status: string) {
-    await supabase.from(table).update({ status, reviewed_at: new Date().toISOString() }).eq("id", id);
+    await fetch("/api/admin/update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ table, id, status }),
+    });
     loadData();
-    loadBannerCounts();
   }
 
   async function updateInquiryStatus(id: string, status: string) {
-    await supabase.from("inquiries").update({ status }).eq("id", id);
-    loadData();
-    loadBannerCounts();
+    await updateStatus("inquiries", id, status);
   }
 
   function formatDate(d: string) {
@@ -289,7 +288,7 @@ export default function AdminPage() {
             Refresh
           </button>
           <button
-            onClick={() => { sessionStorage.removeItem("admin_auth"); setAuthed(false); }}
+            onClick={async () => { await fetch("/api/admin/logout", { method: "POST" }); setAuthed(false); }}
             style={{ background: "transparent", border: "1px solid var(--border)", borderRadius: 6, padding: "0.5rem 1rem", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", color: "var(--muted)" }}
           >
             Sign Out
