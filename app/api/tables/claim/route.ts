@@ -57,11 +57,13 @@ export async function POST(req: NextRequest) {
       await resend.emails.send({
         from: "Find My Mahj Game <hello@findmymahjgame.com>",
         to,
-        subject: `${first(name).replace(/&#39;/g, "'")} joined your mahjong table, ${remaining} to go`,
+        subject: remaining === 1
+          ? `1 seat left, share to find your 4th!`
+          : `${first(name).replace(/&#39;/g, "'")} joined your mahjong table, ${remaining} to go`,
         html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:20px;">
-          <h2 style="color:#1a1f5e;">${first(name)} joined your table</h2>
-          <p style="color:#374151;line-height:1.6;">${when} in ${area}. You need ${remaining} more player${remaining === 1 ? "" : "s"}.</p>
-          <p style="color:#374151;line-height:1.6;">Keep sharing your link to fill it: <a href="${escapeHtml(link)}">${escapeHtml(link)}</a></p>
+          <h2 style="color:#1a1f5e;">${remaining === 1 ? "🔥 Just 1 seat left!" : `${first(name)} joined your table`}</h2>
+          <p style="color:#374151;line-height:1.6;">${when} in ${area}. ${remaining === 1 ? "You need just <strong>one more player</strong>, your last seat." : `You need ${remaining} more players.`}</p>
+          <p style="color:#374151;line-height:1.6;">${remaining === 1 ? "Share your link right now to find a 4th" : "Keep sharing your link to fill it"}: <a href="${escapeHtml(link)}">${escapeHtml(link)}</a></p>
         </div>`,
       }).catch(() => {});
     }

@@ -4,6 +4,7 @@ import USMap from "@/components/home/us-map";
 import SearchBox from "@/components/home/search-box";
 import { createServerClient } from "@/lib/supabase-server";
 import { STATES } from "@/lib/states-data";
+import SeatDots from "@/components/seat-dots";
 
 export const metadata: Metadata = {
   title: "Find My Mahj Game | Mahjong Players, Groups and Events Nationwide",
@@ -55,6 +56,21 @@ export default async function Home() {
     .slice(0, 6);
   const featuredVenues = venues.slice(0, 6);
 
+  // Forming tables (Need a 4th): surface closest-to-full first.
+  const { data: formingRaw } = await supabase
+    .from("tables")
+    .select("id, share_code, day_of_week, time_of_day, city, seats_total")
+    .eq("status", "forming")
+    .order("created_at", { ascending: false })
+    .limit(20);
+  const forming: { share_code: string; day_of_week: string | null; time_of_day: string | null; city: string | null; total: number; filled: number }[] = [];
+  for (const t of formingRaw || []) {
+    const { count } = await supabase.from("table_seats").select("id", { count: "exact", head: true }).eq("table_id", t.id);
+    forming.push({ share_code: t.share_code, day_of_week: t.day_of_week, time_of_day: t.time_of_day, city: t.city, total: t.seats_total || 4, filled: count ?? 1 });
+  }
+  forming.sort((a, b) => b.filled - a.filled);
+  const formingTop = forming.slice(0, 6);
+
   return (
     <>
       {/* HERO: senior-simple, three big actions */}
@@ -79,6 +95,31 @@ export default async function Home() {
           <Link href="/how-it-works" style={{ fontSize: "1.1rem", color: "var(--pink)", fontWeight: 700 }}>New to mahjong? Learn how</Link>
         </div>
       </section>
+
+      {/* TABLES FORMING (Need a 4th) */}
+      {formingTop.length > 0 && (
+        <section style={{ background: "#fff5fa", padding: "3.5rem 1.2rem", borderTop: "1px solid rgba(233,30,140,0.1)" }}>
+          <div style={{ maxWidth: 760, margin: "0 auto" }}>
+            <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2rem", color: "var(--navy)", textAlign: "center", marginBottom: "0.3rem" }}>Tables forming now</h2>
+            <p style={{ textAlign: "center", color: "var(--muted)", fontSize: "1.05rem", marginBottom: "1.6rem" }}>Grab a seat and play this week.</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1rem" }}>
+              {formingTop.map((g) => {
+                const title = `${g.day_of_week || ""} ${g.time_of_day || ""} Mahjong`.trim();
+                const needs4th = g.total - g.filled === 1;
+                return (
+                  <a key={g.share_code} href={`/t/${g.share_code}`} style={{ display: "block", background: "white", border: needs4th ? "2px solid var(--pink)" : "2px solid var(--border)", borderRadius: 16, padding: "1.3rem", textDecoration: "none" }}>
+                    {needs4th && <div style={{ display: "inline-block", background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "0.9rem", padding: "0.25rem 0.8rem", borderRadius: 50, marginBottom: "0.6rem" }}>🔥 Need a 4th</div>}
+                    <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)" }}>{title}</div>
+                    {g.city && <div style={{ fontSize: "1.05rem", color: "var(--muted)", margin: "0.3rem 0 0.7rem" }}>📍 {g.city}</div>}
+                    <SeatDots filled={g.filled} total={g.total} size="1.2rem" />
+                    <div style={{ marginTop: "0.7rem", color: "var(--pink)", fontWeight: 800 }}>Join this game &rarr;</div>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* MAP SECTION */}
       <section className="map-section" id="map">
