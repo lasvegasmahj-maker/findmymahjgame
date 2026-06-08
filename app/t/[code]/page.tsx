@@ -59,6 +59,9 @@ export default async function TablePage({
           <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#1a9648", marginBottom: "0.8rem" }}>Your table is up!</div>
           <div style={{ display: "inline-block" }}><SeatDots filled={filled} total={total} you /></div>
           {!isFull && <p style={{ fontSize: "1.05rem", color: "var(--navy)", marginTop: "0.8rem" }}>Invite {remaining} more to fill it (buttons below).</p>}
+          <p style={{ fontSize: "1rem", color: "var(--navy)", marginTop: "0.8rem", lineHeight: 1.5 }}>
+            As the table starter, you&rsquo;re the coordinator. When it fills, we&rsquo;ll email everyone, and replies come to you, so the group can choose a safe public place.
+          </p>
           <div style={{ maxWidth: 320, margin: "1rem auto 0" }}>
             <AddToCalendar title={title} dayOfWeek={t.day_of_week} timeOfDay={t.time_of_day} place={place} />
           </div>
@@ -84,8 +87,11 @@ export default async function TablePage({
         <p style={{ fontSize: "1.1rem", color: "#1a6e3a", fontWeight: 700, lineHeight: 1.5, marginTop: 0 }}>
           For safety, we recommend new groups meet in public places for their first game.
         </p>
-        <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: 0 }}>
+        <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "0.6rem" }}>
           Good first-game spots{t.city ? ` in ${t.city}` : ""}: a public library, a community center, a café, or a senior center. Decide together once your table is full, no need to share home addresses.
+        </p>
+        <p style={{ fontSize: "0.95rem", color: "var(--navy)", fontWeight: 700, margin: 0 }}>
+          We never share phone numbers or home addresses.
         </p>
       </div>
 
@@ -113,6 +119,10 @@ export default async function TablePage({
         </p>
         <ShareSheet url={url} message={shareMsg} />
       </div>
+
+      <p style={{ textAlign: "center", marginTop: "0.5rem" }}>
+        <a href={`mailto:hello@findmymahjgame.com?subject=${encodeURIComponent(`Report a problem: table ${code}`)}`} style={{ color: "var(--muted)", fontSize: "0.95rem" }}>Report a problem with this table</a>
+      </p>
     </main>
   );
 }

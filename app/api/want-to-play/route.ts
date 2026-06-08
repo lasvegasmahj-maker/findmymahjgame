@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import { clampText, isValidEmail, escapeHtml } from "@/lib/sanitize";
+import { rateLimit } from "@/lib/rate-limit";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,6 +11,10 @@ const supabase = createClient(
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
+  if (!(await rateLimit(req, "want-to-play", 5, 60))) {
+    return NextResponse.json({ error: "Too many requests. Please wait a minute and try again." }, { status: 429 });
+  }
+
   const b = await req.json().catch(() => ({}));
   if (!b?.name || (!b?.phone && !b?.email)) {
     return NextResponse.json({ error: "Please add your name and a phone or email." }, { status: 400 });

@@ -52,6 +52,11 @@ export default function HelpPage() {
         <div style={big}>What is a &ldquo;table&rdquo;?</div>
         <div style={sub}>A table is a game of mahjong with 4 people. You can join one near you, or start your own and invite players.</div>
       </div>
+
+      <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Report a problem")}`} style={card}>
+        <div style={big}>🚩  Report a Problem</div>
+        <div style={sub}>See something wrong or someone behaving badly? Tell us and we&rsquo;ll look into it.</div>
+      </a>
     </main>
   );
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 import { clampText, isValidEmail } from "@/lib/sanitize";
+import { rateLimit } from "@/lib/rate-limit";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,6 +14,10 @@ const TIMES = ["Morning", "Afternoon", "Evening"];
 const SKILLS = ["anyone", "beginner", "experienced"];
 
 export async function POST(req: NextRequest) {
+  if (!(await rateLimit(req, "create", 5, 60))) {
+    return NextResponse.json({ error: "Too many requests. Please wait a minute and try again." }, { status: 429 });
+  }
+
   const b = await req.json().catch(() => ({}));
 
   if (!b?.hostName || (!b?.hostPhone && !b?.hostEmail)) {
