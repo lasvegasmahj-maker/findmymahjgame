@@ -11,6 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/list-my-game`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE}/states`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     { url: `${BASE}/how-it-works`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${BASE}/ambassadors`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE}/get-listed`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE}/advertise`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/faq`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },

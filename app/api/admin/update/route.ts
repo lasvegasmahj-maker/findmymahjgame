@@ -7,8 +7,8 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const ALLOWED_TABLES = ["inquiries", "player_listings", "venue_listings", "event_listings", "ad_listings"];
-const ALLOWED_STATUS = ["new", "read", "replied", "pending_review", "flagged", "published", "rejected"];
+const ALLOWED_TABLES = ["inquiries", "player_listings", "venue_listings", "event_listings", "ad_listings", "ambassadors"];
+const ALLOWED_STATUS = ["new", "read", "replied", "pending_review", "flagged", "published", "rejected", "approved", "contacted", "declined"];
 
 export async function POST(req: NextRequest) {
   if (!verifyAdminSessionToken(req.cookies.get(ADMIN_COOKIE)?.value)) {
