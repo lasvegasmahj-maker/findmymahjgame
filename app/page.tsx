@@ -21,7 +21,8 @@ export const metadata: Metadata = {
   },
 };
 
-export const revalidate = 3600;
+// Short cache so forming tables ("Need a 4th") surface quickly.
+export const revalidate = 60;
 
 const ABBR_TO_SLUG: Record<string, string> = {};
 for (const s of Object.values(STATES)) ABBR_TO_SLUG[s.abbr] = s.slug;
