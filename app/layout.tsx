@@ -1,10 +1,16 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, DM_Sans } from "next/font/google";
 import Header from "@/components/layout/header";
 import NavBar from "@/components/layout/nav-bar";
 import Footer from "@/components/layout/footer";
 import { buildHomepageSchema, schemaScriptProps } from "@/lib/schema";
+import SWRegister from "@/components/sw-register";
+import InstallPrompt from "@/components/install-prompt";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  themeColor: "#1a1f5e",
+};
 
 // Headings only — swap is acceptable because headings are not LCP elements
 const playfair = Playfair_Display({
@@ -75,6 +81,8 @@ export default function RootLayout({
         <NavBar />
         <main className="flex-1">{children}</main>
         <Footer />
+        <InstallPrompt />
+        <SWRegister />
       </body>
     </html>
   );
