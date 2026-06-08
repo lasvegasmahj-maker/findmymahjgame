@@ -708,7 +708,12 @@ body {
 
 /* ═══════════ RESPONSIVE ═══════════ */
 @media (max-width: 768px) {
-  .hero { padding: 3rem 1.5rem 2.5rem; }
+  /* Mobile: hide the secondary nav row and shrink the hero so the three
+     primary actions sit right under the logo, visible without scrolling. */
+  .nav-bar { display: none; }
+  .hero { padding: 1.1rem 1.1rem 1.8rem; }
+  .hero h1 { font-size: 1.7rem; margin-bottom: 0.8rem; }
+  .hero > p { font-size: 1rem; margin: 0 auto 1.2rem; }
   .hero-stats { gap: 1.5rem; flex-wrap: wrap; }
   .hero-stats .stat-num { font-size: 1.5rem; }
   .map-section { padding: 1.5rem; }

@@ -75,10 +75,10 @@ export default async function Home() {
   return (
     <>
       {/* HERO: senior-simple, three big actions */}
-      <section className="hero" style={{ paddingBottom: "2.5rem" }}>
+      <section className="hero" style={{ paddingBottom: "1.5rem" }}>
         <h1>Find people to play <em>mahjong</em> with</h1>
         <p>Near you. Free. In all 50 states.</p>
-        <div style={{ maxWidth: 440, margin: "1.8rem auto 0", display: "flex", flexDirection: "column", gap: "1.4rem" }}>
+        <div style={{ maxWidth: 440, margin: "0.8rem auto 0", display: "flex", flexDirection: "column", gap: "1.4rem" }}>
           <div>
             <Link href="/play" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "var(--navy)", color: "white" }}>🔍&nbsp; I Want to Play</Link>
             <div style={{ fontSize: "1rem", color: "var(--muted)", textAlign: "center", marginTop: "0.4rem" }}>Find a game near you</div>
