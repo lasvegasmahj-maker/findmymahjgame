@@ -28,17 +28,18 @@ export default function StartClient() {
   const [skill, setSkill] = useState("anyone");
   const [hostName, setHostName] = useState("");
   const [hostPhone, setHostPhone] = useState("");
+  const [hostEmail, setHostEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
   const [err, setErr] = useState("");
 
-  const ready = day && time && hostName.trim() && hostPhone.trim();
+  const ready = day && time && hostName.trim() && (hostPhone.trim() || hostEmail.trim());
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("submitting"); setErr("");
     const res = await fetch("/api/tables/create", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ day, time, venueType, venueName, city, skill, hostName, hostPhone }),
+      body: JSON.stringify({ day, time, venueType, venueName, city, skill, hostName, hostPhone, hostEmail }),
     });
     if (res.ok) {
       const { shareCode } = await res.json();
@@ -84,9 +85,10 @@ export default function StartClient() {
 
         <div style={labelStyle}>Your name</div>
         <input style={fieldStyle} placeholder="First name" value={hostName} onChange={(e) => setHostName(e.target.value)} />
-        <div style={labelStyle}>Your mobile number</div>
-        <input style={fieldStyle} type="tel" inputMode="tel" placeholder="So we can text you when players join" value={hostPhone} onChange={(e) => setHostPhone(e.target.value)} />
-        <p style={{ fontSize: "0.95rem", color: "var(--muted)", marginTop: "0.5rem" }}>We never show your number to anyone.</p>
+        <div style={labelStyle}>How can we reach you?</div>
+        <input style={fieldStyle} type="tel" inputMode="tel" placeholder="Mobile number" value={hostPhone} onChange={(e) => setHostPhone(e.target.value)} />
+        <input style={{ ...fieldStyle, marginTop: "0.7rem" }} type="email" placeholder="Email" value={hostEmail} onChange={(e) => setHostEmail(e.target.value)} />
+        <p style={{ fontSize: "0.95rem", color: "var(--muted)", marginTop: "0.5rem" }}>Add a phone, an email, or both, so we can reach you when players join. We never show it to anyone.</p>
 
         {err && <p style={{ color: "#dc2626", fontSize: "1.05rem", marginTop: "1rem" }}>{err}</p>}
 

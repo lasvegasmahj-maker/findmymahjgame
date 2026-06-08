@@ -61,14 +61,22 @@ export default async function Home() {
       <section className="hero" style={{ paddingBottom: "2.5rem" }}>
         <h1>Find people to play <em>mahjong</em> with</h1>
         <p>Near you. Free. In all 50 states.</p>
-        <div style={{ maxWidth: 440, margin: "1.8rem auto 0", display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <Link href="/#map" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "var(--navy)", color: "white" }}>🔍&nbsp; Find a Game</Link>
-          <Link href="/start" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "var(--pink)", color: "white" }}>➕&nbsp; Start a Table</Link>
-          <Link href="/help" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "white", color: "var(--navy)", border: "2px solid var(--navy)" }}>❓&nbsp; I Need Help</Link>
+        <div style={{ maxWidth: 440, margin: "1.8rem auto 0", display: "flex", flexDirection: "column", gap: "1.4rem" }}>
+          <div>
+            <Link href="/play" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "var(--navy)", color: "white" }}>🔍&nbsp; I Want to Play</Link>
+            <div style={{ fontSize: "1rem", color: "var(--muted)", textAlign: "center", marginTop: "0.4rem" }}>Find a game near you</div>
+          </div>
+          <div>
+            <Link href="/start" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "var(--pink)", color: "white" }}>➕&nbsp; Start a Table</Link>
+            <div style={{ fontSize: "1rem", color: "var(--muted)", textAlign: "center", marginTop: "0.4rem" }}>Invite players to join</div>
+          </div>
+          <div>
+            <Link href="/help" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "white", color: "var(--navy)", border: "2px solid var(--navy)" }}>❓&nbsp; I Need Help</Link>
+            <div style={{ fontSize: "1rem", color: "var(--muted)", textAlign: "center", marginTop: "0.4rem" }}>Talk to a real person</div>
+          </div>
         </div>
-        <div style={{ marginTop: "1.4rem", display: "flex", gap: "1.8rem", justifyContent: "center", flexWrap: "wrap" }}>
-          <Link href="/play" style={{ fontSize: "1.1rem", color: "var(--pink)", fontWeight: 700 }}>I want to play</Link>
-          <Link href="/how-it-works" style={{ fontSize: "1.1rem", color: "var(--pink)", fontWeight: 700 }}>Learn mahjong</Link>
+        <div style={{ marginTop: "1.6rem", textAlign: "center" }}>
+          <Link href="/how-it-works" style={{ fontSize: "1.1rem", color: "var(--pink)", fontWeight: 700 }}>New to mahjong? Learn how</Link>
         </div>
       </section>
 

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CONTACT_EMAIL } from "@/lib/constants";
+import { CONTACT_EMAIL, HELP_PHONE } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "I Need Help | Find My Mahj Game",
@@ -16,6 +16,18 @@ export default function HelpPage() {
       <a href="/" style={{ fontSize: "1.05rem", color: "var(--pink)", fontWeight: 700, textDecoration: "none" }}>&larr; Home</a>
       <h1 style={{ fontSize: "2rem", color: "var(--navy)", margin: "0.8rem 0 1.2rem", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>How can we help?</h1>
 
+      {HELP_PHONE ? (
+        <a href={`tel:${HELP_PHONE}`} style={card}>
+          <div style={big}>📞  Call Us</div>
+          <div style={sub}>Talk to a real person. {HELP_PHONE}</div>
+        </a>
+      ) : (
+        <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Please call me")}&body=${encodeURIComponent("Hi, please call me back. My number is: ")}`} style={card}>
+          <div style={big}>📞  Call Us</div>
+          <div style={sub}>Tap and we&rsquo;ll call you back. Leave your number and a good time.</div>
+        </a>
+      )}
+
       <a href={`mailto:${CONTACT_EMAIL}`} style={card}>
         <div style={big}>📧  Email us a question</div>
         <div style={sub}>We answer every message. {CONTACT_EMAIL}</div>
@@ -28,7 +40,7 @@ export default function HelpPage() {
 
       <div style={{ ...card, cursor: "default" }}>
         <div style={big}>▶  How to find a game</div>
-        <div style={sub}>1) Tap &ldquo;Find a Game.&rdquo; 2) Pick your town. 3) Tap a game. 4) Tap &ldquo;Claim a Seat&rdquo; and add your name and number. Done.</div>
+        <div style={sub}>1) Tap &ldquo;I Want to Play.&rdquo; 2) Type your town. 3) Tap a game. 4) Tap &ldquo;Claim a Seat&rdquo; and add your name and phone or email. Done.</div>
       </div>
 
       <div style={{ ...card, cursor: "default" }}>
