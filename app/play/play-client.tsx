@@ -23,16 +23,47 @@ export default function PlayClient() {
   const [timePref, setTimePref] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
   const [err, setErr] = useState("");
+  const [geoMsg, setGeoMsg] = useState("");
 
-  async function findGames(e: React.FormEvent) {
-    e.preventDefault();
-    if (!city.trim()) return;
-    setSearching(true);
-    const res = await fetch(`/api/tables/find?city=${encodeURIComponent(city.trim())}`);
+  async function runFind(town: string) {
+    setSearching(true); setGeoMsg("");
+    const res = await fetch(`/api/tables/find?city=${encodeURIComponent(town.trim())}`);
     const d = await res.json().catch(() => ({ tables: [] }));
     setSearching(false);
     if ((d.tables || []).length > 0) { setGames(d.tables); setStep("results"); }
     else { setStep("capture"); }
+  }
+
+  async function findGames(e: React.FormEvent) {
+    e.preventDefault();
+    if (city.trim()) runFind(city);
+  }
+
+  function useMyLocation() {
+    setGeoMsg("");
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setGeoMsg("Location isn't available on this device. Please type your town.");
+      return;
+    }
+    setSearching(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+          const g = await r.json();
+          const town = g.city || g.locality || g.principalSubdivision || "";
+          if (!town) { setSearching(false); setGeoMsg("We couldn't find your town. Please type it below."); return; }
+          setCity(town);
+          runFind(town);
+        } catch {
+          setSearching(false);
+          setGeoMsg("Something went wrong. Please type your town below.");
+        }
+      },
+      () => { setSearching(false); setGeoMsg("We couldn't get your location. Please type your town below."); },
+      { timeout: 10000 }
+    );
   }
 
   async function submitCapture(e: React.FormEvent) {
@@ -59,10 +90,14 @@ export default function PlayClient() {
     return shell(
       <>
         <h1 style={{ fontSize: "2rem", color: "var(--navy)", margin: "0.8rem 0 0.3rem", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>I Want to Play</h1>
-        <p style={{ fontSize: "1.15rem", color: "var(--muted)", lineHeight: 1.5 }}>Tell us your town and we&rsquo;ll find a game.</p>
+        <p style={{ fontSize: "1.15rem", color: "var(--muted)", lineHeight: 1.5 }}>Find a game near you.</p>
+        <button type="button" onClick={useMyLocation} disabled={searching} style={{ width: "100%", minHeight: 68, marginTop: "1.4rem", borderRadius: 16, border: "none", background: "var(--navy)", color: "white", fontSize: "1.3rem", fontWeight: 800, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+          {searching ? "Looking..." : "📍 Use My Location"}
+        </button>
+        <div style={{ textAlign: "center", color: "var(--muted)", fontSize: "1.05rem", margin: "1rem 0 0.2rem" }}>or type your town</div>
+        {geoMsg && <p style={{ color: "#dc2626", fontSize: "1.05rem", textAlign: "center", marginTop: 0 }}>{geoMsg}</p>}
         <form onSubmit={findGames}>
-          <div style={labelStyle}>Your town or city</div>
-          <input style={fieldStyle} placeholder="Where do you want to play?" value={city} onChange={(e) => setCity(e.target.value)} autoFocus />
+          <input style={fieldStyle} placeholder="Town or city" value={city} onChange={(e) => setCity(e.target.value)} />
           <button type="submit" disabled={!city.trim() || searching} style={bigBtn(!!city.trim())}>{searching ? "Looking..." : "Find a Game"}</button>
         </form>
       </>
