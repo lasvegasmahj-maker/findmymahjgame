@@ -10,7 +10,6 @@ const supabase = createClient(
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const TIMES = ["Morning", "Afternoon", "Evening"];
-const VENUES = ["public", "home"];
 const SKILLS = ["anyone", "beginner", "experienced"];
 
 export async function POST(req: NextRequest) {
@@ -33,8 +32,8 @@ export async function POST(req: NextRequest) {
     state: clampText(b.state, 60) || null,
     day_of_week: DAYS.includes(b.day) ? b.day : null,
     time_of_day: TIMES.includes(b.time) ? b.time : null,
-    venue_type: VENUES.includes(b.venueType) ? b.venueType : "public",
-    venue_name: clampText(b.venueName, 160) || null,
+    venue_type: "public",
+    venue_name: null,
     skill: SKILLS.includes(b.skill) ? b.skill : "anyone",
     seats_total: 4,
     status: "forming",

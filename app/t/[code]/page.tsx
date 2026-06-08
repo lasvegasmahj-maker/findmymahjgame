@@ -77,6 +77,18 @@ export default async function TablePage({
         </div>
       </div>
 
+      <div style={{ ...card, background: isFull ? "rgba(46,201,92,0.1)" : "var(--bg)", borderColor: isFull ? "#2ec95c" : "var(--border)" }}>
+        <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.5rem" }}>
+          {isFull ? "🎉 Now pick a place to meet" : "🛡️ Where you'll meet"}
+        </div>
+        <p style={{ fontSize: "1.1rem", color: "#1a6e3a", fontWeight: 700, lineHeight: 1.5, marginTop: 0 }}>
+          For safety, we recommend new groups meet in public places for their first game.
+        </p>
+        <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: 0 }}>
+          Good first-game spots{t.city ? ` in ${t.city}` : ""}: a public library, a community center, a café, or a senior center. Decide together once your table is full, no need to share home addresses.
+        </p>
+      </div>
+
       {!isFull && (
         <div style={card}>
           <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.8rem" }}>Want a seat?</div>
