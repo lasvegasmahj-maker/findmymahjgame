@@ -24,6 +24,9 @@ export async function POST(req: NextRequest) {
   if (!isValidEmail(b.email)) {
     return NextResponse.json({ error: "That email does not look right." }, { status: 400 });
   }
+  if (!b?.city || !b?.state || !b?.role || !b?.why) {
+    return NextResponse.json({ error: "Please add your city, state, role, and why you want to help." }, { status: 400 });
+  }
 
   const row = {
     name: clampText(b.name, 120),

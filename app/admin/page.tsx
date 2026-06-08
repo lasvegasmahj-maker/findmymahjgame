@@ -490,7 +490,7 @@ export default function AdminPage() {
                   <tr key={ev.id} style={{ borderBottom: "1px solid var(--border)" }}>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.9rem", fontWeight: 600, color: "var(--navy)" }}>{ev.event_name}</td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{ev.city}, {ev.state}</td>
-                    <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{ev.event_date ? formatDate(ev.event_date) : "—"}</td>
+                    <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{ev.event_date ? formatDate(ev.event_date) : "-"}</td>
                     <td style={{ padding: "0.8rem 1rem" }}><StatusBadge status={ev.status} /></td>
                     <td style={{ padding: "0.8rem 1rem", display: "flex", gap: "0.4rem" }}>
                       {ev.status === "published" && <button onClick={() => updateStatus("event_listings", ev.id, "flagged")} style={{ background: "#fef3c7", border: "1px solid #f5c842", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Flag</button>}

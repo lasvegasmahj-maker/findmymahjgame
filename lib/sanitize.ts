@@ -10,7 +10,10 @@ export function escapeHtml(input: unknown): string {
 
 export function isValidEmail(email: unknown): email is string {
   if (typeof email !== "string" || email.length > 254) return false;
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  // Restrict the local and domain parts to RFC-safe characters. This also keeps
+  // mailto-parameter characters (?, &, spaces) out of values we later render into
+  // mailto: links in the admin dashboard.
+  return /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(email);
 }
 
 export function clampText(input: unknown, max: number): string {
