@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import ShareSheet from "@/components/share-sheet";
 import SeatDots from "@/components/seat-dots";
 import AddToCalendar from "@/components/add-to-calendar";
+import { signGameToken } from "@/lib/game-token";
 import ClaimClient from "./claim-client";
 
 export const dynamic = "force-dynamic";
@@ -75,6 +76,7 @@ export default async function TablePage({
           {t.skill === "beginner" ? "Beginners welcome" : t.skill === "experienced" ? "Experienced players" : "Anyone can join"}
         </div>
         <SeatDots filled={filled} total={total} />
+        {remaining === 1 && <div style={{ marginTop: "0.7rem", fontSize: "1.15rem", fontWeight: 800, color: "var(--pink)" }}>🔥 Need a 4th! Just 1 seat left, share now to fill it.</div>}
         <div style={{ fontSize: "1.1rem", color: "var(--navy)", marginTop: "0.9rem" }}>
           Who is coming: {people.map((p) => p.name).join(", ") || "just the host so far"}
         </div>
@@ -94,6 +96,17 @@ export default async function TablePage({
           We never share phone numbers or home addresses.
         </p>
       </div>
+
+      {isFull && (
+        <div style={card}>
+          <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.5rem" }}>Did you play?</div>
+          <p style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: 0, marginBottom: "1rem" }}>After your game, tap one. It helps us know our tables become real games.</p>
+          <div style={{ display: "flex", gap: "0.8rem" }}>
+            <a href={`${base}/api/tables/played?token=${signGameToken(t.id, "yes")}`} style={{ flex: 1, textAlign: "center", minHeight: 60, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "#1a6e3a", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Yes, we played</a>
+            <a href={`${base}/api/tables/played?token=${signGameToken(t.id, "no")}`} style={{ flex: 1, textAlign: "center", minHeight: 60, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "#6b7280", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Not yet</a>
+          </div>
+        </div>
+      )}
 
       {!isFull && (
         <div style={card}>

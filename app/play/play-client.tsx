@@ -115,7 +115,8 @@ export default function PlayClient() {
             const title = `${g.day_of_week || ""} ${g.time_of_day || ""} Mahjong`.trim();
             const place = [g.venue_name, g.city].filter(Boolean).join(", ");
             return (
-              <a key={g.share_code} href={`/t/${g.share_code}`} style={{ display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.3rem", textDecoration: "none" }}>
+              <a key={g.share_code} href={`/t/${g.share_code}`} style={{ display: "block", background: "white", border: (g.seats_total || 4) - g.filled === 1 ? "2px solid var(--pink)" : "2px solid var(--border)", borderRadius: 16, padding: "1.3rem", textDecoration: "none" }}>
+                {(g.seats_total || 4) - g.filled === 1 && <div style={{ display: "inline-block", background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "0.95rem", padding: "0.25rem 0.8rem", borderRadius: 50, marginBottom: "0.6rem" }}>🔥 Need a 4th, 1 seat left</div>}
                 <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--navy)" }}>{title}</div>
                 {place && <div style={{ fontSize: "1.1rem", color: "var(--muted)", margin: "0.3rem 0 0.8rem" }}>📍 {place}</div>}
                 <SeatDots filled={g.filled} total={g.seats_total || 4} size="1.3rem" />

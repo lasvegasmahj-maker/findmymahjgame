@@ -38,5 +38,7 @@ export async function GET(req: NextRequest) {
     });
   }
 
+  // Closest-to-full first (tables that need a 4th surface at the top).
+  tables.sort((a, b) => b.filled - a.filled);
   return NextResponse.json({ tables });
 }
