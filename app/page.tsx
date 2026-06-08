@@ -57,13 +57,26 @@ export default async function Home() {
 
   return (
     <>
-      {/* HERO */}
-      <section className="hero">
-        <h1>Find Your <em>Perfect</em><br />Mahjong Game Nationwide</h1>
-        <p>Find mahjong players, join a local group, and discover open plays and events near you, free in all 50 states.</p>
-        <div className="hero-btns">
-          <Link href="/#map" className="btn-cta-primary">Find a Game</Link>
-          <Link href="/how-it-works" className="btn-cta-outline">How It Works</Link>
+      {/* HERO: senior-simple, three big actions */}
+      <section className="hero" style={{ paddingBottom: "2.5rem" }}>
+        <h1>Find people to play <em>mahjong</em> with</h1>
+        <p>Near you. Free. In all 50 states.</p>
+        <div style={{ maxWidth: 440, margin: "1.8rem auto 0", display: "flex", flexDirection: "column", gap: "1.4rem" }}>
+          <div>
+            <Link href="/play" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "var(--navy)", color: "white" }}>🔍&nbsp; I Want to Play</Link>
+            <div style={{ fontSize: "1rem", color: "var(--muted)", textAlign: "center", marginTop: "0.4rem" }}>Find a game near you</div>
+          </div>
+          <div>
+            <Link href="/start" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "var(--pink)", color: "white" }}>➕&nbsp; Start a Table</Link>
+            <div style={{ fontSize: "1rem", color: "var(--muted)", textAlign: "center", marginTop: "0.4rem" }}>Invite players to join</div>
+          </div>
+          <div>
+            <Link href="/help" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "white", color: "var(--navy)", border: "2px solid var(--navy)" }}>❓&nbsp; I Need Help</Link>
+            <div style={{ fontSize: "1rem", color: "var(--muted)", textAlign: "center", marginTop: "0.4rem" }}>Talk to a real person</div>
+          </div>
+        </div>
+        <div style={{ marginTop: "1.6rem", textAlign: "center" }}>
+          <Link href="/how-it-works" style={{ fontSize: "1.1rem", color: "var(--pink)", fontWeight: 700 }}>New to mahjong? Learn how</Link>
         </div>
       </section>
 
