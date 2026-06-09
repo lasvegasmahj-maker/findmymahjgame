@@ -52,6 +52,13 @@ Each city plan has an ambassador target, a table target, a 30-day checklist, wee
 - [20 City Launch Accelerator](20-city-launch-accelerator.md) - one ambassador to recurring games, with first 30/90 days and failure recovery.
 - [21 Top 10 Growth Priorities](21-top-10-growth-priorities.md) - the plan challenged, blind spots named, and the ranked highest-ROI actions.
 
+### Execution System (next 30 days, tables over features)
+- [22 Mine Existing Las Vegas Assets](22-mine-existing-las-vegas-assets.md) - convert current CRM and email-list relationships into tables, by segment, with exact messages.
+- [23 First 5 Recurring Tables](23-first-5-recurring-tables.md) - five specific Las Vegas tables with source, host, launch, and backup.
+- [24 Founder-Assisted vs Organic Dashboard](24-founder-assisted-vs-organic-dashboard.md) - track the organic ratio; the model is real when tables form without the founder.
+- [25 Warm Relationship Activation Plan](25-warm-relationship-activation-plan.md) - Hot/Warm/Cold, exact sequence, weekly targets, ambassador conversion math.
+- [26 30-Day Focus Plan](26-30-day-focus-plan.md) - what to pause, what to keep, and the week-by-week founder schedule, ranked by table impact.
+
 ## How to run this nationally
 
 The motion is one repeatable loop, light enough to run from a phone and not dependent on the founder being in the city:
