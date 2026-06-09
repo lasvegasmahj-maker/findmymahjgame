@@ -59,6 +59,15 @@ Each city plan has an ambassador target, a table target, a 30-day checklist, wee
 - [25 Warm Relationship Activation Plan](25-warm-relationship-activation-plan.md) - Hot/Warm/Cold, exact sequence, weekly targets, ambassador conversion math.
 - [26 30-Day Focus Plan](26-30-day-focus-plan.md) - what to pause, what to keep, and the week-by-week founder schedule, ranked by table impact.
 
+### Vision and Wartime (national hub, challenged)
+- [27 National Mahjong Hub Strategy](27-national-mahjong-hub-strategy.md) - should we become the national destination; verdict, ranked opportunities, phased roadmap.
+- [28 Event Calendar Strategy](28-event-calendar-strategy.md) - why the calendar is Phase 2 and not the center; manual-first.
+- [29 Newsletter Strategy](29-newsletter-strategy.md) - the highest-leverage near-term move: Las Vegas Mahjong Weekly, manual, this week.
+- [30 Teacher Strategy](30-teacher-strategy.md) - teacher relationships are Phase 1, the public directory is Phase 2.
+- [31 Mahjong-Friendly Business Strategy](31-mahjong-friendly-business-strategy.md) - venues as free supply now, paid program later.
+- [32 Return Visit and Habit Strategy](32-return-visit-habit-strategy.md) - why players return: the recurring game and need-a-4th, not a calendar.
+- [33 90-Day Wartime Execution Plan](33-90-day-wartime-execution-plan.md) - team reality, what to build/wait/kill/delegate/operate manually, ranked.
+
 ## How to run this nationally
 
 The motion is one repeatable loop, light enough to run from a phone and not dependent on the founder being in the city:
