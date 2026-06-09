@@ -54,6 +54,20 @@ export default async function MetricsPage() {
   S.forEach((s) => { const k = String(s.email || s.phone || "").toLowerCase(); if (!k) return; (contactTables[k] ||= new Set()).add(s.table_id as string); });
   const repeatPlayers = Object.values(contactTables).filter((set) => set.size > 1).length;
 
+  // Ambassador attribution: group tables by their referral code (referred_by).
+  const byRef: Record<string, { formed: number; filled: number; played: number; recurring: number }> = {};
+  T.forEach((t) => {
+    const code = String(t.referred_by || "").trim();
+    if (!code) return;
+    const r = (byRef[code] ||= { formed: 0, filled: 0, played: 0, recurring: 0 });
+    r.formed++;
+    if (t.status === "full") r.filled++;
+    if (t.played === true) r.played++;
+    if (t.is_recurring === true) r.recurring++;
+  });
+  const refRows = Object.entries(byRef).sort((a, b) => b[1].formed - a[1].formed);
+  const attributed = T.filter((t) => String(t.referred_by || "").trim()).length;
+
   const stat: React.CSSProperties = { background: "white", border: "2px solid var(--border)", borderRadius: 14, padding: "1.2rem", textAlign: "center" };
   const num: React.CSSProperties = { fontSize: "2.2rem", fontWeight: 800, color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif" };
   const lbl: React.CSSProperties = { fontSize: "0.9rem", color: "var(--muted)", marginTop: "0.3rem" };
@@ -80,8 +94,37 @@ export default async function MetricsPage() {
         <div style={stat}><div style={num}>{repeatPlayers}</div><div style={lbl}>Repeat Players</div></div>
       </div>
 
+      <h2 style={{ fontSize: "1.4rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif", margin: "2.5rem 0 0.3rem" }}>Ambassador attribution</h2>
+      <p style={{ color: "var(--muted)", marginBottom: "1rem" }}>Tables credited to a referral code, {attributed} of {created} tables attributed. Ambassadors share a link like <code>/start?ref=THEIR-CODE</code>.</p>
+      {refRows.length === 0 ? (
+        <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.5rem", color: "var(--muted)" }}>
+          No attributed tables yet. When an ambassador&rsquo;s link is used to start a table, their code shows here.
+        </div>
+      ) : (
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              {["Referral code", "Formed", "Filled", "Played", "Recurring"].map((h, i) => (
+                <th key={h} style={{ textAlign: i === 0 ? "left" : "center", padding: "0.6rem 0.8rem", background: "var(--bg)", fontSize: "0.78rem", fontWeight: 700, color: "var(--navy)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {refRows.map(([code, r]) => (
+              <tr key={code} style={{ borderBottom: "1px solid var(--border)" }}>
+                <td style={{ padding: "0.6rem 0.8rem", fontWeight: 700, color: "var(--navy)" }}>{code}</td>
+                <td style={{ padding: "0.6rem 0.8rem", textAlign: "center" }}>{r.formed}</td>
+                <td style={{ padding: "0.6rem 0.8rem", textAlign: "center" }}>{r.filled}</td>
+                <td style={{ padding: "0.6rem 0.8rem", textAlign: "center" }}>{r.played}</td>
+                <td style={{ padding: "0.6rem 0.8rem", textAlign: "center" }}>{r.recurring}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
       <p style={{ fontSize: "0.85rem", color: "var(--muted)", marginTop: "1.5rem" }}>
-        Games Played and Recurring require <code>supabase/sprint2.sql</code> to be run. Time to Fill is measured as the time from table creation to the 4th seat.
+        Games Played and Recurring require <code>supabase/sprint2.sql</code> to be run. Time to Fill is measured as the time from table creation to the 4th seat. Attribution uses the existing referred_by field, no schema change.
       </p>
     </main>
   );
