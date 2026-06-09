@@ -5,7 +5,6 @@ import NavBar from "@/components/layout/nav-bar";
 import Footer from "@/components/layout/footer";
 import { buildHomepageSchema, schemaScriptProps } from "@/lib/schema";
 import SWRegister from "@/components/sw-register";
-import InstallPrompt from "@/components/install-prompt";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -81,7 +80,9 @@ export default function RootLayout({
         <NavBar />
         <main className="flex-1">{children}</main>
         <Footer />
-        <InstallPrompt />
+        {/* No proactive install prompt by design. The PWA stays installable via
+            the browser's own Add to Home Screen. A gentle, value-gated suggestion
+            may be added later (Phase 2). */}
         <SWRegister />
       </body>
     </html>
