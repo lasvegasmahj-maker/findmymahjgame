@@ -4,6 +4,10 @@ One ambassador, multiple tables, multiple players, recurring games. That is the 
 
 North Star: Tables Formed, then Tables Filled, then Games Played, then Recurring Tables. Not revenue. Every document here exists to move that funnel.
 
+## Read this first (founder)
+
+- [15 Founder Assumptions and Decisions](15-founder-assumptions-and-decisions.md) - the questions only Shauna can answer before we trust the plan: ambassador inventory, the real Las Vegas player pool, the success and failure bar, the expansion trigger, and our moat. Answer these first.
+
 ## The goal
 
 Recruit 25 Founding Ambassadors in 25 cities in 30 days. Each ambassador should be able to generate tables, players, teachers, and local awareness, and should be able to launch a city largely on their own.
