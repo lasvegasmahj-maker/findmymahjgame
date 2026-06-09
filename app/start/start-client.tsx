@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const TIMES = ["Morning", "Afternoon", "Evening"];
@@ -29,6 +29,16 @@ export default function StartClient() {
   const [hostEmail, setHostEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
   const [err, setErr] = useState("");
+  const [ref, setRef] = useState("");
+
+  // Capture an ambassador referral code from the link (e.g. /start?ref=FMM-LV-RUTH)
+  // so the table they start is credited to them. Uses the existing referred_by field.
+  useEffect(() => {
+    try {
+      const r = new URLSearchParams(window.location.search).get("ref");
+      if (r) setRef(r.slice(0, 40));
+    } catch { /* ignore */ }
+  }, []);
 
   const ready = day && time && area.trim() && hostName.trim() && (hostPhone.trim() || hostEmail.trim());
 
@@ -37,7 +47,7 @@ export default function StartClient() {
     setStatus("submitting"); setErr("");
     const res = await fetch("/api/tables/create", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ day, time, city: area, skill, hostName, hostPhone, hostEmail }),
+      body: JSON.stringify({ day, time, city: area, skill, hostName, hostPhone, hostEmail, referredBy: ref || undefined }),
     });
     if (res.ok) {
       const { shareCode } = await res.json();
@@ -60,6 +70,12 @@ export default function StartClient() {
           🛡️ For safety, we recommend new groups meet in public places for their first game. We&rsquo;ll suggest spots after your table fills.
         </div>
       </div>
+
+      {ref && (
+        <div style={{ background: "rgba(245,200,66,0.18)", border: "2px solid var(--gold)", borderRadius: 14, padding: "0.8rem 1.1rem", margin: "0.6rem 0" }}>
+          <div style={{ fontSize: "1.05rem", color: "#8a6d00", fontWeight: 700, lineHeight: 1.5 }}>You came from a local ambassador invite. We will credit your table to them, thank you for joining.</div>
+        </div>
+      )}
 
       <form onSubmit={submit}>
         <div style={labelStyle}>What day?</div>
