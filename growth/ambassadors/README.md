@@ -30,6 +30,7 @@ Recruit, then Onboard, then Launch, then Measure. Here is where each stage lives
 
 ### Run it
 - [08 30-Day Blitz Plan](08-30-day-blitz-plan.md) - the founder's day-by-day, week-by-week plan to hit 25 ambassadors in 25 cities, with daily actions and a scorecard.
+- [10 Founder Weekly Dashboard](10-founder-weekly-dashboard.md) - one page, filled in every Friday: the 8 metrics, weekly targets, and an on-track indicator.
 
 ## How to run this nationally
 
