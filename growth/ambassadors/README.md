@@ -81,6 +81,15 @@ Each city plan has an ambassador target, a table target, a 30-day checklist, wee
 - [41 Strategic Reset and 30-Day Wartime Plan](41-strategic-reset-30-day-wartime-plan.md) - the vision reset to national source of truth, with what stays/changes/delays/removed, the North Star review, 25 force-ranked actions, start/wait/kill, the relationship land grab, ambassador and influencer strategy, the event inventory blitz, newsletter order, moat ranking, Las Vegas First, and the scorecard. Supersedes earlier emphasis where they conflict.
 - Strategic Changes Summary for Shauna - the plain-English version, at the repo root (STRATEGIC-CHANGES-SUMMARY-FOR-SHAUNA.md).
 
+### Wartime Execution Kit (ready-to-use, June 2026)
+- [42 Las Vegas Mahjong Weekly](42-las-vegas-mahjong-weekly.md) - the newsletter template plus four fully drafted, send-ready issues, signup and distribution plan.
+- [43 Event Inventory Blitz](43-event-inventory-blitz.md) - process, 30-day numeric targets, outreach scripts, submission, tracker spec, weekly goals.
+- [44 Teacher Acquisition Blitz](44-teacher-acquisition-blitz.md) - top targets, outreach sequence, ambassador crossover, incentives, approval.
+- [45 Venue Acquisition Blitz](45-venue-acquisition-blitz.md) - criteria, scripts, partnership offer, launch process, pilot market.
+- [46 Ambassador Activation Plan](46-ambassador-activation-plan.md) - activation around first table, first event, first newsletter item, first referral.
+- [47 Source of Truth Scorecard](47-source-of-truth-scorecard.md) - the exact Friday metrics with definitions and 30-day targets.
+- [48 30-Day Founder Calendar](48-30-day-founder-calendar.md) - day-by-day highest-leverage actions for 30 days.
+
 ## How to run this nationally
 
 The motion is one repeatable loop, light enough to run from a phone and not dependent on the founder being in the city:
