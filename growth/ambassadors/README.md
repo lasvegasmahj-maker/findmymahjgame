@@ -68,6 +68,15 @@ Each city plan has an ambassador target, a table target, a 30-day checklist, wee
 - [32 Return Visit and Habit Strategy](32-return-visit-habit-strategy.md) - why players return: the recurring game and need-a-4th, not a calendar.
 - [33 90-Day Wartime Execution Plan](33-90-day-wartime-execution-plan.md) - team reality, what to build/wait/kill/delegate/operate manually, ranked.
 
+### Growth Phase and Discovery (homepage frozen)
+- [34 Homepage Freeze Recommendation](34-homepage-freeze-recommendation.md) - freeze the homepage; no change unless it moves a core metric.
+- [35 Growth Priority Roadmap](35-growth-priority-roadmap.md) - rank all work against the five priorities; what is in, deferred, or killed.
+- [36 Venue vs Activity Architecture](36-venue-vs-activity-architecture.md) - a venue directory is the wrong product; build activity-first.
+- [37 Discovery Layer Strategy](37-discovery-layer-strategy.md) - location in, nearby activity out; add filters only when inventory demands.
+- [38 Return Visit Strategy](38-return-visit-strategy.md) - why players return weekly; activity-first and recurring tables, not a directory.
+- [39 National Mahjong Hub Roadmap](39-national-mahjong-hub-roadmap.md) - find players then discover activity; Phase 1/2/3 mapping of the ten elements.
+- [40 30/60/90 Day Execution Plan](40-30-60-90-execution-plan.md) - concrete, mostly manual, ranked against the five priorities and four metrics.
+
 ## How to run this nationally
 
 The motion is one repeatable loop, light enough to run from a phone and not dependent on the founder being in the city:
