@@ -32,6 +32,14 @@ Recruit, then Onboard, then Launch, then Measure. Here is where each stage lives
 - [08 30-Day Blitz Plan](08-30-day-blitz-plan.md) - the founder's day-by-day, week-by-week plan to hit 25 ambassadors in 25 cities, with daily actions and a scorecard.
 - [10 Founder Weekly Dashboard](10-founder-weekly-dashboard.md) - one page, filled in every Friday: the 8 metrics, weekly targets, and an on-track indicator.
 
+### City Launch Mode (prove it in 3 markets first)
+- [11 City Launch Scorecard](11-city-launch-scorecard.md) - per-city tracking of the 7 launch metrics with a Red / Yellow / Green status system.
+- [12 Launch Plan: Las Vegas](12-launch-las-vegas.md) - primary proof market (home advantage, year-round).
+- [13 Launch Plan: Scottsdale / Phoenix](13-launch-scottsdale-phoenix.md) - summer base-building launch.
+- [14 Launch Plan: Boca Raton / Palm Beach](14-launch-boca-raton-palm-beach.md) - summer base-building launch, deep teacher market.
+
+Each city plan has an ambassador target, a table target, a 30-day checklist, weekly milestones, risks, and recovery actions. Goal: reach and hold Green in all 3 markets, then expand nationally with the same motion.
+
 ## How to run this nationally
 
 The motion is one repeatable loop, light enough to run from a phone and not dependent on the founder being in the city:
