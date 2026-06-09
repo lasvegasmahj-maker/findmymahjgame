@@ -80,15 +80,15 @@ export default async function Home() {
         <p>Near you. Free. In all 50 states.</p>
         <div style={{ maxWidth: 440, margin: "0.8rem auto 0", display: "flex", flexDirection: "column", gap: "1.4rem" }}>
           <div>
-            <Link href="/play" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "var(--navy)", color: "white" }}>🔍&nbsp; I Want to Play</Link>
+            <Link href="/play" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "var(--navy)", color: "white" }}>I Want to Play</Link>
             <div style={{ fontSize: "1rem", color: "var(--muted)", textAlign: "center", marginTop: "0.4rem" }}>Find a game near you</div>
           </div>
           <div>
-            <Link href="/start" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "var(--pink)", color: "white" }}>➕&nbsp; Start a Table</Link>
+            <Link href="/start" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "var(--pink)", color: "white" }}>Start a Table</Link>
             <div style={{ fontSize: "1rem", color: "var(--muted)", textAlign: "center", marginTop: "0.4rem" }}>Invite players to join</div>
           </div>
           <div>
-            <Link href="/help" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "white", color: "var(--navy)", border: "2px solid var(--navy)" }}>❓&nbsp; I Need Help</Link>
+            <Link href="/help" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "white", color: "var(--navy)", border: "2px solid var(--navy)" }}>I Need Help</Link>
             <div style={{ fontSize: "1rem", color: "var(--muted)", textAlign: "center", marginTop: "0.4rem" }}>Talk to a real person</div>
           </div>
         </div>
