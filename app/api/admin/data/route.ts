@@ -13,6 +13,7 @@ const TAB_TABLE: Record<string, string> = {
   venues: "venue_listings",
   events: "event_listings",
   ads: "ad_listings",
+  ambassadors: "ambassadors",
 };
 
 export async function GET(req: NextRequest) {
@@ -35,13 +36,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const [{ count: pending }, { count: newInq }] = await Promise.all([
+  const [{ count: pending }, { count: newInq }, { count: newAmb }] = await Promise.all([
     supabase.from("player_listings").select("id", { count: "exact", head: true }).eq("status", "pending_review"),
     supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("status", "new"),
+    supabase.from("ambassadors").select("id", { count: "exact", head: true }).eq("status", "new"),
   ]);
 
   return NextResponse.json({
     items: data ?? [],
-    counts: { pending: pending ?? 0, newInquiries: newInq ?? 0 },
+    counts: { pending: pending ?? 0, newInquiries: newInq ?? 0, newAmbassadors: newAmb ?? 0 },
   });
 }

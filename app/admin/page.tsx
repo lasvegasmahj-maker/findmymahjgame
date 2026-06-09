@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-type Tab = "inquiries" | "players" | "venues" | "events" | "ads";
+type Tab = "inquiries" | "players" | "venues" | "events" | "ads" | "ambassadors";
 
 interface Inquiry {
   id: string;
@@ -60,6 +60,20 @@ interface AdListing {
   tier: string;
   status: string;
   contact_email: string;
+  created_at: string;
+}
+
+interface Ambassador {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  city: string | null;
+  state: string | null;
+  role: string | null;
+  reach: string | null;
+  why: string | null;
+  status: string;
   created_at: string;
 }
 
@@ -177,9 +191,11 @@ export default function AdminPage() {
   const [venues, setVenues] = useState<VenueListing[]>([]);
   const [events, setEvents] = useState<EventListing[]>([]);
   const [ads, setAds] = useState<AdListing[]>([]);
+  const [ambassadors, setAmbassadors] = useState<Ambassador[]>([]);
   const [loading, setLoading] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
   const [newInquiryCount, setNewInquiryCount] = useState(0);
+  const [newAmbassadorCount, setNewAmbassadorCount] = useState(0);
 
   // Probe the session once on mount. The data route returns 401 without a valid cookie.
   useEffect(() => {
@@ -211,10 +227,14 @@ export default function AdminPage() {
       setEvents(items as EventListing[]);
     } else if (tab === "ads") {
       setAds(items as AdListing[]);
+    } else if (tab === "ambassadors") {
+      const order: Record<string, number> = { new: 0, contacted: 1, approved: 2, declined: 3 };
+      setAmbassadors((items as Ambassador[]).slice().sort((a, b) => (order[a.status] ?? 4) - (order[b.status] ?? 4)));
     }
     if (json?.counts) {
       setPendingCount(json.counts.pending ?? 0);
       setNewInquiryCount(json.counts.newInquiries ?? 0);
+      setNewAmbassadorCount(json.counts.newAmbassadors ?? 0);
     }
     setLoading(false);
   }
@@ -245,6 +265,9 @@ export default function AdminPage() {
       flagged: { bg: "rgba(245,200,66,0.15)", color: "#a07800" },
       rejected: { bg: "rgba(220,38,38,0.1)", color: "#dc2626" },
       pending_review: { bg: "rgba(245,200,66,0.15)", color: "#a07800" },
+      approved: { bg: "rgba(46,201,92,0.1)", color: "#1a9648" },
+      contacted: { bg: "rgba(26,31,94,0.08)", color: "var(--navy)" },
+      declined: { bg: "rgba(220,38,38,0.1)", color: "#dc2626" },
     };
     const c = colors[status] || colors.new;
     return (
@@ -257,7 +280,11 @@ export default function AdminPage() {
   if (authed === null) return null;
   if (!authed) return <LoginGate onAuth={() => setAuthed(true)} />;
 
-  const showBanner = pendingCount > 0 || newInquiryCount > 0;
+  const bannerParts: string[] = [];
+  if (pendingCount > 0) bannerParts.push(`${pendingCount} pending listing${pendingCount !== 1 ? "s" : ""}`);
+  if (newInquiryCount > 0) bannerParts.push(`${newInquiryCount} new ${newInquiryCount !== 1 ? "inquiries" : "inquiry"}`);
+  if (newAmbassadorCount > 0) bannerParts.push(`${newAmbassadorCount} new ambassador application${newAmbassadorCount !== 1 ? "s" : ""}`);
+  const showBanner = bannerParts.length > 0;
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "2rem" }}>
@@ -276,9 +303,7 @@ export default function AdminPage() {
           color: "var(--navy)",
         }}>
           <span style={{ fontSize: "1.1rem" }}>⚡</span>
-          You have{pendingCount > 0 ? ` ${pendingCount} pending listing${pendingCount !== 1 ? "s" : ""}` : ""}
-          {pendingCount > 0 && newInquiryCount > 0 ? " and" : ""}
-          {newInquiryCount > 0 ? ` ${newInquiryCount} new ${newInquiryCount !== 1 ? "inquiries" : "inquiry"}` : ""} to review.
+          You have {bannerParts.join(", ")} to review.
         </div>
       )}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "2rem" }}>
@@ -304,6 +329,7 @@ export default function AdminPage() {
           { id: "venues" as Tab, label: "Venues", icon: "🏛" },
           { id: "events" as Tab, label: "Events", icon: "🎫" },
           { id: "ads" as Tab, label: "Ads", icon: "📢" },
+          { id: "ambassadors" as Tab, label: "Ambassadors", icon: "🤝" },
         ]).map((t) => (
           <button
             key={t.id}
@@ -464,7 +490,7 @@ export default function AdminPage() {
                   <tr key={ev.id} style={{ borderBottom: "1px solid var(--border)" }}>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.9rem", fontWeight: 600, color: "var(--navy)" }}>{ev.event_name}</td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{ev.city}, {ev.state}</td>
-                    <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{ev.event_date ? formatDate(ev.event_date) : "—"}</td>
+                    <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{ev.event_date ? formatDate(ev.event_date) : "-"}</td>
                     <td style={{ padding: "0.8rem 1rem" }}><StatusBadge status={ev.status} /></td>
                     <td style={{ padding: "0.8rem 1rem", display: "flex", gap: "0.4rem" }}>
                       {ev.status === "published" && <button onClick={() => updateStatus("event_listings", ev.id, "flagged")} style={{ background: "#fef3c7", border: "1px solid #f5c842", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Flag</button>}
@@ -514,6 +540,43 @@ export default function AdminPage() {
                 ))}
               </tbody>
             </table>
+          )}
+        </div>
+      )}
+
+      {/* AMBASSADORS TAB */}
+      {!loading && tab === "ambassadors" && (
+        <div>
+          {ambassadors.length === 0 ? (
+            <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "3rem", textAlign: "center" }}>
+              <p style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>🤝</p>
+              <p style={{ color: "var(--muted)" }}>No ambassador applications yet. They&rsquo;ll show up here when someone applies at /ambassadors.</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              {ambassadors.map((a) => (
+                <div key={a.id} style={{ background: "white", border: "1px solid var(--border)", borderRadius: 12, padding: "1.5rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.6rem" }}>
+                    <div>
+                      <strong style={{ color: "var(--navy)", fontSize: "1rem" }}>{a.name}</strong>
+                      {a.role && <span style={{ marginLeft: "0.8rem", fontSize: "0.78rem", fontWeight: 700, color: "var(--navy)", background: "var(--bg)", borderRadius: 4, padding: "0.15rem 0.6rem" }}>{a.role}</span>}
+                    </div>
+                    <StatusBadge status={a.status} />
+                  </div>
+                  <p style={{ fontSize: "0.85rem", color: "var(--muted)", margin: "0 0 0.5rem" }}>
+                    {a.email}{a.phone ? ` · ${a.phone}` : ""}{(a.city || a.state) ? ` · ${[a.city, a.state].filter(Boolean).join(", ")}` : ""}{a.reach ? ` · reaches ${a.reach}` : ""}
+                  </p>
+                  {a.why && <p style={{ fontSize: "0.9rem", color: "var(--navy)", lineHeight: 1.6, marginBottom: "0.8rem", whiteSpace: "pre-wrap" }}>{a.why}</p>}
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", fontSize: "0.78rem", flexWrap: "wrap" }}>
+                    <span style={{ color: "var(--muted)" }}>{formatDate(a.created_at)}</span>
+                    <a href={`mailto:${a.email}`} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.75rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", textDecoration: "none" }}>Email</a>
+                    <button onClick={() => updateStatus("ambassadors", a.id, "approved")} style={{ background: "var(--green)", color: "white", border: "none", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.75rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Approve</button>
+                    <button onClick={() => updateStatus("ambassadors", a.id, "contacted")} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.75rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Contacted</button>
+                    <button onClick={() => updateStatus("ambassadors", a.id, "declined")} style={{ background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.75rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif", color: "#dc2626" }}>Decline</button>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}
