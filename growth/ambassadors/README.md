@@ -44,6 +44,14 @@ Recruit, then Onboard, then Launch, then Measure. Here is where each stage lives
 
 Each city plan has an ambassador target, a table target, a 30-day checklist, weekly milestones, risks, and recovery actions. Goal: reach and hold Green in all 3 markets, then expand nationally with the same motion.
 
+### Growth Engine (marketing and ambassador rollout)
+- [16 Ambassador Growth Engine](16-ambassador-growth-engine.md) - reward structure, rewards follow activation (filled, played, recurring), not signups.
+- [17 Influencer Strategy](17-influencer-strategy.md) - Tier A (local leaders) is the priority; B is a light assist; C waits.
+- [18 Oh My Mahjong Relationship Plan](18-oh-my-mahjong-relationship-plan.md) - Hot/Warm/Cold, city prioritization, cadence, and where founder time goes.
+- [19 Competitive Land Grab Plan](19-competitive-land-grab-plan.md) - the moats (relationship, community, trust, network) and how to become the default.
+- [20 City Launch Accelerator](20-city-launch-accelerator.md) - one ambassador to recurring games, with first 30/90 days and failure recovery.
+- [21 Top 10 Growth Priorities](21-top-10-growth-priorities.md) - the plan challenged, blind spots named, and the ranked highest-ROI actions.
+
 ## How to run this nationally
 
 The motion is one repeatable loop, light enough to run from a phone and not dependent on the founder being in the city:
