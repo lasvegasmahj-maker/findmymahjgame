@@ -4,6 +4,12 @@ The strategy documents in this folder make several assumptions that only Shauna 
 
 How to use: write your answer under each question. If an answer changes a target in another document, note it and we update that document.
 
+## 0. Vision decision (new, June 2026)
+
+The vision clarified to "the national source of truth for American Mahjong," with table formation as one feature. This forces a founder decision: do you commit to the inventory land grab (events, teachers, venues nationally where they are public and known) as a primary 30-day effort alongside Las Vegas tables. Breadth-first is the fastest land grab and the clearest path to source of truth, but it carries a risk of a thin directory if it is not paired with the weekly newsletter (habit) and Las Vegas recurring tables (depth). Your answer sets the next 30 days. See the Strategic Reset and 30-Day Wartime Plan.
+
+Your answer:
+
 ## 1. Current ambassador inventory
 
 What the plan assumes: the 30-Day Blitz and the Top 25 Cities assume there are roughly 25 warm Oh My Mahjong relationships spread across roughly 25 different cities, strong enough to ask for help.

@@ -4,6 +4,10 @@ A plain-English summary of the business and everything accomplished in this spri
 
 ---
 
+## Vision update (June 2026): the source of truth
+
+The vision has been sharpened. Find My Mahj Game is not just a place to find a table. It is becoming the national source of truth for American Mahjong: the first place a player goes to find people, games, open plays, tournaments, teachers, venues, retreats, cruises, and events, safely. Table formation is the deepest feature, not the whole business. The next 30 days focus on a relationship-driven land grab of real event, teacher, and venue inventory, plus seeding Las Vegas recurring tables, with a weekly local newsletter as the habit loop. For the full detail and the ranked actions, see the Strategic Reset and 30-Day Wartime Plan, and the plain-English Strategic Changes Summary for Shauna.
+
 ## 1. Executive summary
 
 Find My Mahj Game helps people find mahjong players and get into real games. In this sprint we did two big things. First, we turned the website from a directory you browse into a tool that actually forms games: a person can find a game near them, start their own, or ask a real person for help. Second, we built a complete growth system to spread it city by city through trusted local leaders called Founding Ambassadors, many of whom you met at the Oh My Mahjong conference.

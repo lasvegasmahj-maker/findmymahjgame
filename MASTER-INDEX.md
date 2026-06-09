@@ -2,6 +2,8 @@
 
 The single map of every document in the Find My Mahj Game operating system. Use this to find the right document fast, and to understand what is current versus historical.
 
+June 2026 vision update: the vision is now the national source of truth for American Mahjong, with table formation as one feature inside it. Start with the new Strategic Reset and 30-Day Wartime Plan (growth/ambassadors/41) and the plain-English Strategic Changes Summary for Shauna (repo root). Where they conflict with earlier docs on emphasis, the reset wins.
+
 Source of truth: the documents listed under Executive, Growth, Ambassadors, City Launch, Metrics, and Founder below are current. The Archive section is earlier exploration kept for history; where it disagrees with a current document, the current document wins.
 
 ## How to use this index

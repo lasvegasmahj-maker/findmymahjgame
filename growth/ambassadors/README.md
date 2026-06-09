@@ -77,6 +77,10 @@ Each city plan has an ambassador target, a table target, a 30-day checklist, wee
 - [39 National Mahjong Hub Roadmap](39-national-mahjong-hub-roadmap.md) - find players then discover activity; Phase 1/2/3 mapping of the ten elements.
 - [40 30/60/90 Day Execution Plan](40-30-60-90-execution-plan.md) - concrete, mostly manual, ranked against the five priorities and four metrics.
 
+### Strategic Reset (June 2026, source-of-truth vision)
+- [41 Strategic Reset and 30-Day Wartime Plan](41-strategic-reset-30-day-wartime-plan.md) - the vision reset to national source of truth, with what stays/changes/delays/removed, the North Star review, 25 force-ranked actions, start/wait/kill, the relationship land grab, ambassador and influencer strategy, the event inventory blitz, newsletter order, moat ranking, Las Vegas First, and the scorecard. Supersedes earlier emphasis where they conflict.
+- Strategic Changes Summary for Shauna - the plain-English version, at the repo root (STRATEGIC-CHANGES-SUMMARY-FOR-SHAUNA.md).
+
 ## How to run this nationally
 
 The motion is one repeatable loop, light enough to run from a phone and not dependent on the founder being in the city:
