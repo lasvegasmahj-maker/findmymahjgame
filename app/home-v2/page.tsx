@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createServerClient } from "@/lib/supabase-server";
-import NewsletterCard from "./newsletter-card";
+import NewsletterSignup from "@/components/newsletter-signup";
 import styles from "./home-v2.module.css";
 
 export const metadata: Metadata = {
@@ -103,7 +103,11 @@ export default async function HomeV2() {
       )}
 
       <section className={styles.section}>
-        <NewsletterCard />
+        <div className={styles.newsletter}>
+          <h2 className={styles.nlTitle}>Stay Connected</h2>
+          <p className={styles.nlText}>Get updates on events, open plays, teachers, and community news.</p>
+          <NewsletterSignup dark />
+        </div>
       </section>
     </>
   );
