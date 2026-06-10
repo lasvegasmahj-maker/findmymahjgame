@@ -70,7 +70,7 @@ export default async function TablePage({
       )}
 
       <div style={card}>
-        <div style={{ fontSize: "1.9rem", fontWeight: 800, color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>{title}</div>
+        <h1 style={{ fontSize: "1.9rem", fontWeight: 800, color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif", margin: 0 }}>{title}</h1>
         {place && <div style={{ fontSize: "1.2rem", color: "var(--muted)", marginTop: "0.4rem" }}>📍 {place}</div>}
         <div style={{ fontSize: "1.2rem", color: "var(--muted)", marginTop: "0.3rem", marginBottom: "1.2rem" }}>
           {t.skill === "beginner" ? "Beginners welcome" : t.skill === "experienced" ? "Experienced players" : "Anyone can join"}

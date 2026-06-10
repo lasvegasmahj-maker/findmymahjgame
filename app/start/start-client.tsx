@@ -89,7 +89,7 @@ export default function StartClient() {
         </div>
 
         <div style={labelStyle}>Your area or ZIP code</div>
-        <input style={fieldStyle} placeholder="e.g. Summerlin, Henderson, or 89135" value={area} onChange={(e) => setArea(e.target.value)} />
+        <input style={fieldStyle} aria-label="Your area or ZIP code" placeholder="e.g. Summerlin, Henderson, or 89135" value={area} onChange={(e) => setArea(e.target.value)} />
         <p style={{ fontSize: "0.95rem", color: "var(--muted)", marginTop: "0.5rem" }}>We match you with players in your area. You&rsquo;ll choose a public place to meet after your table fills, no home address needed.</p>
 
         <div style={labelStyle}>Who can join?</div>
@@ -100,10 +100,10 @@ export default function StartClient() {
         </div>
 
         <div style={labelStyle}>Your name</div>
-        <input style={fieldStyle} placeholder="First name" value={hostName} onChange={(e) => setHostName(e.target.value)} />
+        <input style={fieldStyle} aria-label="Your first name" placeholder="First name" value={hostName} onChange={(e) => setHostName(e.target.value)} />
         <div style={labelStyle}>How can we reach you?</div>
-        <input style={fieldStyle} type="tel" inputMode="tel" placeholder="Mobile number" value={hostPhone} onChange={(e) => setHostPhone(e.target.value)} />
-        <input style={{ ...fieldStyle, marginTop: "0.7rem" }} type="email" placeholder="Email" value={hostEmail} onChange={(e) => setHostEmail(e.target.value)} />
+        <input style={fieldStyle} type="tel" inputMode="tel" aria-label="Mobile number" placeholder="Mobile number" value={hostPhone} onChange={(e) => setHostPhone(e.target.value)} />
+        <input style={{ ...fieldStyle, marginTop: "0.7rem" }} type="email" aria-label="Email" placeholder="Email" value={hostEmail} onChange={(e) => setHostEmail(e.target.value)} />
         <p style={{ fontSize: "0.95rem", color: "var(--muted)", marginTop: "0.5rem" }}>Add a phone, an email, or both, so we can reach you when players join. We never show it to anyone.</p>
 
         {err && <p style={{ color: "#dc2626", fontSize: "1.05rem", marginTop: "1rem" }}>{err}</p>}

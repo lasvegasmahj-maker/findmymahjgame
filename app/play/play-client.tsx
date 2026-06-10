@@ -97,7 +97,7 @@ export default function PlayClient() {
         <div style={{ textAlign: "center", color: "var(--muted)", fontSize: "1.05rem", margin: "1rem 0 0.2rem" }}>or type your town</div>
         {geoMsg && <p style={{ color: "#dc2626", fontSize: "1.05rem", textAlign: "center", marginTop: 0 }}>{geoMsg}</p>}
         <form onSubmit={findGames}>
-          <input style={fieldStyle} placeholder="Town or city" value={city} onChange={(e) => setCity(e.target.value)} />
+          <input style={fieldStyle} aria-label="Town or city" placeholder="Town or city" value={city} onChange={(e) => setCity(e.target.value)} />
           <button type="submit" disabled={!city.trim() || searching} style={bigBtn(!!city.trim())}>{searching ? "Looking..." : "Find a Game"}</button>
         </form>
       </>
@@ -153,10 +153,10 @@ export default function PlayClient() {
       <p style={{ fontSize: "1.15rem", color: "var(--muted)", lineHeight: 1.5 }}>Be the first to know. We&rsquo;ll reach out the moment a game opens near you, or <a href="/start" style={{ color: "var(--pink)", fontWeight: 700 }}>start your own</a>.</p>
       <form onSubmit={submitCapture}>
         <div style={labelStyle}>Your name</div>
-        <input style={fieldStyle} placeholder="First name" value={name} onChange={(e) => setName(e.target.value)} />
+        <input style={fieldStyle} aria-label="Your first name" placeholder="First name" value={name} onChange={(e) => setName(e.target.value)} />
         <div style={labelStyle}>How can we reach you?</div>
-        <input style={fieldStyle} type="tel" inputMode="tel" placeholder="Mobile number" value={phone} onChange={(e) => setPhone(e.target.value)} />
-        <input style={{ ...fieldStyle, marginTop: "0.7rem" }} type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input style={fieldStyle} type="tel" inputMode="tel" aria-label="Mobile number" placeholder="Mobile number" value={phone} onChange={(e) => setPhone(e.target.value)} />
+        <input style={{ ...fieldStyle, marginTop: "0.7rem" }} type="email" aria-label="Email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <p style={{ fontSize: "0.95rem", color: "var(--muted)", marginTop: "0.5rem" }}>Add a phone, an email, or both. We never show it to anyone.</p>
         <div style={labelStyle}>Best time? <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: "1rem" }}>(optional)</span></div>
         <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>

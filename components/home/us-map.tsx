@@ -116,7 +116,7 @@ export default function USMap({ stateCounts = {} }: { stateCounts?: StateCounts 
 
   return (
     <Suspense fallback={<MapSkeleton />}>
-      <div className="us-map-container" ref={containerRef} onMouseMove={handleContainerMouseMove}>
+      <div className="us-map-container" ref={containerRef} onMouseMove={handleContainerMouseMove} aria-hidden="true">
         <ComposableMap
           projection="geoAlbersUsa"
           projectionConfig={{ scale: 1050 }}

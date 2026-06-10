@@ -65,37 +65,37 @@ export default function AmbassadorForm() {
   return (
     <form onSubmit={submit} style={{ marginTop: "0.5rem" }}>
       <div style={labelStyle}>Your name</div>
-      <input style={fieldStyle} placeholder="First and last name" value={name} onChange={(e) => setName(e.target.value)} />
+      <input style={fieldStyle} aria-label="Your name" placeholder="First and last name" value={name} onChange={(e) => setName(e.target.value)} />
 
       <div style={labelStyle}>Email</div>
-      <input style={fieldStyle} type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <input style={fieldStyle} type="email" aria-label="Email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
 
       <div style={labelStyle}>Phone <span style={optional}>(optional)</span></div>
-      <input style={fieldStyle} type="tel" inputMode="tel" placeholder="Mobile number" value={phone} onChange={(e) => setPhone(e.target.value)} />
+      <input style={fieldStyle} type="tel" inputMode="tel" aria-label="Phone (optional)" placeholder="Mobile number" value={phone} onChange={(e) => setPhone(e.target.value)} />
 
       <div style={labelStyle}>City</div>
-      <input style={fieldStyle} placeholder="Your city or town" value={city} onChange={(e) => setCity(e.target.value)} />
+      <input style={fieldStyle} aria-label="City" placeholder="Your city or town" value={city} onChange={(e) => setCity(e.target.value)} />
 
       <div style={labelStyle}>State</div>
-      <select style={fieldStyle} value={state} onChange={(e) => setState(e.target.value)}>
+      <select style={fieldStyle} aria-label="State" value={state} onChange={(e) => setState(e.target.value)}>
         <option value="">Choose your state</option>
         {STATES.map((s) => <option key={s} value={s}>{s}</option>)}
       </select>
 
       <div style={labelStyle}>Your role</div>
-      <select style={fieldStyle} value={role} onChange={(e) => setRole(e.target.value)}>
+      <select style={fieldStyle} aria-label="Your role" value={role} onChange={(e) => setRole(e.target.value)}>
         <option value="">Choose one</option>
         {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
       </select>
 
       <div style={labelStyle}>How many players can you reach? <span style={optional}>(optional)</span></div>
-      <select style={fieldStyle} value={reach} onChange={(e) => setReach(e.target.value)}>
+      <select style={fieldStyle} aria-label="How many players can you reach (optional)" value={reach} onChange={(e) => setReach(e.target.value)}>
         <option value="">Choose one</option>
         {REACH.map((r) => <option key={r} value={r}>{r}</option>)}
       </select>
 
       <div style={labelStyle}>Why do you want to help?</div>
-      <textarea style={{ ...fieldStyle, minHeight: 120, resize: "vertical", paddingTop: "0.8rem", lineHeight: 1.5 }} placeholder="Tell us a little about how you bring players together." value={why} onChange={(e) => setWhy(e.target.value)} />
+      <textarea style={{ ...fieldStyle, minHeight: 120, resize: "vertical", paddingTop: "0.8rem", lineHeight: 1.5 }} aria-label="Why do you want to help?" placeholder="Tell us a little about how you bring players together." value={why} onChange={(e) => setWhy(e.target.value)} />
 
       {err && <p style={{ color: "#dc2626", fontSize: "1.05rem", marginTop: "1rem" }}>{err}</p>}
 

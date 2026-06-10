@@ -34,6 +34,10 @@
 html { scroll-behavior: smooth; }
 ::selection { background: rgba(233,30,140,0.12); color: var(--navy); }
 
+/* Directory card grids: two columns, one column on phones. */
+.dir-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 768px) { .dir-grid { grid-template-columns: 1fr; } }
+
 /* Visible keyboard focus everywhere (keyboard-only, so mouse users are unaffected). */
 a:focus-visible,
 button:focus-visible,

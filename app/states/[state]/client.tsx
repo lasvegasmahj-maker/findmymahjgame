@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { StateData } from "@/lib/states-data";
@@ -117,6 +117,13 @@ export default function StatePageClient({ stateData, players, events, venues }: 
   const allCities = [`All of ${stateData.name}`, ...stateData.cities];
   const [connectForm, setConnectForm] = useState<ConnectForm | null>(null);
 
+  useEffect(() => {
+    if (!connectForm) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setConnectForm(null); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [connectForm]);
+
   async function handleConnectSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!connectForm) return;
@@ -212,13 +219,13 @@ export default function StatePageClient({ stateData, players, events, venues }: 
       {/* Main Content */}
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "3rem 2rem" }}>
         {/* Tabs */}
-        <div style={{ display: "flex", gap: 0, borderBottom: "2px solid var(--border)", marginBottom: "2.5rem" }}>
+        <div style={{ display: "flex", gap: 0, borderBottom: "2px solid var(--border)", marginBottom: "2.5rem", overflowX: "auto" }}>
           {([
             { id: "players" as const, label: "Players", icon: "👥", count: filteredPlayers.length },
             { id: "events" as const, label: "Events", icon: "🎫", count: filteredEvents.length },
-            { id: "venues" as const, label: "Where to Play", icon: "🏛", count: filteredVenues.length },
+            { id: "venues" as const, label: "Venues", icon: "🏛", count: filteredVenues.length },
           ]).map((tab) => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ padding: "0.9rem 1.8rem", fontSize: "0.95rem", fontWeight: 600, cursor: "pointer", background: "transparent", border: "none", borderBottom: "2px solid", borderBottomColor: activeTab === tab.id ? "var(--pink)" : "transparent", marginBottom: -2, color: activeTab === tab.id ? "var(--navy)" : "var(--muted)", fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ padding: "0.9rem 1.2rem", flexShrink: 0, whiteSpace: "nowrap", fontSize: "0.95rem", fontWeight: 600, cursor: "pointer", background: "transparent", border: "none", borderBottom: "2px solid", borderBottomColor: activeTab === tab.id ? "var(--pink)" : "transparent", marginBottom: -2, color: activeTab === tab.id ? "var(--navy)" : "var(--muted)", fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s", display: "flex", alignItems: "center", gap: "0.4rem" }}>
               {tab.icon} {tab.label}
               {tab.count > 0 && <span style={{ background: "var(--pink)", color: "white", borderRadius: 50, fontSize: "0.65rem", fontWeight: 700, padding: "0.1rem 0.5rem", minWidth: 18, textAlign: "center" }}>{tab.count}</span>}
             </button>
@@ -235,7 +242,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             </p>
 
             {filteredPlayers.length > 0 ? (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "2rem" }}>
+              <div className="dir-grid" style={{ marginBottom: "2rem" }}>
                 {filteredPlayers.map((player, i) => (
                   <div key={player.id} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.4rem", transition: "all 0.2s", display: "flex", flexDirection: "column" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", marginBottom: "0.8rem" }}>
@@ -369,7 +376,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             </p>
 
             {filteredVenues.length > 0 ? (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "2rem" }}>
+              <div className="dir-grid" style={{ marginBottom: "2rem" }}>
                 {filteredVenues.map((venue) => (
                   <div key={venue.id} className="venue-card">
                     {venue.logo_url
@@ -444,11 +451,14 @@ export default function StatePageClient({ stateData, players, events, venues }: 
           style={{ position: "fixed", inset: 0, background: "rgba(26,31,94,0.6)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}
         >
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Connect with ${connectForm.player.name}`}
             onClick={e => e.stopPropagation()}
             style={{ background: "white", borderRadius: 20, padding: "2.5rem", maxWidth: 480, width: "100%", position: "relative", boxShadow: "0 20px 60px rgba(26,31,94,0.25)" }}
           >
             {/* Close */}
-            <button onClick={() => setConnectForm(null)} style={{ position: "absolute", top: "1rem", right: "1rem", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontSize: "1.1rem", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif" }}>×</button>
+            <button aria-label="Close" onClick={() => setConnectForm(null)} style={{ position: "absolute", top: "1rem", right: "1rem", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontSize: "1.1rem", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif" }}>×</button>
 
             {connectForm.submitted ? (
               <div style={{ textAlign: "center", padding: "1rem 0" }}>
@@ -475,8 +485,9 @@ export default function StatePageClient({ stateData, players, events, venues }: 
 
                 <form onSubmit={handleConnectSubmit}>
                   <div style={{ marginBottom: "1rem" }}>
-                    <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "var(--navy)", marginBottom: "0.4rem" }}>Your Name</label>
+                    <label htmlFor="connect-name" style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "var(--navy)", marginBottom: "0.4rem" }}>Your Name</label>
                     <input
+                      id="connect-name"
                       type="text" required placeholder="Jane Smith"
                       value={connectForm.name}
                       onChange={e => setConnectForm({ ...connectForm, name: e.target.value })}
@@ -484,8 +495,9 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                     />
                   </div>
                   <div style={{ marginBottom: "1rem" }}>
-                    <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "var(--navy)", marginBottom: "0.4rem" }}>Your Email</label>
+                    <label htmlFor="connect-email" style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "var(--navy)", marginBottom: "0.4rem" }}>Your Email</label>
                     <input
+                      id="connect-email"
                       type="email" required placeholder="jane@example.com"
                       value={connectForm.email}
                       onChange={e => setConnectForm({ ...connectForm, email: e.target.value })}
@@ -493,8 +505,9 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                     />
                   </div>
                   <div style={{ marginBottom: "1.5rem" }}>
-                    <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "var(--navy)", marginBottom: "0.4rem" }}>Message <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span></label>
+                    <label htmlFor="connect-message" style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "var(--navy)", marginBottom: "0.4rem" }}>Message <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span></label>
                     <textarea
+                      id="connect-message"
                       placeholder={`Hi ${connectForm.player.name.split(" ")[0]}! I'm looking for a mahjong group in ${connectForm.player.city}...`}
                       value={connectForm.message}
                       onChange={e => setConnectForm({ ...connectForm, message: e.target.value })}

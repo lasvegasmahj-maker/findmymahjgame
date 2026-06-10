@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { STATES } from "@/lib/states-data";
+import { createServerClient } from "@/lib/supabase-server";
+import USMap from "@/components/home/us-map";
 
 export const metadata: Metadata = {
   title: "Browse Mahjong Players by State | All 50 States",
@@ -24,7 +26,29 @@ const REGIONS: Record<string, string[]> = {
   "Mid-Atlantic": ["delaware", "maryland"],
 };
 
-export default function StatesIndexPage() {
+type Counts = Record<string, { players: number; events: number; venues: number }>;
+
+export default async function StatesIndexPage() {
+  const supabase = createServerClient();
+  const stateCounts: Counts = {};
+  try {
+    const [playersRes, eventsRes, venuesRes] = await Promise.all([
+      supabase.from("player_listings").select("state").eq("status", "published"),
+      supabase.from("event_listings").select("state").eq("status", "published"),
+      supabase.from("venue_listings").select("state").eq("status", "published"),
+    ]);
+    const bump = (st: string | null, key: "players" | "events" | "venues") => {
+      const a = (st || "").toUpperCase();
+      if (!a) return;
+      (stateCounts[a] ||= { players: 0, events: 0, venues: 0 })[key]++;
+    };
+    (playersRes.data || []).forEach((r) => bump(r.state, "players"));
+    (eventsRes.data || []).forEach((r) => bump(r.state, "events"));
+    (venuesRes.data || []).forEach((r) => bump(r.state, "venues"));
+  } catch {
+    // No live data; the map simply renders with no active states highlighted.
+  }
+
   return (
     <>
       <div className="page-hero">
@@ -37,6 +61,10 @@ export default function StatesIndexPage() {
       </div>
 
       <div className="page-body" style={{ maxWidth: 1000 }}>
+
+        <div style={{ marginBottom: "2.5rem" }}>
+          <USMap stateCounts={stateCounts} />
+        </div>
 
         {/* Region blocks */}
         {Object.entries(REGIONS).map(([region, slugs]) => {
