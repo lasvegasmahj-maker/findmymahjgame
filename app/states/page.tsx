@@ -24,8 +24,6 @@ const REGIONS: Record<string, string[]> = {
   "Mid-Atlantic": ["delaware", "maryland"],
 };
 
-const ALL_STATES = Object.values(STATES).sort((a, b) => a.name.localeCompare(b.name));
-
 export default function StatesIndexPage() {
   return (
     <>
@@ -65,12 +63,12 @@ export default function StatesIndexPage() {
                       textDecoration: "none",
                       color: "var(--navy)",
                       fontWeight: 600,
-                      fontSize: "0.88rem",
+                      fontSize: "1rem",
                       transition: "border-color 0.15s, background 0.15s",
                     }}
                   >
                     {state.name}
-                    <span style={{ display: "block", fontSize: "0.72rem", color: "var(--muted)", fontWeight: 400, marginTop: "0.15rem" }}>
+                    <span style={{ display: "block", fontSize: "0.9rem", color: "var(--muted)", fontWeight: 400, marginTop: "0.2rem" }}>
                       {state.cities.slice(0, 2).join(", ")}
                     </span>
                   </Link>
@@ -79,32 +77,6 @@ export default function StatesIndexPage() {
             </div>
           );
         })}
-
-        {/* A-Z fallback / full list */}
-        <div style={{ background: "var(--navy)", borderRadius: 16, padding: "2rem", textAlign: "center", marginTop: "1rem" }}>
-          <p style={{ color: "rgba(255,255,255,0.8)", marginBottom: "1.2rem", fontSize: "0.95rem" }}>
-            Don&rsquo;t see your state above? Every state has a page.
-          </p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", justifyContent: "center" }}>
-            {ALL_STATES.map((state) => (
-              <Link
-                key={state.slug}
-                href={`/states/${state.slug}`}
-                style={{
-                  fontSize: "0.78rem",
-                  color: "rgba(255,255,255,0.85)",
-                  background: "rgba(255,255,255,0.1)",
-                  border: "1px solid rgba(255,255,255,0.2)",
-                  borderRadius: 5,
-                  padding: "0.2rem 0.6rem",
-                  textDecoration: "none",
-                }}
-              >
-                {state.abbr}
-              </Link>
-            ))}
-          </div>
-        </div>
 
         <div style={{ textAlign: "center", marginTop: "2.5rem" }}>
           <Link href="/list-my-game" className="btn-cta-primary">

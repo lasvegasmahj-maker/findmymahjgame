@@ -711,6 +711,11 @@ body {
   /* Mobile: hide the secondary nav row and shrink the hero so the three
      primary actions sit right under the logo, visible without scrolling. */
   .nav-bar { display: none; }
+  .site-nav { padding: 0.7rem 1rem; flex-wrap: wrap; row-gap: 0.5rem; }
+  .nav-right { gap: 0.8rem 1.1rem; flex-wrap: wrap; }
+  .nav-advertise { font-size: 0.95rem; }
+  .footer-cols a { font-size: 0.95rem; }
+  .footer-cols h4 { font-size: 0.8rem; }
   .hero { padding: 1.1rem 1.1rem 1.8rem; }
   .hero h1 { font-size: 1.7rem; margin-bottom: 0.8rem; }
   .hero > p { font-size: 1rem; margin: 0 auto 1.2rem; }
