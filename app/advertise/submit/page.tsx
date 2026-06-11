@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import SubmitClient from "./submit-client";
 
 export const metadata: Metadata = {
-  title: "Submit Your Listing | Find My Mahj Game",
+  title: "Submit Your Listing",
   description: "Submit your full listing details for Find My Mahj Game. We'll review and get you live within 24 hours.",
   robots: { index: false },
 };

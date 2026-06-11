@@ -3,8 +3,10 @@ import Link from "next/link";
 import { createServerClient } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
-  title: "Places to Play Mahjong Near You | Find My Mahj Game",
+  title: "Places to Play Mahjong Near You",
   description: "Find mahjong-friendly places near you: studios, libraries, senior centers, and venues where American Mahjong is played.",
+  alternates: { canonical: "https://findmymahjgame.com/venues" },
+  robots: { index: false, follow: true },
 };
 
 export const revalidate = 300;

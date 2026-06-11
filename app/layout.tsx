@@ -44,16 +44,16 @@ export const metadata: Metadata = {
     url: "https://findmymahjgame.com",
     images: [
       {
-        url: "/og-default.png",
+        url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "Find My Mahj Game - Mahjong Players, Groups and Events Nationwide",
+        alt: "Find My Mahj Game, Mahjong Players, Groups and Events Nationwide",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/og-default.png"],
+    images: ["/opengraph-image"],
   },
 };
 

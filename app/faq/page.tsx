@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Mahjong Player Directory FAQ | Find My Mahj Game",
+  title: "Mahjong Player Directory FAQ",
   description:
     "Answers to common questions about finding mahjong players, creating a free listing, and how Find My Mahj Game works.",
   alternates: { canonical: "https://findmymahjgame.com/faq" },

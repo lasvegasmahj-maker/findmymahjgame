@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Find My Mahj Game",
+  title: "Privacy Policy",
   description: "Privacy Policy for Find My Mahj Game. Learn how we collect, use, and protect your information.",
   alternates: { canonical: "https://findmymahjgame.com/privacy" },
   robots: { index: false, follow: false },

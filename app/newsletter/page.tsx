@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import NewsletterSignup from "@/components/newsletter-signup";
 
 export const metadata: Metadata = {
-  title: "Find My Mahj Weekly | Find My Mahj Game",
+  title: "Find My Mahj Weekly",
   description: "A free weekly note with the games and open plays near you, plus one quick tip. Sign up for Find My Mahj Weekly.",
+  alternates: { canonical: "https://findmymahjgame.com/newsletter" },
 };
 
 const li: React.CSSProperties = { fontSize: "1.15rem", color: "var(--navy)", lineHeight: 1.6, marginBottom: "0.7rem" };

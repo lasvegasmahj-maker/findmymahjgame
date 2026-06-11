@@ -3,8 +3,9 @@ import Link from "next/link";
 import { createServerClient } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
-  title: "Find a Mahjong Teacher Near You | Find My Mahj Game",
+  title: "Find a Mahjong Teacher Near You",
   description: "Find an American Mahjong teacher near you. Lessons, classes, and beginner-friendly instructors, city by city.",
+  alternates: { canonical: "https://findmymahjgame.com/teachers" },
 };
 
 export const revalidate = 300;

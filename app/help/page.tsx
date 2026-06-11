@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { CONTACT_EMAIL, HELP_PHONE } from "@/lib/constants";
 
 export const metadata: Metadata = {
-  title: "I Need Help | Find My Mahj Game",
+  title: "I Need Help",
   description: "Need help finding or starting a mahjong game? Text us, call us, or read the simple steps.",
+  alternates: { canonical: "https://findmymahjgame.com/help" },
 };
 
 const card: React.CSSProperties = { display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.3rem 1.4rem", marginBottom: "1rem", textDecoration: "none", color: "var(--navy)" };

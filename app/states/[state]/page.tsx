@@ -12,27 +12,27 @@ export function generateStaticParams() {
 
 const STATE_META: Record<string, { title: string; description: string }> = {
   california: {
-    title: "Mahjong Players and Groups in California | Find My Mahj Game",
+    title: "Mahjong Players and Groups in California",
     description:
       "Find mahjong players, open plays, venues and events in California. Search Los Angeles, San Francisco, San Diego, Palm Springs and more. Free for players.",
   },
   florida: {
-    title: "Mahjong Players and Groups in Florida | Find My Mahj Game",
+    title: "Mahjong Players and Groups in Florida",
     description:
       "Find mahjong players, clubs, open plays and events in Florida. Search Miami, Boca Raton, Orlando, Tampa, Naples and more. Free directory for players.",
   },
   "new-york": {
-    title: "Mahjong Players and Groups in New York | Find My Mahj Game",
+    title: "Mahjong Players and Groups in New York",
     description:
       "Find mahjong players, clubs and events in New York. Search NYC, Long Island, Westchester, White Plains and more. Connect with local players free.",
   },
   texas: {
-    title: "Mahjong Players and Groups in Texas | Find My Mahj Game",
+    title: "Mahjong Players and Groups in Texas",
     description:
       "Find mahjong players, open plays, venues and events in Texas. Search Houston, Dallas, Austin, San Antonio and more. Free for players statewide.",
   },
   nevada: {
-    title: "Mahjong Players, Lessons and Events in Nevada | Find My Mahj Game",
+    title: "Mahjong Players, Lessons and Events in Nevada",
     description:
       "Find mahjong players, open play nights, instructors and events in Nevada. Las Vegas, Henderson, Summerlin and Reno. Free for players. Lessons available.",
   },
@@ -57,7 +57,7 @@ export async function generateMetadata({ params }: { params: Promise<{ state: st
 
   const cityList = data.cities.slice(0, 4).join(", ");
   return {
-    title: `Mahjong Players and Groups in ${data.name} | Find My Mahj Game`,
+    title: `Mahjong Players and Groups in ${data.name}`,
     description: `Find mahjong players, open plays, venues and events in ${data.name}. Search ${cityList} and more. Free directory for players.`,
     alternates: { canonical: `https://findmymahjgame.com/states/${state}` },
     openGraph: {

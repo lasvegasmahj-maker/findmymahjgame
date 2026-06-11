@@ -7,6 +7,7 @@ import styles from "./home-v2.module.css";
 export const metadata: Metadata = {
   title: "Find My Mahj Game | Find Mahjong Players Near You",
   description: "Find people to play American Mahjong with, near you, free, in all 50 states.",
+  robots: { index: false, follow: true },
 };
 
 export const revalidate = 60;

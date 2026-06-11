@@ -3,7 +3,7 @@ import ListMyGameClient from "./list-my-game-client";
 import { buildListMyGamePageSchema, schemaScriptProps } from "@/lib/schema";
 
 export const metadata: Metadata = {
-  title: "Create a Free Mahjong Player Listing | Find My Mahj Game",
+  title: "Create a Free Mahjong Player Listing",
   description:
     "List yourself as a mahjong player so others in your area can find you. 100% free, no credit card. Appears on your state page after approval.",
   alternates: {

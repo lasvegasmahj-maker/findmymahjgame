@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import AmbassadorForm from "./ambassadors-form";
 
 export const metadata: Metadata = {
-  title: "Become a Founding Ambassador | Find My Mahj Game",
+  title: "Become a Founding Ambassador",
   description:
     "Help build the mahjong community in your city. Founding Ambassadors help players find safe, public games and form real tables. Teachers, hosts, organizers, and club leaders welcome.",
   alternates: { canonical: "https://findmymahjgame.com/ambassadors" },

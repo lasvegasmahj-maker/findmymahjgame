@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Use | Find My Mahj Game",
+  title: "Terms of Use",
   description:
     "Terms of Use for findmymahjgame.com. Read our platform rules, advertiser policies, player listing guidelines and safety guidelines.",
   robots: {

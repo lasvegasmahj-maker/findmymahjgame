@@ -3,7 +3,7 @@ import GetListedClient from "./get-listed-client";
 import { buildGetListedPageSchema, schemaScriptProps } from "@/lib/schema";
 
 export const metadata: Metadata = {
-  title: "List Your Mahjong Venue, Instructor or Event | Find My Mahj Game",
+  title: "List Your Mahjong Venue, Instructor or Event",
   description:
     "Get your mahjong venue, instructor business or event in front of players searching state by state. Submit your listing and reach the mahjong community nationwide.",
   alternates: {
