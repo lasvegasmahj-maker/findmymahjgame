@@ -4,6 +4,7 @@ import { useState } from "react";
 import SeatDots from "@/components/seat-dots";
 
 const TIMES = ["Morning", "Afternoon", "Evening"];
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const labelStyle: React.CSSProperties = { fontSize: "1.25rem", fontWeight: 800, color: "var(--navy)", margin: "1.6rem 0 0.7rem" };
 const fieldStyle: React.CSSProperties = { width: "100%", minHeight: 56, padding: "0.8rem 1rem", border: "2px solid var(--border)", borderRadius: 12, fontSize: "1.15rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", background: "white", outline: "none" };
 const bigBtn = (ready: boolean): React.CSSProperties => ({ width: "100%", minHeight: 68, marginTop: "1.5rem", borderRadius: 16, border: "none", background: ready ? "var(--pink)" : "#d9b3cc", color: "white", fontSize: "1.4rem", fontWeight: 800, cursor: ready ? "pointer" : "not-allowed", fontFamily: "'DM Sans', sans-serif" });
@@ -21,6 +22,8 @@ export default function PlayClient() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [timePref, setTimePref] = useState("");
+  const [dayPref, setDayPref] = useState("");
+  const [stateGuess, setStateGuess] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
   const [err, setErr] = useState("");
   const [geoMsg, setGeoMsg] = useState("");
@@ -53,6 +56,7 @@ export default function PlayClient() {
           const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
           const g = await r.json();
           const town = g.city || g.locality || g.principalSubdivision || "";
+          if (g.principalSubdivisionCode) setStateGuess(String(g.principalSubdivisionCode).split("-").pop() || "");
           if (!town) { setSearching(false); setGeoMsg("We couldn't find your town. Please type it below."); return; }
           setCity(town);
           runFind(town);
@@ -71,7 +75,7 @@ export default function PlayClient() {
     setStatus("submitting"); setErr("");
     const res = await fetch("/api/want-to-play", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, phone, email, city, timePref }),
+      body: JSON.stringify({ name, phone, email, city, timePref, dayPref, state: stateGuess }),
     });
     if (res.ok) { setStep("done"); return; }
     const d = await res.json().catch(() => ({}));
@@ -158,6 +162,12 @@ export default function PlayClient() {
         <input style={fieldStyle} type="tel" inputMode="tel" aria-label="Mobile number" placeholder="Mobile number" value={phone} onChange={(e) => setPhone(e.target.value)} />
         <input style={{ ...fieldStyle, marginTop: "0.7rem" }} type="email" aria-label="Email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <p style={{ fontSize: "0.95rem", color: "var(--muted)", marginTop: "0.5rem" }}>Add a phone, an email, or both. We never show it to anyone.</p>
+        <div style={labelStyle}>Best day? <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: "1rem" }}>(optional)</span></div>
+        <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
+          {DAYS.map((d) => (
+            <button key={d} type="button" onClick={() => setDayPref(dayPref === d ? "" : d)} style={{ minHeight: 54, padding: "0.6rem 1.1rem", borderRadius: 12, cursor: "pointer", fontSize: "1.1rem", fontWeight: 700, fontFamily: "'DM Sans', sans-serif", border: dayPref === d ? "2.5px solid var(--pink)" : "2px solid var(--border)", background: dayPref === d ? "var(--pink)" : "white", color: dayPref === d ? "white" : "var(--navy)" }}>{d.slice(0, 3)}</button>
+          ))}
+        </div>
         <div style={labelStyle}>Best time? <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: "1rem" }}>(optional)</span></div>
         <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
           {TIMES.map((t) => (

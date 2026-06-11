@@ -8,6 +8,12 @@ import ClaimClient from "./claim-client";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  title: "Join a Mahjong Table",
+  description: "A mahjong table is forming. Claim a seat and we will keep the group in touch.",
+  robots: { index: false, follow: false },
+};
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!

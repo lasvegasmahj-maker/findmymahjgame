@@ -13,6 +13,15 @@ export async function GET(req: NextRequest) {
   const v = token ? verifyGameToken(token) : null;
   if (!v) return NextResponse.redirect(`${siteUrl}/played?result=invalid`);
 
-  await supabase.from("tables").update({ played: v.answer === "yes" }).eq("id", v.tableId);
+  // Idempotency guard: mail-scanner prefetch and repeat clicks must not
+  // re-flip state. First answer wins; later clicks just see the thank-you.
+  const { data: cur } = await supabase.from("tables").select("played, played_at").eq("id", v.tableId).single();
+  if (cur && cur.played_at) {
+    return NextResponse.redirect(`${siteUrl}/played?result=${v.answer}`);
+  }
+  await supabase
+    .from("tables")
+    .update({ played: v.answer === "yes", played_at: new Date().toISOString() })
+    .eq("id", v.tableId);
   return NextResponse.redirect(`${siteUrl}/played?result=${v.answer}`);
 }

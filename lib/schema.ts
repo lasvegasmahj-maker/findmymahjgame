@@ -28,7 +28,7 @@ export const ORGANIZATION_NODE = {
   email: SITE_EMAIL,
   logo: {
     "@type": "ImageObject",
-    url: `${SITE_URL}/logo.png`,
+    url: `${SITE_URL}/icons/icon-512.png`,
     width: 512,
     height: 512,
   },

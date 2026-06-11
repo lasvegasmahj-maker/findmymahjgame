@@ -29,3 +29,11 @@ revoke select (contact_email)
   on public.player_listings from anon;
 revoke select (contact_name, contact_email, reviewer_notes, stripe_payment_id)
   on public.ad_listings from anon;
+
+
+-- Funnel timestamps (2026-06-12): Weekly Player-Games Confirmed needs WHEN a
+-- table filled and played, not just a boolean. Stamped by the claim and
+-- played routes; backfill is not possible, counting starts at launch.
+alter table public.tables
+  add column if not exists filled_at timestamptz,
+  add column if not exists played_at timestamptz;

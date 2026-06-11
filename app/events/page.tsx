@@ -17,11 +17,11 @@ function rank(t: string | null | undefined): number {
   const k = (t || "").toLowerCase().replace(/[^a-z]/g, "");
   return TYPE_RANK[k] ?? 50;
 }
-function whenLabel(e: { event_date?: string | null; day_of_week?: string | null; time_of_day?: string | null }): string {
+function whenLabel(e: { event_date?: string | null; day_time?: string | null; day_of_week?: string | null; time_of_day?: string | null }): string {
   if (e.event_date) {
     try { return new Date(e.event_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }); } catch { /* fall through */ }
   }
-  return [e.day_of_week, e.time_of_day].filter(Boolean).join(" ");
+  return e.day_time || [e.day_of_week, e.time_of_day].filter(Boolean).join(" ");
 }
 
 const field: React.CSSProperties = { minHeight: 54, padding: "0 1rem", border: "2px solid var(--border)", borderRadius: 12, fontSize: "1.1rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", flex: "1 1 200px" };
@@ -60,7 +60,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
                 {e.event_type && <div style={{ display: "inline-block", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.85rem", fontWeight: 800, color: "var(--pink)", marginBottom: "0.5rem" }}>{String(e.event_type).replace(/_/g, " ")}</div>}
                 <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{e.event_name || "Mahjong"}</div>
                 {whenLabel(e) && <div style={{ fontSize: "1.05rem", color: "var(--navy)", marginTop: "0.4rem" }}>{whenLabel(e)}</div>}
-                {(e.venue_name || e.city) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[e.venue_name, e.city, e.state].filter(Boolean).join(", ")}</div>}
+                {(e.venue || e.city) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[e.venue, e.city, e.state].filter(Boolean).join(", ")}</div>}
                 <div style={{ marginTop: "0.9rem", color: "var(--pink)", fontWeight: 800, fontSize: "1.15rem" }}>View details &rarr;</div>
               </a>
             );
