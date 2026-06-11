@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { rateLimit } from "@/lib/rate-limit";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,7 +9,10 @@ const supabase = createClient(
 
 // Public-safe search for forming tables near a town. Returns no contact info.
 export async function GET(req: NextRequest) {
-  const city = (req.nextUrl.searchParams.get("city") || "").trim();
+  if (!(await rateLimit(req, "tables-find", 20, 60))) {
+    return NextResponse.json({ tables: [] }, { status: 429 });
+  }
+  const city = (req.nextUrl.searchParams.get("city") || "").trim().slice(0, 80).replace(/[%_]/g, "");
   if (!city) return NextResponse.json({ tables: [] });
 
   const { data: rows } = await supabase

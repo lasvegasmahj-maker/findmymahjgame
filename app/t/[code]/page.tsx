@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import ShareSheet from "@/components/share-sheet";
 import SeatDots from "@/components/seat-dots";
 import AddToCalendar from "@/components/add-to-calendar";
-import { signGameToken } from "@/lib/game-token";
 import ClaimClient from "./claim-client";
 
 export const dynamic = "force-dynamic";
@@ -76,7 +75,8 @@ export default async function TablePage({
         </div>
         <SeatDots filled={filled} total={total} />
         {remaining === 1 && <div style={{ marginTop: "0.7rem", fontSize: "1.15rem", fontWeight: 800, color: "var(--pink)" }}>Need a 4th! Just 1 seat left, share now to fill it.</div>}
-        <div style={{ fontSize: "1.1rem", color: "var(--navy)", marginTop: "0.9rem" }}>Who is coming: {people.map((p) => p.name).join(", ") || "just the host so far"}
+        <div style={{ fontSize: "1.1rem", color: "var(--navy)", marginTop: "0.9rem" }}>
+          {filled <= 1 ? "Just the host so far" : `${filled} players are in so far`}
         </div>
       </div>
 
@@ -92,14 +92,13 @@ export default async function TablePage({
         </p>
       </div>
 
+      {/* Played confirmation happens through the private ask-played email, never
+          through links on this public page: a public state-changing toggle would
+          let anyone flip games to played or dead and poison the freshness data. */}
       {isFull && (
         <div style={card}>
-          <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.5rem" }}>Did you play?</div>
-          <p style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: 0, marginBottom: "1rem" }}>After your game, tap one. It helps us know our tables become real games.</p>
-          <div style={{ display: "flex", gap: "0.8rem" }}>
-            <a href={`${base}/api/tables/played?token=${signGameToken(t.id, "yes")}`} style={{ flex: 1, textAlign: "center", minHeight: 60, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "#1a6e3a", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Yes, we played</a>
-            <a href={`${base}/api/tables/played?token=${signGameToken(t.id, "no")}`} style={{ flex: 1, textAlign: "center", minHeight: 60, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "#6b7280", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Not yet</a>
-          </div>
+          <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.5rem" }}>Your table is full!</div>
+          <p style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: 0, marginBottom: 0 }}>After your game, we&rsquo;ll email the host to ask how it went. Have a wonderful time.</p>
         </div>
       )}
 

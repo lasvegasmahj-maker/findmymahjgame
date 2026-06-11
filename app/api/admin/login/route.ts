@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminSessionToken, passwordMatches, ADMIN_COOKIE, ADMIN_COOKIE_MAX_AGE } from "@/lib/admin-auth";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
+  if (!(await rateLimit(req, "admin-login", 5, 300))) {
+    return NextResponse.json({ error: "Too many attempts. Try again in a few minutes." }, { status: 429 });
+  }
   const body = await req.json().catch(() => ({}));
 
   if (!process.env.ADMIN_PASSWORD) {
