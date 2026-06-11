@@ -47,6 +47,10 @@ const FAQ_ITEMS = [
     a: "Email hello@findmymahjgame.com with your name and the listing you'd like to update or remove. We handle all changes manually right now.",
   },
   {
+    q: "Who runs Find My Mahj Game?",
+    a: "Find My Mahj Game is an independent national platform for helping players find games, teachers, and community. Our founder also owns Las Vegas Mahjong, a teaching business in Las Vegas. We are open about that. In the Las Vegas area we focus on games, open plays, and community rather than competing teacher listings; everywhere else in the country we welcome and promote every teacher equally. Our goal is simple: help more people find a seat at a table near them.",
+  },
+  {
     q: "Why is my state page empty?",
     a: "We are building the directory from scratch. If your state has no listings yet, you can be the first! Create a free listing at /list-my-game and invite your local group to do the same.",
   },
