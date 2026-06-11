@@ -62,10 +62,6 @@ export default async function StatesIndexPage() {
 
       <div className="page-body" style={{ maxWidth: 1000 }}>
 
-        <div style={{ marginBottom: "2.5rem" }}>
-          <USMap stateCounts={stateCounts} />
-        </div>
-
         {/* Region blocks */}
         {Object.entries(REGIONS).map(([region, slugs]) => {
           const states = slugs
@@ -77,26 +73,26 @@ export default async function StatesIndexPage() {
               <h2 style={{ fontSize: "1.1rem", color: "var(--navy)", marginBottom: "1rem", paddingBottom: "0.5rem", borderBottom: "2px solid var(--border)" }}>
                 {region}
               </h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "0.6rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: "0.8rem" }}>
                 {states.map((state) => (
                   <Link
                     key={state.slug}
                     href={`/states/${state.slug}`}
                     style={{
                       display: "block",
-                      padding: "0.8rem 1rem",
+                      padding: "1rem 1.1rem",
                       background: "var(--bg)",
                       border: "1px solid var(--border)",
                       borderRadius: 10,
                       textDecoration: "none",
                       color: "var(--navy)",
-                      fontWeight: 600,
-                      fontSize: "1rem",
+                      fontWeight: 700,
+                      fontSize: "1.05rem",
                       transition: "border-color 0.15s, background 0.15s",
                     }}
                   >
                     {state.name}
-                    <span style={{ display: "block", fontSize: "0.9rem", color: "var(--muted)", fontWeight: 400, marginTop: "0.2rem" }}>
+                    <span style={{ display: "block", fontSize: "0.95rem", color: "var(--muted)", fontWeight: 400, marginTop: "0.25rem" }}>
                       {state.cities.slice(0, 2).join(", ")}
                     </span>
                   </Link>
@@ -105,6 +101,13 @@ export default async function StatesIndexPage() {
             </div>
           );
         })}
+
+        <div style={{ marginTop: "3rem" }}>
+          <h2 style={{ fontSize: "1.1rem", color: "var(--navy)", marginBottom: "1rem", paddingBottom: "0.5rem", borderBottom: "2px solid var(--border)" }}>
+            Or tap your state on the map
+          </h2>
+          <USMap stateCounts={stateCounts} />
+        </div>
 
         <div style={{ textAlign: "center", marginTop: "2.5rem" }}>
           <Link href="/list-my-game" className="btn-cta-primary">

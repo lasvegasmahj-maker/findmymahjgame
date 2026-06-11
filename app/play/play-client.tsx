@@ -47,7 +47,7 @@ export default function PlayClient() {
     }
     setSearching(true);
     navigator.geolocation.getCurrentPosition(
-      async (pos) => {
+      async (pos) =>{
         try {
           const { latitude, longitude } = pos.coords;
           const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
@@ -61,7 +61,7 @@ export default function PlayClient() {
           setGeoMsg("Something went wrong. Please type your town below.");
         }
       },
-      () => { setSearching(false); setGeoMsg("We couldn't get your location. Please type your town below."); },
+      () =>{ setSearching(false); setGeoMsg("We couldn't get your location. Please type your town below."); },
       { timeout: 10000 }
     );
   }
@@ -92,7 +92,7 @@ export default function PlayClient() {
         <h1 style={{ fontSize: "2rem", color: "var(--navy)", margin: "0.8rem 0 0.3rem", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>I Want to Play</h1>
         <p style={{ fontSize: "1.15rem", color: "var(--muted)", lineHeight: 1.5 }}>Find a game near you.</p>
         <button type="button" onClick={useMyLocation} disabled={searching} style={{ width: "100%", minHeight: 68, marginTop: "1.4rem", borderRadius: 16, border: "none", background: "var(--navy)", color: "white", fontSize: "1.3rem", fontWeight: 800, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
-          {searching ? "Looking..." : "📍 Use My Location"}
+          {searching ? "Looking..." : "Use My Location"}
         </button>
         <div style={{ textAlign: "center", color: "var(--muted)", fontSize: "1.05rem", margin: "1rem 0 0.2rem" }}>or type your town</div>
         {geoMsg && <p style={{ color: "#dc2626", fontSize: "1.05rem", textAlign: "center", marginTop: 0 }}>{geoMsg}</p>}
@@ -111,14 +111,14 @@ export default function PlayClient() {
         <h1 style={{ fontSize: "1.8rem", color: "var(--navy)", margin: "0.8rem 0 0.3rem", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>Games near {city}</h1>
         <p style={{ fontSize: "1.1rem", color: "var(--muted)" }}>Tap a game to join it.</p>
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1.2rem" }}>
-          {games.map((g) => {
+          {games.map((g) =>{
             const title = `${g.day_of_week || ""} ${g.time_of_day || ""} Mahjong`.trim();
             const place = [g.venue_name, g.city].filter(Boolean).join(", ");
             return (
               <a key={g.share_code} href={`/t/${g.share_code}`} style={{ display: "block", background: "white", border: (g.seats_total || 4) - g.filled === 1 ? "2px solid var(--pink)" : "2px solid var(--border)", borderRadius: 16, padding: "1.3rem", textDecoration: "none" }}>
-                {(g.seats_total || 4) - g.filled === 1 && <div style={{ display: "inline-block", background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "0.95rem", padding: "0.25rem 0.8rem", borderRadius: 50, marginBottom: "0.6rem" }}>🔥 Need a 4th, 1 seat left</div>}
+                {(g.seats_total || 4) - g.filled === 1 && <div style={{ display: "inline-block", background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "0.95rem", padding: "0.25rem 0.8rem", borderRadius: 50, marginBottom: "0.6rem" }}>Need a 4th, 1 seat left</div>}
                 <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--navy)" }}>{title}</div>
-                {place && <div style={{ fontSize: "1.1rem", color: "var(--muted)", margin: "0.3rem 0 0.8rem" }}>📍 {place}</div>}
+                {place && <div style={{ fontSize: "1.1rem", color: "var(--muted)", margin: "0.3rem 0 0.8rem" }}>{place}</div>}
                 <SeatDots filled={g.filled} total={g.seats_total || 4} size="1.3rem" />
                 <div style={{ marginTop: "0.8rem", color: "var(--pink)", fontWeight: 800, fontSize: "1.1rem" }}>Join this game &rarr;</div>
               </a>
@@ -138,7 +138,7 @@ export default function PlayClient() {
   if (step === "done") {
     return shell(
       <div style={{ textAlign: "center", paddingTop: "2rem" }}>
-        <div style={{ fontSize: "3rem" }}>🀄</div>
+        <div style={{ fontSize: "3rem" }}></div>
         <h1 style={{ fontSize: "1.9rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>You&rsquo;re on the list!</h1>
         <p style={{ fontSize: "1.2rem", color: "var(--navy)", lineHeight: 1.6 }}>We&rsquo;ll reach out as soon as there&rsquo;s a game near {city}. Want one sooner? <a href="/start" style={{ color: "var(--pink)", fontWeight: 700 }}>Start your own table</a> and invite friends.</p>
       </div>

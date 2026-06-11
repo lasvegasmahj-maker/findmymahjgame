@@ -40,6 +40,15 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
         <button type="submit" style={goBtn}>Search</button>
       </form>
 
+      {near && /vegas|nevada|henderson|summerlin/i.test(near) && (
+        <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.1rem 1.3rem", maxWidth: 560, margin: "0 auto 1.6rem", textAlign: "center" }}>
+          <p style={{ fontSize: "1.05rem", color: "var(--navy)", lineHeight: 1.5, margin: 0 }}>
+            Looking for mahjong lessons in Las Vegas? Visit{" "}
+            <a href="https://lasvegasmahj.com" target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink)", fontWeight: 800 }}>Las Vegas Mahjong</a>.
+          </p>
+        </div>
+      )}
+
       {rows.length > 0 ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.2rem" }}>
           {rows.map((t) => {

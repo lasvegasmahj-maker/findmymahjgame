@@ -61,15 +61,14 @@ function SponsorLogo({ src, name }: { src: string | null; name: string }) {
           src={src}
           alt={name}
           fill
-          sizes="48px"
-          style={{ objectFit: "cover" }}
+          sizes="48px" style={{ objectFit: "cover" }}
         />
       </div>
     );
   }
   const initial = name.trim().charAt(0).toUpperCase();
   return (
-    <div style={{ width: 48, height: 48, borderRadius: 10, background: "var(--navy)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.25rem", fontWeight: 700, color: "white", flexShrink: 0 }}>{initial || "🀄"}</div>
+    <div style={{ width: 48, height: 48, borderRadius: 10, background: "var(--navy)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.25rem", fontWeight: 700, color: "white", flexShrink: 0 }}>{initial || ""}</div>
   );
 }
 
@@ -117,9 +116,9 @@ export default function StatePageClient({ stateData, players, events, venues }: 
   const allCities = [`All of ${stateData.name}`, ...stateData.cities];
   const [connectForm, setConnectForm] = useState<ConnectForm | null>(null);
 
-  useEffect(() => {
+  useEffect(() =>{
     if (!connectForm) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setConnectForm(null); };
+    const onKey = (e: KeyboardEvent) =>{ if (e.key === "Escape") setConnectForm(null); };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [connectForm]);
@@ -183,8 +182,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
           <Link href="/#map" style={{ color: "var(--pink)", textDecoration: "none" }}>Find Players</Link>
           {" "}&rsaquo; {stateData.name}
         </p>
-        <h1 style={{ fontSize: "clamp(2.2rem, 5vw, 3.5rem)", marginBottom: "0.8rem" }}>
-          Mahjong in <span style={{ color: "var(--pink)" }}>{stateData.name}</span>
+        <h1 style={{ fontSize: "clamp(2.2rem, 5vw, 3.5rem)", marginBottom: "0.8rem" }}>Mahjong in <span style={{ color: "var(--pink)" }}>{stateData.name}</span>
         </h1>
         <p style={{ maxWidth: 520 }}>{stateData.desc}</p>
         <div style={{ display: "flex", gap: "3rem", justifyContent: "center", marginTop: "2.5rem", flexWrap: "wrap" }}>
@@ -211,8 +209,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             </select>
           </div>
         </div>
-        <p style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.82rem", color: "rgba(255,255,255,0.55)" }}>
-          Showing all players, events &amp; venues across <strong style={{ color: "white" }}>{stateData.name}</strong>
+        <p style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.82rem", color: "rgba(255,255,255,0.55)" }}>Showing all players, events &amp; venues across <strong style={{ color: "white" }}>{stateData.name}</strong>
         </p>
       </div>
 
@@ -221,13 +218,13 @@ export default function StatePageClient({ stateData, players, events, venues }: 
         {/* Tabs */}
         <div style={{ display: "flex", gap: 0, borderBottom: "2px solid var(--border)", marginBottom: "2.5rem", overflowX: "auto" }}>
           {([
-            { id: "players" as const, label: "Players", icon: "👥", count: filteredPlayers.length },
-            { id: "events" as const, label: "Events", icon: "🎫", count: filteredEvents.length },
-            { id: "venues" as const, label: "Venues", icon: "🏛", count: filteredVenues.length },
+            { id: "players" as const, label: "Players", count: filteredPlayers.length },
+            { id: "events" as const, label: "Events", count: filteredEvents.length },
+            { id: "venues" as const, label: "Venues", count: filteredVenues.length },
           ]).map((tab) => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ padding: "0.9rem 1.2rem", flexShrink: 0, whiteSpace: "nowrap", fontSize: "0.95rem", fontWeight: 600, cursor: "pointer", background: "transparent", border: "none", borderBottom: "2px solid", borderBottomColor: activeTab === tab.id ? "var(--pink)" : "transparent", marginBottom: -2, color: activeTab === tab.id ? "var(--navy)" : "var(--muted)", fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              {tab.icon} {tab.label}
-              {tab.count > 0 && <span style={{ background: "var(--pink)", color: "white", borderRadius: 50, fontSize: "0.65rem", fontWeight: 700, padding: "0.1rem 0.5rem", minWidth: 18, textAlign: "center" }}>{tab.count}</span>}
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} aria-pressed={activeTab === tab.id ? "true" : "false"} style={{ padding: "1rem 1.4rem", flexShrink: 0, whiteSpace: "nowrap", fontSize: "1.05rem", fontWeight: activeTab === tab.id ? 800 : 600, cursor: "pointer", background: "transparent", border: "none", borderBottom: "3px solid", borderBottomColor: activeTab === tab.id ? "var(--pink)" : "transparent", marginBottom: -2, color: activeTab === tab.id ? "var(--navy)" : "var(--muted)", fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+              {tab.label}
+              {tab.count > 0 && <span style={{ background: "var(--pink)", color: "white", borderRadius: 50, fontSize: "0.8rem", fontWeight: 700, padding: "0.12rem 0.55rem", minWidth: 22, textAlign: "center" }}>{tab.count}</span>}
             </button>
           ))}
         </div>
@@ -237,49 +234,44 @@ export default function StatePageClient({ stateData, players, events, venues }: 
           <div>
             <p className="section-label">Looking for a Group</p>
             <h2 className="section-title" style={{ marginBottom: "0.5rem" }}>Players in {stateData.name}</h2>
-            <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", lineHeight: 1.7 }}>
-              Connect with mahjong players across {stateData.name} looking for their perfect weekly game.
+            <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", lineHeight: 1.7 }}>Connect with mahjong players across {stateData.name} looking for their perfect weekly game.
             </p>
 
             {filteredPlayers.length > 0 ? (
               <div className="dir-grid" style={{ marginBottom: "2rem" }}>
                 {filteredPlayers.map((player, i) => (
-                  <div key={player.id} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.4rem", transition: "all 0.2s", display: "flex", flexDirection: "column" }}>
+                  <div key={player.id} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.6rem", transition: "all 0.2s", display: "flex", flexDirection: "column" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", marginBottom: "0.8rem" }}>
                       <div style={{ width: 42, height: 42, borderRadius: "50%", background: player.avatar_color || AVATAR_COLORS[i % AVATAR_COLORS.length], display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "white", fontSize: "1rem", flexShrink: 0 }}>
                         {player.name.charAt(0)}
                       </div>
                       <div>
-                        <div style={{ fontWeight: 700, fontSize: "0.92rem", color: "var(--navy)" }}>{player.name}</div>
-                        <div style={{ fontSize: "0.78rem", color: "var(--muted)" }}>{player.city}, {player.state}</div>
+                        <div style={{ fontWeight: 700, fontSize: "1.05rem", color: "var(--navy)" }}>{player.name}</div>
+                        <div style={{ fontSize: "0.92rem", color: "var(--muted)" }}>{player.city}, {player.state}</div>
                       </div>
                     </div>
                     <LevelBadge level={player.skill_level} />
-                    {player.availability && <div style={{ fontSize: "0.8rem", color: "var(--muted)", margin: "0.6rem 0 0.5rem" }}>📅 {player.availability}</div>}
-                    {player.bio && <div style={{ fontSize: "0.78rem", color: "var(--muted)", lineHeight: 1.5, marginBottom: "0.5rem", flex: 1 }}>{player.bio}</div>}
+                    {player.availability && <div style={{ fontSize: "0.95rem", color: "var(--muted)", margin: "0.6rem 0 0.5rem" }}>{player.availability}</div>}
+                    {player.bio && <div style={{ fontSize: "0.95rem", color: "var(--muted)", lineHeight: 1.5, marginBottom: "0.5rem", flex: 1 }}>{player.bio}</div>}
                     <div style={{ flex: 1 }} />
                     <button
                       onClick={() => setConnectForm({ player, name: "", email: "", message: "", submitted: false, submitting: false })}
-                      style={{ width: "100%", background: "transparent", border: "1.5px solid var(--pink)", color: "var(--pink)", borderRadius: 6, padding: "0.55rem", fontWeight: 700, fontSize: "0.8rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s", marginTop: "0.8rem" }}
-                      onMouseOver={e => { (e.target as HTMLButtonElement).style.background = "var(--pink)"; (e.target as HTMLButtonElement).style.color = "white"; }}
-                      onMouseOut={e => { (e.target as HTMLButtonElement).style.background = "transparent"; (e.target as HTMLButtonElement).style.color = "var(--pink)"; }}
-                    >
-                      Connect
+                      style={{ width: "100%", background: "var(--pink)", border: "1.5px solid var(--pink)", color: "white", borderRadius: 10, padding: "0.75rem", fontWeight: 800, fontSize: "1rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s", marginTop: "0.9rem" }}
+                      onMouseOver={e =>{ (e.target as HTMLButtonElement).style.background = "var(--pink)"; (e.target as HTMLButtonElement).style.color = "white"; }}
+                      onMouseOut={e =>{ (e.target as HTMLButtonElement).style.background = "transparent"; (e.target as HTMLButtonElement).style.color = "var(--pink)"; }}
+                    >Connect
                     </button>
                   </div>
                 ))}
               </div>
             ) : (
               <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center", marginBottom: "2.5rem" }}>
-                <div style={{ fontSize: "3.5rem", marginBottom: "1.2rem" }}>🀄</div>
-                <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>
-                  No players listed in {stateData.name} yet
+                <div style={{ fontSize: "3.5rem", marginBottom: "1.2rem" }}></div>
+                <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>No players listed in {stateData.name} yet
                 </h3>
-                <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 420, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>
-                  Be the first! Create a free listing and let other players in {stateData.name} find you.
+                <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 420, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Be the first! Create a free listing and let other players in {stateData.name} find you.
                 </p>
-                <Link href="/list-my-game" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>
-                  Create My Free Listing &rarr;
+                <Link href="/list-my-game" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>Create My Free Listing &rarr;
                 </Link>
               </div>
             )}
@@ -294,9 +286,9 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                     <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--navy)", marginBottom: "0.3rem" }}>Las Vegas Mahjong</div>
                     <div style={{ fontSize: "0.82rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "0.6rem" }}>Lessons, open play and events with certified instructor Shauna in Las Vegas. All levels welcome.</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem" }}>
-                      <a href="https://lasvegasmahj.com" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>🌐 lasvegasmahj.com</a>
-                      <a href="mailto:lasvegasmahj@gmail.com" style={{ fontSize: "0.8rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>✉️ lasvegasmahj@gmail.com</a>
-                      <a href="https://instagram.com/lasvegasmahjong" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>📸 @lasvegasmahjong</a>
+                      <a href="https://lasvegasmahj.com" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}> lasvegasmahj.com</a>
+                      <a href="mailto:lasvegasmahj@gmail.com" style={{ fontSize: "0.8rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}> lasvegasmahj@gmail.com</a>
+                      <a href="https://instagram.com/lasvegasmahjong" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}> @lasvegasmahjong</a>
                     </div>
                   </div>
                 </div>
@@ -304,14 +296,11 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             )}
 
             <div style={{ background: "var(--navy)", borderRadius: 16, padding: "2.5rem", textAlign: "center" }}>
-              <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.3rem", color: "white", marginBottom: "0.5rem" }}>
-                Want to be listed here? It&rsquo;s free!
+              <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.3rem", color: "white", marginBottom: "0.5rem" }}>Want to be listed here? It&rsquo;s free!
               </h3>
-              <p style={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.55)", marginBottom: "1.5rem" }}>
-                Add your free listing and let local players in {stateData.name} find you.
+              <p style={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.55)", marginBottom: "1.5rem" }}>Add your free listing and let local players in {stateData.name} find you.
               </p>
-              <Link href="/list-my-game" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>
-                Create My Free Listing &rarr;
+              <Link href="/list-my-game" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>Create My Free Listing &rarr;
               </Link>
             </div>
           </div>
@@ -322,8 +311,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
           <div>
             <p className="section-label">Happening in {stateData.name}</p>
             <h2 className="section-title" style={{ marginBottom: "0.5rem" }}>Events Near You</h2>
-            <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", lineHeight: 1.7 }}>
-              Open plays, game nights, and mahjong events happening across {stateData.name}.
+            <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", lineHeight: 1.7 }}>Open plays, game nights, and mahjong events happening across {stateData.name}.
             </p>
 
             {filteredEvents.length > 0 ? (
@@ -335,8 +323,8 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                         <EventTypeBadge type={event.event_type} />
                         <h3 style={{ fontWeight: 700, fontSize: "1.05rem", color: "var(--navy)", margin: "0.3rem 0" }}>{event.event_name}</h3>
                         <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
-                          📅 {formatEventDate(event.event_date)}
-                          {event.venue && <> &nbsp;&middot;&nbsp; 📍 {event.venue}, {event.city}</>}
+                           {formatEventDate(event.event_date)}
+                          {event.venue && <> &nbsp;&middot;&nbsp;  {event.venue}, {event.city}</>}
                         </div>
                         {event.description && <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginTop: "0.4rem", lineHeight: 1.5 }}>{event.description}</div>}
                       </div>
@@ -354,10 +342,9 @@ export default function StatePageClient({ stateData, players, events, venues }: 
               </div>
             ) : (
               <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center", marginBottom: "2rem" }}>
-                <div style={{ fontSize: "3.5rem", marginBottom: "1.2rem" }}>🎫</div>
+                <div style={{ fontSize: "3.5rem", marginBottom: "1.2rem" }}></div>
                 <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>No events listed yet</h3>
-                <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>
-                  Host an open play, tournament, or mahjong night? List it and reach players searching for games. Starting at $10/event.
+                <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Host an open play, tournament, or mahjong night? List it and reach players searching for games. Starting at $10/event.
                 </p>
                 <Link href="/advertise" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>List Your Event &rarr;</Link>
               </div>
@@ -371,8 +358,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
           <div>
             <p className="section-label">Where to Play</p>
             <h2 className="section-title" style={{ marginBottom: "0.5rem" }}>Venues in {stateData.name}</h2>
-            <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", lineHeight: 1.7 }}>
-              Restaurants, studios, and community spaces in {stateData.name} that welcome mahjong players.
+            <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", lineHeight: 1.7 }}>Restaurants, studios, and community spaces in {stateData.name} that welcome mahjong players.
             </p>
 
             {filteredVenues.length > 0 ? (
@@ -386,8 +372,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                             src={venue.logo_url}
                             alt={venue.business_name}
                             fill
-                            sizes="(max-width: 768px) 100vw, 50vw"
-                            style={{ objectFit: "cover" }}
+                            sizes="(max-width: 768px) 100vw, 50vw" style={{ objectFit: "cover" }}
                           />
                         </div>
                       )
@@ -396,14 +381,14 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                     <div className="venue-body">
                       <div className="venue-type" style={{ color: "var(--pink)" }}>{venue.venue_type} &middot; {venue.city}</div>
                       <h3 className="venue-name">{venue.business_name}</h3>
-                      <p className="venue-meta">📍 {venue.city}, {venue.state}</p>
+                      <p className="venue-meta">{venue.city}, {venue.state}</p>
                       {venue.description && <p className="venue-desc">{venue.description}</p>}
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem", alignItems: "center", marginBottom: "0.9rem" }}>
                         {venue.display_email && (
-                          <a href={`mailto:${venue.display_email}`} style={{ fontSize: "0.78rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>✉️ {venue.display_email}</a>
+                          <a href={`mailto:${venue.display_email}`} style={{ fontSize: "0.78rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>{venue.display_email}</a>
                         )}
                         {venue.instagram && (
-                          <a href={`https://instagram.com/${venue.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.78rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>📸 {venue.instagram.startsWith("@") ? venue.instagram : `@${venue.instagram}`}</a>
+                          <a href={`https://instagram.com/${venue.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.78rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>{venue.instagram.startsWith("@") ? venue.instagram : `@${venue.instagram}`}</a>
                         )}
                       </div>
                       {venue.website ? (
@@ -419,10 +404,9 @@ export default function StatePageClient({ stateData, players, events, venues }: 
               </div>
             ) : (
               <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center", marginBottom: "2rem" }}>
-                <div style={{ fontSize: "3.5rem", marginBottom: "1.2rem" }}>🏛</div>
+                <div style={{ fontSize: "3.5rem", marginBottom: "1.2rem" }}></div>
                 <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>No venues listed yet</h3>
-                <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>
-                  Own a mahjong-friendly venue? Get discovered by players searching for places to play. Listings from $19/mo.
+                <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Own a mahjong-friendly venue? Get discovered by players searching for places to play. Listings from $19/mo.
                 </p>
                 <Link href="/advertise" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>List Your Venue &rarr;</Link>
               </div>
@@ -451,9 +435,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
           style={{ position: "fixed", inset: 0, background: "rgba(26,31,94,0.6)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}
         >
           <div
-            role="dialog"
-            aria-modal="true"
-            aria-label={`Connect with ${connectForm.player.name}`}
+            role="dialog" aria-modal="true" aria-label={`Connect with ${connectForm.player.name}`}
             onClick={e => e.stopPropagation()}
             style={{ background: "white", borderRadius: 20, padding: "2.5rem", maxWidth: 480, width: "100%", position: "relative", boxShadow: "0 20px 60px rgba(26,31,94,0.25)" }}
           >
@@ -462,10 +444,9 @@ export default function StatePageClient({ stateData, players, events, venues }: 
 
             {connectForm.submitted ? (
               <div style={{ textAlign: "center", padding: "1rem 0" }}>
-                <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>✅</div>
+                <div style={{ fontSize: "3rem", marginBottom: "1rem" }}></div>
                 <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.5rem" }}>Request Sent!</h3>
-                <p style={{ color: "var(--muted)", fontSize: "0.95rem", lineHeight: 1.7 }}>
-                  Your connection request to <strong>{connectForm.player.name}</strong> has been received. We&rsquo;ll pass your message along and you&rsquo;ll hear back via email.
+                <p style={{ color: "var(--muted)", fontSize: "0.95rem", lineHeight: 1.7 }}>Your connection request to <strong>{connectForm.player.name}</strong> has been received. We&rsquo;ll pass your message along and you&rsquo;ll hear back via email.
                 </p>
                 <button onClick={() => setConnectForm(null)} style={{ marginTop: "1.5rem", background: "var(--pink)", color: "white", border: "none", borderRadius: 8, padding: "0.8rem 2rem", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>Done</button>
               </div>
@@ -487,9 +468,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                   <div style={{ marginBottom: "1rem" }}>
                     <label htmlFor="connect-name" style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "var(--navy)", marginBottom: "0.4rem" }}>Your Name</label>
                     <input
-                      id="connect-name"
-                      type="text" required placeholder="Jane Smith"
-                      value={connectForm.name}
+                      id="connect-name" type="text" required placeholder="Jane Smith" value={connectForm.name}
                       onChange={e => setConnectForm({ ...connectForm, name: e.target.value })}
                       style={{ width: "100%", padding: "0.7rem 1rem", border: "1.5px solid var(--border)", borderRadius: 8, fontFamily: "'DM Sans', sans-serif", fontSize: "0.9rem", outline: "none", color: "var(--text)" }}
                     />
@@ -497,9 +476,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                   <div style={{ marginBottom: "1rem" }}>
                     <label htmlFor="connect-email" style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "var(--navy)", marginBottom: "0.4rem" }}>Your Email</label>
                     <input
-                      id="connect-email"
-                      type="email" required placeholder="jane@example.com"
-                      value={connectForm.email}
+                      id="connect-email" type="email" required placeholder="jane@example.com" value={connectForm.email}
                       onChange={e => setConnectForm({ ...connectForm, email: e.target.value })}
                       style={{ width: "100%", padding: "0.7rem 1rem", border: "1.5px solid var(--border)", borderRadius: 8, fontFamily: "'DM Sans', sans-serif", fontSize: "0.9rem", outline: "none", color: "var(--text)" }}
                     />
@@ -507,22 +484,19 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                   <div style={{ marginBottom: "1.5rem" }}>
                     <label htmlFor="connect-message" style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "var(--navy)", marginBottom: "0.4rem" }}>Message <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span></label>
                     <textarea
-                      id="connect-message"
-                      placeholder={`Hi ${connectForm.player.name.split(" ")[0]}! I'm looking for a mahjong group in ${connectForm.player.city}...`}
+                      id="connect-message" placeholder={`Hi ${connectForm.player.name.split(" ")[0]}! I'm looking for a mahjong group in ${connectForm.player.city}...`}
                       value={connectForm.message}
                       onChange={e => setConnectForm({ ...connectForm, message: e.target.value })}
                       style={{ width: "100%", padding: "0.7rem 1rem", border: "1.5px solid var(--border)", borderRadius: 8, fontFamily: "'DM Sans', sans-serif", fontSize: "0.9rem", outline: "none", color: "var(--text)", height: 100, resize: "vertical" }}
                     />
                   </div>
                   <button
-                    type="submit"
-                    disabled={connectForm.submitting}
+                    type="submit" disabled={connectForm.submitting}
                     style={{ width: "100%", background: "var(--pink)", color: "white", border: "none", borderRadius: 8, padding: "0.9rem", fontWeight: 700, fontSize: "1rem", cursor: connectForm.submitting ? "not-allowed" : "pointer", fontFamily: "'DM Sans', sans-serif", opacity: connectForm.submitting ? 0.7 : 1 }}
                   >
                     {connectForm.submitting ? "Sending..." : "Send Connection Request →"}
                   </button>
-                  <p style={{ fontSize: "0.75rem", color: "var(--muted)", textAlign: "center", marginTop: "0.8rem" }}>
-                    Free for players. We&rsquo;ll pass your request along to {connectForm.player.name.split(" ")[0]}.
+                  <p style={{ fontSize: "0.75rem", color: "var(--muted)", textAlign: "center", marginTop: "0.8rem" }}>Free for players. We&rsquo;ll pass your request along to {connectForm.player.name.split(" ")[0]}.
                   </p>
                 </form>
               </>

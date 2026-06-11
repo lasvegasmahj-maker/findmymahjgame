@@ -56,12 +56,11 @@ export default async function TablePage({
 
       {created && (
         <div style={{ background: "rgba(46,201,92,0.12)", border: "2px solid #2ec95c", borderRadius: 16, padding: "1.4rem", margin: "1rem 0", textAlign: "center" }}>
-          <div style={{ fontSize: "2rem" }}>🎉</div>
+          <div style={{ fontSize: "2rem" }}></div>
           <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#1a9648", marginBottom: "0.8rem" }}>Your table is up!</div>
           <div style={{ display: "inline-block" }}><SeatDots filled={filled} total={total} you /></div>
           {!isFull && <p style={{ fontSize: "1.05rem", color: "var(--navy)", marginTop: "0.8rem" }}>Invite {remaining} more to fill it (buttons below).</p>}
-          <p style={{ fontSize: "1rem", color: "var(--navy)", marginTop: "0.8rem", lineHeight: 1.5 }}>
-            As the table starter, you&rsquo;re the coordinator. When it fills, we&rsquo;ll email everyone, and replies come to you, so the group can choose a safe public place.
+          <p style={{ fontSize: "1rem", color: "var(--navy)", marginTop: "0.8rem", lineHeight: 1.5 }}>As the table starter, you&rsquo;re the coordinator. When it fills, we&rsquo;ll email everyone, and replies come to you, so the group can choose a safe public place.
           </p>
           <div style={{ maxWidth: 320, margin: "1rem auto 0" }}>
             <AddToCalendar title={title} dayOfWeek={t.day_of_week} timeOfDay={t.time_of_day} place={place} />
@@ -71,29 +70,25 @@ export default async function TablePage({
 
       <div style={card}>
         <h1 style={{ fontSize: "1.9rem", fontWeight: 800, color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif", margin: 0 }}>{title}</h1>
-        {place && <div style={{ fontSize: "1.2rem", color: "var(--muted)", marginTop: "0.4rem" }}>📍 {place}</div>}
+        {place && <div style={{ fontSize: "1.2rem", color: "var(--muted)", marginTop: "0.4rem" }}>{place}</div>}
         <div style={{ fontSize: "1.2rem", color: "var(--muted)", marginTop: "0.3rem", marginBottom: "1.2rem" }}>
           {t.skill === "beginner" ? "Beginners welcome" : t.skill === "experienced" ? "Experienced players" : "Anyone can join"}
         </div>
         <SeatDots filled={filled} total={total} />
-        {remaining === 1 && <div style={{ marginTop: "0.7rem", fontSize: "1.15rem", fontWeight: 800, color: "var(--pink)" }}>🔥 Need a 4th! Just 1 seat left, share now to fill it.</div>}
-        <div style={{ fontSize: "1.1rem", color: "var(--navy)", marginTop: "0.9rem" }}>
-          Who is coming: {people.map((p) => p.name).join(", ") || "just the host so far"}
+        {remaining === 1 && <div style={{ marginTop: "0.7rem", fontSize: "1.15rem", fontWeight: 800, color: "var(--pink)" }}>Need a 4th! Just 1 seat left, share now to fill it.</div>}
+        <div style={{ fontSize: "1.1rem", color: "var(--navy)", marginTop: "0.9rem" }}>Who is coming: {people.map((p) => p.name).join(", ") || "just the host so far"}
         </div>
       </div>
 
       <div style={{ ...card, background: isFull ? "rgba(46,201,92,0.1)" : "var(--bg)", borderColor: isFull ? "#2ec95c" : "var(--border)" }}>
         <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.5rem" }}>
-          {isFull ? "🎉 Now pick a place to meet" : "🛡️ Where you'll meet"}
+          {isFull ? "Now pick a place to meet" : "Where you'll meet"}
         </div>
-        <p style={{ fontSize: "1.1rem", color: "#1a6e3a", fontWeight: 700, lineHeight: 1.5, marginTop: 0 }}>
-          For safety, we recommend new groups meet in public places for their first game.
+        <p style={{ fontSize: "1.1rem", color: "#1a6e3a", fontWeight: 700, lineHeight: 1.5, marginTop: 0 }}>For safety, we recommend new groups meet in public places for their first game.
         </p>
-        <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "0.6rem" }}>
-          Good first-game spots{t.city ? ` in ${t.city}` : ""}: a public library, a community center, a café, or a senior center. Decide together once your table is full, no need to share home addresses.
+        <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "0.6rem" }}>Good first-game spots{t.city ? ` in ${t.city}` : ""}: a public library, a community center, a café, or a senior center. Decide together once your table is full, no need to share home addresses.
         </p>
-        <p style={{ fontSize: "0.95rem", color: "var(--navy)", fontWeight: 700, margin: 0 }}>
-          We never share phone numbers or home addresses.
+        <p style={{ fontSize: "0.95rem", color: "var(--navy)", fontWeight: 700, margin: 0 }}>We never share phone numbers or home addresses.
         </p>
       </div>
 
@@ -127,8 +122,7 @@ export default async function TablePage({
         <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.4rem" }}>
           {created ? "Invite players to fill it" : "Know someone who plays?"}
         </div>
-        <p style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: 0, marginBottom: "1rem", lineHeight: 1.5 }}>
-          Tap to share. The fastest way to fill a table is to invite your friends and your mahjong group.
+        <p style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: 0, marginBottom: "1rem", lineHeight: 1.5 }}>Tap to share. The fastest way to fill a table is to invite your friends and your mahjong group.
         </p>
         <ShareSheet url={url} message={shareMsg} />
       </div>

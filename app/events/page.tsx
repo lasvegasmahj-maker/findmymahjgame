@@ -56,11 +56,11 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
             const external = !!e.registration_url;
             return (
               <a key={e.id} href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} style={{ display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", textDecoration: "none" }}>
-                {e.event_type && <div style={{ display: "inline-block", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.78rem", fontWeight: 800, color: "var(--pink)", marginBottom: "0.5rem" }}>{e.event_type}</div>}
+                {e.event_type && <div style={{ display: "inline-block", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.85rem", fontWeight: 800, color: "var(--pink)", marginBottom: "0.5rem" }}>{String(e.event_type).replace(/_/g, " ")}</div>}
                 <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{e.event_name || "Mahjong"}</div>
                 {whenLabel(e) && <div style={{ fontSize: "1.05rem", color: "var(--navy)", marginTop: "0.4rem" }}>{whenLabel(e)}</div>}
                 {(e.venue_name || e.city) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[e.venue_name, e.city, e.state].filter(Boolean).join(", ")}</div>}
-                <div style={{ marginTop: "0.8rem", color: "var(--pink)", fontWeight: 800 }}>View details &rarr;</div>
+                <div style={{ marginTop: "0.9rem", color: "var(--pink)", fontWeight: 800, fontSize: "1.15rem" }}>View details &rarr;</div>
               </a>
             );
           })}

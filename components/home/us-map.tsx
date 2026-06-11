@@ -77,10 +77,9 @@ const STATE_SLUGS: Record<string, string> = Object.fromEntries(
 function MapSkeleton() {
   return (
     <div
-      aria-label="Loading map..."
-      className="map-skeleton"
+      aria-label="Loading map..." className="map-skeleton"
     >
-      <span aria-hidden="true" style={{ fontSize: "1.5rem" }}>🗺</span>
+      <span aria-hidden="true" style={{ fontSize: "1.5rem" }}></span>
       <span style={{ color: "#9ca3af", fontSize: "0.88rem" }}>Loading map...</span>
     </div>
   );
@@ -94,16 +93,16 @@ export default function USMap({ stateCounts = {} }: { stateCounts?: StateCounts 
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleContainerMouseMove = useCallback((e: React.MouseEvent) => {
+  const handleContainerMouseMove = useCallback((e: React.MouseEvent) =>{
     setMousePos({ x: e.clientX, y: e.clientY });
   }, []);
 
-  const handleClick = useCallback((abbr: string) => {
+  const handleClick = useCallback((abbr: string) =>{
     setSelected(prev => prev === abbr ? null : abbr);
   }, []);
 
   const isActiveState = useCallback(
-    (abbr: string) => {
+    (abbr: string) =>{
       const c = stateCounts[abbr];
       return !!c && c.players + c.events + c.venues > 0;
     },
@@ -118,16 +117,14 @@ export default function USMap({ stateCounts = {} }: { stateCounts?: StateCounts 
     <Suspense fallback={<MapSkeleton />}>
       <div className="us-map-container" ref={containerRef} onMouseMove={handleContainerMouseMove} aria-hidden="true">
         <ComposableMap
-          projection="geoAlbersUsa"
-          projectionConfig={{ scale: 1050 }}
+          projection="geoAlbersUsa" projectionConfig={{ scale: 1050 }}
           width={980}
           height={600}
           style={{ width: "100%", height: "auto" }}
         >
           <Geographies geography={GEO_URL}>
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {({ geographies }: { geographies: any[] }) =>
-              geographies.map((geo) => {
+            {({ geographies }: { geographies: any[] }) =>geographies.map((geo) =>{
                 const fips = geo.id;
                 const abbr = FIPS_TO_ABBR[fips] || "";
                 const isSelected = selected === abbr;
@@ -180,9 +177,7 @@ export default function USMap({ stateCounts = {} }: { stateCounts?: StateCounts 
           {Object.entries(STATE_CENTERS).map(([abbr, coords]) => (
             <Marker key={`label-${abbr}`} coordinates={coords}>
               <text
-                textAnchor="middle"
-                dominantBaseline="middle"
-                style={{
+                textAnchor="middle" dominantBaseline="middle" style={{
                   fontSize: ["TX","CA","MT","AK"].includes(abbr) ? 14 : ["HI","RI","CT","DE","NH","VT","MA","NJ","MD"].includes(abbr) ? 8 : 10,
                   fill: selected === abbr ? "white" : "rgba(26,31,94,0.55)",
                   fontFamily: "'DM Sans', sans-serif",
@@ -228,16 +223,13 @@ export default function USMap({ stateCounts = {} }: { stateCounts?: StateCounts 
               </p>
               <div className="state-popup-actions">
                 {stateLink ? (
-                  <Link href={stateLink} className="rt-btn" style={{ marginRight: 8 }}>
-                    View {selectedName} &rarr;
+                  <Link href={stateLink} className="rt-btn" style={{ marginRight: 8 }}>View {selectedName} &rarr;
                   </Link>
                 ) : (
-                  <Link href="/#map" className="rt-btn" style={{ marginRight: 8 }}>
-                    View {selectedName} &rarr;
+                  <Link href="/#map" className="rt-btn" style={{ marginRight: 8 }}>View {selectedName} &rarr;
                   </Link>
                 )}
-                <Link href="/list-my-game" className="rt-btn" style={{ background: "var(--navy)" }}>
-                  Create Listing
+                <Link href="/list-my-game" className="rt-btn" style={{ background: "var(--navy)" }}>Create Listing
                 </Link>
               </div>
             </div>

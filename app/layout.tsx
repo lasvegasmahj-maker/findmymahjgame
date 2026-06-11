@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, DM_Sans } from "next/font/google";
 import Header from "@/components/layout/header";
-import NavBar from "@/components/layout/nav-bar";
 import Footer from "@/components/layout/footer";
 import { buildHomepageSchema, schemaScriptProps } from "@/lib/schema";
 import SWRegister from "@/components/sw-register";
@@ -77,7 +76,6 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <Header />
-        <NavBar />
         <main className="flex-1">{children}</main>
         <Footer />
         {/* No proactive install prompt by design. The PWA stays installable via

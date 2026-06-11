@@ -33,7 +33,7 @@ export default function StartClient() {
 
   // Capture an ambassador referral code from the link (e.g. /start?ref=FMM-LV-RUTH)
   // so the table they start is credited to them. Uses the existing referred_by field.
-  useEffect(() => {
+  useEffect(() =>{
     try {
       const r = new URLSearchParams(window.location.search).get("ref");
       if (r) setRef(r.slice(0, 40));
@@ -66,8 +66,7 @@ export default function StartClient() {
       <p style={{ fontSize: "1.15rem", color: "var(--muted)", lineHeight: 1.5 }}>Pick a day and time, and your area. We will help you find players nearby.</p>
 
       <div style={{ background: "rgba(46,201,92,0.1)", border: "2px solid #2ec95c", borderRadius: 14, padding: "1rem 1.2rem", margin: "1.2rem 0 0.5rem" }}>
-        <div style={{ fontSize: "1.05rem", color: "#1a6e3a", fontWeight: 700, lineHeight: 1.5 }}>
-          🛡️ For safety, we recommend new groups meet in public places for their first game. We&rsquo;ll suggest spots after your table fills.
+        <div style={{ fontSize: "1.05rem", color: "#1a6e3a", fontWeight: 700, lineHeight: 1.5 }}>For safety, we recommend new groups meet in public places for their first game. We&rsquo;ll suggest spots after your table fills.
         </div>
       </div>
 

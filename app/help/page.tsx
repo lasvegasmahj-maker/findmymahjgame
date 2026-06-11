@@ -18,33 +18,33 @@ export default function HelpPage() {
 
       {HELP_PHONE ? (
         <a href={`tel:${HELP_PHONE}`} style={card}>
-          <div style={big}>📞  Call or Text Us</div>
+          <div style={big}>Call or Text Us</div>
           <div style={sub}>Call or text {HELP_PHONE}. If we miss you, leave a message and a real person will get back to you.</div>
         </a>
       ) : (
         <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Please call me")}&body=${encodeURIComponent("Hi, please call me back. My number is: ")}`} style={card}>
-          <div style={big}>📞  Call or Text Us</div>
-          <div style={sub}>Leave us a message and we&rsquo;ll get back to you.</div>
+          <div style={big}>Leave Us a Message</div>
+          <div style={sub}>Email us and a real person will get back to you.</div>
         </a>
       )}
 
       <a href={`mailto:${CONTACT_EMAIL}`} style={card}>
-        <div style={big}>📧  Email us a question</div>
+        <div style={big}>Email us a question</div>
         <div style={sub}>We answer every message. {CONTACT_EMAIL}</div>
       </a>
 
       <a href="/play" style={card}>
-        <div style={big}>🀄  Help me find a game</div>
+        <div style={big}>Help me find a game</div>
         <div style={sub}>Tell us your town and we will find you a game.</div>
       </a>
 
       <div style={{ ...card, cursor: "default" }}>
-        <div style={big}>▶  How to find a game</div>
+        <div style={big}>How to find a game</div>
         <div style={sub}>1) Tap &ldquo;I Want to Play.&rdquo; 2) Type your town. 3) Tap a game. 4) Tap &ldquo;Claim a Seat&rdquo; and add your name and phone or email. Done.</div>
       </div>
 
       <div style={{ ...card, cursor: "default" }}>
-        <div style={big}>▶  How to start a table</div>
+        <div style={big}>How to start a table</div>
         <div style={sub}>1) Tap &ldquo;Start a Table.&rdquo; 2) Pick a day and time. 3) Add your name and number. 4) Share it with friends to fill the seats.</div>
       </div>
 
@@ -54,7 +54,7 @@ export default function HelpPage() {
       </div>
 
       <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Report a problem")}`} style={card}>
-        <div style={big}>🚩  Report a Problem</div>
+        <div style={big}>Report a Problem</div>
         <div style={sub}>See something wrong or someone behaving badly? Tell us and we&rsquo;ll look into it.</div>
       </a>
     </main>

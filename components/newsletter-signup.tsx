@@ -45,7 +45,8 @@ export default function NewsletterSignup({ dark = false }: { dark?: boolean }) {
           placeholder="your@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          style={{ flex: "1 1 220px", minHeight: 56, borderRadius: 12, border: dark ? "none" : "2px solid var(--border)", padding: "0 1rem", fontSize: "1.05rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)" }}
+          className="nl-input"
+          style={{ flex: "1 1 220px", minHeight: 56, padding: "0 1rem", fontSize: "1.05rem", fontFamily: "'DM Sans', sans-serif" }}
         />
         <button type="submit" disabled={state === "submitting"} style={{ minHeight: 56, padding: "0 1.6rem", borderRadius: 12, border: "none", background: "var(--pink)", color: "#fff", fontWeight: 800, fontSize: "1.05rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
           {state === "submitting" ? "..." : "Subscribe"}
