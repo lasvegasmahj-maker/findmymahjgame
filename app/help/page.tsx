@@ -18,13 +18,13 @@ export default function HelpPage() {
 
       {HELP_PHONE ? (
         <a href={`tel:${HELP_PHONE}`} style={card}>
-          <div style={big}>📞  Call Us</div>
-          <div style={sub}>Talk to a real person. {HELP_PHONE}</div>
+          <div style={big}>📞  Call or Text Us</div>
+          <div style={sub}>Call or text {HELP_PHONE}. If we miss you, leave a message and a real person will get back to you.</div>
         </a>
       ) : (
         <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Please call me")}&body=${encodeURIComponent("Hi, please call me back. My number is: ")}`} style={card}>
-          <div style={big}>📞  Call Us</div>
-          <div style={sub}>Tap and we&rsquo;ll call you back. Leave your number and a good time.</div>
+          <div style={big}>📞  Call or Text Us</div>
+          <div style={sub}>Leave us a message and we&rsquo;ll get back to you.</div>
         </a>
       )}
 

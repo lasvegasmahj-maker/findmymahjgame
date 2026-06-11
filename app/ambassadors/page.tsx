@@ -35,11 +35,20 @@ export default function AmbassadorsPage() {
         <div style={point}><span style={check}>&#10003;</span><span style={pointText}><strong>Grow the game in your city.</strong> Welcome beginners, support hosts, and keep tables coming back.</span></div>
       </div>
 
-      <div style={{ background: "var(--bg)", borderRadius: 18, padding: "1.4rem 1.5rem", marginBottom: "2.2rem" }}>
+      <div style={{ background: "var(--bg)", borderRadius: 18, padding: "1.4rem 1.5rem", marginBottom: "1.6rem" }}>
         <h2 style={{ fontSize: "1.15rem", color: "var(--navy)", margin: "0 0 0.5rem", fontWeight: 800 }}>Who we are looking for</h2>
         <p style={{ fontSize: "1.1rem", color: "var(--muted)", lineHeight: 1.6, margin: 0 }}>
           Teachers, hosts, organizers, and club leaders. If you can bring even a few players together, you can be a Founding Ambassador.
         </p>
+      </div>
+
+      <div style={{ background: "white", border: "2px solid var(--border)", borderRadius: 18, padding: "1.6rem 1.5rem", marginBottom: "2.2rem" }}>
+        <h2 style={{ fontSize: "1.3rem", color: "var(--navy)", margin: "0 0 1.2rem", fontWeight: 800 }}>What ambassadors receive</h2>
+        <div style={point}><span style={check}>&#10003;</span><span style={pointText}>Recognition as a Founding Ambassador.</span></div>
+        <div style={point}><span style={check}>&#10003;</span><span style={pointText}>Early access to new Find My Mahj Game tools.</span></div>
+        <div style={point}><span style={check}>&#10003;</span><span style={pointText}>A direct line to the FMG team.</span></div>
+        <div style={point}><span style={check}>&#10003;</span><span style={pointText}>A real say in how mahjong grows in your city.</span></div>
+        <div style={{ ...point, marginBottom: 0 }}><span style={check}>&#10003;</span><span style={pointText}>Optional visibility for you and your games when ambassador profiles go live.</span></div>
       </div>
 
       <h2 style={{ fontSize: "1.6rem", color: "var(--navy)", margin: "0 0 0.3rem", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>Apply to become an ambassador</h2>
