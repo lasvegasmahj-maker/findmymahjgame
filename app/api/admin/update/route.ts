@@ -15,9 +15,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { table, id, status } = await req.json().catch(() => ({}));
+  const { table, id, ids, status } = await req.json().catch(() => ({}));
 
-  if (!ALLOWED_TABLES.includes(table) || !ALLOWED_STATUS.includes(status) || typeof id !== "string") {
+  const idList: string[] = Array.isArray(ids) ? ids : typeof id === "string" ? [id] : [];
+  const idsValid = idList.length > 0 && idList.length <= 500 && idList.every((x) => typeof x === "string");
+  if (!ALLOWED_TABLES.includes(table) || !ALLOWED_STATUS.includes(status) || !idsValid) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
@@ -25,10 +27,10 @@ export async function POST(req: NextRequest) {
     ? { status }
     : { status, reviewed_at: new Date().toISOString() };
 
-  const { error } = await supabase.from(table).update(patch).eq("id", id);
+  const { error } = await supabase.from(table).update(patch).in("id", idList);
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, updated: idList.length });
 }

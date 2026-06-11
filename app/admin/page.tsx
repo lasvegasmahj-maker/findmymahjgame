@@ -193,6 +193,7 @@ export default function AdminPage() {
   const [ads, setAds] = useState<AdListing[]>([]);
   const [ambassadors, setAmbassadors] = useState<Ambassador[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [pendingCount, setPendingCount] = useState(0);
   const [newInquiryCount, setNewInquiryCount] = useState(0);
   const [newAmbassadorCount, setNewAmbassadorCount] = useState(0);
@@ -236,7 +237,70 @@ export default function AdminPage() {
       setNewInquiryCount(json.counts.newInquiries ?? 0);
       setNewAmbassadorCount(json.counts.newAmbassadors ?? 0);
     }
+    setSelected(new Set());
     setLoading(false);
+  }
+
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  async function bulkUpdate(table: string, ids: string[], status: string) {
+    if (!ids.length) return;
+    const verb = status === "published" ? "Approve" : "Reject";
+    if (!window.confirm(`${verb} ${ids.length} listing${ids.length === 1 ? "" : "s"}?`)) return;
+    await fetch("/api/admin/update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ table, ids, status }),
+    });
+    loadData();
+  }
+
+  function renderBulkBar(table: string, rows: { id: string; status: string }[]) {
+    const pending = rows.filter((r) => r.status === "pending_review" || r.status === "flagged");
+    if (!pending.length) return null;
+    const chosen = pending.filter((r) => selected.has(r.id)).map((r) => r.id);
+    const allChosen = chosen.length === pending.length;
+    const btn = (bg: string, color: string, border?: string): React.CSSProperties => ({
+      background: bg, color, border: border || "none", borderRadius: 6, padding: "0.45rem 1rem",
+      fontSize: "0.8rem", fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+    });
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", flexWrap: "wrap", background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, padding: "0.7rem 1rem", marginBottom: "1rem" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: "0.45rem", fontSize: "0.85rem", fontWeight: 600, color: "var(--navy)", cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={allChosen}
+            onChange={() => setSelected(allChosen ? new Set() : new Set(pending.map((r) => r.id)))}
+            style={{ width: 18, height: 18 }}
+          />
+          Select all pending ({pending.length})
+        </label>
+        <button onClick={() => bulkUpdate(table, chosen, "published")} disabled={!chosen.length} style={{ ...btn("var(--green)", "white"), opacity: chosen.length ? 1 : 0.5 }}>
+          Approve Selected ({chosen.length})
+        </button>
+        <button onClick={() => bulkUpdate(table, chosen, "rejected")} disabled={!chosen.length} style={{ ...btn("#fee2e2", "#dc2626", "1px solid #fca5a5"), opacity: chosen.length ? 1 : 0.5 }}>
+          Reject Selected ({chosen.length})
+        </button>
+        <button onClick={() => bulkUpdate(table, pending.map((r) => r.id), "published")} style={btn("var(--navy)", "white")}>
+          Approve All Pending ({pending.length})
+        </button>
+      </div>
+    );
+  }
+
+  function rowCheckbox(r: { id: string; status: string }, label: string) {
+    if (r.status !== "pending_review" && r.status !== "flagged") return <td style={{ padding: "0.8rem 0.6rem" }} />;
+    return (
+      <td style={{ padding: "0.8rem 0.6rem" }}>
+        <input type="checkbox" aria-label={`Select ${label}`} checked={selected.has(r.id)} onChange={() => toggleSelect(r.id)} style={{ width: 18, height: 18 }} />
+      </td>
+    );
   }
 
   async function updateStatus(table: string, id: string, status: string) {
@@ -387,6 +451,7 @@ export default function AdminPage() {
       {/* PLAYERS TAB */}
       {!loading && tab === "players" && (
         <div>
+          {renderBulkBar("player_listings", players)}
           {players.length === 0 ? (
             <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "3rem", textAlign: "center" }}>
               <p style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>👥</p>
@@ -396,6 +461,7 @@ export default function AdminPage() {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr>
+                  <th aria-label="Select" style={{ padding: "0.8rem 0.6rem", background: "var(--bg)" }} />
                   <th style={{ textAlign: "left", padding: "0.8rem 1rem", background: "var(--bg)", fontSize: "0.78rem", fontWeight: 700, color: "var(--navy)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Player</th>
                   <th style={{ textAlign: "left", padding: "0.8rem 1rem", background: "var(--bg)", fontSize: "0.78rem", fontWeight: 700, color: "var(--navy)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Location</th>
                   <th style={{ textAlign: "left", padding: "0.8rem 1rem", background: "var(--bg)", fontSize: "0.78rem", fontWeight: 700, color: "var(--navy)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Level</th>
@@ -406,6 +472,7 @@ export default function AdminPage() {
               <tbody>
                 {players.map((p) => (
                   <tr key={p.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                    {rowCheckbox(p, p.name)}
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.9rem", fontWeight: 600, color: "var(--navy)" }}>{p.name}</td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{p.city}, {p.state}</td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{p.skill_level}</td>
@@ -432,6 +499,7 @@ export default function AdminPage() {
       {/* VENUES TAB */}
       {!loading && tab === "venues" && (
         <div>
+          {renderBulkBar("venue_listings", venues)}
           {venues.length === 0 ? (
             <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "3rem", textAlign: "center" }}>
               <p style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>🏛</p>
@@ -441,6 +509,7 @@ export default function AdminPage() {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr>
+                  <th aria-label="Select" style={{ padding: "0.8rem 0.6rem", background: "var(--bg)" }} />
                   <th style={{ textAlign: "left", padding: "0.8rem 1rem", background: "var(--bg)", fontSize: "0.78rem", fontWeight: 700, color: "var(--navy)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Venue</th>
                   <th style={{ textAlign: "left", padding: "0.8rem 1rem", background: "var(--bg)", fontSize: "0.78rem", fontWeight: 700, color: "var(--navy)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Location</th>
                   <th style={{ textAlign: "left", padding: "0.8rem 1rem", background: "var(--bg)", fontSize: "0.78rem", fontWeight: 700, color: "var(--navy)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Tier</th>
@@ -451,6 +520,7 @@ export default function AdminPage() {
               <tbody>
                 {venues.map((v) => (
                   <tr key={v.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                    {rowCheckbox(v, v.business_name)}
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.9rem", fontWeight: 600, color: "var(--navy)" }}>{v.business_name}</td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{v.city}, {v.state}</td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{v.tier}</td>
@@ -471,6 +541,7 @@ export default function AdminPage() {
       {/* EVENTS TAB */}
       {!loading && tab === "events" && (
         <div>
+          {renderBulkBar("event_listings", events)}
           {events.length === 0 ? (
             <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "3rem", textAlign: "center" }}>
               <p style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>🎫</p>
@@ -480,6 +551,7 @@ export default function AdminPage() {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr>
+                  <th aria-label="Select" style={{ padding: "0.8rem 0.6rem", background: "var(--bg)" }} />
                   <th style={{ textAlign: "left", padding: "0.8rem 1rem", background: "var(--bg)", fontSize: "0.78rem", fontWeight: 700, color: "var(--navy)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Event</th>
                   <th style={{ textAlign: "left", padding: "0.8rem 1rem", background: "var(--bg)", fontSize: "0.78rem", fontWeight: 700, color: "var(--navy)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Location</th>
                   <th style={{ textAlign: "left", padding: "0.8rem 1rem", background: "var(--bg)", fontSize: "0.78rem", fontWeight: 700, color: "var(--navy)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Date</th>
@@ -490,6 +562,7 @@ export default function AdminPage() {
               <tbody>
                 {events.map((ev) => (
                   <tr key={ev.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                    {rowCheckbox(ev, ev.event_name)}
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.9rem", fontWeight: 600, color: "var(--navy)" }}>{ev.event_name}</td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{ev.city}, {ev.state}</td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{ev.event_date ? formatDate(ev.event_date) : "-"}</td>
