@@ -37,3 +37,20 @@ revoke select (contact_name, contact_email, reviewer_notes, stripe_payment_id)
 alter table public.tables
   add column if not exists filled_at timestamptz,
   add column if not exists played_at timestamptz;
+
+
+-- LAUNCH GATE (2026-06-11): close the player_listings self-publish hole.
+-- Verified live: the anon key can insert a player_listing with
+-- status='published' (or omit status, which defaults to 'published'), so a
+-- fake or predatory "beginners welcome at my home" listing goes public with
+-- no review. venue/event/ambassador anon inserts are already RLS-denied; only
+-- player_listings is exposed because /list-my-game writes it client-side.
+-- Fix without breaking that form: default new rows to pending_review, and add
+-- a RESTRICTIVE policy so the anon role can only ever insert pending_review.
+-- The service role (imports, admin approve) bypasses RLS and is unaffected.
+alter table public.player_listings alter column status set default 'pending_review';
+
+drop policy if exists "player_listings anon insert pending only" on public.player_listings;
+create policy "player_listings anon insert pending only"
+  on public.player_listings as restrictive for insert to anon
+  with check (status = 'pending_review');
