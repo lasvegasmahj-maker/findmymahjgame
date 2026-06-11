@@ -75,23 +75,25 @@ export default async function StatePage({ params }: { params: Promise<{ state: s
 
   const supabase = createServerClient();
 
-  // Fetch all published data for this state in parallel
+  // Explicit public-safe columns only. These rows serialize into client props
+  // (and some into JSON-LD), so select("*") would ship contact_email, phone,
+  // stripe_payment_id, and reviewer_notes to every visitor's browser.
   const [playersRes, eventsRes, venuesRes] = await Promise.all([
     supabase
       .from("player_listings")
-      .select("*")
+      .select("id, name, city, state, skill_level, availability, bio, avatar_color, created_at")
       .eq("state", data.abbr)
       .eq("status", "published")
       .order("created_at", { ascending: false }),
     supabase
       .from("event_listings")
-      .select("*")
+      .select("id, event_name, event_type, city, state, venue, address, description, event_date, end_date, price, registration_url, tier, created_at")
       .eq("state", data.abbr)
       .eq("status", "published")
       .order("event_date", { ascending: true }),
     supabase
       .from("venue_listings")
-      .select("*")
+      .select("id, business_name, venue_type, city, state, address, description, website, instagram, display_email, logo_url, tier, created_at")
       .eq("state", data.abbr)
       .eq("status", "published")
       .order("created_at", { ascending: false }),
