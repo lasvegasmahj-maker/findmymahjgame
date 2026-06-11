@@ -10,6 +10,14 @@ export default function Footer() {
         </div>
         <div className="footer-cols">
           <div>
+            <h4>Find Games</h4>
+            <Link href="/events">Events</Link>
+            <Link href="/teachers">Teachers</Link>
+            <Link href="/states">Browse States</Link>
+            <Link href="/newsletter">Newsletter</Link>
+            <Link href="/help">Help</Link>
+          </div>
+          <div>
             <h4>Explore</h4>
             <Link href="/">Home</Link>
             <Link href="/about">About</Link>
