@@ -46,32 +46,23 @@ export default function ListMyGameClient() {
     setSubmitting(true);
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/player_listings`,
-        {
-          method: "POST",
-          headers: {
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-            "Content-Type": "application/json",
-            Prefer: "return=minimal",
-          },
-          body: JSON.stringify({
-            name: form.name,
-            city: form.city,
-            state: form.state,
-            skill_level: form.skill_level.toLowerCase(),
-            availability: form.availability || null,
-            bio: form.bio || null,
-            email: form.email,
-            status: "pending_review",
-          }),
-        }
-      );
+      const res = await fetch("/api/list-my-game", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          city: form.city,
+          state: form.state,
+          skill_level: form.skill_level.toLowerCase(),
+          availability: form.availability || null,
+          bio: form.bio || null,
+          email: form.email,
+        }),
+      });
 
       if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Something went wrong. Please try again.");
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || "Something went wrong. Please try again.");
       }
 
       setSubmitted(true);
