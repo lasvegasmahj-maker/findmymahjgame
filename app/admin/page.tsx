@@ -197,6 +197,7 @@ export default function AdminPage() {
   const [pendingCount, setPendingCount] = useState(0);
   const [newInquiryCount, setNewInquiryCount] = useState(0);
   const [newAmbassadorCount, setNewAmbassadorCount] = useState(0);
+  const [focusTasks, setFocusTasks] = useState<{ id: string; task: string; priority: string; due_date: string | null; status: string; waiting_on: string | null }[]>([]);
 
   // Probe the session once on mount. The data route returns 401 without a valid cookie.
   useEffect(() => {
@@ -206,6 +207,24 @@ export default function AdminPage() {
   useEffect(() => {
     if (authed) loadData();
   }, [tab, authed]);
+
+  useEffect(() => {
+    if (!authed) return;
+    fetch("/api/admin/tasks", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : { items: [] }))
+      .then((j) => {
+        const today = new Date().toISOString().slice(0, 10);
+        const items = (j.items || []) as { id: string; task: string; priority: string; due_date: string | null; status: string; waiting_on: string | null; snoozed_until: string | null }[];
+        const open = items.filter((t) => ["open", "in_progress", "waiting"].includes(t.status));
+        const ranked = [
+          ...open.filter((t) => t.due_date && t.due_date <= today),
+          ...open.filter((t) => (!t.due_date || t.due_date > today) && t.priority === "high"),
+          ...open.filter((t) => (!t.due_date || t.due_date > today) && t.priority !== "high"),
+        ];
+        setFocusTasks(ranked.slice(0, 5));
+      })
+      .catch(() => {});
+  }, [authed]);
 
   async function loadData() {
     setLoading(true);
@@ -387,9 +406,26 @@ export default function AdminPage() {
           You have {bannerParts.join(", ")} to review.
         </div>
       )}
+      {focusTasks.length > 0 && (
+        <div style={{ background: "#fff5fa", border: "1px solid rgba(233,30,140,0.25)", borderRadius: 12, padding: "0.9rem 1.2rem", marginBottom: "1.5rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+            <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "var(--pink)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Today&rsquo;s focus</span>
+            <a href="/admin/tasks" style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--pink)" }}>All tasks &rarr;</a>
+          </div>
+          {focusTasks.map((t) => (
+            <div key={t.id} style={{ fontSize: "0.9rem", color: "var(--navy)", padding: "0.25rem 0", fontWeight: t.priority === "high" ? 700 : 500 }}>
+              {t.task}
+              {t.status === "waiting" && t.waiting_on ? <span style={{ color: "var(--muted)", fontWeight: 400 }}> (waiting on {t.waiting_on})</span> : null}
+              {t.due_date ? <span style={{ color: "var(--muted)", fontWeight: 400 }}> &middot; due {t.due_date}</span> : null}
+            </div>
+          ))}
+        </div>
+      )}
+
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "2rem" }}>
         <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.8rem", color: "var(--navy)" }}>Admin Dashboard</h1>
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+          <a href="/admin/tasks" style={{ background: "var(--pink)", color: "white", borderRadius: 6, padding: "0.5rem 1rem", fontSize: "0.82rem", fontWeight: 700, textDecoration: "none", fontFamily: "'DM Sans', sans-serif" }}>Tasks</a>
           <a href="/admin/metrics" style={{ background: "var(--navy)", color: "white", borderRadius: 6, padding: "0.5rem 1rem", fontSize: "0.82rem", fontWeight: 700, textDecoration: "none", fontFamily: "'DM Sans', sans-serif" }}>North Star Metrics</a>
           <a href="/admin/heatmap" style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 6, padding: "0.5rem 1rem", fontSize: "0.82rem", fontWeight: 600, textDecoration: "none", color: "var(--navy)", fontFamily: "'DM Sans', sans-serif" }}>Heat Map</a>
           <button onClick={loadData} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 6, padding: "0.5rem 1rem", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
