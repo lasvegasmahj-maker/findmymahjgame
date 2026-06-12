@@ -35,17 +35,22 @@ export default function AmbassadorForm() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setStatus("submitting"); setErr("");
-    const res = await fetch("/api/ambassadors/apply", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, phone, city, state, role, reach, why }),
-    });
-    if (res.ok) {
-      setStatus("done");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } else {
-      const d = await res.json().catch(() => ({}));
-      setErr(d.error || "Something went wrong. Please try again.");
+    try {      setStatus("submitting"); setErr("");
+      const res = await fetch("/api/ambassadors/apply", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, phone, city, state, role, reach, why }),
+      });
+      if (res.ok) {
+        setStatus("done");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        const d = await res.json().catch(() => ({}));
+        setErr(d.error || "Something went wrong. Please try again.");
+        setStatus("error");
+      }
+    
+    } catch {
+      setErr("We could not reach the server. Please check your connection and try again.");
       setStatus("error");
     }
   }
@@ -97,7 +102,7 @@ export default function AmbassadorForm() {
       <div style={labelStyle}>Why do you want to help?</div>
       <textarea style={{ ...fieldStyle, minHeight: 120, resize: "vertical", paddingTop: "0.8rem", lineHeight: 1.5 }} aria-label="Why do you want to help?" placeholder="Tell us a little about how you bring players together." value={why} onChange={(e) => setWhy(e.target.value)} />
 
-      {err && <p style={{ color: "#dc2626", fontSize: "1.05rem", marginTop: "1rem" }}>{err}</p>}
+      {err && <p role="alert" style={{ color: "#dc2626", fontSize: "1.05rem", marginTop: "1rem" }}>{err}</p>}
 
       <button type="submit" disabled={!ready || status === "submitting"} style={{
         width: "100%", minHeight: 68, marginTop: "1.8rem", borderRadius: 16, border: "none",

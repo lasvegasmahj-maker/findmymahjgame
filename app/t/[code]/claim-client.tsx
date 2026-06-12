@@ -29,21 +29,25 @@ export default function ClaimClient({
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("submitting"); setErr("");
-    const res = await fetch("/api/tables/claim", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ shareCode, name, phone, email }),
-    });
-    if (res.ok) { setStatus("done"); return; }
-    if (res.status === 409) { setStatus("full"); return; }
-    const d = await res.json().catch(() => ({}));
-    setErr(d.error || "Something went wrong. Please try again.");
-    setStatus("error");
+    try {
+      const res = await fetch("/api/tables/claim", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shareCode, name, phone, email }),
+      });
+      if (res.ok) { setStatus("done"); return; }
+      if (res.status === 409) { setStatus("full"); return; }
+      const d = await res.json().catch(() => ({}));
+      setErr(d.error || "Something went wrong. Please try again.");
+      setStatus("error");
+    } catch {
+      setErr("We could not reach the server. Please check your connection and try again.");
+      setStatus("error");
+    }
   }
 
   if (status === "done") {
     return (
       <div style={{ textAlign: "center", padding: "0.5rem 0" }}>
-        <div style={{ fontSize: "2.4rem" }}>✅</div>
         <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#1a9648", marginBottom: "0.8rem" }}>You&rsquo;re in!</div>
         <div style={{ display: "inline-block" }}><SeatDots filled={filled + 1} total={total} you /></div>
         <p style={{ fontSize: "1.1rem", color: "var(--navy)", lineHeight: 1.5, margin: "0.8rem 0 1rem" }}>We saved your seat. The host will be in touch with the details.</p>
@@ -69,11 +73,11 @@ export default function ClaimClient({
 
   return (
     <form onSubmit={submit}>
-      <input style={fieldStyle} placeholder="First name" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
-      <input style={fieldStyle} type="tel" inputMode="tel" placeholder="Mobile number" value={phone} onChange={(e) => setPhone(e.target.value)} />
-      <input style={fieldStyle} type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <input style={fieldStyle} aria-label="Your first name" placeholder="First name" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
+      <input style={fieldStyle} type="tel" inputMode="tel" aria-label="Mobile number" placeholder="Mobile number" value={phone} onChange={(e) => setPhone(e.target.value)} />
+      <input style={fieldStyle} type="email" aria-label="Email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
       <p style={{ fontSize: "0.95rem", color: "var(--muted)", margin: "0 0 0.8rem" }}>Add a phone, an email, or both, so we can reach you. We never show it to anyone.</p>
-      {err && <p style={{ color: "#dc2626", fontSize: "1.05rem" }}>{err}</p>}
+      {err && <p role="alert" style={{ color: "#dc2626", fontSize: "1.05rem" }}>{err}</p>}
       <button type="submit" disabled={!ready || status === "submitting"} style={{
         width: "100%", minHeight: 68, borderRadius: 16, border: "none",
         background: ready ? "var(--pink)" : "#d9b3cc", color: "white",

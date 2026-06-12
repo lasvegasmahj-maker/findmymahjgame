@@ -58,7 +58,7 @@ export default function SearchBox() {
         <div className="inline-search-box">
           <input
             type="text"
-            placeholder="Enter your city..."
+            aria-label="Enter your city" placeholder="Enter your city..."
             value={query}
             onChange={(e) => { setQuery(e.target.value); setNoMatch(false); }}
             onKeyDown={handleKeyDown}

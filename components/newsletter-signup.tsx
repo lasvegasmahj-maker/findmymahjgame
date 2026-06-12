@@ -68,7 +68,7 @@ export default function NewsletterSignup({ dark = false }: { dark?: boolean }) {
           {state === "submitting" ? "..." : "Subscribe"}
         </button>
       </div>
-      {err && <p style={{ color: dark ? "#ffd1e6" : "#dc2626", fontSize: "1rem", marginTop: "0.6rem" }}>{err}</p>}
+      {err && <p role="alert" style={{ color: dark ? "#ffd1e6" : "#dc2626", fontSize: "1rem", marginTop: "0.6rem" }}>{err}</p>}
       <p style={{ color: noteColor, fontSize: "0.9rem", margin: "0.8rem 0 0" }}>No spam. Unsubscribe anytime.</p>
     </form>
   );

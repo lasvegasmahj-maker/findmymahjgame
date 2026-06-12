@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
   };
 
   const { error } = await supabase.from("ambassadors").insert(row);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) { console.error("apply failed:", error.message); return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 }); }
 
   const firstName = escapeHtml((row.name || "").trim().split(/\s+/)[0] || "there");
   const place = [row.city, row.state].filter(Boolean).join(", ");
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
     from: "Find My Mahj Game <hello@findmymahjgame.com>",
     to: "hello@findmymahjgame.com",
     replyTo: row.email,
-    subject: `New Ambassador application: ${escapeHtml(row.name)}${place ? ` (${escapeHtml(place)})` : ""}`,
+    subject: `New Ambassador application: ${row.name}${place ? ` (${escapeHtml(place)})` : ""}`,
     html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1a1a2e;">
       <h2 style="color:#1a1f5e;">New Founding Ambassador application</h2>
       <table style="font-size:15px;line-height:1.7;border-collapse:collapse;">

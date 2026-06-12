@@ -3,6 +3,7 @@ import Link from "next/link";
 import USMap from "@/components/home/us-map";
 import SearchBox from "@/components/home/search-box";
 import { createServerClient } from "@/lib/supabase-server";
+import { safeHttpUrl } from "@/lib/sanitize";
 import { STATES } from "@/lib/states-data";
 import SeatDots from "@/components/seat-dots";
 
@@ -158,7 +159,7 @@ export default async function Home() {
                     <div className="rt-tag" style={{ color: "var(--pink)" }}>{e.event_type === "retreat" ? "Retreat" : "Tournament"}</div>
                     <h3 className="rt-title">{e.event_name}</h3>
                     <p className="rt-meta">{[e.city, e.state].filter(Boolean).join(", ")}</p>
-                    {e.event_date && <p className="rt-meta">{new Date(e.event_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</p>}
+                    {e.event_date && <p className="rt-meta">{new Date(e.event_date).toLocaleDateString("en-US", { timeZone: "UTC", month: "long", day: "numeric", year: "numeric" })}</p>}
                     <span className="rt-btn" style={{ marginTop: "0.8rem", display: "inline-block" }}>View details &rarr;</span>
                   </a>
                 );
@@ -199,7 +200,7 @@ export default async function Home() {
           <p className="section-label" style={{ textAlign: "center" }}>Take Your Game on the Road</p>
           <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", marginBottom: "0.5rem", textAlign: "center" }}>Traveling and Want to Play?</h2>
           <p style={{ color: "var(--muted)", marginBottom: "2.5rem", fontSize: "1rem", textAlign: "center" }}>Don&rsquo;t let travel stop your game, find players wherever you land or connect with fellow cruise passengers before you board.</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.2rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1.2rem" }}>
             <div className="anywhere-card">
               <div className="anywhere-icon">✈️</div>
               <h3>Traveling? Find a Game</h3>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createServerClient } from "@/lib/supabase-server";
+import { nearMatches } from "@/lib/near-match";
 import { safeHttpUrl } from "@/lib/sanitize";
 
 export const metadata: Metadata = {
@@ -19,6 +20,8 @@ function rank(t: string | null | undefined): number {
   return TYPE_RANK[k] ?? 50;
 }
 function whenLabel(e: { event_date?: string | null; day_time?: string | null; day_of_week?: string | null; time_of_day?: string | null }): string {
+  if (e.day_time && !e.event_date) return e.day_time;
+  if (e.day_time && e.event_date && new Date(e.event_date).getTime() < Date.now()) return e.day_time;
   if (e.event_date) {
     const d = new Date(e.event_date);
     if (!isNaN(d.getTime())) return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" });
@@ -33,12 +36,12 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
   const { near } = await searchParams;
   const supabase = createServerClient();
   const todayISO = new Date().toISOString().slice(0, 10);
-  const { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly").eq("status", "published").or(`event_date.is.null,event_date.gte.${todayISO}`).order("event_date", { ascending: true });
+  const { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly").eq("status", "published").or(`event_date.is.null,event_date.gte.${todayISO},event_type.in.(open_play,openplay,recurring)`).order("event_date", { ascending: true });
 
   let rows = data || [];
   if (near && near.trim()) {
     const n = near.trim().toLowerCase();
-    rows = rows.filter((e) => `${e.city || ""} ${e.state || ""}`.toLowerCase().includes(n));
+    rows = rows.filter((e) => nearMatches(n, e.city, e.state));
   }
   rows = [...rows].sort((a, b) => rank(a.event_type) - rank(b.event_type));
 

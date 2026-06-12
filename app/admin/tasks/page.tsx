@@ -36,8 +36,8 @@ const LAUNCH_TASKS = [
   { task: "Day-3 follow-ups for Wave 2 teacher invitations", category: "follow-up", priority: "normal" },
 ];
 
-const field: React.CSSProperties = { padding: "0.5rem 0.7rem", border: "1px solid var(--border)", borderRadius: 8, fontSize: "0.9rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", background: "white" };
-const btn = (bg: string, color: string, border?: string): React.CSSProperties => ({ background: bg, color, border: border || "none", borderRadius: 6, padding: "0.35rem 0.8rem", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" });
+const field: React.CSSProperties = { padding: "0.6rem 0.8rem", minHeight: 44, border: "1px solid var(--border)", borderRadius: 8, fontSize: "1rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", background: "white" };
+const btn = (bg: string, color: string, border?: string): React.CSSProperties => ({ background: bg, color, border: border || "none", borderRadius: 8, padding: "0.55rem 0.9rem", minHeight: 44, fontSize: "0.95rem", fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" });
 
 function plusDays(n: number) {
   const d = new Date();
@@ -49,7 +49,7 @@ export default function FounderTasksPage() {
   const [items, setItems] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [needsMigration, setNeedsMigration] = useState(false);
-  const [authed, setAuthed] = useState(true);
+  const [authed, setAuthed] = useState<boolean | null>(null);
   const [newTask, setNewTask] = useState("");
   const [newCategory, setNewCategory] = useState("ops");
   const [newPriority, setNewPriority] = useState("normal");
@@ -61,6 +61,7 @@ export default function FounderTasksPage() {
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/tasks", { cache: "no-store" });
     if (res.status === 401) { setAuthed(false); setLoading(false); return; }
+    setAuthed(true);
     const json = await res.json().catch(() => ({ items: [] }));
     setNeedsMigration(!!json.needsMigration);
     setItems(json.items || []);
@@ -97,13 +98,14 @@ export default function FounderTasksPage() {
   }
 
   const today = new Date().toISOString().slice(0, 10);
-  const visible = items.filter((t) => t.status !== "snoozed" || !t.snoozed_until || t.snoozed_until <= today);
-  const snoozed = items.filter((t) => t.status === "snoozed" && t.snoozed_until && t.snoozed_until > today);
-  const open = visible.filter((t) => ["open", "in_progress"].includes(t.status));
+  const snoozeExpired = (t: Task) => t.status === "snoozed" && (!t.snoozed_until || t.snoozed_until <= today);
+  const snoozed = items.filter((t) => t.status === "snoozed" && !snoozeExpired(t));
+  const open = items.filter((t) => ["open", "in_progress"].includes(t.status) || snoozeExpired(t));
+  const visible = items;
   const waiting = visible.filter((t) => t.status === "waiting");
   const done = items.filter((t) => t.status === "done").slice(0, 15);
   const focus = open
-    .filter((t) => t.priority === "high" || (t.due_date && t.due_date <= today))
+    .filter((t) => t.priority === "high" || (t.due_date && t.due_date <= today) || snoozeExpired(t))
     .slice(0, 5);
 
   function row(t: Task) {
@@ -111,14 +113,14 @@ export default function FounderTasksPage() {
     return (
       <div key={t.id} style={{ background: "white", border: "1px solid var(--border)", borderRadius: 10, padding: "0.8rem 1rem", marginBottom: "0.6rem" }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: "0.7rem", flexWrap: "wrap" }}>
-          <span style={{ fontSize: "0.68rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: CAT_COLORS[t.category] || "var(--muted)", paddingTop: "0.25rem" }}>{t.category}</span>
+          <span style={{ fontSize: "0.85rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: CAT_COLORS[t.category] || "var(--muted)", paddingTop: "0.25rem" }}>{t.category}</span>
           <div style={{ flex: "1 1 280px" }}>
             <div style={{ fontSize: "0.95rem", fontWeight: t.priority === "high" ? 800 : 600, color: "var(--navy)", textDecoration: t.status === "done" ? "line-through" : "none" }}>
               {t.task}
               {t.related_name && <span style={{ color: "var(--muted)", fontWeight: 500 }}> &middot; {t.related_name}</span>}
             </div>
             {t.notes && <div style={{ fontSize: "0.85rem", color: "var(--muted)", marginTop: "0.2rem", whiteSpace: "pre-wrap" }}>{t.notes}</div>}
-            <div style={{ fontSize: "0.78rem", color: overdue ? "#dc2626" : "var(--muted)", marginTop: "0.25rem", fontWeight: overdue ? 700 : 400 }}>
+            <div style={{ fontSize: "0.88rem", color: overdue ? "#dc2626" : "var(--muted)", marginTop: "0.25rem", fontWeight: overdue ? 700 : 400 }}>
               {t.due_date ? `Due ${t.due_date}${overdue ? " (overdue)" : ""}` : ""}
               {t.status === "waiting" && t.waiting_on ? `Waiting on ${t.waiting_on}` : ""}
               {t.status === "snoozed" && t.snoozed_until ? `Snoozed to ${t.snoozed_until}` : ""}
@@ -153,6 +155,7 @@ export default function FounderTasksPage() {
     );
   }
 
+  if (authed === null) return null;
   if (!authed) return <div style={{ maxWidth: 600, margin: "4rem auto", textAlign: "center", fontFamily: "'DM Sans', sans-serif" }}><p>Please <a href="/admin" style={{ color: "var(--pink)", fontWeight: 700 }}>sign in to admin</a> first.</p></div>;
 
   return (

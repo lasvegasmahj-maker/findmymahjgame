@@ -46,15 +46,16 @@ export async function POST(req: NextRequest) {
   };
 
   const { data, error } = await supabase.from("tables").insert(row).select("id, share_code").single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) { console.error("create failed:", error.message); return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 }); }
 
-  await supabase.from("table_seats").insert({
+  const { error: hostSeatErr } = await supabase.from("table_seats").insert({
     table_id: data.id,
     name: row.host_name,
     phone: row.host_phone,
     email: row.host_email,
     is_host: true,
   });
+  if (hostSeatErr) console.error("create: host seat insert failed", hostSeatErr.message);
 
   return NextResponse.json({ shareCode: data.share_code });
 }

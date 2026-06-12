@@ -97,50 +97,33 @@ export default function GetListedClient() {
 
     setSubmitting(true);
 
-    const isPromoValid = promoStatus === "valid";
-    const now = new Date();
-    const freeUntil = isPromoValid
-      ? new Date(now.getFullYear(), now.getMonth() + 6, now.getDate()).toISOString().split("T")[0]
-      : null;
-
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/inquiries`,
-        {
-          method: "POST",
-          headers: {
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-            "Content-Type": "application/json",
-            Prefer: "return=minimal",
-          },
-          body: JSON.stringify({
-            name: form.business_name,
-            email: form.email,
-            inquiry_type: "advertiser_signup",
-            business_type: form.type,
-            city: form.city,
-            state: form.state,
-            website: form.website || null,
-            instagram: form.instagram || null,
-            logo_url: form.logo_url || null,
-            message: form.description,
-            promo_code: form.promo_code.trim().toUpperCase() || null,
-            is_founding_member: isPromoValid,
-            free_until: freeUntil,
-            status: "new",
-          }),
-        }
-      );
+      const res = await fetch("/api/get-listed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.business_name,
+          business_name: form.business_name,
+          email: form.email,
+          business_type: form.type,
+          city: form.city,
+          state: form.state,
+          website: form.website || null,
+          instagram: form.instagram || null,
+          logo_url: form.logo_url || null,
+          message: form.description,
+          promo_code: form.promo_code.trim().toUpperCase() || null,
+        }),
+      });
 
       if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Something went wrong. Please try again.");
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || "Something went wrong. Please try again.");
       }
 
       setSubmitted(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "We could not reach the server. Please check your connection and try again.");
     } finally {
       setSubmitting(false);
     }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createServerClient } from "@/lib/supabase-server";
+import { nearMatches } from "@/lib/near-match";
 import { safeHttpUrl } from "@/lib/sanitize";
 
 export const metadata: Metadata = {
@@ -23,7 +24,7 @@ export default async function VenuesPage({ searchParams }: { searchParams: Promi
   let rows = data || [];
   if (near && near.trim()) {
     const n = near.trim().toLowerCase();
-    rows = rows.filter((v) => `${v.city || ""} ${v.state || ""}`.toLowerCase().includes(n));
+    rows = rows.filter((v) => nearMatches(n, v.city, v.state));
   }
 
   return (
@@ -41,16 +42,20 @@ export default async function VenuesPage({ searchParams }: { searchParams: Promi
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 300px), 1fr))", gap: "1.2rem" }}>
           {rows.map((v) => {
             const safeSite = safeHttpUrl(v.website);
-            const href = safeSite || "/get-listed";
             const external = !!safeSite;
             return (
-              <a key={v.id} href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} style={{ display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", textDecoration: "none" }}>
+              external ? (<a key={v.id} href={safeSite!} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} style={{ display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", textDecoration: "none" }}>
                 {v.venue_type && <div style={{ display: "inline-block", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.78rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.5rem" }}>{v.venue_type}</div>}
                 <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{v.business_name || "Venue"}</div>
                 {(v.city || v.state) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[v.city, v.state].filter(Boolean).join(", ")}</div>}
                 {v.description && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.5rem", lineHeight: 1.5 }}>{String(v.description).slice(0, 110)}{String(v.description).length > 110 ? "..." : ""}</div>}
                 <div style={{ marginTop: "0.8rem", color: "var(--pink)", fontWeight: 800 }}>View details &rarr;</div>
-              </a>
+              </a>) : (<div key={v.id} style={{ display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem" }}>
+                {v.venue_type && <div style={{ display: "inline-block", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.78rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.5rem" }}>{v.venue_type}</div>}
+                <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{v.business_name || "Venue"}</div>
+                {(v.city || v.state) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[v.city, v.state].filter(Boolean).join(", ")}</div>}
+                {v.description && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.5rem", lineHeight: 1.5 }}>{String(v.description).slice(0, 110)}{String(v.description).length > 110 ? "..." : ""}</div>}
+              </div>)
             );
           })}
         </div>

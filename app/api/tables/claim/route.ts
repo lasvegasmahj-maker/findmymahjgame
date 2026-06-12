@@ -35,14 +35,25 @@ export async function POST(req: NextRequest) {
   }
 
   const name = clampText(b.name, 80);
-  await supabase.from("table_seats").insert({
+  const { error: seatErr } = await supabase.from("table_seats").insert({
     table_id: t.id,
     name,
     phone: clampText(b.phone, 40) || null,
     email: clampText(b.email, 254) || null,
   });
+  if (seatErr) {
+    console.error("claim: seat insert failed", seatErr.message);
+    return NextResponse.json({ error: "Could not save your seat. Please try again." }, { status: 500 });
+  }
 
-  const newFilled = filled + 1;
+  // Recount after insert: two simultaneous claimers can both pass the
+  // pre-insert check, so the post-insert count is the truth for overfill.
+  const { count: afterCount } = await supabase.from("table_seats").select("id", { count: "exact", head: true }).eq("table_id", t.id);
+  const newFilled = afterCount ?? filled + 1;
+  if (newFilled > t.seats_total) {
+    await supabase.from("table_seats").delete().eq("table_id", t.id).eq("name", name).order("created_at", { ascending: false }).limit(1);
+    return NextResponse.json({ error: "full" }, { status: 409 });
+  }
   const remaining = Math.max(0, t.seats_total - newFilled);
   if (remaining === 0) {
     const { error: fullErr } = await supabase.from("tables").update({ status: "full", filled_at: new Date().toISOString() }).eq("id", t.id);
@@ -62,9 +73,9 @@ export async function POST(req: NextRequest) {
         to,
         subject: remaining === 1
           ? `1 seat left, share to find your 4th!`
-          : `${first(name).replace(/&#39;/g, "'")} joined your mahjong table, ${remaining} to go`,
+          : `${first(name)} joined your mahjong table, ${remaining} to go`,
         html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:20px;">
-          <h2 style="color:#1a1f5e;">${remaining === 1 ? "🔥 Just 1 seat left!" : `${first(name)} joined your table`}</h2>
+          <h2 style="color:#1a1f5e;">${remaining === 1 ? "Just 1 seat left!" : `${first(name)} joined your table`}</h2>
           <p style="color:#374151;line-height:1.6;">${when} in ${area}. ${remaining === 1 ? "You need just <strong>one more player</strong>, your last seat." : `You need ${remaining} more players.`}</p>
           <p style="color:#374151;line-height:1.6;">${remaining === 1 ? "Share your link right now to find a 4th" : "Keep sharing your link to fill it"}: <a href="${escapeHtml(link)}">${escapeHtml(link)}</a></p>
         </div>`,
@@ -104,6 +115,27 @@ export async function POST(req: NextRequest) {
           3) Pick a date for your first game. Have fun!</p>
           <p style="font-size:14px;color:#6b7280;line-height:1.6;">Replies go to ${hostFirst} so the group can choose a safe spot. We never share anyone's phone number or email.</p>
           <p style="font-size:15px;"><a href="${escapeHtml(link)}" style="color:#e91e8c;font-weight:700;">See your table</a></p>
+        </div>`,
+      }).catch(() => {});
+    }
+
+    // Phone-only groups would otherwise get no coordination at all: the
+    // founder gets a manual-coordination alert with the host's phone.
+    if (!memberEmails.length || !t.host_email) {
+      await resend.emails.send({
+        from: "Find My Mahj Game <hello@findmymahjgame.com>",
+        to: "hello@findmymahjgame.com",
+        subject: `PHONE-ONLY TABLE FULL: coordinate ${t.city || "this table"} by text`,
+        html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:20px;">
+          <h2 style="color:#1a1f5e;">A table filled but cannot self-coordinate by email</h2>
+          <p style="color:#374151;line-height:1.7;">
+            Host: <strong>${escapeHtml(t.host_name || "?")}</strong> ${t.host_phone ? `(text: ${escapeHtml(t.host_phone)})` : "(no phone on file)"}<br/>
+            When: <strong>${when || "?"}</strong> in <strong>${area}</strong><br/>
+            Players: ${names || "?"}<br/>
+            Members with email: ${memberEmails.length}
+          </p>
+          <p style="color:#374151;line-height:1.7;">Please text the host the coordination note (public place, group intro).</p>
+          <p><a href="${escapeHtml(link)}" style="color:#e91e8c;font-weight:700;">Table page</a></p>
         </div>`,
       }).catch(() => {});
     }

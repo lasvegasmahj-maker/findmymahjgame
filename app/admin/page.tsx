@@ -37,6 +37,8 @@ interface VenueListing {
   tier: string;
   status: string;
   contact_email: string;
+  website: string | null;
+  description: string | null;
   created_at: string;
 }
 
@@ -50,6 +52,8 @@ interface EventListing {
   tier: string;
   status: string;
   contact_email: string;
+  registration_url: string | null;
+  description: string | null;
   created_at: string;
 }
 
@@ -227,7 +231,7 @@ export default function AdminPage() {
   }, [authed]);
 
   async function loadData() {
-    setLoading(true);
+    setLoading((prev) => prev && true);
     const res = await fetch(`/api/admin/data?tab=${tab}`, { cache: "no-store" });
     if (res.status === 401) {
       setAuthed(false);
@@ -340,11 +344,19 @@ export default function AdminPage() {
   }
 
   async function updateStatus(table: string, id: string, status: string) {
-    await fetch("/api/admin/update", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ table, id, status }),
-    });
+    try {
+      const res = await fetch("/api/admin/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ table, id, status }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        window.alert(d.error || "Update failed. Please try again.");
+      }
+    } catch {
+      window.alert("Network error. The change was not saved.");
+    }
     loadData();
   }
 
@@ -477,7 +489,7 @@ export default function AdminPage() {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.8rem" }}>
                     <div>
                       <strong style={{ color: "var(--navy)", fontSize: "1rem" }}>{inq.name}</strong>
-                      <span style={{ color: "var(--muted)", fontSize: "0.82rem", marginLeft: "0.8rem" }}>{inq.email}</span>
+                      <a href={`mailto:${inq.email}`} style={{ color: "var(--pink)", fontSize: "0.82rem", marginLeft: "0.8rem", fontWeight: 600 }}>{inq.email}</a>
                       {inq.company && <span style={{ color: "var(--muted)", fontSize: "0.82rem", marginLeft: "0.8rem" }}>({inq.company})</span>}
                       {(inq.inquiry_type === "advertising" || inq.inquiry_type === "get_listed") && (
                         <span style={{ marginLeft: "0.8rem", fontSize: "0.78rem", fontWeight: 700, color: "#a07800", background: "rgba(245,200,66,0.15)", borderRadius: 4, padding: "0.15rem 0.6rem" }}>
@@ -572,13 +584,19 @@ export default function AdminPage() {
                 {venues.map((v) => (
                   <tr key={v.id} style={{ borderBottom: "1px solid var(--border)" }}>
                     {rowCheckbox(v, v.business_name)}
-                    <td style={{ padding: "0.8rem 1rem", fontSize: "0.9rem", fontWeight: 600, color: "var(--navy)" }}>{v.business_name}</td>
+                    <td style={{ padding: "0.8rem 1rem", fontSize: "0.9rem", fontWeight: 600, color: "var(--navy)" }}>
+                      {v.business_name}
+                      <div style={{ fontSize: "0.75rem", fontWeight: 400, color: "var(--muted)", marginTop: "0.15rem" }}>
+                        {v.website ? <a href={v.website} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink)" }}>{String(v.website).replace(/^https?:\/\//, "").slice(0, 40)}</a> : "no website"}
+                        {v.description ? ` · ${String(v.description).slice(0, 80)}` : ""}
+                      </div>
+                    </td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{v.city}, {v.state}</td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{v.tier}</td>
                     <td style={{ padding: "0.8rem 1rem" }}><StatusBadge status={v.status} /></td>
                     <td style={{ padding: "0.8rem 1rem", display: "flex", gap: "0.4rem" }}>
                       {v.status === "published" && <button onClick={() => updateStatus("venue_listings", v.id, "flagged")} style={{ background: "#fef3c7", border: "1px solid #f5c842", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Flag</button>}
-                      {v.status === "flagged" && <button onClick={() => updateStatus("venue_listings", v.id, "published")} style={{ background: "var(--green)", color: "white", border: "none", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Publish</button>}
+                      {(v.status === "flagged" || v.status === "pending_review") && <button onClick={() => updateStatus("venue_listings", v.id, "published")} style={{ background: "var(--green)", color: "white", border: "none", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Approve</button>}
                       <button onClick={() => updateStatus("venue_listings", v.id, "rejected")} style={{ background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif", color: "#dc2626" }}>Reject</button>
                     </td>
                   </tr>
@@ -613,13 +631,19 @@ export default function AdminPage() {
                 {events.map((ev) => (
                   <tr key={ev.id} style={{ borderBottom: "1px solid var(--border)" }}>
                     {rowCheckbox(ev, ev.event_name)}
-                    <td style={{ padding: "0.8rem 1rem", fontSize: "0.9rem", fontWeight: 600, color: "var(--navy)" }}>{ev.event_name}</td>
+                    <td style={{ padding: "0.8rem 1rem", fontSize: "0.9rem", fontWeight: 600, color: "var(--navy)" }}>
+                      {ev.event_name}
+                      <div style={{ fontSize: "0.75rem", fontWeight: 400, color: "var(--muted)", marginTop: "0.15rem" }}>
+                        {ev.registration_url ? <a href={ev.registration_url} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink)" }}>{String(ev.registration_url).replace(/^https?:\/\//, "").slice(0, 40)}</a> : "no link"}
+                        {ev.description ? ` · ${String(ev.description).slice(0, 80)}` : ""}
+                      </div>
+                    </td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{ev.city}, {ev.state}</td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{ev.event_date ? formatDate(ev.event_date) : "-"}</td>
                     <td style={{ padding: "0.8rem 1rem" }}><StatusBadge status={ev.status} /></td>
                     <td style={{ padding: "0.8rem 1rem", display: "flex", gap: "0.4rem" }}>
                       {ev.status === "published" && <button onClick={() => updateStatus("event_listings", ev.id, "flagged")} style={{ background: "#fef3c7", border: "1px solid #f5c842", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Flag</button>}
-                      {ev.status === "flagged" && <button onClick={() => updateStatus("event_listings", ev.id, "published")} style={{ background: "var(--green)", color: "white", border: "none", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Publish</button>}
+                      {(ev.status === "flagged" || ev.status === "pending_review") && <button onClick={() => updateStatus("event_listings", ev.id, "published")} style={{ background: "var(--green)", color: "white", border: "none", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Approve</button>}
                       <button onClick={() => updateStatus("event_listings", ev.id, "rejected")} style={{ background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif", color: "#dc2626" }}>Reject</button>
                     </td>
                   </tr>

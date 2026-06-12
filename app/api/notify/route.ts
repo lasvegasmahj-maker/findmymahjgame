@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { escapeHtml, clampText } from "@/lib/sanitize";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -7,6 +8,9 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const ALLOWED_TYPES = ["connect", "inquiry"];
 
 export async function POST(req: NextRequest) {
+  if (!(await rateLimit(req, "notify", 10, 60))) {
+    return NextResponse.json({ error: "Too many requests." }, { status: 429 });
+  }
   try {
     const raw = await req.json();
 
@@ -32,7 +36,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      { console.error("notify failed:", error.message); return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 }); }
     }
 
     return NextResponse.json({ success: true });

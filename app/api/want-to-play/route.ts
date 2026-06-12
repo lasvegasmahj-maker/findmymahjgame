@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
   };
 
   const { error } = await supabase.from("play_requests").insert(row);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) { console.error("want-to-play failed:", error.message); return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 }); }
 
   await resend.emails.send({
     from: "Find My Mahj Game <hello@findmymahjgame.com>",

@@ -292,7 +292,7 @@ body {
 }
 .state-popup-header p {
   font-size: 0.78rem;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255, 255, 255, 0.75);
   margin: 0.2rem 0 0;
 }
 .state-popup-close {
@@ -357,7 +357,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255, 255, 255, 0.75);
   text-align: center;
   margin-bottom: 1rem;
 }
@@ -373,7 +373,7 @@ body {
   flex: 1;
   border: none;
   padding: 0.9rem 1.4rem;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-family: var(--font-dm-sans), "DM Sans", sans-serif;
   outline: none;
   color: var(--text);
@@ -634,11 +634,11 @@ body {
   color: white;
 }
 .footer-logo span { color: var(--pink); }
-.footer-tagline { font-size: 0.82rem; color: rgba(255,255,255,0.4); max-width: 220px; margin-top: 0.5rem; }
+.footer-tagline { font-size: 0.82rem; color: rgba(255, 255, 255, 0.7); max-width: 220px; margin-top: 0.5rem; }
 .footer-cols { display: flex; gap: 3rem; }
 .footer-cols h4 {
   font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em;
-  text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 0.8rem;
+  text-transform: uppercase; color: rgba(255, 255, 255, 0.7); margin-bottom: 0.8rem;
 }
 .footer-cols a {
   display: block; font-size: 0.82rem;
@@ -650,9 +650,9 @@ body {
 .footer-bottom {
   max-width: 1100px; margin: 0 auto;
   padding: 1rem 0; font-size: 0.78rem;
-  color: rgba(255,255,255,0.3);
+  color: rgba(255, 255, 255, 0.65);
 }
-.footer-bottom a { color: rgba(255,255,255,0.4); text-decoration: none; }
+.footer-bottom a { color: rgba(255, 255, 255, 0.7); text-decoration: none; }
 
 /* ═══════════ PAGE HERO ═══════════ */
 .page-hero {
@@ -721,9 +721,8 @@ body {
   /* Mobile header: logo centered on top, one compact senior-readable nav row below. */
   .site-nav { flex-direction: column; align-items: center; gap: 0.45rem; padding: 0.7rem 0.6rem 0.55rem; }
   .site-logo { font-size: 1.2rem; }
-  .nav-right { gap: 0.45rem 1rem; flex-wrap: wrap; justify-content: center; width: 100%; }
-  .nav-advertise { font-size: 1rem; padding: 0.25rem 0; }
-  .nav-help { display: none; }
+  .nav-right { gap: 0.2rem 0.9rem; flex-wrap: wrap; justify-content: center; width: 100%; }
+  .nav-advertise { font-size: 1rem; padding: 0.6rem 0.3rem; display: inline-flex; align-items: center; min-height: 44px; }
   .footer-cols a { font-size: 0.95rem; }
   .footer-cols h4 { font-size: 0.8rem; }
   .hero { padding: 1.1rem 1.1rem 1.8rem; }

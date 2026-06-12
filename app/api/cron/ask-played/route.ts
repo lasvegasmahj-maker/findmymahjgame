@@ -26,10 +26,10 @@ export async function GET(req: NextRequest) {
     .eq("status", "full")
     .is("played", null)
     .is("asked_played_at", null)
-    .lte("created_at", cutoff)
+    .or(`filled_at.lte.${cutoff},and(filled_at.is.null,created_at.lte.${cutoff})`)
     .limit(50);
 
-  const base = req.nextUrl.origin;
+  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://findmymahjgame.com";
   let asked = 0;
 
   for (const t of rows || []) {

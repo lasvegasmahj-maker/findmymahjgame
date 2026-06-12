@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { StateData } from "@/lib/states-data";
@@ -115,6 +115,10 @@ export default function StatePageClient({ stateData, players, events, venues }: 
   const [selectedCity, setSelectedCity] = useState(`All of ${stateData.name}`);
   const allCities = [`All of ${stateData.name}`, ...stateData.cities];
   const [connectForm, setConnectForm] = useState<ConnectForm | null>(null);
+  const connectDialogRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (connectForm) connectDialogRef.current?.querySelector<HTMLInputElement>("input")?.focus();
+  }, [connectForm?.player.id]);
 
   useEffect(() => {
     if (!connectForm) return;
@@ -127,36 +131,42 @@ export default function StatePageClient({ stateData, players, events, venues }: 
     e.preventDefault();
     if (!connectForm) return;
     setConnectForm({ ...connectForm, submitting: true });
+    try {
+  
+      const inqRes = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/inquiries`, {
+        method: "POST",
+        headers: {
+          "apikey": process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+          "Content-Type": "application/json",
+          "Prefer": "return=minimal",
+        },
+        body: JSON.stringify({
+          name: connectForm.name,
+          email: connectForm.email,
+          inquiry_type: "player_connect",
+          interest: `Connect with ${connectForm.player.name} in ${connectForm.player.city}, ${connectForm.player.state}`,
+          message: connectForm.message,
+          status: "new",
+        }),
+      });
+      if (!inqRes.ok) throw new Error("insert failed");
 
-    await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/inquiries`, {
-      method: "POST",
-      headers: {
-        "apikey": process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        "Authorization": `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-        "Content-Type": "application/json",
-        "Prefer": "return=minimal",
-      },
-      body: JSON.stringify({
-        name: connectForm.name,
-        email: connectForm.email,
-        inquiry_type: "player_connect",
-        interest: `Connect with ${connectForm.player.name} in ${connectForm.player.city}, ${connectForm.player.state}`,
-        message: connectForm.message,
-        status: "new",
-      }),
-    });
-
-    await fetch("/api/notify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type: "connect",
-        subject: `New Connect Request: ${connectForm.name} wants to play with ${connectForm.player.name}`,
-        body: `From: ${connectForm.name} (${connectForm.email})\nPlayer: ${connectForm.player.name} — ${connectForm.player.city}, ${connectForm.player.state}\nSkill Level: ${connectForm.player.skill_level}\n\nMessage:\n${connectForm.message || "(no message)"}`,
-      }),
-    });
-
-    setConnectForm({ ...connectForm, submitting: false, submitted: true });
+      await fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "connect",
+          subject: `New Connect Request: ${connectForm.name} wants to play with ${connectForm.player.name}`,
+          body: `From: ${connectForm.name} (${connectForm.email})\nPlayer: ${connectForm.player.name} — ${connectForm.player.city}, ${connectForm.player.state}\nSkill Level: ${connectForm.player.skill_level}\n\nMessage:\n${connectForm.message || "(no message)"}`,
+        }),
+      });
+  
+      setConnectForm({ ...connectForm, submitting: false, submitted: true });
+    } catch {
+      window.alert("We could not send your request. Please check your connection and try again.");
+      setConnectForm((c) => (c ? { ...c, submitting: false } : c));
+    }
   }
 
   // Filter by city if selected
@@ -430,7 +440,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
           style={{ position: "fixed", inset: 0, background: "rgba(26,31,94,0.6)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}
         >
           <div
-            role="dialog" aria-modal="true" aria-label={`Connect with ${connectForm.player.name}`}
+            ref={connectDialogRef} role="dialog" aria-modal="true" aria-label={`Connect with ${connectForm.player.name}`}
             onClick={e => e.stopPropagation()}
             style={{ background: "white", borderRadius: 20, padding: "2.5rem", maxWidth: 480, width: "100%", position: "relative", boxShadow: "0 20px 60px rgba(26,31,94,0.25)" }}
           >

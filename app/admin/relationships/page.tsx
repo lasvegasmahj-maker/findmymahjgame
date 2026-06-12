@@ -33,14 +33,14 @@ const STATUS_COLOR: Record<string, string> = {
   claimed: "#1a9648", activated: "var(--pink)", declined: "#dc2626", do_not_contact: "#dc2626",
 };
 
-const field: React.CSSProperties = { padding: "0.5rem 0.7rem", border: "1px solid var(--border)", borderRadius: 8, fontSize: "0.9rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", background: "white" };
-const btn = (bg: string, color: string, border?: string): React.CSSProperties => ({ background: bg, color, border: border || "none", borderRadius: 6, padding: "0.35rem 0.8rem", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" });
+const field: React.CSSProperties = { padding: "0.6rem 0.8rem", minHeight: 44, border: "1px solid var(--border)", borderRadius: 8, fontSize: "1rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", background: "white" };
+const btn = (bg: string, color: string, border?: string): React.CSSProperties => ({ background: bg, color, border: border || "none", borderRadius: 8, padding: "0.55rem 0.9rem", minHeight: 44, fontSize: "0.95rem", fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" });
 
 export default function RelationshipsPage() {
   const [items, setItems] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [needsMigration, setNeedsMigration] = useState(false);
-  const [authed, setAuthed] = useState(true);
+  const [authed, setAuthed] = useState<boolean | null>(null);
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [waveFilter, setWaveFilter] = useState("");
@@ -55,6 +55,7 @@ export default function RelationshipsPage() {
     if (waveFilter) params.set("wave", waveFilter);
     const res = await fetch(`/api/admin/crm?${params}`, { cache: "no-store" });
     if (res.status === 401) { setAuthed(false); setLoading(false); return; }
+    setAuthed(true);
     const json = await res.json().catch(() => ({ items: [] }));
     setNeedsMigration(!!json.needsMigration);
     setItems(json.items || []);
@@ -62,9 +63,11 @@ export default function RelationshipsPage() {
   }, [q, statusFilter, waveFilter]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data
-    // fetch; every setState happens after the await, not synchronously.
-    void load();
+    // Debounced: typing fires one request 300ms after the last keystroke.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch;
+    // every setState happens after the await, not synchronously.
+    const t = setTimeout(() => { void load(); }, 300);
+    return () => clearTimeout(t);
   }, [load]);
 
   async function patch(id: string, body: Record<string, unknown>) {
@@ -84,6 +87,7 @@ export default function RelationshipsPage() {
     load();
   }
 
+  if (authed === null) return null;
   if (!authed) return <div style={{ maxWidth: 600, margin: "4rem auto", textAlign: "center", fontFamily: "'DM Sans', sans-serif" }}><p>Please <a href="/admin" style={{ color: "var(--pink)", fontWeight: 700 }}>sign in to admin</a> first.</p></div>;
 
   const counts: Record<string, number> = {};

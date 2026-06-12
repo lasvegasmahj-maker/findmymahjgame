@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     .upload(filename, bytes, { contentType: file.type, upsert: false });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    { console.error("upload-logo failed:", error.message); return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 }); }
   }
 
   const { data } = supabase.storage.from("logos").getPublicUrl(filename);

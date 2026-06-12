@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createServerClient } from "@/lib/supabase-server";
+import { nearMatches } from "@/lib/near-match";
 import { safeHttpUrl } from "@/lib/sanitize";
 
 export const metadata: Metadata = {
@@ -28,7 +29,7 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
   let rows = (data || []).filter((r) => TEACHER_TYPE.test(`${r.venue_type || ""} ${r.description || ""}`));
   if (near && near.trim()) {
     const n = near.trim().toLowerCase();
-    rows = rows.filter((r) => `${r.city || ""} ${r.state || ""}`.toLowerCase().includes(n));
+    rows = rows.filter((r) => nearMatches(n, r.city, r.state));
   }
 
   return (
@@ -63,16 +64,20 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
           {rows.map((t) => {
             const beginner = isBeginnerFriendly(`${t.venue_type || ""} ${t.description || ""}`);
             const safeSite = safeHttpUrl(t.website);
-            const href = safeSite || "/get-listed";
             const external = !!safeSite;
             return (
-              <a key={t.id} href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} style={{ display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", textDecoration: "none" }}>
+              external ? (<a key={t.id} href={safeSite!} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} style={{ display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", textDecoration: "none" }}>
                 <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{t.business_name || "Teacher"}</div>
                 {(t.city || t.state) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[t.city, t.state].filter(Boolean).join(", ")}</div>}
                 {beginner && <div style={{ display: "inline-block", background: "rgba(46,201,92,0.14)", color: "#1a6e3a", fontWeight: 800, fontSize: "0.85rem", padding: "0.2rem 0.7rem", borderRadius: 50, marginTop: "0.6rem" }}>Beginners welcome</div>}
                 {t.description && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.5rem", lineHeight: 1.5 }}>{String(t.description).slice(0, 110)}{String(t.description).length > 110 ? "..." : ""}</div>}
                 <div style={{ marginTop: "0.8rem", color: "var(--pink)", fontWeight: 800 }}>Visit &rarr;</div>
-              </a>
+              </a>) : (<div key={t.id} style={{ display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem" }}>
+                <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{t.business_name || "Teacher"}</div>
+                {(t.city || t.state) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[t.city, t.state].filter(Boolean).join(", ")}</div>}
+                {beginner && <div style={{ display: "inline-block", background: "rgba(46,201,92,0.14)", color: "#1a6e3a", fontWeight: 800, fontSize: "0.85rem", padding: "0.2rem 0.7rem", borderRadius: 50, marginTop: "0.6rem" }}>Beginners welcome</div>}
+                {t.description && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.5rem", lineHeight: 1.5 }}>{String(t.description).slice(0, 110)}{String(t.description).length > 110 ? "..." : ""}</div>}
+              </div>)
             );
           })}
         </div>

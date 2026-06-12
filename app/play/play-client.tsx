@@ -6,7 +6,7 @@ import SeatDots from "@/components/seat-dots";
 const TIMES = ["Morning", "Afternoon", "Evening"];
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const labelStyle: React.CSSProperties = { fontSize: "1.25rem", fontWeight: 800, color: "var(--navy)", margin: "1.6rem 0 0.7rem" };
-const fieldStyle: React.CSSProperties = { width: "100%", minHeight: 56, padding: "0.8rem 1rem", border: "2px solid var(--border)", borderRadius: 12, fontSize: "1.15rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", background: "white", outline: "none" };
+const fieldStyle: React.CSSProperties = { width: "100%", minHeight: 56, padding: "0.8rem 1rem", border: "2px solid var(--border)", borderRadius: 12, fontSize: "1.15rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", background: "white" };
 const bigBtn = (ready: boolean): React.CSSProperties => ({ width: "100%", minHeight: 68, marginTop: "1.5rem", borderRadius: 16, border: "none", background: ready ? "var(--pink)" : "#d9b3cc", color: "white", fontSize: "1.4rem", fontWeight: 800, cursor: ready ? "pointer" : "not-allowed", fontFamily: "'DM Sans', sans-serif" });
 
 type Game = { share_code: string; day_of_week: string | null; time_of_day: string | null; venue_name: string | null; city: string | null; state: string | null; skill: string | null; seats_total: number; filled: number };
@@ -27,15 +27,21 @@ export default function PlayClient() {
   const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
   const [err, setErr] = useState("");
   const [geoMsg, setGeoMsg] = useState("");
+  const [captureWhy, setCaptureWhy] = useState<"none" | "notify">("none");
 
   async function runFind(town: string) {
     setSearching(true); setGeoMsg("");
-    const res = await fetch(`/api/tables/find?city=${encodeURIComponent(town.trim())}`);
-    const d = await res.json().catch(() => ({ tables: [] }));
-    setSearching(false);
-    if (res.status === 429) { setGeoMsg("So many searches! Please wait a moment and try again."); return; }
-    if ((d.tables || []).length > 0) { setGames(d.tables); setStep("results"); }
-    else { setStep("capture"); }
+    try {
+      const res = await fetch(`/api/tables/find?city=${encodeURIComponent(town.trim())}`);
+      const d = await res.json().catch(() => ({ tables: [] }));
+      setSearching(false);
+      if (res.status === 429) { setGeoMsg("So many searches! Please wait a moment and try again."); return; }
+      if ((d.tables || []).length > 0) { setGames(d.tables); setStep("results"); setCaptureWhy("notify"); }
+      else { setStep("capture"); setCaptureWhy("none"); }
+    } catch {
+      setSearching(false);
+      setGeoMsg("We could not reach the server. Please check your connection and try again.");
+    }
   }
 
   async function findGames(e: React.FormEvent) {
@@ -74,13 +80,17 @@ export default function PlayClient() {
   async function submitCapture(e: React.FormEvent) {
     e.preventDefault();
     setStatus("submitting"); setErr("");
-    const res = await fetch("/api/want-to-play", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, phone, email, city, timePref, dayPref, state: stateGuess }),
-    });
-    if (res.ok) { setStep("done"); return; }
-    const d = await res.json().catch(() => ({}));
-    setErr(d.error || "Something went wrong. Please try again."); setStatus("error");
+    try {
+      const res = await fetch("/api/want-to-play", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, phone, email, city, timePref, dayPref, state: stateGuess }),
+      });
+      if (res.ok) { setStep("done"); return; }
+      const d = await res.json().catch(() => ({}));
+      setErr(d.error || "Something went wrong. Please try again."); setStatus("error");
+    } catch {
+      setErr("We could not reach the server. Please check your connection and try again."); setStatus("error");
+    }
   }
 
   const shell = (children: React.ReactNode) => (
@@ -100,7 +110,7 @@ export default function PlayClient() {
           {searching ? "Looking..." : "Use My Location"}
         </button>
         <div style={{ textAlign: "center", color: "var(--muted)", fontSize: "1.05rem", margin: "1rem 0 0.2rem" }}>or type your town</div>
-        {geoMsg && <p style={{ color: "#dc2626", fontSize: "1.05rem", textAlign: "center", marginTop: 0 }}>{geoMsg}</p>}
+        {geoMsg && <p role="alert" style={{ color: "#dc2626", fontSize: "1.05rem", textAlign: "center", marginTop: 0 }}>{geoMsg}</p>}
         <form onSubmit={findGames}>
           <input style={fieldStyle} aria-label="Town or city" placeholder="Town or city" value={city} onChange={(e) => setCity(e.target.value)} />
           <button type="submit" disabled={!city.trim() || searching} style={bigBtn(!!city.trim())}>{searching ? "Looking..." : "Find a Game"}</button>
@@ -132,7 +142,7 @@ export default function PlayClient() {
         <div style={{ marginTop: "1.6rem", textAlign: "center" }}>
           <p style={{ fontSize: "1.05rem", color: "var(--muted)" }}>Don&rsquo;t see your game?</p>
           <a href="/start" style={{ display: "inline-block", color: "var(--pink)", fontWeight: 800, fontSize: "1.15rem", margin: "0.4rem 0" }}>Start your own table &rarr;</a><br />
-          <button type="button" onClick={() => setStep("capture")} style={{ background: "none", border: "none", color: "var(--pink)", fontWeight: 700, fontSize: "1.05rem", cursor: "pointer", textDecoration: "underline" }}>Or tell us when a new game opens</button>
+          <button type="button" onClick={() => { setCaptureWhy("notify"); setStep("capture"); }} style={{ background: "none", border: "none", color: "var(--pink)", fontWeight: 700, fontSize: "1.05rem", cursor: "pointer", textDecoration: "underline" }}>Or tell us when a new game opens</button>
         </div>
       </>
     );
@@ -152,8 +162,14 @@ export default function PlayClient() {
   const ready = !!(name.trim() && (phone.trim() || email.trim()) && city.trim());
   return shell(
     <>
-      <h1 style={{ fontSize: "1.9rem", color: "var(--navy)", margin: "0.8rem 0 0.3rem", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>No games in {city} yet</h1>
-      <p style={{ fontSize: "1.15rem", color: "var(--muted)", lineHeight: 1.5 }}>Be the first to know. We&rsquo;ll reach out the moment a game opens near you, or <a href="/start" style={{ color: "var(--pink)", fontWeight: 700 }}>start your own</a>.</p>
+      <h1 style={{ fontSize: "1.9rem", color: "var(--navy)", margin: "0.8rem 0 0.3rem", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>
+        {captureWhy === "notify" ? `Want to know when another game opens in ${city}?` : `No public games in ${city} right now`}
+      </h1>
+      <p style={{ fontSize: "1.15rem", color: "var(--muted)", lineHeight: 1.5 }}>
+        {captureWhy === "notify" ? "Leave your name and we will tell you the moment a new table opens." : "Some tables fill by invitation, so check back soon. We'll reach out the moment a game opens near you, or "}
+        {captureWhy !== "notify" && <a href="/start" style={{ color: "var(--pink)", fontWeight: 700 }}>start your own</a>}
+        {captureWhy !== "notify" && "."}
+      </p>
       <form onSubmit={submitCapture}>
         <div style={labelStyle}>Your name</div>
         <input style={fieldStyle} aria-label="Your first name" placeholder="First name" value={name} onChange={(e) => setName(e.target.value)} />
@@ -164,16 +180,16 @@ export default function PlayClient() {
         <div style={labelStyle}>Best day? <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: "1rem" }}>(optional)</span></div>
         <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
           {DAYS.map((d) => (
-            <button key={d} type="button" onClick={() => setDayPref(dayPref === d ? "" : d)} style={{ minHeight: 54, padding: "0.6rem 1.1rem", borderRadius: 12, cursor: "pointer", fontSize: "1.1rem", fontWeight: 700, fontFamily: "'DM Sans', sans-serif", border: dayPref === d ? "2.5px solid var(--pink)" : "2px solid var(--border)", background: dayPref === d ? "var(--pink)" : "white", color: dayPref === d ? "white" : "var(--navy)" }}>{d.slice(0, 3)}</button>
+            <button key={d} type="button" aria-pressed={dayPref === d ? "true" : "false"} onClick={() => setDayPref(dayPref === d ? "" : d)} style={{ minHeight: 54, padding: "0.6rem 1.1rem", borderRadius: 12, cursor: "pointer", fontSize: "1.1rem", fontWeight: 700, fontFamily: "'DM Sans', sans-serif", border: dayPref === d ? "2.5px solid var(--pink)" : "2px solid var(--border)", background: dayPref === d ? "var(--pink)" : "white", color: dayPref === d ? "white" : "var(--navy)" }}>{d.slice(0, 3)}</button>
           ))}
         </div>
         <div style={labelStyle}>Best time? <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: "1rem" }}>(optional)</span></div>
         <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
           {TIMES.map((t) => (
-            <button key={t} type="button" onClick={() => setTimePref(timePref === t ? "" : t)} style={{ minHeight: 54, padding: "0.6rem 1.1rem", borderRadius: 12, cursor: "pointer", fontSize: "1.1rem", fontWeight: 700, fontFamily: "'DM Sans', sans-serif", border: timePref === t ? "2.5px solid var(--pink)" : "2px solid var(--border)", background: timePref === t ? "var(--pink)" : "white", color: timePref === t ? "white" : "var(--navy)" }}>{t}</button>
+            <button key={t} type="button" aria-pressed={timePref === t ? "true" : "false"} onClick={() => setTimePref(timePref === t ? "" : t)} style={{ minHeight: 54, padding: "0.6rem 1.1rem", borderRadius: 12, cursor: "pointer", fontSize: "1.1rem", fontWeight: 700, fontFamily: "'DM Sans', sans-serif", border: timePref === t ? "2.5px solid var(--pink)" : "2px solid var(--border)", background: timePref === t ? "var(--pink)" : "white", color: timePref === t ? "white" : "var(--navy)" }}>{t}</button>
           ))}
         </div>
-        {err && <p style={{ color: "#dc2626", fontSize: "1.05rem", marginTop: "1rem" }}>{err}</p>}
+        {err && <p role="alert" style={{ color: "#dc2626", fontSize: "1.05rem", marginTop: "1rem" }}>{err}</p>}
         <button type="submit" disabled={!ready || status === "submitting"} style={bigBtn(ready)}>{status === "submitting" ? "Sending..." : "Tell Me When a Game Opens"}</button>
       </form>
     </>

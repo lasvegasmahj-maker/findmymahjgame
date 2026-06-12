@@ -243,7 +243,7 @@ export async function POST(req: NextRequest) {
     <h2 style="font-family:Georgia,serif;color:#1a1f5e;font-size:1.2rem;margin-bottom:12px;">Got it, ${escapeHtml(clean.contactName)}!</h2>
     <p style="color:#6b7280;font-size:0.92rem;line-height:1.7;margin-bottom:16px;">
       We received your listing details for <strong>${escapeHtml(clean.displayName || "your listing")}</strong>.
-      We'll review everything and send you an approval within 24 hours. Once approved, you'll be live.
+      We review every listing personally, usually within 1-2 business days, and we'll email you either way. Once approved, you'll be live.
     </p>
     <p style="color:#6b7280;font-size:0.88rem;line-height:1.7;">
       Questions? Reply to this email or reach us at <a href="mailto:hello@findmymahjgame.com" style="color:#e91e8c;">hello@findmymahjgame.com</a>.

@@ -6,11 +6,11 @@ const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 const TIMES = ["Morning", "Afternoon", "Evening"];
 
 const labelStyle: React.CSSProperties = { fontSize: "1.25rem", fontWeight: 800, color: "var(--navy)", margin: "1.6rem 0 0.7rem" };
-const fieldStyle: React.CSSProperties = { width: "100%", minHeight: 56, padding: "0.8rem 1rem", border: "2px solid var(--border)", borderRadius: 12, fontSize: "1.15rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", background: "white", outline: "none" };
+const fieldStyle: React.CSSProperties = { width: "100%", minHeight: 56, padding: "0.8rem 1rem", border: "2px solid var(--border)", borderRadius: 12, fontSize: "1.15rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", background: "white" };
 
 function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button type="button" onClick={onClick} style={{
+    <button type="button" aria-pressed={active ? "true" : "false"} onClick={onClick} style={{
       minHeight: 54, padding: "0.6rem 1.1rem", borderRadius: 12, cursor: "pointer",
       fontSize: "1.1rem", fontWeight: 700, fontFamily: "'DM Sans', sans-serif",
       border: active ? "2.5px solid var(--pink)" : "2px solid var(--border)",
@@ -45,16 +45,21 @@ export default function StartClient() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("submitting"); setErr("");
-    const res = await fetch("/api/tables/create", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ day, time, city: area, skill, hostName, hostPhone, hostEmail, referredBy: ref || undefined }),
-    });
-    if (res.ok) {
-      const { shareCode } = await res.json();
-      window.location.href = `/t/${shareCode}?created=1`;
-    } else {
-      const d = await res.json().catch(() => ({}));
-      setErr(d.error || "Something went wrong. Please try again.");
+    try {
+      const res = await fetch("/api/tables/create", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ day, time, city: area, skill, hostName, hostPhone, hostEmail, referredBy: ref || undefined }),
+      });
+      if (res.ok) {
+        const { shareCode } = await res.json();
+        window.location.href = `/t/${shareCode}?created=1`;
+      } else {
+        const d = await res.json().catch(() => ({}));
+        setErr(d.error || "Something went wrong. Please try again.");
+        setStatus("error");
+      }
+    } catch {
+      setErr("We could not reach the server. Please check your connection and try again.");
       setStatus("error");
     }
   }
@@ -105,7 +110,7 @@ export default function StartClient() {
         <input style={{ ...fieldStyle, marginTop: "0.7rem" }} type="email" aria-label="Email" placeholder="Email" value={hostEmail} onChange={(e) => setHostEmail(e.target.value)} />
         <p style={{ fontSize: "0.95rem", color: "var(--muted)", marginTop: "0.5rem" }}>Add a phone, an email, or both, so we can reach you when players join. We never show it to anyone.</p>
 
-        {err && <p style={{ color: "#dc2626", fontSize: "1.05rem", marginTop: "1rem" }}>{err}</p>}
+        {err && <p role="alert" style={{ color: "#dc2626", fontSize: "1.05rem", marginTop: "1rem" }}>{err}</p>}
 
         <button type="submit" disabled={!ready || status === "submitting"} style={{
           width: "100%", minHeight: 68, marginTop: "1.8rem", borderRadius: 16, border: "none",
