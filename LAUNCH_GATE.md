@@ -49,3 +49,6 @@ Only after the paste:
 
 Rollback: record the prior production deployment ID before deploying; revert in
 the Vercel dashboard if a smoke test fails. No second same-day deploy for polish.
+
+
+Pre-launch one-minute checks: /contact test submit returns to the thank-you banner; glance at website links before single approvals.

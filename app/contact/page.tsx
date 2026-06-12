@@ -26,67 +26,55 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
       <div className="page-hero">
         <div className="eyebrow">Contact</div>
         <h1>Contact Find My Mahj Game</h1>
-        <p>
-          Questions about listings, advertising or anything else? We&rsquo;d love to hear from you.
+        <p>Questions about listings, advertising or anything else? We&rsquo;d love to hear from you.
         </p>
       </div>
 
       <div className="page-body" style={{ maxWidth: 860 }}>
         {sent && (
-          <div role="alert" style={{ background: "rgba(46,201,92,0.12)", border: "2px solid #2ec95c", borderRadius: 12, padding: "1rem 1.4rem", marginBottom: "1.6rem", textAlign: "center", color: "#1a6e3a", fontWeight: 700 }}>
-            Thank you! Your message is on its way. A real person reads every one.
+          <div role="alert" style={{ background: "rgba(46,201,92,0.12)", border: "2px solid #2ec95c", borderRadius: 12, padding: "1rem 1.4rem", marginBottom: "1.6rem", textAlign: "center", color: "#1a6e3a", fontWeight: 700 }}>Thank you! Your message is on its way. A real person reads every one.
           </div>
         )}
         {/* Contact Cards */}
         <div className="grid grid-cols-2 gap-12 my-8 max-sm:grid-cols-1">
           <div className="bg-bg border border-border rounded-2xl p-6">
-            <div className="text-[2rem] mb-3">📩</div>
+            <div className="text-[2rem] mb-3"></div>
             <h3 className="font-heading text-[1.1rem] text-navy mb-2">General Inquiries</h3>
-            <p className="text-[0.88rem] text-muted mb-3">
-              Questions about the platform, player listings, or anything else.
+            <p className="text-[0.88rem] text-muted mb-3">Questions about the platform, player listings, or anything else.
             </p>
             <a
               href="mailto:hello@findmymahjgame.com"
               className="text-pink font-bold no-underline"
-            >
-              hello@findmymahjgame.com
+            >hello@findmymahjgame.com
             </a>
           </div>
           <div className="bg-bg border border-border rounded-2xl p-6">
-            <div className="text-[2rem] mb-3">📢</div>
-            <h3 className="font-heading text-[1.1rem] text-navy mb-2">
-              Advertising &amp; Partnerships
+            <div className="text-[2rem] mb-3"></div>
+            <h3 className="font-heading text-[1.1rem] text-navy mb-2">Advertising &amp; Partnerships
             </h3>
-            <p className="text-[0.88rem] text-muted mb-3">
-              Interested in advertising, venue listings, or event promotions?
+            <p className="text-[0.88rem] text-muted mb-3">Interested in advertising, venue listings, or event promotions?
             </p>
-            <Link href="/advertise" className="text-pink font-bold no-underline">
-              See Advertise page &rarr;
+            <Link href="/advertise" className="text-pink font-bold no-underline">See Advertise page &rarr;
             </Link>
           </div>
           <div className="bg-bg border border-border rounded-2xl p-6">
-            <div className="text-[2rem] mb-3">📍</div>
-            <h3 className="font-heading text-[1.1rem] text-navy mb-2">
-              List Your Game or Venue
+            <div className="text-[2rem] mb-3"></div>
+            <h3 className="font-heading text-[1.1rem] text-navy mb-2">List Your Game or Venue
             </h3>
-            <p className="text-[0.88rem] text-muted mb-3">
-              Want to get your game, venue or event listed on Find My Mahj Game?
+            <p className="text-[0.88rem] text-muted mb-3">Want to get your game, venue or event listed on Find My Mahj Game?
             </p>
-            <Link href="/advertise" className="text-pink font-bold no-underline">
-              See listing options &rarr;
+            <Link href="/advertise" className="text-pink font-bold no-underline">See listing options &rarr;
             </Link>
           </div>
           <div className="bg-bg border border-border rounded-2xl p-6">
-            <div className="text-[2rem] mb-3">🤝</div>
+            <div className="text-[2rem] mb-3"></div>
             <h3 className="font-heading text-[1.1rem] text-navy mb-2">Partnerships</h3>
-            <p className="text-[0.88rem] text-muted mb-3">
-              Interested in a partnership, collaboration or media opportunity?
+            <p className="text-[0.88rem] text-muted mb-3">Interested in a partnership, collaboration or media opportunity?
             </p>
             <a
               href="mailto:hello@findmymahjgame.com"
               className="text-pink font-bold no-underline"
-            >
-              hello@findmymahjgame.com
+            >hello@findmymahjgame.com
             </a>
           </div>
         </div>
@@ -108,8 +96,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
                 />
               </div>
               <div>
-                <label className="block text-[0.82rem] font-bold text-navy mb-1">
-                  Email Address
+                <label className="block text-[0.82rem] font-bold text-navy mb-1">Email Address
                 </label>
                 <input
                   type="email"
@@ -121,8 +108,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
               </div>
             </div>
             <div className="mb-5">
-              <label className="block text-[0.82rem] font-bold text-navy mb-1">
-                What is this about?
+              <label className="block text-[0.82rem] font-bold text-navy mb-1">What is this about?
               </label>
               <select
                 name="topic"
@@ -151,14 +137,12 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
             <button
               type="submit"
               className="bg-pink text-white border-none rounded-lg py-3.5 px-10 font-body text-[1rem] font-bold cursor-pointer w-full hover:opacity-90 transition-opacity"
-            >
-              Send Message &rarr;
+            >Send Message &rarr;
             </button>
           </form>
         </div>
 
-        <p className="text-[0.82rem] text-muted text-center">
-          We typically respond within 1-2 business days. For fastest response, email us directly at{" "}
+        <p className="text-[0.82rem] text-muted text-center">We typically respond within 1-2 business days. For fastest response, email us directly at{" "}
           <a href="mailto:hello@findmymahjgame.com">hello@findmymahjgame.com</a>.
         </p>
       </div>

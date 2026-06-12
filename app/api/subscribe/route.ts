@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Resend } from "resend";
+import { sendEmail } from "@/lib/email";
 import { clampText, isValidEmail, escapeHtml } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function addToMailchimp(email: string, city: string | null): Promise<boolean> {
   const key = process.env.MAILCHIMP_API_KEY;
@@ -50,16 +49,16 @@ export async function POST(req: NextRequest) {
 
   const inMailchimp = await addToMailchimp(email, city);
 
-  const sent = await resend.emails.send({
-    from: "Find My Mahj Game <hello@findmymahjgame.com>",
+  const sent = await sendEmail({
     to: "hello@findmymahjgame.com",
+    kind: "newsletter-signup",
     subject: `Newsletter signup: ${email}`,
     html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:20px;">
       <h2 style="color:#1a1f5e;">New newsletter signup</h2>
       <p style="color:#374151;line-height:1.7;"><strong>Email:</strong> ${escapeHtml(email)}${city ? `<br/><strong>City:</strong> ${escapeHtml(city)}` : ""}</p>
     </div>`,
-  }).catch(() => null);
-  const notified = !!sent && !sent.error;
+  });
+  const notified = sent.ok;
 
   // A signup must land somewhere durable before we say "you're on the list."
   if (!inMailchimp && !notified) {

@@ -231,7 +231,7 @@ export default function AdminPage() {
   }, [authed]);
 
   async function loadData() {
-    setLoading((prev) => prev && true);
+    // The spinner shows only on first load; refreshes keep the table rendered.
     const res = await fetch(`/api/admin/data?tab=${tab}`, { cache: "no-store" });
     if (res.status === 401) {
       setAuthed(false);

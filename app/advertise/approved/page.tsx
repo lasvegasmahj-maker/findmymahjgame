@@ -16,37 +16,37 @@ export default async function ApprovedPage({
 
   const content = {
     approved: {
-      icon: "✅",
+      icon: "",
       heading: "Approved!",
       color: "#1a6e3a",
       message: `${listingName} has been approved. The advertiser has been notified and will be live within 24 hours.`,
     },
     rejected: {
-      icon: "❌",
+      icon: "",
       heading: "Rejected",
       color: "#dc2626",
       message: `${listingName} has been rejected. Follow up with the advertiser directly if needed.`,
     },
     already: {
-      icon: "ℹ️",
+      icon: "ℹ",
       heading: "Already processed",
       color: "#1a1f5e",
       message: `This listing was already marked as "${action ?? "processed"}". No changes were made.`,
     },
     invalid: {
-      icon: "⚠️",
+      icon: "",
       heading: "Invalid or expired link",
       color: "#6b7280",
       message: "This approval link is invalid or has expired. Approval links are valid for 7 days. Check your email for a newer link.",
     },
     notfound: {
-      icon: "⚠️",
+      icon: "",
       heading: "Not found",
       color: "#6b7280",
       message: "That submission couldn't be found.",
     },
   }[result ?? "invalid"] ?? {
-    icon: "⚠️",
+    icon: "",
     heading: "Unknown result",
     color: "#6b7280",
     message: "Something unexpected happened.",
@@ -61,8 +61,7 @@ export default async function ApprovedPage({
       <p style={{ color: "var(--muted)", lineHeight: 1.7, marginBottom: "2rem" }}>
         {content.message}
       </p>
-      <Link href="/advertise" style={{ color: "var(--pink)", fontWeight: 700, textDecoration: "none", fontSize: "0.9rem" }}>
-        Back to Advertise page →
+      <Link href="/advertise" style={{ color: "var(--pink)", fontWeight: 700, textDecoration: "none", fontSize: "0.9rem" }}>Back to Advertise page →
       </Link>
     </div>
   );

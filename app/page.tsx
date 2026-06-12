@@ -153,9 +153,10 @@ export default async function Home() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.2rem", marginTop: "2rem" }}>
               {featuredEvents.map((e) => {
                 const slug = ABBR_TO_SLUG[(e.state || "").toUpperCase()];
-                const href = e.registration_url || (slug ? `/states/${slug}` : "/#map");
+                const safeReg = safeHttpUrl(e.registration_url);
+                const href = safeReg || (slug ? `/states/${slug}` : "/#map");
                 return (
-                  <a key={e.id} href={href} className="rt-card" target={e.registration_url ? "_blank" : undefined} rel={e.registration_url ? "noopener noreferrer" : undefined}>
+                  <a key={e.id} href={href} className="rt-card" target={safeReg ? "_blank" : undefined} rel={safeReg ? "noopener noreferrer" : undefined}>
                     <div className="rt-tag" style={{ color: "var(--pink)" }}>{e.event_type === "retreat" ? "Retreat" : "Tournament"}</div>
                     <h3 className="rt-title">{e.event_name}</h3>
                     <p className="rt-meta">{[e.city, e.state].filter(Boolean).join(", ")}</p>
@@ -178,9 +179,10 @@ export default async function Home() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.2rem", marginTop: "2rem" }}>
               {featuredVenues.map((v) => {
                 const slug = ABBR_TO_SLUG[(v.state || "").toUpperCase()];
-                const href = v.website || (slug ? `/states/${slug}` : "/#map");
+                const safeSite = safeHttpUrl(v.website);
+                const href = safeSite || (slug ? `/states/${slug}` : "/#map");
                 return (
-                  <a key={v.id} href={href} className="rt-card" target={v.website ? "_blank" : undefined} rel={v.website ? "noopener noreferrer" : undefined}>
+                  <a key={v.id} href={href} className="rt-card" target={safeSite ? "_blank" : undefined} rel={safeSite ? "noopener noreferrer" : undefined}>
                     <div className="rt-tag" style={{ color: "var(--navy)" }}>{v.venue_type || "Venue"}</div>
                     <h3 className="rt-title">{v.business_name}</h3>
                     <p className="rt-meta">{[v.city, v.state].filter(Boolean).join(", ")}</p>
@@ -202,13 +204,11 @@ export default async function Home() {
           <p style={{ color: "var(--muted)", marginBottom: "2.5rem", fontSize: "1rem", textAlign: "center" }}>Don&rsquo;t let travel stop your game, find players wherever you land or connect with fellow cruise passengers before you board.</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1.2rem" }}>
             <div className="anywhere-card">
-              <div className="anywhere-icon">✈️</div>
               <h3>Traveling? Find a Game</h3>
               <p>Visiting a new city? Use the map to find local players wherever you land. Never go without mahjong again!</p>
               <Link href="#map" className="btn-anywhere">Use the Map &rarr;</Link>
             </div>
             <div className="anywhere-card">
-              <div className="anywhere-icon">🚢</div>
               <h3>Going on a Cruise?</h3>
               <p>Setting sail? Don&rsquo;t forget your tiles! Post your cruise ship and dates to find fellow passengers who play, someone might even bring a set. Your perfect sea-day game is waiting!</p>
               <Link href="/list-my-game" className="btn-anywhere">Find Cruise Passengers &rarr;</Link>

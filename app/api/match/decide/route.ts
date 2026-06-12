@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   }
   const v = verifyActionToken(token);
   if (!v || (v.action !== "match-approve" && v.action !== "match-skip")) {
-    return NextResponse.redirect(`${siteUrl}/played?result=invalid`, 303);
+    return NextResponse.redirect(`${siteUrl}/match/confirm?token=invalid`, 303);
   }
 
   // Atomic claim: only the request that flips draft -> decided proceeds, so a

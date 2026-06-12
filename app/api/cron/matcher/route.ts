@@ -30,13 +30,17 @@ export async function GET(req: NextRequest) {
   }
   if (setting?.value !== "true") return NextResponse.json({ skipped: true, reason: "matcher disabled" });
 
-  const { data: requests } = await supabase
+  const { data: requests, error: reqErr } = await supabase
     .from("play_requests")
     .select("id, name, email, phone, city, state, day_pref, time_pref, created_at, status")
     .eq("status", "new")
     .order("created_at", { ascending: true })
     .limit(200);
 
+  if (reqErr) {
+    console.error("matcher: play_requests query failed:", reqErr.message);
+    return NextResponse.json({ error: "query failed", detail: reqErr.message }, { status: 500 });
+  }
   const pool = (requests || []).filter((r) => PILOT_CITIES.includes(norm(r.city)));
 
   // Cluster: same city bucket + same day/time preference (empty prefs are wildcards).
@@ -49,7 +53,7 @@ export async function GET(req: NextRequest) {
   }
 
   const { data: existingDrafts } = await supabase
-    .from("match_drafts").select("request_ids").in("status", ["draft", "approved"]);
+    .from("match_drafts").select("request_ids").in("status", ["draft", "approved", "skipped"]).gte("created_at", new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString());
   const alreadyDrafted = new Set((existingDrafts || []).flatMap((d) => d.request_ids as string[]));
 
   const drafts: { city: string; day_pref: string | null; time_pref: string | null; request_ids: string[]; names: string[] }[] = [];

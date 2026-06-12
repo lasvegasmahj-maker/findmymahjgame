@@ -1,7 +1,8 @@
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 
-// The single send choke point. Every product email goes through here so
+// The send choke point. New product emails go through here (legacy routes
+// migrate as they are touched) so
 // suppression, the voice charter (no emoji in subjects), and send logging
 // hold everywhere at once. Suppression and logging activate when their
 // tables exist (one founder SQL paste); until then sends still work.

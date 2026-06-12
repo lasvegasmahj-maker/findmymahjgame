@@ -33,7 +33,7 @@ export default async function PlayedConfirmPage({ searchParams }: { searchParams
       </p>
       <form method="POST" action="/api/tables/played" style={{ marginTop: "1.6rem" }}>
         <input type="hidden" name="token" value={token} />
-        <button type="submit" style={{ minHeight: 60, padding: "0 2.2rem", borderRadius: 14, border: "none", background: yes ? "#1a6e3a" : "var(--navy)", color: "white", fontWeight: 800, fontSize: "1.2rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+        <button type="submit" style={{ minHeight: 60, padding: "0 2.2rem", borderRadius: 14, border: "none", background: yes ? "var(--green-dark)" : "var(--navy)", color: "white", fontWeight: 800, fontSize: "1.2rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
           {yes ? "Yes, we played" : "Not yet"}
         </button>
       </form>

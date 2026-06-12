@@ -138,7 +138,7 @@ export default function GetListedClient() {
   if (submitted) {
     return (
       <div className="page-body" style={{ maxWidth: 600, textAlign: "center", paddingTop: "4rem" }}>
-        <div style={{ fontSize: "3.5rem", marginBottom: "1rem" }}>✅</div>
+        <div style={{ fontSize: "3.5rem", marginBottom: "1rem" }}></div>
         <h1
           style={{
             fontFamily: "var(--font-playfair), 'Playfair Display', serif",
@@ -146,11 +146,9 @@ export default function GetListedClient() {
             color: "var(--navy)",
             marginBottom: "0.8rem",
           }}
-        >
-          Application received!
+        >Application received!
         </h1>
-        <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.7, marginBottom: "2rem" }}>
-          We&rsquo;ll review your listing and be in touch within 1-2 business days.
+        <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.7, marginBottom: "2rem" }}>We&rsquo;ll review your listing and be in touch within 1-2 business days.
           {promoStatus === "valid" && (
             <> Your 6 months free starts on your approval date.</>
           )}
@@ -159,20 +157,17 @@ export default function GetListedClient() {
           <a
             href="/states"
             style={{ display: "inline-block", padding: "0.75rem 1.8rem", background: "var(--navy)", color: "white", borderRadius: 10, fontWeight: 700, textDecoration: "none", fontSize: "0.95rem" }}
-          >
-            Browse Players by State &rarr;
+          >Browse Players by State &rarr;
           </a>
           <a
             href="/advertise"
             style={{ color: "var(--pink)", fontWeight: 600, textDecoration: "none", fontSize: "0.9rem" }}
-          >
-            See advertising options
+          >See advertising options
           </a>
           <a
             href="/"
             style={{ color: "var(--muted)", fontSize: "0.85rem", textDecoration: "none" }}
-          >
-            Back to home
+          >Back to home
           </a>
         </div>
       </div>
@@ -184,8 +179,7 @@ export default function GetListedClient() {
       <div className="page-hero">
         <div className="eyebrow">Get Listed</div>
         <h1>List Your Business, Venue or Event</h1>
-        <p>
-          Reach mahjong players searching for instructors, venues, and events in their area.
+        <p>Reach mahjong players searching for instructors, venues, and events in their area.
         </p>
       </div>
 
@@ -198,11 +192,9 @@ export default function GetListedClient() {
             padding: "2.5rem",
           }}
         >
-          <h2 style={{ border: "none", marginTop: 0, marginBottom: "0.3rem" }}>
-            Tell us about what you offer
+          <h2 style={{ border: "none", marginTop: 0, marginBottom: "0.3rem" }}>Tell us about what you offer
           </h2>
-          <p style={{ color: "var(--muted)", fontSize: "0.9rem", marginBottom: "2rem" }}>
-            Have a promo code? Enter it below to unlock a special offer.
+          <p style={{ color: "var(--muted)", fontSize: "0.9rem", marginBottom: "2rem" }}>Have a promo code? Enter it below to unlock a special offer.
           </p>
 
           <form onSubmit={handleSubmit}>
@@ -221,8 +213,7 @@ export default function GetListedClient() {
 
             {/* Logo upload */}
             <div style={{ marginBottom: "1.2rem" }}>
-              <label style={labelStyle}>
-                Logo or Photo <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional — JPG, PNG, max 2MB)</span>
+              <label style={labelStyle}>Logo or Photo <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional — JPG, PNG, max 2MB)</span>
               </label>
               <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                 {form.logo_url && (
@@ -298,14 +289,12 @@ export default function GetListedClient() {
 
             {/* Website + Instagram */}
             {form.type === "Mahjong Instructor" && (
-              <div style={{ background: "rgba(233,30,140,0.05)", border: "1px solid rgba(233,30,140,0.2)", borderRadius: 8, padding: "0.8rem 1rem", marginBottom: "1rem", fontSize: "0.85rem", color: "var(--navy)" }}>
-                Players will see your email, website, and Instagram on your listing. Please provide at least one way for them to reach you.
+              <div style={{ background: "rgba(233,30,140,0.05)", border: "1px solid rgba(233,30,140,0.2)", borderRadius: 8, padding: "0.8rem 1rem", marginBottom: "1rem", fontSize: "0.85rem", color: "var(--navy)" }}>Players will see your email, website, and Instagram on your listing. Please provide at least one way for them to reach you.
               </div>
             )}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.2rem" }}>
               <div>
-                <label style={labelStyle}>
-                  Website <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span>
+                <label style={labelStyle}>Website <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span>
                 </label>
                 <input
                   type="url"
@@ -316,8 +305,7 @@ export default function GetListedClient() {
                 />
               </div>
               <div>
-                <label style={labelStyle}>
-                  Instagram {form.type === "Mahjong Instructor"
+                <label style={labelStyle}>Instagram {form.type === "Mahjong Instructor"
                     ? <span style={{ fontWeight: 400, color: "var(--muted)" }}>(recommended)</span>
                     : <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span>}
                 </label>
@@ -345,8 +333,7 @@ export default function GetListedClient() {
 
             {/* Promo Code */}
             <div style={{ marginBottom: "1.8rem" }}>
-              <label style={labelStyle}>
-                Promo Code <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span>
+              <label style={labelStyle}>Promo Code <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span>
               </label>
               <div style={{ display: "flex", gap: "0.6rem" }}>
                 <input
@@ -393,8 +380,7 @@ export default function GetListedClient() {
                     color: "#1a9648",
                     fontWeight: 600,
                   }}
-                >
-                  Code {form.promo_code.trim().toUpperCase()} applied -- 6 months free! You&rsquo;ll be a Founding Member.
+                >Code {form.promo_code.trim().toUpperCase()} applied -- 6 months free! You&rsquo;ll be a Founding Member.
                 </div>
               )}
 
@@ -409,8 +395,7 @@ export default function GetListedClient() {
                     fontSize: "0.88rem",
                     color: "#b91c1c",
                   }}
-                >
-                  Code not recognized. Please check your code and try again.
+                >Code not recognized. Please check your code and try again.
                 </div>
               )}
             </div>
@@ -452,8 +437,7 @@ export default function GetListedClient() {
               {submitting ? "Submitting..." : "Submit My Listing →"}
             </button>
 
-            <p style={{ fontSize: "0.78rem", color: "var(--muted)", textAlign: "center", marginTop: "1rem" }}>
-              We&rsquo;ll review your listing and be in touch within 1-2 business days.
+            <p style={{ fontSize: "0.78rem", color: "var(--muted)", textAlign: "center", marginTop: "1rem" }}>We&rsquo;ll review your listing and be in touch within 1-2 business days.
             </p>
           </form>
         </div>

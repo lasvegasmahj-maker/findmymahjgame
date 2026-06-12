@@ -27,10 +27,10 @@ function buildApprovalEmail(data: Record<string, string>, submissionId: string):
   const rejectUrl = `${siteUrl}/api/advertise-approve?token=${signToken(submissionId, "reject")}`;
 
   const typeLabels: Record<string, string> = {
-    venue: "🏛 Venue Listing",
-    instructor: "🎓 Instructor Listing",
-    event: "🎫 Event Listing",
-    brand: "🛍️ Brand Advertising",
+    venue: " Venue Listing",
+    instructor: " Instructor Listing",
+    event: " Event Listing",
+    brand: " Brand Advertising",
   };
 
   // Escaped view of every text field, plus scheme-validated URLs for href/src.
@@ -86,8 +86,7 @@ function buildApprovalEmail(data: Record<string, string>, submissionId: string):
 
   <div style="background:#f4f6ff;padding:24px 32px;border:1px solid #e8eaf0;border-top:none;border-radius:0 0 12px 12px;">
 
-    <p style="font-size:0.9rem;color:#6b7280;margin-bottom:20px;">
-      Review the listing below. If everything looks right, click <strong style="color:#1a6e3a;">Approve</strong> to publish it.
+    <p style="font-size:0.9rem;color:#6b7280;margin-bottom:20px;">Review the listing below. If everything looks right, click <strong style="color:#1a6e3a;">Approve</strong> to publish it.
       If something's off, click <strong style="color:#dc2626;">Reject</strong> and follow up with the advertiser.
     </p>
 
@@ -98,17 +97,17 @@ function buildApprovalEmail(data: Record<string, string>, submissionId: string):
       </div>
       ${logoSection}
       <h2 style="font-family:Georgia,serif;font-size:1.4rem;color:#1a1f5e;margin-bottom:6px;">${d.displayName || "(no name)"}</h2>
-      ${data.city ? `<p style="font-size:0.85rem;color:#6b7280;margin-bottom:12px;">📍 ${d.city}${data.stateName ? `, ${d.stateName}` : ""}${data.address ? ` &bull; ${d.address}` : ""}</p>` : ""}
-      ${data.hours ? `<p style="font-size:0.85rem;color:#6b7280;margin-bottom:8px;">🕐 ${d.hours}</p>` : ""}
-      ${data.eventDate ? `<p style="font-size:0.85rem;color:#6b7280;margin-bottom:8px;">📅 ${d.eventDate}${data.eventType ? ` &bull; ${d.eventType}` : ""}</p>` : ""}
-      ${data.price ? `<p style="font-size:0.85rem;color:#6b7280;margin-bottom:8px;">💵 ${d.price}</p>` : ""}
+      ${data.city ? `<p style="font-size:0.85rem;color:#6b7280;margin-bottom:12px;"> ${d.city}${data.stateName ? `, ${d.stateName}` : ""}${data.address ? ` &bull; ${d.address}` : ""}</p>` : ""}
+      ${data.hours ? `<p style="font-size:0.85rem;color:#6b7280;margin-bottom:8px;"> ${d.hours}</p>` : ""}
+      ${data.eventDate ? `<p style="font-size:0.85rem;color:#6b7280;margin-bottom:8px;"> ${d.eventDate}${data.eventType ? ` &bull; ${d.eventType}` : ""}</p>` : ""}
+      ${data.price ? `<p style="font-size:0.85rem;color:#6b7280;margin-bottom:8px;"> ${d.price}</p>` : ""}
       ${data.description ? `<p style="font-size:0.88rem;color:#374151;line-height:1.7;margin-bottom:12px;">${d.description}</p>` : ""}
       ${data.bio ? `<p style="font-size:0.88rem;color:#374151;line-height:1.7;margin-bottom:8px;"><strong>Bio:</strong> ${d.bio}</p>` : ""}
       ${data.whatOffered ? `<p style="font-size:0.88rem;color:#374151;line-height:1.7;margin-bottom:8px;"><strong>Offers:</strong> ${d.whatOffered}</p>` : ""}
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;">
-        ${websiteUrl ? `<a href="${escapeHtml(websiteUrl)}" style="font-size:0.78rem;color:#e91e8c;font-weight:700;text-decoration:none;">🌐 Website</a>` : ""}
-        ${data.instagram ? `<span style="font-size:0.78rem;color:#6b7280;">📷 ${d.instagram}</span>` : ""}
-        ${registrationUrl ? `<a href="${escapeHtml(registrationUrl)}" style="font-size:0.78rem;color:#e91e8c;font-weight:700;text-decoration:none;">🎟 Register</a>` : ""}
+        ${websiteUrl ? `<a href="${escapeHtml(websiteUrl)}" style="font-size:0.78rem;color:#e91e8c;font-weight:700;text-decoration:none;"> Website</a>` : ""}
+        ${data.instagram ? `<span style="font-size:0.78rem;color:#6b7280;"> ${d.instagram}</span>` : ""}
+        ${registrationUrl ? `<a href="${escapeHtml(registrationUrl)}" style="font-size:0.78rem;color:#e91e8c;font-weight:700;text-decoration:none;"> Register</a>` : ""}
       </div>
     </div>
 
@@ -119,16 +118,13 @@ function buildApprovalEmail(data: Record<string, string>, submissionId: string):
 
     <!-- Approve / Reject buttons -->
     <div style="display:flex;gap:16px;justify-content:center;margin-bottom:16px;">
-      <a href="${approveUrl}" style="background:#1a6e3a;color:white;padding:14px 36px;border-radius:8px;font-weight:700;font-size:1rem;text-decoration:none;display:inline-block;">
-        ✅ Approve Listing
+      <a href="${approveUrl}" style="background:#1a6e3a;color:white;padding:14px 36px;border-radius:8px;font-weight:700;font-size:1rem;text-decoration:none;display:inline-block;">Approve Listing
       </a>
-      <a href="${rejectUrl}" style="background:#dc2626;color:white;padding:14px 28px;border-radius:8px;font-weight:700;font-size:1rem;text-decoration:none;display:inline-block;">
-        ❌ Reject
+      <a href="${rejectUrl}" style="background:#dc2626;color:white;padding:14px 28px;border-radius:8px;font-weight:700;font-size:1rem;text-decoration:none;display:inline-block;">Reject
       </a>
     </div>
 
-    <p style="font-size:0.75rem;color:#9ca3af;text-align:center;">
-      Approval links expire in 7 days. Reply to this email to contact the advertiser directly.
+    <p style="font-size:0.75rem;color:#9ca3af;text-align:center;">Approval links expire in 7 days. Reply to this email to contact the advertiser directly.
     </p>
   </div>
 </div>
@@ -241,12 +237,10 @@ export async function POST(req: NextRequest) {
   </div>
   <div style="background:#f4f6ff;padding:28px 32px;border:1px solid #e8eaf0;border-top:none;border-radius:0 0 12px 12px;">
     <h2 style="font-family:Georgia,serif;color:#1a1f5e;font-size:1.2rem;margin-bottom:12px;">Got it, ${escapeHtml(clean.contactName)}!</h2>
-    <p style="color:#6b7280;font-size:0.92rem;line-height:1.7;margin-bottom:16px;">
-      We received your listing details for <strong>${escapeHtml(clean.displayName || "your listing")}</strong>.
+    <p style="color:#6b7280;font-size:0.92rem;line-height:1.7;margin-bottom:16px;">We received your listing details for <strong>${escapeHtml(clean.displayName || "your listing")}</strong>.
       We review every listing personally, usually within 1-2 business days, and we'll email you either way. Once approved, you'll be live.
     </p>
-    <p style="color:#6b7280;font-size:0.88rem;line-height:1.7;">
-      Questions? Reply to this email or reach us at <a href="mailto:hello@findmymahjgame.com" style="color:#e91e8c;">hello@findmymahjgame.com</a>.
+    <p style="color:#6b7280;font-size:0.88rem;line-height:1.7;">Questions? Reply to this email or reach us at <a href="mailto:hello@findmymahjgame.com" style="color:#e91e8c;">hello@findmymahjgame.com</a>.
     </p>
   </div>
 </div>

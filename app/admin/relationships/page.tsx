@@ -101,7 +101,7 @@ export default function RelationshipsPage() {
 
       {needsMigration && (
         <div style={{ background: "#fef3c7", border: "1px solid #f5c842", borderRadius: 10, padding: "1rem 1.2rem", marginBottom: "1.4rem", fontSize: "0.92rem", color: "#7a5d00", lineHeight: 1.6 }}>
-          One-time setup: run <code>supabase/migrations/2026-06-11-crm-contacts.sql</code> in the Supabase SQL editor, then <code>node --env-file=.env.local scripts/import-crm.mjs</code> to load the 251 researched contacts and the wave-1 anchors. Refresh after.
+          One-time setup: run <code>supabase/migrations/2026-06-11-crm-contacts.sql</code> in the Supabase SQL editor, then <code>node --env-file=.env.local scripts/import-crm.mjs</code> to load the researched contacts and the wave-1 anchors. Refresh after.
         </div>
       )}
 

@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   }
 
   const cutoff = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
-  const { data: rows } = await supabase
+  const { data: rows, error: qErr } = await supabase
     .from("tables")
     .select("id, share_code, day_of_week, time_of_day, city")
     .eq("status", "full")
@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
     .is("asked_played_at", null)
     .or(`filled_at.lte.${cutoff},and(filled_at.is.null,created_at.lte.${cutoff})`)
     .limit(50);
+  if (qErr) console.error("ask-played query failed:", qErr.message);
 
   const base = process.env.NEXT_PUBLIC_SITE_URL || "https://findmymahjgame.com";
   let asked = 0;

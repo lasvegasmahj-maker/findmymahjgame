@@ -68,7 +68,7 @@ export default async function MatchConfirmPage({ searchParams }: { searchParams:
       </p>
       <form method="POST" action="/api/match/decide" style={{ marginTop: "1.4rem" }}>
         <input type="hidden" name="token" value={token} />
-        <button type="submit" style={{ minHeight: 56, padding: "0 2.2rem", borderRadius: 12, border: "none", background: approve ? "#1a6e3a" : "#6b7280", color: "white", fontWeight: 800, fontSize: "1.15rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+        <button type="submit" style={{ minHeight: 56, padding: "0 2.2rem", borderRadius: 12, border: "none", background: approve ? "var(--green-dark)" : "var(--gray-mid)", color: "white", fontWeight: 800, fontSize: "1.15rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
           {approve ? "Yes, approve and send invites" : "Yes, skip this match"}
         </button>
       </form>
