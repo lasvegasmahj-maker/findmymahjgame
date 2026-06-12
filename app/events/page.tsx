@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createServerClient } from "@/lib/supabase-server";
+import { safeHttpUrl } from "@/lib/sanitize";
 
 export const metadata: Metadata = {
   title: "Mahjong Events and Open Plays Near You",
@@ -19,7 +20,8 @@ function rank(t: string | null | undefined): number {
 }
 function whenLabel(e: { event_date?: string | null; day_time?: string | null; day_of_week?: string | null; time_of_day?: string | null }): string {
   if (e.event_date) {
-    try { return new Date(e.event_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }); } catch { /* fall through */ }
+    const d = new Date(e.event_date);
+    if (!isNaN(d.getTime())) return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
   }
   return e.day_time || [e.day_of_week, e.time_of_day].filter(Boolean).join(" ");
 }
@@ -53,7 +55,8 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
       {rows.length > 0 ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 300px), 1fr))", gap: "1.2rem" }}>
           {rows.map((e) => {
-            const external = !!e.registration_url;
+            const safeUrl = safeHttpUrl(e.registration_url);
+            const external = !!safeUrl;
             const card = (
               <>
                 {e.event_type && <div style={{ display: "inline-block", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.85rem", fontWeight: 800, color: "var(--pink)", marginBottom: "0.5rem" }}>{String(e.event_type).replace(/_/g, " ")}</div>}
@@ -66,7 +69,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
             );
             const cardStyle = { display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", textDecoration: "none" } as const;
             return external ? (
-              <a key={e.id} href={e.registration_url} target="_blank" rel="noopener noreferrer" style={cardStyle}>{card}</a>
+              <a key={e.id} href={safeUrl} target="_blank" rel="noopener noreferrer" style={cardStyle}>{card}</a>
             ) : (
               <div key={e.id} style={cardStyle}>{card}</div>
             );

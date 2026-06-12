@@ -33,7 +33,7 @@ export default function StartClient() {
 
   // Capture an ambassador referral code from the link (e.g. /start?ref=FMM-LV-RUTH)
   // so the table they start is credited to them. Uses the existing referred_by field.
-  useEffect(() =>{
+  useEffect(() => {
     try {
       const r = new URLSearchParams(window.location.search).get("ref");
       if (r) setRef(r.slice(0, 40));

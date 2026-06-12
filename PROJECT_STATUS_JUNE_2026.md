@@ -1,6 +1,6 @@
 # PROJECT STATUS, June 2026 (FMG Handoff)
 
-## STATUS UPDATE, 2026-06-12 (supersedes details below where they conflict)
+## STATUS UPDATE, 2026-06-11 (supersedes details below where they conflict)
 - STRATEGY IS CLOSED. ~300 agents across 20 fleets, red-teamed and pressure-tested.
   The binding documents are LAUNCH_GATE.md (verified security gate + deploy runbook)
   and RULINGS.md (every accepted ruling with status). Read those two first.

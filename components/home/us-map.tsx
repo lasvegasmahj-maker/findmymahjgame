@@ -93,16 +93,16 @@ export default function USMap({ stateCounts = {} }: { stateCounts?: StateCounts 
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleContainerMouseMove = useCallback((e: React.MouseEvent) =>{
+  const handleContainerMouseMove = useCallback((e: React.MouseEvent) => {
     setMousePos({ x: e.clientX, y: e.clientY });
   }, []);
 
-  const handleClick = useCallback((abbr: string) =>{
+  const handleClick = useCallback((abbr: string) => {
     setSelected(prev => prev === abbr ? null : abbr);
   }, []);
 
   const isActiveState = useCallback(
-    (abbr: string) =>{
+    (abbr: string) => {
       const c = stateCounts[abbr];
       return !!c && c.players + c.events + c.venues > 0;
     },
@@ -124,7 +124,7 @@ export default function USMap({ stateCounts = {} }: { stateCounts?: StateCounts 
         >
           <Geographies geography={GEO_URL}>
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {({ geographies }: { geographies: any[] }) =>geographies.map((geo) =>{
+            {({ geographies }: { geographies: any[] }) =>geographies.map((geo) => {
                 const fips = geo.id;
                 const abbr = FIPS_TO_ABBR[fips] || "";
                 const isSelected = selected === abbr;

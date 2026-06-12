@@ -1,7 +1,7 @@
-# FMG Launch Gate: verified 2026-06-11, re-verified 2026-06-12
+# FMG Launch Gate: verified 2026-06-11, re-verified 2026-06-11
 
 Status: **PASS.** Both founder SQL pastes were applied and live-verified on
-2026-06-12 (anon SELECT revoked table-level on the four listing tables;
+2026-06-11 (anon SELECT revoked table-level on the four listing tables;
 self-publish closed; pending rows invisible). Every code-level blocker is fixed
 on `product-readiness-previews`. One small SQL delta remains non-blocking:
 the ambassadors.referral_code block at the bottom of the migration file,

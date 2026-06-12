@@ -274,7 +274,9 @@ export default function AdminPage() {
   }
 
   function renderBulkBar(table: string, rows: { id: string; status: string }[]) {
-    const pending = rows.filter((r) => r.status === "pending_review" || r.status === "flagged");
+    // Flagged rows are quarantined (dead links, link-check holds): they stay
+    // individually approvable but never ride select-all or Approve All.
+    const pending = rows.filter((r) => r.status === "pending_review");
     if (!pending.length) return null;
     const chosen = pending.filter((r) => selected.has(r.id)).map((r) => r.id);
     const allChosen = chosen.length === pending.length;

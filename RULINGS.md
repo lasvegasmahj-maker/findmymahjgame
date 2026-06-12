@@ -1,7 +1,7 @@
 # FMG Rulings Register
 
 One page. Every accepted ruling has a status. No build or agent overrides a
-ruling silently; a change here requires a founder decision. Updated 2026-06-12.
+ruling silently; a change here requires a founder decision. Updated 2026-06-11.
 
 Statuses: IN CODE (on product-readiness-previews) · STAGED SQL (in the
 migration file, awaiting paste) · FOUNDER (her decision, prepared) · BUILD

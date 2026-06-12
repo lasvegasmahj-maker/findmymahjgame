@@ -50,7 +50,7 @@ export default function PlayClient() {
     }
     setSearching(true);
     navigator.geolocation.getCurrentPosition(
-      async (pos) =>{
+      async (pos) => {
         try {
           const { latitude, longitude } = pos.coords;
           const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
@@ -65,7 +65,7 @@ export default function PlayClient() {
           setGeoMsg("Something went wrong. Please type your town below.");
         }
       },
-      () =>{ setSearching(false); setGeoMsg("We couldn't get your location. Please type your town below."); },
+      () => { setSearching(false); setGeoMsg("We couldn't get your location. Please type your town below."); },
       { timeout: 10000 }
     );
   }
@@ -115,7 +115,7 @@ export default function PlayClient() {
         <h1 style={{ fontSize: "1.8rem", color: "var(--navy)", margin: "0.8rem 0 0.3rem", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>Games near {city}</h1>
         <p style={{ fontSize: "1.1rem", color: "var(--muted)" }}>Tap a game to join it.</p>
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1.2rem" }}>
-          {games.map((g) =>{
+          {games.map((g) => {
             const title = `${g.day_of_week || ""} ${g.time_of_day || ""} Mahjong`.trim();
             const place = [g.venue_name, g.city].filter(Boolean).join(", ");
             return (

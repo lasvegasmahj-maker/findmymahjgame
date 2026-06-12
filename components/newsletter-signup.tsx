@@ -9,7 +9,8 @@ export default function NewsletterSignup({ dark = false }: { dark?: boolean }) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    try {      setState("submitting"); setErr("");
+    try {
+      setState("submitting"); setErr("");
       const res = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -19,7 +20,6 @@ export default function NewsletterSignup({ dark = false }: { dark?: boolean }) {
       const d = await res.json().catch(() => ({}));
       setErr(d.error || "Something went wrong. Please try again.");
       setState("error");
-    
     } catch {
       setErr("We could not reach the server. Please check your connection and try again.");
       setState("error");

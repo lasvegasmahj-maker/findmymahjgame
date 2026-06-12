@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   },
 };
 
-// Short cache so forming tables ("Need a 4th") surface quickly.
+// Short cache so forming tables surface quickly.
 export const revalidate = 60;
 
 const ABBR_TO_SLUG: Record<string, string> = {};
@@ -57,7 +57,7 @@ export default async function Home() {
     .slice(0, 6);
   const featuredVenues = venues.slice(0, 6);
 
-  // Forming tables (Need a 4th): surface closest-to-full first.
+  // Forming tables with open seats (never the nearly-full ones; see below).
   const { data: formingRaw } = await supabase
     .from("tables")
     .select("id, share_code, day_of_week, time_of_day, city, seats_total")
@@ -69,8 +69,11 @@ export default async function Home() {
     const { count } = await supabase.from("table_seats").select("id", { count: "exact", head: true }).eq("table_id", t.id);
     forming.push({ share_code: t.share_code, day_of_week: t.day_of_week, time_of_day: t.time_of_day, city: t.city, total: t.seats_total || 4, filled: count ?? 1 });
   }
-  forming.sort((a, b) => b.filled - a.filled);
-  const formingTop = forming.slice(0, 6);
+  // Safety ruling (same as /api/tables/find): nearly-full tables are never
+  // surfaced publicly and tables are never ordered by how close to full they
+  // are. The last chair of a committed group fills through the host's own
+  // shared link, not a stranger's browse. Recency order from the query stands.
+  const formingTop = forming.filter((g) => g.total - g.filled !== 1).slice(0, 6);
 
   return (
     <>
@@ -97,7 +100,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* TABLES FORMING (Need a 4th) */}
+      {/* TABLES FORMING */}
       {formingTop.length > 0 && (
         <section style={{ background: "#fff5fa", padding: "3.5rem 1.2rem", borderTop: "1px solid rgba(233,30,140,0.1)" }}>
           <div style={{ maxWidth: 760, margin: "0 auto" }}>
@@ -106,12 +109,10 @@ export default async function Home() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1rem" }}>
               {formingTop.map((g) => {
                 const title = `${g.day_of_week || ""} ${g.time_of_day || ""} Mahjong`.trim();
-                const needs4th = g.total - g.filled === 1;
                 return (
-                  <a key={g.share_code} href={`/t/${g.share_code}`} style={{ display: "block", background: "white", border: needs4th ? "2px solid var(--pink)" : "2px solid var(--border)", borderRadius: 16, padding: "1.3rem", textDecoration: "none" }}>
-                    {needs4th && <div style={{ display: "inline-block", background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "0.9rem", padding: "0.25rem 0.8rem", borderRadius: 50, marginBottom: "0.6rem" }}>🔥 Need a 4th</div>}
+                  <a key={g.share_code} href={`/t/${g.share_code}`} style={{ display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.3rem", textDecoration: "none" }}>
                     <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)" }}>{title}</div>
-                    {g.city && <div style={{ fontSize: "1.05rem", color: "var(--muted)", margin: "0.3rem 0 0.7rem" }}>📍 {g.city}</div>}
+                    {g.city && <div style={{ fontSize: "1.05rem", color: "var(--muted)", margin: "0.3rem 0 0.7rem" }}>{g.city}</div>}
                     <SeatDots filled={g.filled} total={g.total} size="1.2rem" />
                     <div style={{ marginTop: "0.7rem", color: "var(--pink)", fontWeight: 800 }}>Join this game &rarr;</div>
                   </a>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createServerClient } from "@/lib/supabase-server";
+import { safeHttpUrl } from "@/lib/sanitize";
 
 export const metadata: Metadata = {
   title: "Places to Play Mahjong Near You",
@@ -39,8 +40,9 @@ export default async function VenuesPage({ searchParams }: { searchParams: Promi
       {rows.length > 0 ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 300px), 1fr))", gap: "1.2rem" }}>
           {rows.map((v) => {
-            const href = v.website || "/get-listed";
-            const external = !!v.website;
+            const safeSite = safeHttpUrl(v.website);
+            const href = safeSite || "/get-listed";
+            const external = !!safeSite;
             return (
               <a key={v.id} href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} style={{ display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", textDecoration: "none" }}>
                 {v.venue_type && <div style={{ display: "inline-block", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.78rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.5rem" }}>{v.venue_type}</div>}

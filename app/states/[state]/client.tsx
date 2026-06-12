@@ -116,9 +116,9 @@ export default function StatePageClient({ stateData, players, events, venues }: 
   const allCities = [`All of ${stateData.name}`, ...stateData.cities];
   const [connectForm, setConnectForm] = useState<ConnectForm | null>(null);
 
-  useEffect(() =>{
+  useEffect(() => {
     if (!connectForm) return;
-    const onKey = (e: KeyboardEvent) =>{ if (e.key === "Escape") setConnectForm(null); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setConnectForm(null); };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [connectForm]);
@@ -257,8 +257,8 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                     <button
                       onClick={() => setConnectForm({ player, name: "", email: "", message: "", submitted: false, submitting: false })}
                       style={{ width: "100%", background: "var(--pink)", border: "1.5px solid var(--pink)", color: "white", borderRadius: 10, padding: "0.75rem", fontWeight: 800, fontSize: "1rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s", marginTop: "0.9rem" }}
-                      onMouseOver={e =>{ (e.target as HTMLButtonElement).style.background = "var(--pink)"; (e.target as HTMLButtonElement).style.color = "white"; }}
-                      onMouseOut={e =>{ (e.target as HTMLButtonElement).style.background = "transparent"; (e.target as HTMLButtonElement).style.color = "var(--pink)"; }}
+                      onMouseOver={e => { (e.target as HTMLButtonElement).style.background = "var(--pink)"; (e.target as HTMLButtonElement).style.color = "white"; }}
+                      onMouseOut={e => { (e.target as HTMLButtonElement).style.background = "transparent"; (e.target as HTMLButtonElement).style.color = "var(--pink)"; }}
                     >Connect
                     </button>
                   </div>

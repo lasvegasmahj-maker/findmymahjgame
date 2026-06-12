@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createServerClient } from "@/lib/supabase-server";
+import { safeHttpUrl } from "@/lib/sanitize";
 
 export const metadata: Metadata = {
   title: "Find a Mahjong Teacher Near You",
@@ -61,8 +62,9 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 300px), 1fr))", gap: "1.2rem" }}>
           {rows.map((t) => {
             const beginner = isBeginnerFriendly(`${t.venue_type || ""} ${t.description || ""}`);
-            const href = t.website || "/get-listed";
-            const external = !!t.website;
+            const safeSite = safeHttpUrl(t.website);
+            const href = safeSite || "/get-listed";
+            const external = !!safeSite;
             return (
               <a key={t.id} href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} style={{ display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", textDecoration: "none" }}>
                 <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{t.business_name || "Teacher"}</div>

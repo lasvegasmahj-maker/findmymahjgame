@@ -1,11 +1,11 @@
 -- Recurring open play support (Track A2) + launch-gate hardening.
 -- Additive and non-breaking; idempotent (safe to run more than once).
--- APPLIED STATUS (verified live 2026-06-12): everything in this file EXCEPT
+-- APPLIED STATUS (verified live 2026-06-11): everything in this file EXCEPT
 -- the ambassadors.referral_code block at the bottom has been run by the
 -- founder in the Supabase SQL editor and verified against the live database.
 -- The referral_code block was added after those pastes: one small paste
 -- outstanding. The corrective table-level REVOKEs (revoke select on the four
--- listing tables from anon) were also applied live on 2026-06-12.
+-- listing tables from anon) were also applied live on 2026-06-11.
 
 alter table public.event_listings
   add column if not exists frequency text,
@@ -21,7 +21,7 @@ alter table public.venue_listings
 -- reviewer_notes so nothing is lost in the meantime.
 
 
--- LAUNCH GATE (2026-06-11, corrected 2026-06-12): defense in depth against
+-- LAUNCH GATE (2026-06-11, corrected 2026-06-11): defense in depth against
 -- contact harvesting. Column-level REVOKEs are no-ops while a table-level
 -- SELECT grant exists, so the protection is table-level: anon loses SELECT
 -- entirely on the four listing tables. Nothing in the browser reads these

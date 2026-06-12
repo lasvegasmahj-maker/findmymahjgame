@@ -40,7 +40,10 @@ export async function POST(req: NextRequest) {
   };
 
   const { error } = await supabase.from("player_listings").insert(row);
-  if (error) return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+  if (error) {
+    console.error("list-my-game insert failed:", error.message);
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+  }
 
   return NextResponse.json({ success: true });
 }
