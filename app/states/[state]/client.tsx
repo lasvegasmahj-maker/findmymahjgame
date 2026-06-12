@@ -2,7 +2,6 @@
 
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import type { StateData } from "@/lib/states-data";
 
 interface Player {
@@ -54,14 +53,14 @@ interface Props {
 function SponsorLogo({ src, name }: { src: string | null; name: string }) {
   if (src) {
     return (
-      // next/image handles lazy loading, WebP conversion, and explicit dimensions
-      // which eliminates the CLS caused by unsized <img> tags.
+      // Plain img: logo_url is an arbitrary advertiser host, which next/image
+      // rejects unless every host is whitelisted in next.config.
       <div style={{ width: 48, height: 48, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border)", flexShrink: 0, background: "white", position: "relative" }}>
-        <Image
+        <img
           src={src}
           alt={name}
-          fill
-          sizes="48px" style={{ objectFit: "cover" }}
+          loading="lazy"
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
         />
       </div>
     );
@@ -197,9 +196,9 @@ export default function StatePageClient({ stateData, players, events, venues }: 
         <p style={{ maxWidth: 520 }}>{stateData.desc}</p>
         <div style={{ display: "flex", gap: "3rem", justifyContent: "center", marginTop: "2.5rem", flexWrap: "wrap" }}>
           {[
-            { num: players.length || "—", label: "Players Listed" },
-            { num: events.length || "—", label: "Events" },
-            { num: venues.length || "—", label: "Venues" },
+            { num: players.length, label: "Players Listed" },
+            { num: events.length, label: "Events" },
+            { num: venues.length, label: "Venues" },
           ].map((s) => (
             <div key={s.label} style={{ textAlign: "center" }}>
               <div style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2rem", color: "white", fontWeight: 900 }}>{s.num}</div>
@@ -350,7 +349,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             ) : (
               <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center", marginBottom: "2rem" }}>
                 <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>No events listed yet</h3>
-                <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Host an open play, tournament, or mahjong night? List it and reach players searching for games. Starting at $10/event.
+                <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Host an open play, tournament, or mahjong night? List it free and reach players searching for games.
                 </p>
                 <Link href="/advertise" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>List Your Event &rarr;</Link>
               </div>
@@ -374,11 +373,11 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                     {venue.logo_url
                       ? (
                         <div style={{ position: "relative", width: "100%", height: 80 }}>
-                          <Image
+                          <img
                             src={venue.logo_url}
                             alt={venue.business_name}
-                            fill
-                            sizes="(max-width: 768px) 100vw, 50vw" style={{ objectFit: "cover" }}
+                            loading="lazy"
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
                           />
                         </div>
                       )
@@ -402,7 +401,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                       ) : venue.instagram ? (
                         <a href={`https://instagram.com/${venue.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer" className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Visit Instagram &rarr;</a>
                       ) : (
-                        <Link href={`/contact?venue=${encodeURIComponent(venue.business_name)}`} className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Get Info &rarr;</Link>
+                        <Link href={`/contact`} className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Get Info &rarr;</Link>
                       )}
                     </div>
                   </div>
@@ -411,7 +410,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             ) : (
               <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center", marginBottom: "2rem" }}>
                 <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>No venues listed yet</h3>
-                <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Own a mahjong-friendly venue? Get discovered by players searching for places to play. Listings from $19/mo.
+                <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Own a mahjong-friendly venue? Get discovered by players searching for places to play.
                 </p>
                 <Link href="/advertise" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>List Your Venue &rarr;</Link>
               </div>

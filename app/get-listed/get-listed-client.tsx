@@ -51,11 +51,17 @@ export default function GetListedClient() {
 
     const fd = new FormData();
     fd.append("file", file);
-    const res = await fetch("/api/upload-logo", { method: "POST", body: fd });
-
-    if (res.ok) {
-      const { url } = await res.json();
-      setForm(prev => ({ ...prev, logo_url: url }));
+    try {
+      const res = await fetch("/api/upload-logo", { method: "POST", body: fd });
+      if (res.ok) {
+        const { url } = await res.json();
+        setForm(prev => ({ ...prev, logo_url: url }));
+      } else {
+        const d = await res.json().catch(() => ({}));
+        setError(d.error || "We could not upload that image. Please try a JPG or PNG under 2 MB.");
+      }
+    } catch {
+      setError("We could not reach the server. Please check your connection and try again.");
     }
     setLogoUploading(false);
   }

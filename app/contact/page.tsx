@@ -18,7 +18,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ContactPage() {
+export default async function ContactPage({ searchParams }: { searchParams: Promise<{ sent?: string }> }) {
+  const { sent } = await searchParams;
   return (
     <>
       <script {...schemaScriptProps(buildContactPageSchema())} />
@@ -31,6 +32,11 @@ export default function ContactPage() {
       </div>
 
       <div className="page-body" style={{ maxWidth: 860 }}>
+        {sent && (
+          <div role="alert" style={{ background: "rgba(46,201,92,0.12)", border: "2px solid #2ec95c", borderRadius: 12, padding: "1rem 1.4rem", marginBottom: "1.6rem", textAlign: "center", color: "#1a6e3a", fontWeight: 700 }}>
+            Thank you! Your message is on its way. A real person reads every one.
+          </div>
+        )}
         {/* Contact Cards */}
         <div className="grid grid-cols-2 gap-12 my-8 max-sm:grid-cols-1">
           <div className="bg-bg border border-border rounded-2xl p-6">
@@ -89,6 +95,7 @@ export default function ContactPage() {
         <div className="bg-bg border border-border rounded-2xl p-8 my-8">
           <h2 style={{ border: "none", marginTop: 0 }}>Send Us a Message</h2>
           <form action={FORMSPREE_URL} method="POST">
+            <input type="hidden" name="_next" value="https://findmymahjgame.com/contact?sent=1" />
             <div className="grid grid-cols-2 gap-4 mb-5 max-sm:grid-cols-1">
               <div>
                 <label className="block text-[0.82rem] font-bold text-navy mb-1">Your Name</label>

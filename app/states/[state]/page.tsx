@@ -90,6 +90,7 @@ export default async function StatePage({ params }: { params: Promise<{ state: s
       .select("id, event_name, event_type, city, state, venue, address, description, event_date, end_date, price, registration_url, tier, created_at")
       .eq("state", data.abbr)
       .eq("status", "published")
+      .or(`event_date.is.null,event_date.gte.${new Date().toISOString().slice(0, 10)},event_type.in.(open_play,openplay,recurring)`)
       .order("event_date", { ascending: true }),
     supabase
       .from("venue_listings")
