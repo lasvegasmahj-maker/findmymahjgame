@@ -1,5 +1,32 @@
 # PROJECT STATUS, June 2026 (FMG Handoff)
 
+## STATUS UPDATE, 2026-06-12 (supersedes details below where they conflict)
+- STRATEGY IS CLOSED. ~300 agents across 20 fleets, red-teamed and pressure-tested.
+  The binding documents are LAUNCH_GATE.md (verified security gate + deploy runbook)
+  and RULINGS.md (every accepted ruling with status). Read those two first.
+- Launch gate: PASSED. Both founder SQL pastes applied and live-verified (anon
+  SELECT revoked on listing tables, self-publish closed, pending rows invisible).
+  One small SQL delta outstanding: ambassadors.referral_code (in the migration file).
+- Branch product-readiness-previews holds 13 commits of launch work: UI fix round,
+  bulk approval, SEO fixes, PII leak closure, red-team mitigations, Night Shift bug
+  fixes, find-route safety, Run-it-back link, Teacher Promise, LVM disclosure,
+  RULINGS.md. Production build passes; all routes 200; PII greps zero; NV guardrail
+  verified.
+- Database: 552 records staged pending_review (273 open plays, 279 teachers/orgs).
+  Bulk-approve AFTER the deploy (ordering protects contact data).
+- Mission (founder override): "the place where Mahjong people find their people."
+  North Star: Weekly Player-Games Confirmed (+50% confirmation guardrail).
+  Texas-first: DFW liquidity proof + San Antonio relationship; Dallas Test reviews
+  Sept 9, 2026. Build order: the Bench, standing-table loop, claims, freshness,
+  /admin/today + lib/email.ts.
+- Research corpus: ~35 CSVs in ~/Desktop/FMG-Research-2026-06/ (master database 956
+  entities, top-60 outreach, deduped contacts, all fleet findings). Not yet filed in
+  the CEO OS Drive.
+- FOUNDER DECISIONS OUTSTANDING: (1) the deploy go (carries LVM disclosure + Teacher
+  Promise), (2) Kristel Powell vs "Crystal/True Mahjong" one-line confirmation (no
+  San Antonio outreach before it), (3) Dallas Welcome Week date (rec: week of Jul 13),
+  (4) Mailchimp key + Audience ID into Vercel, then import the 195 subscribers.
+
 Single handoff so a new Claude Code session can resume with minimal context loss. Persistent memory at ~/.claude (user, feedback, project memories) also carries forward. The business operating system lives in Google Drive: CEO Operating Systems > FMG - FindMyMahjGame (open "START HERE").
 
 ## 1. Current branch
