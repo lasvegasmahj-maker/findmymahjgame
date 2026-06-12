@@ -41,6 +41,15 @@ export async function POST(req: NextRequest) {
   if (!listing) return NextResponse.json({ error: "Listing not found." }, { status: 404 });
 
   // Record (or refresh) the claim itself.
+  const { data: priorClaim } = await supabase
+    .from("listing_claims")
+    .select("claimer_email")
+    .eq("listing_table", table)
+    .eq("listing_id", id)
+    .maybeSingle();
+  if (priorClaim && priorClaim.claimer_email !== email.toLowerCase()) {
+    return NextResponse.json({ error: "This listing is already claimed. If that is you under a different email, or something looks wrong, email hello@findmymahjgame.com and a real person will sort it out." }, { status: 409 });
+  }
   const { error: claimErr } = await supabase
     .from("listing_claims")
     .upsert({ listing_table: table, listing_id: id, claimer_email: email.toLowerCase(), status: "claimed" }, { onConflict: "listing_table,listing_id" });
@@ -60,7 +69,17 @@ export async function POST(req: NextRequest) {
   for (const f of allowed) {
     if (b[f] === undefined) continue;
     const urlField = f === "website" || f === "registration_url";
-    const next = urlField ? safeHttpUrl(b[f]) || null : clampText(b[f], f === "description" ? 600 : 200) || null;
+    let next: string | null;
+    if (urlField) {
+      const raw = String(b[f] ?? "").trim();
+      const withScheme = raw && !/^https?:\/\//i.test(raw) ? `https://${raw}` : raw;
+      next = safeHttpUrl(withScheme) || null;
+      // A non-empty input that still fails validation is a typo, not a
+      // request to erase her link: skip the field rather than propose null.
+      if (raw && !next) continue;
+    } else {
+      next = clampText(b[f], f === "description" ? 600 : 200) || null;
+    }
     if (next !== (listing[f] ?? null)) {
       changes[f] = next;
       previous[f] = listing[f] ?? null;

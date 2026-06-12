@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 const ROLES = ["Teacher", "Host", "Organizer", "Club leader", "Other"];
 const REACH = ["Just a few (1-3)", "A small group (4-10)", "A class or club (10-30)", "A large network (30 or more)"];
@@ -62,7 +63,7 @@ export default function AmbassadorForm() {
         <p style={{ fontSize: "1.15rem", color: "var(--navy)", lineHeight: 1.6 }}>
           Your application is in. We sent a confirmation to <strong>{email}</strong> and a real person will reach out soon about becoming a Founding Ambassador.
         </p>
-        <a href="/" style={{ display: "inline-block", marginTop: "1rem", color: "var(--pink)", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Back to home</a>
+        <Link href="/" style={{ display: "inline-block", marginTop: "1rem", color: "var(--pink)", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Back to home</Link>
       </div>
     );
   }

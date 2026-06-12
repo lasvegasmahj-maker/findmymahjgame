@@ -61,10 +61,20 @@ export async function GET(req: NextRequest) {
   const alreadyDrafted = new Set((existingDrafts || []).flatMap((d) => d.request_ids as string[]));
 
   const drafts: { city: string; day_pref: string | null; time_pref: string | null; request_ids: string[]; names: string[] }[] = [];
-  for (const [, members] of clusters) {
-    const fresh = members.filter((m) => !alreadyDrafted.has(m.id));
+  const used = new Set<string>();
+  for (const [key, members] of clusters) {
+    let fresh = members.filter((m) => !alreadyDrafted.has(m.id) && !used.has(m.id));
+    // A specific cluster one short of three borrows from the same city's
+    // any-day/any-time players, so a flexible player completes the table.
+    if (fresh.length === 2 && !key.endsWith("|*|*")) {
+      const cityKey = key.split("|")[0];
+      const wild = clusters.get(`${cityKey}|*|*`) || [];
+      const extra = wild.find((m) => !alreadyDrafted.has(m.id) && !used.has(m.id) && !fresh.some((f) => f.id === m.id));
+      if (extra) fresh = [...fresh, extra];
+    }
     if (fresh.length >= 3) {
       const take = fresh.slice(0, 4);
+      for (const t of take) used.add(t.id);
       drafts.push({
         city: take[0].city || "Dallas",
         day_pref: take[0].day_pref,

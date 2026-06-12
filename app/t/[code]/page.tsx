@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import ShareSheet from "@/components/share-sheet";
@@ -57,7 +58,7 @@ export default async function TablePage({
 
   return (
     <main style={{ maxWidth: 560, margin: "0 auto", padding: "1.5rem 1.2rem 4rem" }}>
-      <a href="/" style={{ fontSize: "1.05rem", color: "var(--pink)", fontWeight: 700, textDecoration: "none" }}>&larr; Home</a>
+      <Link href="/" style={{ fontSize: "1.05rem", color: "var(--pink)", fontWeight: 700, textDecoration: "none" }}>&larr; Home</Link>
 
       {created && (
         <div style={{ background: "rgba(46,201,92,0.12)", border: "2px solid #2ec95c", borderRadius: 16, padding: "1.4rem", margin: "1rem 0", textAlign: "center" }}>

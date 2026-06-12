@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { CONTACT_EMAIL, HELP_PHONE } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -14,7 +15,7 @@ const sub: React.CSSProperties = { fontSize: "1.05rem", color: "var(--muted)", m
 export default function HelpPage() {
   return (
     <main style={{ maxWidth: 560, margin: "0 auto", padding: "1.5rem 1.2rem 4rem" }}>
-      <a href="/" style={{ fontSize: "1.05rem", color: "var(--pink)", fontWeight: 700, textDecoration: "none" }}>&larr; Home</a>
+      <Link href="/" style={{ fontSize: "1.05rem", color: "var(--pink)", fontWeight: 700, textDecoration: "none" }}>&larr; Home</Link>
       <h1 style={{ fontSize: "2rem", color: "var(--navy)", margin: "0.8rem 0 1.2rem", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>How can we help?</h1>
 
       {HELP_PHONE ? (

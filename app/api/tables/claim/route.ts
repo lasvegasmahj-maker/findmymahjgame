@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
         to,
         subject: remaining === 1
           ? `1 seat left, share to find your 4th!`
-          : `${first(name)} joined your mahjong table, ${remaining} to go`,
+          : `${(name || "A player").trim().split(/\s+/)[0]} joined your mahjong table, ${remaining} to go`,
         html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:20px;">
           <h2 style="color:#1a1f5e;">${remaining === 1 ? "Just 1 seat left!" : `${first(name)} joined your table`}</h2>
           <p style="color:#374151;line-height:1.6;">${when} in ${area}. ${remaining === 1 ? "You need just <strong>one more player</strong>, your last seat." : `You need ${remaining} more players.`}</p>

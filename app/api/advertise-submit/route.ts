@@ -27,10 +27,10 @@ function buildApprovalEmail(data: Record<string, string>, submissionId: string):
   const rejectUrl = `${siteUrl}/api/advertise-approve?token=${signToken(submissionId, "reject")}`;
 
   const typeLabels: Record<string, string> = {
-    venue: " Venue Listing",
-    instructor: " Instructor Listing",
-    event: " Event Listing",
-    brand: " Brand Advertising",
+    venue: "Venue Listing",
+    instructor: "Instructor Listing",
+    event: "Event Listing",
+    brand: "Brand Advertising",
   };
 
   // Escaped view of every text field, plus scheme-validated URLs for href/src.

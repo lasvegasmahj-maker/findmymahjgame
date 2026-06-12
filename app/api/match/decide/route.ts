@@ -88,9 +88,10 @@ export async function POST(req: NextRequest) {
     .select("name, email")
     .in("id", draft.request_ids);
   const link = `${siteUrl}/t/${table.share_code}`;
+  let sentCount = 0;
   for (const p of players || []) {
     if (!p.email) continue;
-    await sendEmail({
+    const r = await sendEmail({
       to: p.email,
       kind: "match-invite",
       subject: `A mahjong table is forming near ${draft.city}, and you have a seat waiting`,
@@ -102,7 +103,15 @@ export async function POST(req: NextRequest) {
         <p style="font-size:13px;color:#6b7280;">If now is not a good time, just ignore this note. Your spot on the list is safe.</p>
       </div>`,
     });
+    if (r.ok) sentCount++;
   }
 
+  if (!sentCount) {
+    // Nobody got an invite: release the players back to the pool and tell
+    // the founder instead of leaving them stranded as invited.
+    console.error("match approve: every invite email failed");
+    await supabase.from("play_requests").update({ status: "new" }).in("id", draft.request_ids);
+    return NextResponse.redirect(`${siteUrl}/admin?match=approved-but-emails-failed`, 303);
+  }
   return NextResponse.redirect(`${siteUrl}/admin?match=approved`, 303);
 }

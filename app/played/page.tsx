@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = { title: "Thanks | Find My Mahj Game", robots: { index: false } };
 
@@ -17,7 +18,7 @@ export default async function PlayedPage({ searchParams }: { searchParams: Promi
         <a href="/start" style={{ display: "inline-block", marginTop: "1.2rem", minHeight: 56, lineHeight: "56px", padding: "0 2rem", borderRadius: 14, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.15rem", textDecoration: "none" }}>Run it back: same time next week</a>
       )}
       <br />
-      <a href="/" style={{ display: "inline-block", marginTop: "1.5rem", fontSize: "1.1rem", color: "var(--pink)", fontWeight: 700, textDecoration: "none" }}>&larr; Back home</a>
+      <Link href="/" style={{ display: "inline-block", marginTop: "1.5rem", fontSize: "1.1rem", color: "var(--pink)", fontWeight: 700, textDecoration: "none" }}>&larr; Back home</Link>
     </main>
   );
 }
