@@ -79,7 +79,6 @@ function MapSkeleton() {
     <div
       aria-label="Loading map..." className="map-skeleton"
     >
-      <span aria-hidden="true" style={{ fontSize: "1.5rem" }}></span>
       <span style={{ color: "#9ca3af", fontSize: "0.88rem" }}>Loading map...</span>
     </div>
   );

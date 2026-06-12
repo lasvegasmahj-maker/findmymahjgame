@@ -141,7 +141,6 @@ export default function PlayClient() {
   if (step === "done") {
     return shell(
       <div style={{ textAlign: "center", paddingTop: "2rem" }}>
-        <div style={{ fontSize: "3rem" }}></div>
         <h1 style={{ fontSize: "1.9rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>You&rsquo;re on the list!</h1>
         <p style={{ fontSize: "1.2rem", color: "var(--navy)", lineHeight: 1.6 }}>We&rsquo;ll reach out as soon as there&rsquo;s a game near {city}. Want one sooner? <a href="/start" style={{ color: "var(--pink)", fontWeight: 700 }}>Start your own table</a> and invite friends.</p>
       </div>

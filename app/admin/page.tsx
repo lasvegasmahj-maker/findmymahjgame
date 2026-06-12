@@ -252,7 +252,10 @@ export default function AdminPage() {
   async function bulkUpdate(table: string, ids: string[], status: string) {
     if (!ids.length) return;
     const verb = status === "published" ? "Approve" : "Reject";
-    if (!window.confirm(`${verb} ${ids.length} listing${ids.length === 1 ? "" : "s"}?`)) return;
+    const note = status === "published" && ids.length > 10
+      ? "\n\nBefore bulk publishing: run scripts/check-links.mjs so dead links are flagged out. Flagged rows are already excluded here."
+      : "";
+    if (!window.confirm(`${verb} ${ids.length} listing${ids.length === 1 ? "" : "s"}?${note}`)) return;
     for (let i = 0; i < ids.length; i += 500) {
       try {
         const res = await fetch("/api/admin/update", {
@@ -309,7 +312,7 @@ export default function AdminPage() {
   }
 
   function rowCheckbox(r: { id: string; status: string }, label: string) {
-    if (r.status !== "pending_review" && r.status !== "flagged") return <td style={{ padding: "0.8rem 0.6rem" }} />;
+    if (r.status !== "pending_review") return <td style={{ padding: "0.8rem 0.6rem" }} />;
     return (
       <td style={{ padding: "0.8rem 0.6rem" }}>
         <input type="checkbox" aria-label={`Select ${label}`} checked={selected.has(r.id)} onChange={() => toggleSelect(r.id)} style={{ width: 18, height: 18 }} />

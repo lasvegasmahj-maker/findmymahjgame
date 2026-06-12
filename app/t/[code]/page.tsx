@@ -61,7 +61,6 @@ export default async function TablePage({
 
       {created && (
         <div style={{ background: "rgba(46,201,92,0.12)", border: "2px solid #2ec95c", borderRadius: 16, padding: "1.4rem", margin: "1rem 0", textAlign: "center" }}>
-          <div style={{ fontSize: "2rem" }}></div>
           <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#1a9648", marginBottom: "0.8rem" }}>Your table is up!</div>
           <div style={{ display: "inline-block" }}><SeatDots filled={filled} total={total} you /></div>
           {!isFull && <p style={{ fontSize: "1.05rem", color: "var(--navy)", marginTop: "0.8rem" }}>Invite {remaining} more to fill it (buttons below).</p>}

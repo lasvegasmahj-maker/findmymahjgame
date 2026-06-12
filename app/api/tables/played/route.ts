@@ -31,8 +31,11 @@ export async function POST(req: NextRequest) {
   if (!v) return NextResponse.redirect(`${siteUrl}/played?result=invalid`, 303);
 
   const { data: cur, error: readErr } = await supabase.from("tables").select("played, played_at").eq("id", v.tableId).single();
-  if (readErr || !cur || cur.played_at) {
-    // Fail closed: a read error or an already-answered row never overwrites.
+  // Fail closed on read errors. A confirmed "yes" is final. A "not yet" can be
+  // upgraded by a later genuine "yes" (several seats receive the ask, and an
+  // early "not yet" must not permanently silence the player who really played).
+  const locked = readErr || !cur || cur.played === true || (cur.played_at && v.answer !== "yes");
+  if (locked) {
     if (readErr) console.error("played: read failed, skipping write", readErr.message);
     return NextResponse.redirect(`${siteUrl}/played?result=${v.answer}`, 303);
   }

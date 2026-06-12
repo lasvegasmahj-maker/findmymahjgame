@@ -32,7 +32,8 @@ const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border:
 export default async function EventsPage({ searchParams }: { searchParams: Promise<{ near?: string }> }) {
   const { near } = await searchParams;
   const supabase = createServerClient();
-  const { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly").eq("status", "published").order("event_date", { ascending: true });
+  const todayISO = new Date().toISOString().slice(0, 10);
+  const { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly").eq("status", "published").or(`event_date.is.null,event_date.gte.${todayISO}`).order("event_date", { ascending: true });
 
   let rows = data || [];
   if (near && near.trim()) {

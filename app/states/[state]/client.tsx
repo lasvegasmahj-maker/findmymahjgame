@@ -68,7 +68,7 @@ function SponsorLogo({ src, name }: { src: string | null; name: string }) {
   }
   const initial = name.trim().charAt(0).toUpperCase();
   return (
-    <div style={{ width: 48, height: 48, borderRadius: 10, background: "var(--navy)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.25rem", fontWeight: 700, color: "white", flexShrink: 0 }}>{initial || ""}</div>
+    <div style={{ width: 48, height: 48, borderRadius: 10, background: "var(--navy)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.25rem", fontWeight: 700, color: "white", flexShrink: 0 }}>{initial}</div>
   );
 }
 
@@ -257,8 +257,6 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                     <button
                       onClick={() => setConnectForm({ player, name: "", email: "", message: "", submitted: false, submitting: false })}
                       style={{ width: "100%", background: "var(--pink)", border: "1.5px solid var(--pink)", color: "white", borderRadius: 10, padding: "0.75rem", fontWeight: 800, fontSize: "1rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s", marginTop: "0.9rem" }}
-                      onMouseOver={e => { (e.target as HTMLButtonElement).style.background = "var(--pink)"; (e.target as HTMLButtonElement).style.color = "white"; }}
-                      onMouseOut={e => { (e.target as HTMLButtonElement).style.background = "transparent"; (e.target as HTMLButtonElement).style.color = "var(--pink)"; }}
                     >Connect
                     </button>
                   </div>
@@ -285,9 +283,9 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                     <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--navy)", marginBottom: "0.3rem" }}>Las Vegas Mahjong</div>
                     <div style={{ fontSize: "0.82rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "0.6rem" }}>Lessons, open play and events with certified instructor Shauna in Las Vegas. All levels welcome.</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem" }}>
-                      <a href="https://lasvegasmahj.com" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}> lasvegasmahj.com</a>
-                      <a href="mailto:lasvegasmahj@gmail.com" style={{ fontSize: "0.8rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}> lasvegasmahj@gmail.com</a>
-                      <a href="https://instagram.com/lasvegasmahjong" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}> @lasvegasmahjong</a>
+                      <a href="https://lasvegasmahj.com" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>lasvegasmahj.com</a>
+                      <a href="mailto:lasvegasmahj@gmail.com" style={{ fontSize: "0.8rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>lasvegasmahj@gmail.com</a>
+                      <a href="https://instagram.com/lasvegasmahjong" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>@lasvegasmahjong</a>
                     </div>
                   </div>
                 </div>
@@ -441,7 +439,6 @@ export default function StatePageClient({ stateData, players, events, venues }: 
 
             {connectForm.submitted ? (
               <div style={{ textAlign: "center", padding: "1rem 0" }}>
-                <div style={{ fontSize: "3rem", marginBottom: "1rem" }}></div>
                 <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.5rem" }}>Request Sent!</h3>
                 <p style={{ color: "var(--muted)", fontSize: "0.95rem", lineHeight: 1.7 }}>Your connection request to <strong>{connectForm.player.name}</strong> has been received. We&rsquo;ll pass your message along and you&rsquo;ll hear back via email.
                 </p>
