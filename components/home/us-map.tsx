@@ -208,7 +208,7 @@ export default function USMap({ stateCounts = {} }: { stateCounts?: StateCounts 
                 <h3>{selectedName}</h3>
                 <p>Players, events &amp; venues</p>
               </div>
-              <button className="state-popup-close" onClick={() => setSelected(null)}>&times;</button>
+              <button className="state-popup-close" tabIndex={-1} onClick={() => setSelected(null)}>&times;</button>
             </div>
             <div className="state-popup-body">
               <div className="state-popup-stats">
@@ -223,13 +223,13 @@ export default function USMap({ stateCounts = {} }: { stateCounts?: StateCounts 
               </p>
               <div className="state-popup-actions">
                 {stateLink ? (
-                  <Link href={stateLink} className="rt-btn" style={{ marginRight: 8 }}>View {selectedName} &rarr;
+                  <Link href={stateLink} className="rt-btn" tabIndex={-1} style={{ marginRight: 8 }}>View {selectedName} &rarr;
                   </Link>
                 ) : (
-                  <Link href="/#map" className="rt-btn" style={{ marginRight: 8 }}>View {selectedName} &rarr;
+                  <Link href="/#map" className="rt-btn" tabIndex={-1} style={{ marginRight: 8 }}>View {selectedName} &rarr;
                   </Link>
                 )}
-                <Link href="/list-my-game" className="rt-btn" style={{ background: "var(--navy)" }}>Create Listing
+                <Link href="/list-my-game" className="rt-btn" tabIndex={-1} style={{ background: "var(--navy)" }}>Create Listing
                 </Link>
               </div>
             </div>

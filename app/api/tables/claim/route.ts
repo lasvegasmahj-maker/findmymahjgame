@@ -44,7 +44,10 @@ export async function POST(req: NextRequest) {
 
   const newFilled = filled + 1;
   const remaining = Math.max(0, t.seats_total - newFilled);
-  if (remaining === 0) await supabase.from("tables").update({ status: "full", filled_at: new Date().toISOString() }).eq("id", t.id);
+  if (remaining === 0) {
+    const { error: fullErr } = await supabase.from("tables").update({ status: "full", filled_at: new Date().toISOString() }).eq("id", t.id);
+    if (fullErr) console.error("claim: failed to mark table full", fullErr.message);
+  }
 
   const when = `${escapeHtml(t.day_of_week || "")} ${escapeHtml(t.time_of_day || "")}`.trim();
   const area = t.city ? escapeHtml(t.city) : "your area";

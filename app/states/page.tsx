@@ -28,6 +28,8 @@ const REGIONS: Record<string, string[]> = {
 
 type Counts = Record<string, { players: number; events: number; venues: number }>;
 
+
+export const revalidate = 300;
 export default async function StatesIndexPage() {
   const supabase = createServerClient();
   const stateCounts: Counts = {};

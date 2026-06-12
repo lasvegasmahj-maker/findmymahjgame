@@ -15,13 +15,16 @@ export async function GET(req: NextRequest) {
 
   // Idempotency guard: mail-scanner prefetch and repeat clicks must not
   // re-flip state. First answer wins; later clicks just see the thank-you.
-  const { data: cur } = await supabase.from("tables").select("played, played_at").eq("id", v.tableId).single();
-  if (cur && cur.played_at) {
+  const { data: cur, error: readErr } = await supabase.from("tables").select("played, played_at").eq("id", v.tableId).single();
+  if (readErr || !cur || cur.played_at) {
+    // Fail closed: a read error or an already-answered row never overwrites.
+    if (readErr) console.error("played: read failed, skipping write", readErr.message);
     return NextResponse.redirect(`${siteUrl}/played?result=${v.answer}`);
   }
-  await supabase
+  const { error: writeErr } = await supabase
     .from("tables")
     .update({ played: v.answer === "yes", played_at: new Date().toISOString() })
     .eq("id", v.tableId);
+  if (writeErr) console.error("played: update failed", writeErr.message);
   return NextResponse.redirect(`${siteUrl}/played?result=${v.answer}`);
 }

@@ -1,6 +1,11 @@
--- Recurring open play support (Track A2).
--- Additive and non-breaking: existing queries and inserts are unaffected.
--- Run in the Supabase SQL editor (management token was unauthorized on 2026-06-10).
+-- Recurring open play support (Track A2) + launch-gate hardening.
+-- Additive and non-breaking; idempotent (safe to run more than once).
+-- APPLIED STATUS (verified live 2026-06-12): everything in this file EXCEPT
+-- the ambassadors.referral_code block at the bottom has been run by the
+-- founder in the Supabase SQL editor and verified against the live database.
+-- The referral_code block was added after those pastes: one small paste
+-- outstanding. The corrective table-level REVOKEs (revoke select on the four
+-- listing tables from anon) were also applied live on 2026-06-12.
 
 alter table public.event_listings
   add column if not exists frequency text,
