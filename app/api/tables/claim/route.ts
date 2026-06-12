@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     email: clampText(b.email, 254) || null,
   }).select("id").single();
   if (seatErr || !seatRow) {
-    console.error("claim: seat insert failed", seatErr.message);
+    console.error("claim: seat insert failed", seatErr?.message);
     return NextResponse.json({ error: "Could not save your seat. Please try again." }, { status: 500 });
   }
 

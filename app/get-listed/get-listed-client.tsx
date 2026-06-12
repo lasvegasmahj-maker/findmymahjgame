@@ -379,7 +379,7 @@ export default function GetListedClient() {
                     color: "#1a9648",
                     fontWeight: 600,
                   }}
-                >Code {form.promo_code.trim().toUpperCase()} applied -- 6 months free! You&rsquo;ll be a Founding Member.
+                >Code {form.promo_code.trim().toUpperCase()} applied. 6 months free! You&rsquo;ll be a Founding Member.
                 </div>
               )}
 

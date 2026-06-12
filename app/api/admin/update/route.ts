@@ -7,6 +7,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ALLOWED_TABLES = ["inquiries", "player_listings", "venue_listings", "event_listings", "ad_listings", "ambassadors"];
 const ALLOWED_STATUS = ["new", "read", "replied", "pending_review", "flagged", "published", "rejected", "approved", "contacted", "declined"];
 
@@ -18,7 +19,7 @@ export async function POST(req: NextRequest) {
   const { table, id, ids, status } = await req.json().catch(() => ({}));
 
   const idList: string[] = Array.isArray(ids) ? ids : typeof id === "string" ? [id] : [];
-  const idsValid = idList.length > 0 && idList.length <= 500 && idList.every((x) => typeof x === "string");
+  const idsValid = idList.length > 0 && idList.length <= 500 && idList.every((x) => typeof x === "string" && UUID.test(x));
   if (!ALLOWED_TABLES.includes(table) || !ALLOWED_STATUS.includes(status) || !idsValid) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }

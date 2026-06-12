@@ -12,6 +12,12 @@ const supabase = createClient(
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const TABLES = ["venue_listings", "event_listings"];
+// Mirror of the claim route's allowlist: approval re-filters so a jsonb row
+// can never smuggle status, tier, or any non-editable column to the listing.
+const EDITABLE: Record<string, string[]> = {
+  venue_listings: ["business_name", "venue_type", "city", "state", "description", "website", "instagram", "display_email"],
+  event_listings: ["event_name", "city", "state", "venue", "description", "registration_url", "day_time", "frequency"],
+};
 
 function authed(req: NextRequest) {
   return verifyAdminSessionToken(req.cookies.get(ADMIN_COOKIE)?.value);
@@ -56,9 +62,14 @@ export async function POST(req: NextRequest) {
     if (!TABLES.includes(edit.listing_table)) {
       return NextResponse.json({ error: "Invalid table." }, { status: 400 });
     }
+    const allowed = EDITABLE[edit.listing_table] || [];
+    const filtered: Record<string, unknown> = {};
+    for (const [k, val] of Object.entries(edit.changes as Record<string, unknown>)) {
+      if (allowed.includes(k)) filtered[k] = val;
+    }
     const { error: applyErr } = await supabase
       .from(edit.listing_table)
-      .update({ ...(edit.changes as Record<string, unknown>), confirmed_active_at: new Date().toISOString() })
+      .update({ ...filtered, confirmed_active_at: new Date().toISOString() })
       .eq("id", edit.listing_id);
     if (applyErr) {
       console.error("edit apply failed:", applyErr.message);

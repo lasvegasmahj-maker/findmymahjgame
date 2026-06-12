@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
 
   if (reqErr) {
     console.error("matcher: play_requests query failed:", reqErr.message);
-    return NextResponse.json({ error: "query failed", detail: reqErr.message }, { status: 500 });
+    return NextResponse.json({ error: "query failed" }, { status: 500 });
   }
   const pool = (requests || []).filter((r) => PILOT_CITIES.includes(norm(r.city)));
 

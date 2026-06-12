@@ -6,6 +6,8 @@ import { verifyActionToken } from "@/lib/game-token";
 export const metadata: Metadata = { title: "Confirm a listing", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
+const TABLES = ["venue_listings", "event_listings"];
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -49,6 +51,9 @@ export default async function ListingConfirmPage({ searchParams }: { searchParam
   }
 
   const [table, id] = String(v.subjectId).split("|");
+  if (!TABLES.includes(table) || !id) {
+    return shell(<h1 style={{ fontSize: "1.9rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>That link has expired</h1>);
+  }
   const { data: listing } = await supabase.from(table).select("business_name, event_name, city, state").eq("id", id).single();
   const name = String(listing?.business_name || listing?.event_name || "this listing");
   const alive = v.action === "still-running";

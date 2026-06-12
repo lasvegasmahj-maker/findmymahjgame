@@ -83,9 +83,13 @@ for (const a of ANCHORS) {
   }
 }
 
-const { data: existing } = await supabase.from("crm_contacts").select("email");
+const { data: existing } = await supabase.from("crm_contacts").select("email, name, organization");
 const have = new Set((existing || []).map((e) => (e.email || "").toLowerCase()).filter(Boolean));
-const fresh = rows.filter((r) => !r.email || !have.has(r.email.toLowerCase()));
+const haveNameOrg = new Set((existing || []).map((e) => `${(e.name || "").toLowerCase()}|${(e.organization || "").toLowerCase()}`));
+const fresh = rows.filter((r) => {
+  if (r.email) return !have.has(r.email.toLowerCase());
+  return !haveNameOrg.has(`${(r.name || "").toLowerCase()}|${(r.organization || "").toLowerCase()}`);
+});
 
 console.log(`parsed ${rows.length} contacts (${rows.filter((r) => r.wave === 1).length} wave-1 anchors); ${fresh.length} new`);
 if (DRY) { console.log("[dry] no writes"); process.exit(0); }

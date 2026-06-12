@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { safeHttpUrl } from "@/lib/sanitize";
 
 type Tab = "inquiries" | "players" | "venues" | "events" | "ads" | "ambassadors";
 
@@ -601,7 +602,7 @@ export default function AdminPage() {
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.9rem", fontWeight: 600, color: "var(--navy)" }}>
                       {v.business_name}
                       <div style={{ fontSize: "0.75rem", fontWeight: 400, color: "var(--muted)", marginTop: "0.15rem" }}>
-                        {v.website ? <a href={v.website} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink)" }}>{String(v.website).replace(/^https?:\/\//, "").slice(0, 40)}</a> : "no website"}
+                        {safeHttpUrl(v.website) ? <a href={safeHttpUrl(v.website)} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink)" }}>{String(v.website).replace(/^https?:\/\//, "").slice(0, 40)}</a> : "no website"}
                         {v.description ? ` · ${String(v.description).slice(0, 80)}` : ""}
                       </div>
                     </td>
@@ -649,7 +650,7 @@ export default function AdminPage() {
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.9rem", fontWeight: 600, color: "var(--navy)" }}>
                       {ev.event_name}
                       <div style={{ fontSize: "0.75rem", fontWeight: 400, color: "var(--muted)", marginTop: "0.15rem" }}>
-                        {ev.registration_url ? <a href={ev.registration_url} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink)" }}>{String(ev.registration_url).replace(/^https?:\/\//, "").slice(0, 40)}</a> : "no link"}
+                        {safeHttpUrl(ev.registration_url) ? <a href={safeHttpUrl(ev.registration_url)} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink)" }}>{String(ev.registration_url).replace(/^https?:\/\//, "").slice(0, 40)}</a> : "no link"}
                         {ev.description ? ` · ${String(ev.description).slice(0, 80)}` : ""}
                       </div>
                     </td>
