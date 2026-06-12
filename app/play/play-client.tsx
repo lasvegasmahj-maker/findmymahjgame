@@ -33,6 +33,7 @@ export default function PlayClient() {
     const res = await fetch(`/api/tables/find?city=${encodeURIComponent(town.trim())}`);
     const d = await res.json().catch(() => ({ tables: [] }));
     setSearching(false);
+    if (res.status === 429) { setGeoMsg("So many searches! Please wait a moment and try again."); return; }
     if ((d.tables || []).length > 0) { setGames(d.tables); setStep("results"); }
     else { setStep("capture"); }
   }

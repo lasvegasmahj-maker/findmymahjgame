@@ -1,7 +1,8 @@
 -- Recurring open play support (Track A2) + launch-gate hardening.
 -- Additive and non-breaking; idempotent (safe to run more than once).
--- APPLIED STATUS (verified live 2026-06-11): everything in this file EXCEPT
--- the ambassadors.referral_code block at the bottom has been run by the
+-- APPLIED STATUS (live-verified 2026-06-11, including filled_at/played_at and
+-- the recurring columns): everything in this file EXCEPT the
+-- ambassadors.referral_code block at the bottom has been run by the
 -- founder in the Supabase SQL editor and verified against the live database.
 -- The referral_code block was added after those pastes: one small paste
 -- outstanding. The corrective table-level REVOKEs (revoke select on the four
@@ -33,7 +34,7 @@ revoke select on public.player_listings from anon;
 revoke select on public.ad_listings from anon;
 
 
--- Funnel timestamps (2026-06-12): Weekly Player-Games Confirmed needs WHEN a
+-- Funnel timestamps (2026-06-11): Weekly Player-Games Confirmed needs WHEN a
 -- table filled and played, not just a boolean. Stamped by the claim and
 -- played routes; backfill is not possible, counting starts at launch.
 alter table public.tables

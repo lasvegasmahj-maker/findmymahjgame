@@ -10,7 +10,7 @@ const supabase = createClient(
 // Public-safe search for forming tables near a town. Returns no contact info.
 export async function GET(req: NextRequest) {
   if (!(await rateLimit(req, "tables-find", 20, 60))) {
-    return NextResponse.json({ tables: [] }, { status: 429 });
+    return NextResponse.json({ tables: [], error: "Please wait a moment and try again." }, { status: 429 });
   }
   const city = (req.nextUrl.searchParams.get("city") || "").trim().slice(0, 80).replace(/[%_]/g, "");
   if (!city) return NextResponse.json({ tables: [] });

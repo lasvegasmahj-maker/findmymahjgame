@@ -23,6 +23,7 @@ for (const e of events || []) targets.push({ table: "event_listings", id: e.id, 
 
 console.log(`checking ${targets.length} links (concurrency 12)...`);
 const bad = [];
+const manual = [];
 let done = 0;
 const queue = [...targets];
 await Promise.all(Array.from({ length: 12 }, async () => {
@@ -33,11 +34,13 @@ await Promise.all(Array.from({ length: 12 }, async () => {
     // 401/403/405/406 are typically bot-blocking, not dead pages; only
     // unreachable (0), missing (404/410), and server-error URLs get flagged.
     if (status === 0 || status === 404 || status === 410 || status >= 500) bad.push({ ...t, status });
+    else if (status === 401 || status === 403 || status === 405 || status === 406) manual.push({ ...t, status });
     if (done % 50 === 0) console.log(`  ${done}/${targets.length}`);
   }
 }));
 
-console.log(`\nRESULT: ${targets.length - bad.length} ok, ${bad.length} failing`);
+console.log(`\nRESULT: ${targets.length - bad.length - manual.length} ok, ${bad.length} failing, ${manual.length} need a manual browser check (bot-blocked status)`);
+for (const m of manual) console.log(`  [manual ${m.status}] ${m.table} ${m.name}: ${m.url}`);
 for (const b of bad) console.log(`  [${b.status}] ${b.table} ${b.name}: ${b.url}`);
 if (FIX && bad.length) {
   for (const b of bad) {

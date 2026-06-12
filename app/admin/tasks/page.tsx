@@ -67,7 +67,11 @@ export default function FounderTasksPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data
+    // fetch; every setState here happens after the await, not synchronously.
+    void load();
+  }, [load]);
 
   async function api(method: string, body?: unknown, query?: string) {
     try {

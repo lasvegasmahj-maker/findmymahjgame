@@ -11,6 +11,7 @@ const supabase = createClient(
 const CATEGORIES = ["outreach", "follow-up", "approval", "decision", "relationship", "ops"];
 const PRIORITIES = ["high", "normal", "low"];
 const STATUSES = ["open", "in_progress", "waiting", "done", "snoozed"];
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function authed(req: NextRequest) {
   return verifyAdminSessionToken(req.cookies.get(ADMIN_COOKIE)?.value);
@@ -87,10 +88,10 @@ export async function PATCH(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const b = await req.json().catch(() => ({}));
   const id = String(b.id || "");
-  if (!id) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  if (!UUID.test(id)) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
 
   const patch: Record<string, unknown> = {};
-  if (b.task !== undefined) patch.task = clampText(b.task, 200);
+  if (b.task !== undefined && clampText(b.task, 200)) patch.task = clampText(b.task, 200);
   if (b.notes !== undefined) patch.notes = clampText(b.notes, 1000) || null;
   if (b.category !== undefined && CATEGORIES.includes(String(b.category))) patch.category = b.category;
   if (b.priority !== undefined && PRIORITIES.includes(String(b.priority))) patch.priority = b.priority;
@@ -116,7 +117,7 @@ export async function PATCH(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const id = String(req.nextUrl.searchParams.get("id") || "");
-  if (!id) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  if (!UUID.test(id)) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   const { error } = await supabase.from("founder_tasks").delete().eq("id", id);
   if (error) {
     console.error("tasks delete failed:", error.message);

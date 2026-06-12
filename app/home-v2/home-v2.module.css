@@ -20,6 +20,5 @@
   .cards { grid-template-columns: 1fr; }
   .proof { gap: 2rem; }
   .statNum { font-size: 2.2rem; }
-  .nlRow { flex-direction: column; }
   .newsletter { padding: 2.2rem 1.4rem; }
 }

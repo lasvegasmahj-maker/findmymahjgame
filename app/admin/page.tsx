@@ -467,7 +467,6 @@ export default function AdminPage() {
         <div>
           {inquiries.length === 0 ? (
             <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "3rem", textAlign: "center" }}>
-              <p style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>📩</p>
               <p style={{ color: "var(--muted)" }}>No inquiries yet. They&rsquo;ll show up here when someone submits the contact or advertise form.</p>
             </div>
           ) : (
@@ -507,7 +506,6 @@ export default function AdminPage() {
           {renderBulkBar("player_listings", players)}
           {players.length === 0 ? (
             <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "3rem", textAlign: "center" }}>
-              <p style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>👥</p>
               <p style={{ color: "var(--muted)" }}>No player listings yet. They&rsquo;ll appear here when players create free listings.</p>
             </div>
           ) : (
@@ -555,7 +553,6 @@ export default function AdminPage() {
           {renderBulkBar("venue_listings", venues)}
           {venues.length === 0 ? (
             <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "3rem", textAlign: "center" }}>
-              <p style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>🏛</p>
               <p style={{ color: "var(--muted)" }}>No venue listings yet. They&rsquo;ll appear here after payment is received.</p>
             </div>
           ) : (
@@ -597,7 +594,6 @@ export default function AdminPage() {
           {renderBulkBar("event_listings", events)}
           {events.length === 0 ? (
             <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "3rem", textAlign: "center" }}>
-              <p style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>🎫</p>
               <p style={{ color: "var(--muted)" }}>No event listings yet. They&rsquo;ll appear here after payment is received.</p>
             </div>
           ) : (
@@ -638,7 +634,6 @@ export default function AdminPage() {
         <div>
           {ads.length === 0 ? (
             <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "3rem", textAlign: "center" }}>
-              <p style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>📢</p>
               <p style={{ color: "var(--muted)" }}>No ad listings yet. They&rsquo;ll appear here after payment is received.</p>
             </div>
           ) : (
@@ -677,7 +672,6 @@ export default function AdminPage() {
         <div>
           {ambassadors.length === 0 ? (
             <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "3rem", textAlign: "center" }}>
-              <p style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>🤝</p>
               <p style={{ color: "var(--muted)" }}>No ambassador applications yet. They&rsquo;ll show up here when someone applies at /ambassadors.</p>
             </div>
           ) : (

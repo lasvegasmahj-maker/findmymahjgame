@@ -21,7 +21,7 @@ function rank(t: string | null | undefined): number {
 function whenLabel(e: { event_date?: string | null; day_time?: string | null; day_of_week?: string | null; time_of_day?: string | null }): string {
   if (e.event_date) {
     const d = new Date(e.event_date);
-    if (!isNaN(d.getTime())) return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+    if (!isNaN(d.getTime())) return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" });
   }
   return e.day_time || [e.day_of_week, e.time_of_day].filter(Boolean).join(" ");
 }

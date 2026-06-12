@@ -4,6 +4,7 @@ import { useState } from "react";
 
 export default function NewsletterSignup({ dark = false }: { dark?: boolean }) {
   const [email, setEmail] = useState("");
+  const [city, setCity] = useState("");
   const [state, setState] = useState<"idle" | "submitting" | "done" | "error">("idle");
   const [err, setErr] = useState("");
 
@@ -14,7 +15,7 @@ export default function NewsletterSignup({ dark = false }: { dark?: boolean }) {
       const res = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, city: city || undefined }),
       });
       if (res.ok) { setState("done"); return; }
       const d = await res.json().catch(() => ({}));
@@ -52,6 +53,16 @@ export default function NewsletterSignup({ dark = false }: { dark?: boolean }) {
           onChange={(e) => setEmail(e.target.value)}
           className="nl-input"
           style={{ flex: "1 1 220px", minHeight: 56, padding: "0 1rem", fontSize: "1.05rem", fontFamily: "'DM Sans', sans-serif" }}
+        />
+        <input
+          id="nl-city"
+          type="text"
+          placeholder="Your city or ZIP (optional)"
+          aria-label="Your city or ZIP, optional"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          className="nl-input"
+          style={{ flex: "1 1 160px", minHeight: 56, padding: "0 1rem", fontSize: "1.05rem", fontFamily: "'DM Sans', sans-serif" }}
         />
         <button type="submit" disabled={state === "submitting"} style={{ minHeight: 56, padding: "0 1.6rem", borderRadius: 12, border: "none", background: "var(--pink)", color: "#fff", fontWeight: 800, fontSize: "1.05rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
           {state === "submitting" ? "..." : "Subscribe"}
