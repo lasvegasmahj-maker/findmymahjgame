@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
   const { data: setting, error: settingErr } = await supabase
     .from("app_settings").select("value").eq("key", "matcher_enabled").maybeSingle();
   if (settingErr) {
-    if (settingErr.code === "42P01") {
+    if (settingErr.code === "42P01" || settingErr.code === "PGRST205") {
       // Migration not applied yet: stay silent and dark.
       return NextResponse.json({ skipped: true, reason: "matching migration not applied" });
     }

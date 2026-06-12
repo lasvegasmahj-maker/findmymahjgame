@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     .from("listing_claims")
     .upsert({ listing_table: table, listing_id: id, claimer_email: email.toLowerCase(), status: "claimed" }, { onConflict: "listing_table,listing_id" });
   if (claimErr) {
-    if (claimErr.code === "42P01") return NextResponse.json({ error: "Claims open soon. We saved nothing; please try again in a day." }, { status: 503 });
+    if (claimErr.code === "42P01" || claimErr.code === "PGRST205") return NextResponse.json({ error: "Claims open soon. We saved nothing; please try again in a day." }, { status: 503 });
     console.error("claim upsert failed:", claimErr.message);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }

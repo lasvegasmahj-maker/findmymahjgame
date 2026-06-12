@@ -16,7 +16,7 @@ function authed(req: NextRequest) {
   return verifyAdminSessionToken(req.cookies.get(ADMIN_COOKIE)?.value);
 }
 function missingTable(error: { code?: string } | null) {
-  return error?.code === "42P01";
+  return error?.code === "42P01" || error?.code === "PGRST205";
 }
 
 export async function GET(req: NextRequest) {

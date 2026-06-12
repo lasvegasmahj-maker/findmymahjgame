@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     .order("created_at", { ascending: true })
     .limit(200);
   if (error) {
-    if (error.code === "42P01") return NextResponse.json({ needsMigration: true, items: [] });
+    if (error.code === "42P01" || error.code === "PGRST205") return NextResponse.json({ needsMigration: true, items: [] });
     console.error("edits list failed:", error.message);
     return NextResponse.json({ error: "Could not load edits." }, { status: 500 });
   }

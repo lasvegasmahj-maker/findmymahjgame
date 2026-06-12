@@ -56,7 +56,7 @@ export async function sendEmail({ to, subject, html, replyTo, kind }: SendArgs):
     subject: cleanSubject.slice(0, 200),
     ok,
   });
-  if (logErr && logErr.code !== "42P01") console.error("email log failed:", logErr.message);
+  if (logErr && logErr.code !== "42P01" && logErr.code !== "PGRST205") console.error("email log failed:", logErr.message);
 
   return ok ? { ok: true } : { ok: false, error: result?.error?.message };
 }
