@@ -36,14 +36,24 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
   const { near } = await searchParams;
   const supabase = createServerClient();
   const todayISO = new Date().toISOString().slice(0, 10);
-  const { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly").eq("status", "published").or(`event_date.is.null,event_date.gte.${todayISO},event_type.in.(open_play,openplay,recurring)`).order("event_date", { ascending: true });
+  let { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly, confirmed_active_at").eq("status", "published").or(`event_date.is.null,event_date.gte.${todayISO},event_type.in.(open_play,openplay,recurring)`).order("event_date", { ascending: true });
+  if (!data) {
+    // confirmed_active_at arrives with the claims-freshness migration; until
+    // the paste, retry without it so the page never breaks.
+    const fallback = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly").eq("status", "published").or(`event_date.is.null,event_date.gte.${todayISO},event_type.in.(open_play,openplay,recurring)`).order("event_date", { ascending: true });
+    data = (fallback.data || []).map((r) => ({ ...r, confirmed_active_at: null }));
+  }
 
   let rows = data || [];
   if (near && near.trim()) {
     const n = near.trim().toLowerCase();
     rows = rows.filter((e) => nearMatches(n, e.city, e.state));
   }
-  rows = [...rows].sort((a, b) => rank(a.event_type) - rank(b.event_type));
+  rows = [...rows].sort((a, b) => {
+    const byType = rank(a.event_type) - rank(b.event_type);
+    if (byType !== 0) return byType;
+    return (b.confirmed_active_at ? 1 : 0) - (a.confirmed_active_at ? 1 : 0);
+  });
 
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
@@ -67,6 +77,11 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
                 <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{e.event_name || "Mahjong"}</div>
                 {whenLabel(e) && <div style={{ fontSize: "1.05rem", color: "var(--navy)", marginTop: "0.4rem" }}>{whenLabel(e)}</div>}
                 {(e.venue || e.city) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[e.venue, e.city, e.state].filter(Boolean).join(", ")}</div>}
+                {e.confirmed_active_at && (
+                  <div style={{ display: "inline-block", marginTop: "0.45rem", fontSize: "0.85rem", fontWeight: 800, color: "var(--green-dark, #1a6e3a)", background: "rgba(46,201,92,0.12)", borderRadius: 50, padding: "0.2rem 0.7rem" }}>
+                    Confirmed active {new Date(e.confirmed_active_at).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })}
+                  </div>
+                )}
                 {e.description && !external && <div style={{ fontSize: "0.98rem", color: "var(--muted)", marginTop: "0.4rem", lineHeight: 1.5 }}>{String(e.description).slice(0, 140)}</div>}
                 {external && <div style={{ marginTop: "0.9rem", color: "var(--pink)", fontWeight: 800, fontSize: "1.15rem" }}>View details &rarr;</div>}
               </>
