@@ -52,7 +52,10 @@ export async function POST(req: NextRequest) {
   const newFilled = afterCount ?? filled + 1;
   if (newFilled > t.seats_total) {
     const { error: rollbackErr } = await supabase.from("table_seats").delete().eq("id", seatRow.id);
-    if (rollbackErr) console.error("claim: overfill rollback failed, table overfull", rollbackErr.message);
+    if (rollbackErr) {
+      console.error("claim: overfill rollback failed, table overfull", rollbackErr.message);
+      return NextResponse.json({ error: "Something went wrong saving your seat. Please refresh and try again." }, { status: 500 });
+    }
     return NextResponse.json({ error: "full" }, { status: 409 });
   }
   const remaining = Math.max(0, t.seats_total - newFilled);

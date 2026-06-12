@@ -80,7 +80,6 @@ export default function ListMyGameClient() {
     const stateSlug = STATE_OPTIONS.find((s) => s.abbr === form.state)?.slug;
     return (
       <div className="page-body" style={{ maxWidth: 600, textAlign: "center", paddingTop: "4rem" }}>
-        <div style={{ fontSize: "3.5rem", marginBottom: "1rem" }}>🀄</div>
         <h1
           style={{
             fontFamily: "var(--font-playfair), 'Playfair Display', serif",

@@ -272,6 +272,19 @@ export default function AdminPage() {
     });
   }
 
+
+  async function copyClaimLinks(table: string, id: string, label: string) {
+    try {
+      const res = await fetch(`/api/admin/claim-link?table=${table}&id=${id}`);
+      const d = await res.json();
+      if (!res.ok) { window.alert(d.error || "Could not create the link."); return; }
+      window.prompt(`Claim link for ${label} (copy it into your outreach email). Still-running and ended links are in the console.`, d.claim);
+      console.log("links for", label, d);
+    } catch {
+      window.alert("Network error. Please try again.");
+    }
+  }
+
   async function bulkUpdate(table: string, ids: string[], status: string) {
     if (!ids.length) return;
     const verb = status === "published" ? "Approve" : "Reject";
@@ -598,6 +611,7 @@ export default function AdminPage() {
                     <td style={{ padding: "0.8rem 1rem", display: "flex", gap: "0.4rem" }}>
                       {v.status === "published" && <button onClick={() => updateStatus("venue_listings", v.id, "flagged")} style={{ background: "#fef3c7", border: "1px solid #f5c842", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Flag</button>}
                       {(v.status === "flagged" || v.status === "pending_review") && <button onClick={() => updateStatus("venue_listings", v.id, "published")} style={{ background: "var(--green)", color: "white", border: "none", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Approve</button>}
+                      <button onClick={() => copyClaimLinks("venue_listings", v.id, v.business_name)} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Claim link</button>
                       <button onClick={() => updateStatus("venue_listings", v.id, "rejected")} style={{ background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif", color: "#dc2626" }}>Reject</button>
                     </td>
                   </tr>
@@ -645,6 +659,7 @@ export default function AdminPage() {
                     <td style={{ padding: "0.8rem 1rem", display: "flex", gap: "0.4rem" }}>
                       {ev.status === "published" && <button onClick={() => updateStatus("event_listings", ev.id, "flagged")} style={{ background: "#fef3c7", border: "1px solid #f5c842", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Flag</button>}
                       {(ev.status === "flagged" || ev.status === "pending_review") && <button onClick={() => updateStatus("event_listings", ev.id, "published")} style={{ background: "var(--green)", color: "white", border: "none", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Approve</button>}
+                      <button onClick={() => copyClaimLinks("event_listings", ev.id, ev.event_name)} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Claim link</button>
                       <button onClick={() => updateStatus("event_listings", ev.id, "rejected")} style={{ background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.72rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif", color: "#dc2626" }}>Reject</button>
                     </td>
                   </tr>

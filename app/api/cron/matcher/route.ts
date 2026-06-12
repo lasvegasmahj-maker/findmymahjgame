@@ -25,8 +25,12 @@ export async function GET(req: NextRequest) {
   const { data: setting, error: settingErr } = await supabase
     .from("app_settings").select("value").eq("key", "matcher_enabled").maybeSingle();
   if (settingErr) {
-    // Migration not applied yet: stay silent and dark.
-    return NextResponse.json({ skipped: true, reason: "matching migration not applied" });
+    if (settingErr.code === "42P01") {
+      // Migration not applied yet: stay silent and dark.
+      return NextResponse.json({ skipped: true, reason: "matching migration not applied" });
+    }
+    console.error("matcher: settings query failed:", settingErr.message);
+    return NextResponse.json({ error: "settings query failed" }, { status: 500 });
   }
   if (setting?.value !== "true") return NextResponse.json({ skipped: true, reason: "matcher disabled" });
 

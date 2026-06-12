@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
         from: "Find My Mahj Game <hello@findmymahjgame.com>",
         to: "hello@findmymahjgame.com",
         bcc: emails,
-        subject: "Did your mahjong game happen? 🀄",
+        subject: "Did your mahjong game happen?",
         html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px;text-align:center;color:#1a1a2e;">
           <h2 style="color:#1a1f5e;">Did your game happen?</h2>
           <p style="font-size:16px;line-height:1.6;">Your ${when} table in ${area}.</p>

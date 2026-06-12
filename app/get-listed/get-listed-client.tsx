@@ -138,7 +138,6 @@ export default function GetListedClient() {
   if (submitted) {
     return (
       <div className="page-body" style={{ maxWidth: 600, textAlign: "center", paddingTop: "4rem" }}>
-        <div style={{ fontSize: "3.5rem", marginBottom: "1rem" }}></div>
         <h1
           style={{
             fontFamily: "var(--font-playfair), 'Playfair Display', serif",
@@ -213,7 +212,7 @@ export default function GetListedClient() {
 
             {/* Logo upload */}
             <div style={{ marginBottom: "1.2rem" }}>
-              <label style={labelStyle}>Logo or Photo <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional — JPG, PNG, max 2MB)</span>
+              <label style={labelStyle}>Logo or Photo <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional, JPG or PNG, max 2MB)</span>
               </label>
               <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                 {form.logo_url && (

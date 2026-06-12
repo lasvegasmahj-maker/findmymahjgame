@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { verifyActionToken } from "@/lib/game-token";
-import { clampText, isValidEmail, safeHttpUrl } from "@/lib/sanitize";
+import { clampText, isValidEmail, safeHttpUrl, escapeHtml } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
 import { sendEmail } from "@/lib/email";
-import { escapeHtml } from "@/lib/sanitize";
 
-// Claims MVP. The token subject is "<table>:<id>" signed server-side when the
+// Claims MVP. The token subject is "<table>|<id>" signed server-side when the
 // founder (or a future drip) sends a claim invite. Submitting edits never
 // touches the listing: changes land in pending_edits for founder approval.
 const supabase = createClient(

@@ -33,6 +33,7 @@ const ACTIONS = ["match-approve", "match-skip", "claim", "still-running", "ended
 export type ActionKind = (typeof ACTIONS)[number];
 
 export function signActionToken(action: ActionKind, subjectId: string, ttlDays = 30): string {
+  if (subjectId.includes(":")) throw new Error("subjectId must not contain ':'");
   const expires = Date.now() + ttlDays * 24 * 60 * 60 * 1000;
   const payload = `act:${action}:${subjectId}:${expires}`;
   const sig = crypto.createHmac("sha256", getHmacSecret()).update(payload).digest("hex");

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { verifyActionToken } from "@/lib/game-token";
+import { rateLimit } from "@/lib/rate-limit";
 import { sendEmail } from "@/lib/email";
 import { escapeHtml } from "@/lib/sanitize";
 
@@ -21,6 +22,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://findmymahjgame.com";
+  if (!(await rateLimit(req, "listing-confirm", 10, 60))) {
+    return NextResponse.redirect(`${siteUrl}/listing/confirm?token=invalid`, 303);
+  }
   let token = "";
   const ct = req.headers.get("content-type") || "";
   if (ct.includes("form")) {
@@ -46,10 +50,19 @@ export async function POST(req: NextRequest) {
   }
 
   const { data: row } = await supabase.from(table).select("ended_reports, business_name, event_name").eq("id", id).single();
-  const reports = (row?.ended_reports ?? 0) + 1;
+  const prior = row?.ended_reports ?? 0;
+  if (prior >= 5) {
+    // Bounded: replayed tokens cannot inflate reports or spam the founder.
+    return NextResponse.redirect(`${siteUrl}/listing/confirm?done=ended`, 303);
+  }
+  const reports = prior + 1;
   const { error } = await supabase.from(table).update({ ended_reports: reports }).eq("id", id);
   if (error) console.error("ended report failed:", error.message);
   const name = String(row?.business_name || row?.event_name || id);
+  if (prior > 0) {
+    // Only the first report emails; later ones just count.
+    return NextResponse.redirect(`${siteUrl}/listing/confirm?done=ended`, 303);
+  }
   await sendEmail({
     to: "hello@findmymahjgame.com",
     kind: "ended-report",

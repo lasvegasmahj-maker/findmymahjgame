@@ -38,7 +38,6 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
         {/* Contact Cards */}
         <div className="grid grid-cols-2 gap-12 my-8 max-sm:grid-cols-1">
           <div className="bg-bg border border-border rounded-2xl p-6">
-            <div className="text-[2rem] mb-3"></div>
             <h3 className="font-heading text-[1.1rem] text-navy mb-2">General Inquiries</h3>
             <p className="text-[0.88rem] text-muted mb-3">Questions about the platform, player listings, or anything else.
             </p>
@@ -49,7 +48,6 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
             </a>
           </div>
           <div className="bg-bg border border-border rounded-2xl p-6">
-            <div className="text-[2rem] mb-3"></div>
             <h3 className="font-heading text-[1.1rem] text-navy mb-2">Advertising &amp; Partnerships
             </h3>
             <p className="text-[0.88rem] text-muted mb-3">Interested in advertising, venue listings, or event promotions?
@@ -58,7 +56,6 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
             </Link>
           </div>
           <div className="bg-bg border border-border rounded-2xl p-6">
-            <div className="text-[2rem] mb-3"></div>
             <h3 className="font-heading text-[1.1rem] text-navy mb-2">List Your Game or Venue
             </h3>
             <p className="text-[0.88rem] text-muted mb-3">Want to get your game, venue or event listed on Find My Mahj Game?
@@ -67,7 +64,6 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
             </Link>
           </div>
           <div className="bg-bg border border-border rounded-2xl p-6">
-            <div className="text-[2rem] mb-3"></div>
             <h3 className="font-heading text-[1.1rem] text-navy mb-2">Partnerships</h3>
             <p className="text-[0.88rem] text-muted mb-3">Interested in a partnership, collaboration or media opportunity?
             </p>
