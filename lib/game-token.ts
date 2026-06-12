@@ -25,3 +25,33 @@ export function verifyGameToken(token: string): { tableId: string; answer: "yes"
     return null;
   }
 }
+
+// Generalized one-click action tokens: one namespace for every email action
+// so claim, match-approve, still-running, and future actions share one
+// verified pattern instead of growing parallel token files.
+const ACTIONS = ["match-approve", "match-skip", "claim", "still-running"] as const;
+export type ActionKind = (typeof ACTIONS)[number];
+
+export function signActionToken(action: ActionKind, subjectId: string, ttlDays = 30): string {
+  const expires = Date.now() + ttlDays * 24 * 60 * 60 * 1000;
+  const payload = `act:${action}:${subjectId}:${expires}`;
+  const sig = crypto.createHmac("sha256", getHmacSecret()).update(payload).digest("hex");
+  return Buffer.from(`${payload}:${sig}`).toString("base64url");
+}
+
+export function verifyActionToken(token: string): { action: ActionKind; subjectId: string } | null {
+  try {
+    const parts = Buffer.from(token, "base64url").toString("utf8").split(":");
+    if (parts.length !== 5) return null;
+    const [label, action, subjectId, expiresStr, sig] = parts;
+    if (label !== "act" || !ACTIONS.includes(action as ActionKind)) return null;
+    const expected = crypto.createHmac("sha256", getHmacSecret()).update(`${label}:${action}:${subjectId}:${expiresStr}`).digest("hex");
+    const a = Buffer.from(sig, "hex");
+    const e = Buffer.from(expected, "hex");
+    if (a.length !== e.length || !crypto.timingSafeEqual(a, e)) return null;
+    if (Date.now() > parseInt(expiresStr, 10)) return null;
+    return { action: action as ActionKind, subjectId };
+  } catch {
+    return null;
+  }
+}
