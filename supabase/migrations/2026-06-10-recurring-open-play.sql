@@ -21,19 +21,16 @@ alter table public.venue_listings
 -- reviewer_notes so nothing is lost in the meantime.
 
 
--- LAUNCH GATE (2026-06-11): defense in depth against contact harvesting.
--- RLS correctly limits anon to published rows, but it is row-level only:
--- anyone holding the public anon key can SELECT contact_email and
--- reviewer_notes off published listings via the REST API. Revoke the
--- private columns from anon; the public email field is display_email.
-revoke select (contact_name, contact_email, reviewer_notes, stripe_payment_id, promo_code)
-  on public.venue_listings from anon;
-revoke select (contact_name, contact_email, reviewer_notes, stripe_payment_id, promo_code)
-  on public.event_listings from anon;
-revoke select (contact_email)
-  on public.player_listings from anon;
-revoke select (contact_name, contact_email, reviewer_notes, stripe_payment_id)
-  on public.ad_listings from anon;
+-- LAUNCH GATE (2026-06-11, corrected 2026-06-12): defense in depth against
+-- contact harvesting. Column-level REVOKEs are no-ops while a table-level
+-- SELECT grant exists, so the protection is table-level: anon loses SELECT
+-- entirely on the four listing tables. Nothing in the browser reads these
+-- tables (all public pages render server-side with the service role), so no
+-- grants back are needed. This matches what is applied in production.
+revoke select on public.venue_listings from anon;
+revoke select on public.event_listings from anon;
+revoke select on public.player_listings from anon;
+revoke select on public.ad_listings from anon;
 
 
 -- Funnel timestamps (2026-06-12): Weekly Player-Games Confirmed needs WHEN a

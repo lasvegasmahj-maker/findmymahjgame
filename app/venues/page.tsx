@@ -17,7 +17,7 @@ const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border:
 export default async function VenuesPage({ searchParams }: { searchParams: Promise<{ near?: string }> }) {
   const { near } = await searchParams;
   const supabase = createServerClient();
-  const { data } = await supabase.from("venue_listings").select("*").eq("status", "published").order("created_at", { ascending: false });
+  const { data } = await supabase.from("venue_listings").select("id, business_name, venue_type, city, state, address, description, website, instagram, display_email, logo_url, tier, created_at").eq("status", "published").order("created_at", { ascending: false });
 
   let rows = data || [];
   if (near && near.trim()) {
@@ -37,7 +37,7 @@ export default async function VenuesPage({ searchParams }: { searchParams: Promi
       </form>
 
       {rows.length > 0 ? (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.2rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 300px), 1fr))", gap: "1.2rem" }}>
           {rows.map((v) => {
             const href = v.website || "/get-listed";
             const external = !!v.website;

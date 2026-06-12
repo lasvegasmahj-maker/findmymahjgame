@@ -266,7 +266,6 @@ export default function StatePageClient({ stateData, players, events, venues }: 
               </div>
             ) : (
               <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center", marginBottom: "2.5rem" }}>
-                <div style={{ fontSize: "3.5rem", marginBottom: "1.2rem" }}></div>
                 <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>No players listed in {stateData.name} yet
                 </h3>
                 <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 420, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Be the first! Create a free listing and let other players in {stateData.name} find you.
@@ -324,7 +323,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                         <h3 style={{ fontWeight: 700, fontSize: "1.05rem", color: "var(--navy)", margin: "0.3rem 0" }}>{event.event_name}</h3>
                         <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
                            {formatEventDate(event.event_date)}
-                          {event.venue && <> &nbsp;&middot;&nbsp;  {event.venue}, {event.city}</>}
+                          {event.venue && <> &nbsp;&middot;&nbsp;{event.venue}, {event.city}</>}
                         </div>
                         {event.description && <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginTop: "0.4rem", lineHeight: 1.5 }}>{event.description}</div>}
                       </div>
@@ -342,7 +341,6 @@ export default function StatePageClient({ stateData, players, events, venues }: 
               </div>
             ) : (
               <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center", marginBottom: "2rem" }}>
-                <div style={{ fontSize: "3.5rem", marginBottom: "1.2rem" }}></div>
                 <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>No events listed yet</h3>
                 <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Host an open play, tournament, or mahjong night? List it and reach players searching for games. Starting at $10/event.
                 </p>
@@ -404,7 +402,6 @@ export default function StatePageClient({ stateData, players, events, venues }: 
               </div>
             ) : (
               <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center", marginBottom: "2rem" }}>
-                <div style={{ fontSize: "3.5rem", marginBottom: "1.2rem" }}></div>
                 <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>No venues listed yet</h3>
                 <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Own a mahjong-friendly venue? Get discovered by players searching for places to play. Listings from $19/mo.
                 </p>

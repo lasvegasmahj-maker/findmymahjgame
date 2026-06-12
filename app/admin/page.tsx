@@ -254,14 +254,19 @@ export default function AdminPage() {
     const verb = status === "published" ? "Approve" : "Reject";
     if (!window.confirm(`${verb} ${ids.length} listing${ids.length === 1 ? "" : "s"}?`)) return;
     for (let i = 0; i < ids.length; i += 500) {
-      const res = await fetch("/api/admin/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ table, ids: ids.slice(i, i + 500), status }),
-      });
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        window.alert(`Bulk ${verb.toLowerCase()} failed after ${i} rows: ${d.error || res.status}. The rest were not changed.`);
+      try {
+        const res = await fetch("/api/admin/update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ table, ids: ids.slice(i, i + 500), status }),
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          window.alert(`Bulk ${verb.toLowerCase()} failed after ${i} rows: ${d.error || res.status}. The rest were not changed.`);
+          break;
+        }
+      } catch {
+        window.alert(`Network error after ${i} rows. The rest were not changed; refresh and try again.`);
         break;
       }
     }

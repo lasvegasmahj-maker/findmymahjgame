@@ -94,7 +94,7 @@ export default async function HomeV2() {
               <div className={styles.stat}><div className={styles.statNum}>{players}</div><div className={styles.statLabel}>Players listed</div></div>
             )}
             {tables > 0 && (
-              <div className={styles.stat}><div className={styles.statNum}>{tables}</div><div className={styles.statLabel}>Tables formed</div></div>
+              <div className={styles.stat}><div className={styles.statNum}>{tables}</div><div className={styles.statLabel}>Tables started</div></div>
             )}
             {cities > 0 && (
               <div className={styles.stat}><div className={styles.statNum}>{cities}</div><div className={styles.statLabel}>Cities active</div></div>

@@ -9,16 +9,21 @@ export default function NewsletterSignup({ dark = false }: { dark?: boolean }) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setState("submitting"); setErr("");
-    const res = await fetch("/api/subscribe", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    if (res.ok) { setState("done"); return; }
-    const d = await res.json().catch(() => ({}));
-    setErr(d.error || "Something went wrong. Please try again.");
-    setState("error");
+    try {      setState("submitting"); setErr("");
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (res.ok) { setState("done"); return; }
+      const d = await res.json().catch(() => ({}));
+      setErr(d.error || "Something went wrong. Please try again.");
+      setState("error");
+    
+    } catch {
+      setErr("We could not reach the server. Please check your connection and try again.");
+      setState("error");
+    }
   }
 
   const labelColor = dark ? "rgba(255,255,255,0.9)" : "var(--navy)";

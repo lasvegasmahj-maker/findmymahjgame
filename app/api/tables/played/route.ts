@@ -7,24 +7,39 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// GET never mutates: mail scanners prefetch GET links from emails, so the
+// emailed link lands on a confirmation page and only a human's form POST
+// records the answer. Scanners do not submit forms.
 export async function GET(req: NextRequest) {
   const siteUrl = req.nextUrl.origin;
-  const token = req.nextUrl.searchParams.get("token");
-  const v = token ? verifyGameToken(token) : null;
-  if (!v) return NextResponse.redirect(`${siteUrl}/played?result=invalid`);
+  const token = req.nextUrl.searchParams.get("token") || "";
+  return NextResponse.redirect(`${siteUrl}/played/confirm?token=${encodeURIComponent(token)}`);
+}
 
-  // Idempotency guard: mail-scanner prefetch and repeat clicks must not
-  // re-flip state. First answer wins; later clicks just see the thank-you.
+export async function POST(req: NextRequest) {
+  const siteUrl = req.nextUrl.origin;
+  let token = "";
+  const ct = req.headers.get("content-type") || "";
+  if (ct.includes("form")) {
+    const form = await req.formData().catch(() => null);
+    token = String(form?.get("token") || "");
+  } else {
+    const b = await req.json().catch(() => ({}));
+    token = String(b?.token || "");
+  }
+  const v = token ? verifyGameToken(token) : null;
+  if (!v) return NextResponse.redirect(`${siteUrl}/played?result=invalid`, 303);
+
   const { data: cur, error: readErr } = await supabase.from("tables").select("played, played_at").eq("id", v.tableId).single();
   if (readErr || !cur || cur.played_at) {
     // Fail closed: a read error or an already-answered row never overwrites.
     if (readErr) console.error("played: read failed, skipping write", readErr.message);
-    return NextResponse.redirect(`${siteUrl}/played?result=${v.answer}`);
+    return NextResponse.redirect(`${siteUrl}/played?result=${v.answer}`, 303);
   }
   const { error: writeErr } = await supabase
     .from("tables")
     .update({ played: v.answer === "yes", played_at: new Date().toISOString() })
     .eq("id", v.tableId);
   if (writeErr) console.error("played: update failed", writeErr.message);
-  return NextResponse.redirect(`${siteUrl}/played?result=${v.answer}`);
+  return NextResponse.redirect(`${siteUrl}/played?result=${v.answer}`, 303);
 }

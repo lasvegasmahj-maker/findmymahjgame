@@ -29,7 +29,8 @@ export async function POST(req: NextRequest) {
 
   const { error } = await supabase.from(table).update(patch).in("id", idList);
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("admin update failed:", error.message);
+    return NextResponse.json({ error: "Update failed. Please try again." }, { status: 500 });
   }
 
   return NextResponse.json({ success: true, updated: idList.length });

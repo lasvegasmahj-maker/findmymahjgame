@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
 
   const inMailchimp = await addToMailchimp(email, city);
 
-  const notified = await resend.emails.send({
+  const sent = await resend.emails.send({
     from: "Find My Mahj Game <hello@findmymahjgame.com>",
     to: "hello@findmymahjgame.com",
     subject: `Newsletter signup: ${email}`,
@@ -58,7 +58,8 @@ export async function POST(req: NextRequest) {
       <h2 style="color:#1a1f5e;">New newsletter signup</h2>
       <p style="color:#374151;line-height:1.7;"><strong>Email:</strong> ${escapeHtml(email)}${city ? `<br/><strong>City:</strong> ${escapeHtml(city)}` : ""}</p>
     </div>`,
-  }).then(() => true).catch(() => false);
+  }).catch(() => null);
+  const notified = !!sent && !sent.error;
 
   // A signup must land somewhere durable before we say "you're on the list."
   if (!inMailchimp && !notified) {

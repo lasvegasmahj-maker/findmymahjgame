@@ -1,24 +1,27 @@
-# FMG Launch Gate — verified 2026-06-11
+# FMG Launch Gate: verified 2026-06-11, re-verified 2026-06-12
 
-Status: **CONDITIONAL PASS.** Every code-level launch blocker is fixed on
-`product-readiness-previews`. One founder action (the SQL paste) and the
-coordinated deploy remain. Do not deploy before the paste.
+Status: **PASS.** Both founder SQL pastes were applied and live-verified on
+2026-06-12 (anon SELECT revoked table-level on the four listing tables;
+self-publish closed; pending rows invisible). Every code-level blocker is fixed
+on `product-readiness-previews`. One small SQL delta remains non-blocking:
+the ambassadors.referral_code block at the bottom of the migration file,
+added after the founder's pastes. The deploy waits only on the founder's go.
 
 ## What was found and fixed (all verified hands-on against live Supabase)
 
 | Finding | Severity | Status |
 |---|---|---|
-| State pages serialized contact_email / phone / stripe_payment_id / reviewer_notes into client HTML (live on production) | Critical | Fixed `f09bec6` — explicit public-safe column selects |
+| State pages serialized contact_email / phone / stripe_payment_id / reviewer_notes into client HTML (live on production) | Critical | Fixed `f09bec6`: explicit public-safe column selects |
 | Anon REST key could SELECT contact columns off published rows | Critical | SQL staged (column REVOKEs) |
-| Anon could INSERT player_listings as `status=published` (default was `published`) — fake/predatory listings publish unreviewed | Critical | SQL staged (default → pending_review + restrictive anon policy) |
-| Played yes/no rendered as live HMAC links on the public table page — anyone could forge or poison freshness data | Critical | Fixed `ca5c1c5` — confirmation only via private email; idempotency guard added `2ce742c` |
-| Public table page listed attendee first names; `/api/tables/find` unthrottled and enumerable | High | Fixed `ca5c1c5` — seat count only, rate limit + input clamp |
-| Admin login had no brute-force protection | High | Fixed `ca5c1c5` — 5 attempts / 5 min |
+| Anon could INSERT player_listings as `status=published` (default was `published`): fake/predatory listings publish unreviewed | Critical | SQL staged (default → pending_review + restrictive anon policy) |
+| Played yes/no rendered as live HMAC links on the public table page: anyone could forge or poison freshness data | Critical | Fixed `ca5c1c5`: confirmation only via private email; idempotency guard added `2ce742c` |
+| Public table page listed attendee first names; `/api/tables/find` unthrottled and enumerable | High | Fixed `ca5c1c5`: seat count only, rate limit + input clamp |
+| Admin login had no brute-force protection | High | Fixed `ca5c1c5`: 5 attempts / 5 min |
 | `/events` card read columns that don't exist on event_listings | High (breaks Events at publish) | Fixed `2ce742c` |
-| Table pages indexable (guessable share codes expose host names) | Med | Fixed `2ce742c` — noindex metadata |
+| Table pages indexable (guessable share codes expose host names) | Med | Fixed `2ce742c`: noindex metadata |
 | Organization JSON-LD logo pointed at missing /logo.png | Med | Fixed `2ce742c` |
-| /play capture posted null day/state — every request unmatchable | High (Fourth Chair) | Fixed `2ce742c` |
-| No filled_at/played_at — North Star uncomputable | High | Fixed `2ce742c` (+ migration) |
+| /play capture posted null day/state: every request unmatchable | High (Fourth Chair) | Fixed `2ce742c` |
+| No filled_at/played_at: North Star uncomputable | High | Fixed `2ce742c` (+ migration) |
 
 Verified SAFE (no change needed): anon SELECT blocked on inquiries, ambassadors,
 play_requests, tables, table_seats, listing_submissions; anon INSERT blocked on

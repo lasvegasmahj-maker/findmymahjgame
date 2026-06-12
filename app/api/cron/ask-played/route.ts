@@ -36,8 +36,8 @@ export async function GET(req: NextRequest) {
     const { data: seats } = await supabase.from("table_seats").select("email").eq("table_id", t.id);
     const emails = (seats || []).map((s) => s.email).filter(Boolean) as string[];
     if (emails.length) {
-      const yes = `${base}/api/tables/played?token=${signGameToken(t.id, "yes")}`;
-      const no = `${base}/api/tables/played?token=${signGameToken(t.id, "no")}`;
+      const yes = `${base}/played/confirm?token=${signGameToken(t.id, "yes")}`;
+      const no = `${base}/played/confirm?token=${signGameToken(t.id, "no")}`;
       const when = escapeHtml(`${t.day_of_week || ""} ${t.time_of_day || ""}`.trim());
       const area = t.city ? escapeHtml(t.city) : "your area";
       await resend.emails.send({

@@ -107,6 +107,7 @@ export default async function StatesIndexPage() {
         <div style={{ marginTop: "3rem" }}>
           <h2 style={{ fontSize: "1.1rem", color: "var(--navy)", marginBottom: "1rem", paddingBottom: "0.5rem", borderBottom: "2px solid var(--border)" }}>
             Or tap your state on the map
+            <span style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>The map is a visual shortcut; the state list above works with a keyboard or screen reader.</span>
           </h2>
           <USMap stateCounts={stateCounts} />
         </div>
