@@ -54,3 +54,9 @@ drop policy if exists "player_listings anon insert pending only" on public.playe
 create policy "player_listings anon insert pending only"
   on public.player_listings as restrictive for insert to anon
   with check (status = 'pending_review');
+
+
+-- Ambassador attribution (ruled Week 1): server-issued referral codes so the
+-- first numbered Founding Ambassador invitations are attributable from day one.
+alter table public.ambassadors
+  add column if not exists referral_code text unique;

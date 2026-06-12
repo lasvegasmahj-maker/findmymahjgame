@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
         to: "hello@findmymahjgame.com",
         bcc: memberEmails,
         replyTo,
-        subject: `Your mahjong table is full! Time to pick a spot 🀄`,
+        subject: `Your mahjong table is full! Time to pick a spot`,
         html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1a1a2e;">
           <h2 style="color:#1a6e3a;">Your table is full, time to play!</h2>
           <p style="font-size:16px;line-height:1.7;">Your group: <strong>${names}</strong>.<br/>

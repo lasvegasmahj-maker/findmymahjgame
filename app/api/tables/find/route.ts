@@ -42,7 +42,11 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  // Closest-to-full first (tables that need a 4th surface at the top).
-  tables.sort((a, b) => b.filled - a.filled);
-  return NextResponse.json({ tables });
+  // Safety ruling (red team #1): nearly-full tables are never surfaced in
+  // public search. A table one seat from full is a committed group of women;
+  // its last chair fills through the host's own shared link or, later, the
+  // host-approved Bench - never by a stranger finding it here. Recency order;
+  // never sort by how close to full a table is.
+  const safe = tables.filter((t) => t.seats_total - t.filled !== 1);
+  return NextResponse.json({ tables: safe });
 }

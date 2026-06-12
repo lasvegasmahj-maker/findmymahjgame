@@ -50,6 +50,13 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
         </div>
       )}
 
+      <div style={{ background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.3rem 1.5rem", maxWidth: 680, margin: "0 auto 2.2rem", textAlign: "center" }}>
+        <p style={{ fontSize: "0.85rem", fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--pink)", margin: "0 0 0.4rem" }}>Our promise to teachers</p>
+        <p style={{ fontSize: "1.05rem", color: "var(--navy)", lineHeight: 1.6, margin: 0 }}>
+          Find My Mahj stands after the lesson, never between you and your student: your students book on your own site, your graduates&rsquo; games report back to you every month, and money never crosses the table.
+        </p>
+      </div>
+
       {rows.length > 0 ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.2rem" }}>
           {rows.map((t) => {
