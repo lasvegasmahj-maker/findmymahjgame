@@ -35,13 +35,13 @@ export async function POST(req: NextRequest) {
   }
 
   const name = clampText(b.name, 80);
-  const { error: seatErr } = await supabase.from("table_seats").insert({
+  const { data: seatRow, error: seatErr } = await supabase.from("table_seats").insert({
     table_id: t.id,
     name,
     phone: clampText(b.phone, 40) || null,
     email: clampText(b.email, 254) || null,
-  });
-  if (seatErr) {
+  }).select("id").single();
+  if (seatErr || !seatRow) {
     console.error("claim: seat insert failed", seatErr.message);
     return NextResponse.json({ error: "Could not save your seat. Please try again." }, { status: 500 });
   }
@@ -51,7 +51,8 @@ export async function POST(req: NextRequest) {
   const { count: afterCount } = await supabase.from("table_seats").select("id", { count: "exact", head: true }).eq("table_id", t.id);
   const newFilled = afterCount ?? filled + 1;
   if (newFilled > t.seats_total) {
-    await supabase.from("table_seats").delete().eq("table_id", t.id).eq("name", name).order("created_at", { ascending: false }).limit(1);
+    const { error: rollbackErr } = await supabase.from("table_seats").delete().eq("id", seatRow.id);
+    if (rollbackErr) console.error("claim: overfill rollback failed, table overfull", rollbackErr.message);
     return NextResponse.json({ error: "full" }, { status: 409 });
   }
   const remaining = Math.max(0, t.seats_total - newFilled);

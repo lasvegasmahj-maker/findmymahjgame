@@ -157,7 +157,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
         body: JSON.stringify({
           type: "connect",
           subject: `New Connect Request: ${connectForm.name} wants to play with ${connectForm.player.name}`,
-          body: `From: ${connectForm.name} (${connectForm.email})\nPlayer: ${connectForm.player.name} — ${connectForm.player.city}, ${connectForm.player.state}\nSkill Level: ${connectForm.player.skill_level}\n\nMessage:\n${connectForm.message || "(no message)"}`,
+          body: `From: ${connectForm.name} (${connectForm.email})\nPlayer: ${connectForm.player.name} (${connectForm.player.city}, ${connectForm.player.state})\nSkill Level: ${connectForm.player.skill_level}\n\nMessage:\n${connectForm.message || "(no message)"}`,
         }),
       });
   

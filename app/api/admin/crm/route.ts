@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     .order("rank", { ascending: true, nullsFirst: false })
     .order("name", { ascending: true })
     .limit(500);
-  if (q) query = query.or(`name.ilike.%${q.replace(/[%_]/g, "")}%,organization.ilike.%${q.replace(/[%_]/g, "")}%,city.ilike.%${q.replace(/[%_]/g, "")}%`);
+  if (q) query = query.or(`name.ilike.%${q.replace(/[%_,().]/g, "")}%,organization.ilike.%${q.replace(/[%_,().]/g, "")}%,city.ilike.%${q.replace(/[%_,().]/g, "")}%`);
   if (status && STATUSES.includes(status)) query = query.eq("status", status);
   if (wave && ["1", "2", "3"].includes(wave)) query = query.eq("wave", Number(wave));
 

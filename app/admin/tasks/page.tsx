@@ -69,8 +69,8 @@ export default function FounderTasksPage() {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data
-    // fetch; every setState here happens after the await, not synchronously.
+    // Initial data fetch; every setState happens after the await.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [load]);
 

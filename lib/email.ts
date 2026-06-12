@@ -31,7 +31,7 @@ export async function sendEmail({ to, subject, html, replyTo, kind }: SendArgs):
       .from("email_suppressions")
       .select("email")
       .in("email", recipients.map((r) => r.toLowerCase()));
-    const blocked = new Set((sup || []).map((s) => s.email));
+    const blocked = new Set((sup || []).map((s) => String(s.email).toLowerCase()));
     allowed = recipients.filter((r) => !blocked.has(r.toLowerCase()));
   } catch { /* suppression table not created yet; send to all */ }
   if (!allowed.length) return { ok: true };
@@ -49,14 +49,13 @@ export async function sendEmail({ to, subject, html, replyTo, kind }: SendArgs):
   const ok = !!result && !result.error;
   if (!ok) console.error(`email[${kind}] failed:`, result?.error?.message || "unknown");
 
-  supabase.from("email_sends").insert({
+  const { error: logErr } = await supabase.from("email_sends").insert({
     kind,
     recipients: allowed.length,
     subject: cleanSubject.slice(0, 200),
     ok,
-  }).then(({ error }) => {
-    if (error && error.code !== "42P01") console.error("email log failed:", error.message);
   });
+  if (logErr && logErr.code !== "42P01") console.error("email log failed:", logErr.message);
 
   return ok ? { ok: true } : { ok: false, error: result?.error?.message };
 }

@@ -17,24 +17,47 @@ function shareCode() {
   return Array.from(crypto.getRandomValues(new Uint8Array(6)), (b) => "abcdefghjkmnpqrstuvwxyz23456789"[b % 31]).join("");
 }
 
+// GET never mutates: emailed links land on the confirm page; only the
+// founder's form POST decides. Scanners follow GETs but never submit forms.
 export async function GET(req: NextRequest) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://findmymahjgame.com";
   const token = req.nextUrl.searchParams.get("token") || "";
+  return NextResponse.redirect(`${siteUrl}/match/confirm?token=${encodeURIComponent(token)}`);
+}
+
+export async function POST(req: NextRequest) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://findmymahjgame.com";
+  let token = "";
+  const ct = req.headers.get("content-type") || "";
+  if (ct.includes("form")) {
+    const form = await req.formData().catch(() => null);
+    token = String(form?.get("token") || "");
+  } else {
+    const b = await req.json().catch(() => ({}));
+    token = String(b?.token || "");
+  }
   const v = verifyActionToken(token);
   if (!v || (v.action !== "match-approve" && v.action !== "match-skip")) {
-    return NextResponse.redirect(`${siteUrl}/played?result=invalid`);
+    return NextResponse.redirect(`${siteUrl}/played?result=invalid`, 303);
   }
 
-  const { data: draft } = await supabase.from("match_drafts").select("*").eq("id", v.subjectId).single();
-  if (!draft) return NextResponse.redirect(`${siteUrl}/played?result=invalid`);
-  if (draft.status !== "draft") {
-    // Already decided: idempotent no-op.
-    return NextResponse.redirect(`${siteUrl}/admin?match=${draft.status}`);
+  // Atomic claim: only the request that flips draft -> decided proceeds, so a
+  // double click or replay can never create two tables or double-email.
+  const decidedStatus = v.action === "match-skip" ? "skipped" : "approved";
+  const { data: claimed } = await supabase
+    .from("match_drafts")
+    .update({ status: decidedStatus, decided_at: new Date().toISOString() })
+    .eq("id", v.subjectId)
+    .eq("status", "draft")
+    .select("*")
+    .single();
+  if (!claimed) {
+    return NextResponse.redirect(`${siteUrl}/admin?match=already-decided`, 303);
   }
+  const draft = claimed;
 
   if (v.action === "match-skip") {
-    await supabase.from("match_drafts").update({ status: "skipped", decided_at: new Date().toISOString() }).eq("id", draft.id);
-    return NextResponse.redirect(`${siteUrl}/admin?match=skipped`);
+    return NextResponse.redirect(`${siteUrl}/admin?match=skipped`, 303);
   }
 
   const code = shareCode();
@@ -53,10 +76,11 @@ export async function GET(req: NextRequest) {
     .single();
   if (tableErr || !table) {
     console.error("match approve: table create failed", tableErr?.message);
-    return NextResponse.redirect(`${siteUrl}/admin?match=error`);
+    await supabase.from("match_drafts").update({ status: "draft", decided_at: null }).eq("id", draft.id);
+    return NextResponse.redirect(`${siteUrl}/admin?match=error`, 303);
   }
 
-  await supabase.from("match_drafts").update({ status: "approved", table_id: table.id, decided_at: new Date().toISOString() }).eq("id", draft.id);
+  await supabase.from("match_drafts").update({ table_id: table.id }).eq("id", draft.id);
   await supabase.from("play_requests").update({ status: "invited" }).in("id", draft.request_ids);
 
   const { data: players } = await supabase
@@ -80,5 +104,5 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  return NextResponse.redirect(`${siteUrl}/admin?match=approved`);
+  return NextResponse.redirect(`${siteUrl}/admin?match=approved`, 303);
 }

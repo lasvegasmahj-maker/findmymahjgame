@@ -63,9 +63,8 @@ export default function RelationshipsPage() {
   }, [q, statusFilter, waveFilter]);
 
   useEffect(() => {
-    // Debounced: typing fires one request 300ms after the last keystroke.
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch;
-    // every setState happens after the await, not synchronously.
+    // Debounced: one request 300ms after the last keystroke; setState after await.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     const t = setTimeout(() => { void load(); }, 300);
     return () => clearTimeout(t);
   }, [load]);
