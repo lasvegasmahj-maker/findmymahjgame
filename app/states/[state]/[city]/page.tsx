@@ -94,9 +94,19 @@ export default async function CityPage({ params }: { params: Promise<{ state: st
     ],
   };
 
+  const collectionPage = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `Mahjong in ${cityName}, ${st.abbr}`,
+    description: `American Mahjong open plays, teachers, venues, and events in ${cityName}, ${st.name}.`,
+    url: `https://findmymahjgame.com/states/${st.slug}/${city}`,
+    about: { "@type": "Thing", name: "American Mahjong" },
+    isPartOf: { "@type": "WebSite", name: "Find My Mahj Game", url: "https://findmymahjgame.com" },
+  };
+
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumb, collectionPage]) }} />
       <nav style={{ fontSize: "0.95rem", color: "var(--muted)", marginBottom: "0.8rem" }}>
         <Link href={`/states/${st.slug}`} style={{ color: "var(--pink)", fontWeight: 700 }}>{st.name}</Link> &rsaquo; {cityName}
       </nav>
