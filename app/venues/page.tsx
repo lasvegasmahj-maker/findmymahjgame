@@ -15,8 +15,16 @@ export const revalidate = 300;
 const field: React.CSSProperties = { minHeight: 54, padding: "0 1rem", border: "2px solid var(--border)", borderRadius: 12, fontSize: "1.1rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", flex: "1 1 200px" };
 const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border: "none", borderRadius: 12, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" };
 
-export default async function VenuesPage({ searchParams }: { searchParams: Promise<{ near?: string }> }) {
-  const { near } = await searchParams;
+const VTYPE: Record<string, RegExp> = {
+  studio: /studio|club|parlor|lounge/i,
+  library: /library/i,
+  senior: /senior|retirement|55|community center|rec center|recreation/i,
+};
+const VCHIPS: [string, string][] = [["all", "All places"], ["studio", "Studios & clubs"], ["library", "Libraries"], ["senior", "Senior & community"]];
+
+export default async function VenuesPage({ searchParams }: { searchParams: Promise<{ near?: string; type?: string }> }) {
+  const { near, type } = await searchParams;
+  const activeType = (type || "all").toLowerCase();
   const supabase = createServerClient();
   const { data } = await supabase.from("venue_listings").select("id, business_name, venue_type, city, state, address, description, website, instagram, display_email, logo_url, tier, created_at").eq("status", "published").order("created_at", { ascending: false });
 
@@ -25,6 +33,7 @@ export default async function VenuesPage({ searchParams }: { searchParams: Promi
     const n = near.trim().toLowerCase();
     rows = rows.filter((v) => nearMatches(n, v.city, v.state));
   }
+  if (VTYPE[activeType]) rows = rows.filter((v) => VTYPE[activeType].test(`${v.venue_type || ""} ${v.description || ""}`));
 
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
@@ -34,8 +43,20 @@ export default async function VenuesPage({ searchParams }: { searchParams: Promi
       <form method="get" style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center", maxWidth: 520, margin: "0 auto 2.4rem" }}>
         <label htmlFor="near" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>Your city or area</label>
         <input id="near" name="near" defaultValue={near || ""} placeholder="Your city or state" style={field} />
+        {activeType !== "all" && <input type="hidden" name="type" value={activeType} />}
         <button type="submit" style={goBtn}>Search</button>
       </form>
+
+      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center", margin: "0 auto 2rem" }}>
+        {VCHIPS.map(([k, label]) => {
+          const active = activeType === k || (k === "all" && !VTYPE[activeType]);
+          const qs = new URLSearchParams();
+          if (near && near.trim()) qs.set("near", near.trim());
+          if (k !== "all") qs.set("type", k);
+          const q = qs.toString();
+          return <a key={k} href={`/venues${q ? `?${q}` : ""}`} style={{ display: "inline-block", padding: "0.5rem 1.1rem", borderRadius: 50, fontSize: "1rem", fontWeight: 800, textDecoration: "none", border: "2px solid var(--border)", background: active ? "var(--navy)" : "white", color: active ? "white" : "var(--navy)" }}>{label}</a>;
+        })}
+      </div>
 
       {rows.length > 0 ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 300px), 1fr))", gap: "1.2rem" }}>
