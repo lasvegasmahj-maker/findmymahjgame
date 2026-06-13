@@ -1,4 +1,4 @@
-import { Resend } from "resend";
+import { sendEmail } from "@/lib/email";
 import { rateLimit } from "@/lib/rate-limit";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
@@ -8,7 +8,6 @@ import { getHmacSecret } from "@/lib/hmac";
 
 const LISTING_TYPES = ["venue", "instructor", "event", "brand"];
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -219,8 +218,8 @@ export async function POST(req: NextRequest) {
     const submissionId = saved.id as string;
 
     // Email Shauna with the approval preview
-    await resend.emails.send({
-      from: "Find My Mahj Game <hello@findmymahjgame.com>",
+    await sendEmail({
+      kind: "advertise-submit",
       to: "hello@findmymahjgame.com",
       replyTo: clean.contactEmail,
       subject: clampText(`New listing submission: ${clean.displayName || clean.contactName} (${clean.listingType})`, 200),
@@ -228,8 +227,8 @@ export async function POST(req: NextRequest) {
     });
 
     // Confirmation email to advertiser
-    await resend.emails.send({
-      from: "Find My Mahj Game <hello@findmymahjgame.com>",
+    await sendEmail({
+      kind: "advertise-submit",
       to: clean.contactEmail,
       subject: "We received your listing details",
       html: `

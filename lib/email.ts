@@ -16,32 +16,36 @@ const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu;
 
 export type SendArgs = {
   to: string | string[];
+  bcc?: string | string[];
   subject: string;
   html: string;
   replyTo?: string;
   kind: string;
 };
 
-export async function sendEmail({ to, subject, html, replyTo, kind }: SendArgs): Promise<{ ok: boolean; error?: string }> {
-  const recipients = (Array.isArray(to) ? to : [to]).filter(Boolean);
-  if (!recipients.length) return { ok: false, error: "no recipients" };
+export async function sendEmail({ to, bcc, subject, html, replyTo, kind }: SendArgs): Promise<{ ok: boolean; error?: string }> {
+  const toList = (Array.isArray(to) ? to : [to]).filter(Boolean);
+  const bccList = (Array.isArray(bcc) ? bcc : bcc ? [bcc] : []).filter(Boolean);
+  if (!toList.length && !bccList.length) return { ok: false, error: "no recipients" };
 
-  let allowed = recipients;
+  let blocked = new Set<string>();
   try {
     const { data: sup } = await supabase
       .from("email_suppressions")
       .select("email")
-      .in("email", recipients.map((r) => r.toLowerCase()));
-    const blocked = new Set((sup || []).map((s) => String(s.email).toLowerCase()));
-    allowed = recipients.filter((r) => !blocked.has(r.toLowerCase()));
+      .in("email", [...toList, ...bccList].map((r) => r.toLowerCase()));
+    blocked = new Set((sup || []).map((s) => String(s.email).toLowerCase()));
   } catch { /* suppression table not created yet; send to all */ }
-  if (!allowed.length) return { ok: true };
+  const allowedTo = toList.filter((r) => !blocked.has(r.toLowerCase()));
+  const allowedBcc = bccList.filter((r) => !blocked.has(r.toLowerCase()));
+  if (!allowedTo.length && !allowedBcc.length) return { ok: true };
 
   const cleanSubject = subject.replace(EMOJI, "").replace(/\s{2,}/g, " ").trim();
 
   const result = await resend.emails.send({
     from: "Find My Mahj Game <hello@findmymahjgame.com>",
-    to: allowed,
+    to: allowedTo.length ? allowedTo : allowedBcc,
+    ...(allowedTo.length && allowedBcc.length ? { bcc: allowedBcc } : {}),
     subject: cleanSubject,
     html,
     ...(replyTo ? { replyTo } : {}),
@@ -52,7 +56,7 @@ export async function sendEmail({ to, subject, html, replyTo, kind }: SendArgs):
 
   const { error: logErr } = await supabase.from("email_sends").insert({
     kind,
-    recipients: allowed.length,
+    recipients: allowedTo.length + allowedBcc.length,
     subject: cleanSubject.slice(0, 200),
     ok,
   });

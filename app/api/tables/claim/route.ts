@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { Resend } from "resend";
+import { sendEmail } from "@/lib/email";
 import { clampText, isValidEmail, escapeHtml } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
 
@@ -8,7 +8,6 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 const first = (n: string) => escapeHtml((n || "").trim().split(/\s+/)[0] || "A player");
 
@@ -72,8 +71,8 @@ export async function POST(req: NextRequest) {
     // Per-join nudge to the host only.
     const to = [t.host_email, "hello@findmymahjgame.com"].filter(Boolean) as string[];
     if (to.length) {
-      await resend.emails.send({
-        from: "Find My Mahj Game <hello@findmymahjgame.com>",
+      await sendEmail({
+        kind: "table-claim",
         to,
         subject: remaining === 1
           ? `1 seat left, share to find your 4th!`
@@ -99,8 +98,8 @@ export async function POST(req: NextRequest) {
     const replyTo = (t.host_email as string) || "hello@findmymahjgame.com";
 
     if (memberEmails.length) {
-      await resend.emails.send({
-        from: "Find My Mahj Game <hello@findmymahjgame.com>",
+      await sendEmail({
+        kind: "table-claim",
         to: "hello@findmymahjgame.com",
         bcc: memberEmails,
         replyTo,
@@ -126,8 +125,8 @@ export async function POST(req: NextRequest) {
     // Phone-only groups would otherwise get no coordination at all: the
     // founder gets a manual-coordination alert with the host's phone.
     if (!memberEmails.length || !t.host_email) {
-      await resend.emails.send({
-        from: "Find My Mahj Game <hello@findmymahjgame.com>",
+      await sendEmail({
+        kind: "table-claim",
         to: "hello@findmymahjgame.com",
         subject: `PHONE-ONLY TABLE FULL: coordinate ${t.city || "this table"} by text`,
         html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:20px;">

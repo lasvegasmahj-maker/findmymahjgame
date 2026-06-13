@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { Resend } from "resend";
+import { sendEmail } from "@/lib/email";
 import { clampText, isValidEmail, escapeHtml } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
 
@@ -8,7 +8,6 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
   if (!(await rateLimit(req, "want-to-play", 5, 60))) {
@@ -37,8 +36,8 @@ export async function POST(req: NextRequest) {
   const { error } = await supabase.from("play_requests").insert(row);
   if (error) { console.error("want-to-play failed:", error.message); return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 }); }
 
-  await resend.emails.send({
-    from: "Find My Mahj Game <hello@findmymahjgame.com>",
+  await sendEmail({
+    kind: "want-to-play",
     to: "hello@findmymahjgame.com",
     subject: `Wants to play: ${row.name}${row.city ? ` (${row.city}${row.state ? ", " + row.state : ""})` : ""}`,
     html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:20px;">

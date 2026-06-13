@@ -1,9 +1,8 @@
-import { Resend } from "resend";
+import { sendEmail } from "@/lib/email";
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { escapeHtml, clampText } from "@/lib/sanitize";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 const ALLOWED_TYPES = ["connect", "inquiry"];
 
@@ -24,8 +23,8 @@ export async function POST(req: NextRequest) {
     const subject = clampText(raw.subject, 200);
     const body = clampText(raw.body, 5000);
 
-    const { error } = await resend.emails.send({
-      from: "Find My Mahj Game <hello@findmymahjgame.com>",
+    const { error } = await sendEmail({
+      kind: "notify",
       to: "hello@findmymahjgame.com",
       subject,
       html: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
@@ -36,7 +35,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (error) {
-      { console.error("notify failed:", error.message); return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 }); }
+      { console.error("notify failed:", error); return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 }); }
     }
 
     return NextResponse.json({ success: true });

@@ -1,10 +1,9 @@
-import { Resend } from "resend";
+import { sendEmail } from "@/lib/email";
 import { rateLimit } from "@/lib/rate-limit";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { escapeHtml, isValidEmail, clampText } from "@/lib/sanitize";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -153,16 +152,16 @@ export async function POST(req: NextRequest) {
     });
 
     // Send pricing email to the inquirer
-    await resend.emails.send({
-      from: "Find My Mahj Game <hello@findmymahjgame.com>",
+    await sendEmail({
+      kind: "advertise-inquiry",
       to: email,
       subject: "Your Find My Mahj Game advertising options",
       html: PRICING_HTML,
     });
 
     // Notify Shauna
-    await resend.emails.send({
-      from: "Find My Mahj Game <hello@findmymahjgame.com>",
+    await sendEmail({
+      kind: "advertise-inquiry",
       to: "hello@findmymahjgame.com",
       subject: `New advertising inquiry: ${name}${company ? ` (${company})` : ""}`,
       html: `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">

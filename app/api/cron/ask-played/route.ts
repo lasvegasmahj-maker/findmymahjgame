@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { Resend } from "resend";
+import { sendEmail } from "@/lib/email";
 import { signGameToken } from "@/lib/game-token";
 import { escapeHtml } from "@/lib/sanitize";
 
@@ -8,7 +8,6 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Daily (Vercel Cron). Asks full tables that have had time to play "did your
 // game happen?" with one-click Yes/No. Protected by CRON_SECRET (Vercel sends
@@ -41,8 +40,8 @@ export async function GET(req: NextRequest) {
       const no = `${base}/played/confirm?token=${signGameToken(t.id, "no")}`;
       const when = escapeHtml(`${t.day_of_week || ""} ${t.time_of_day || ""}`.trim());
       const area = t.city ? escapeHtml(t.city) : "your area";
-      await resend.emails.send({
-        from: "Find My Mahj Game <hello@findmymahjgame.com>",
+      await sendEmail({
+        kind: "ask-played",
         to: "hello@findmymahjgame.com",
         bcc: emails,
         subject: "Did your mahjong game happen?",

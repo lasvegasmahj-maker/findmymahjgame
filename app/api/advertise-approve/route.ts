@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { Resend } from "resend";
+import { sendEmail } from "@/lib/email";
 import crypto from "crypto";
 import { escapeHtml } from "@/lib/sanitize";
 import { getHmacSecret } from "@/lib/hmac";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -93,8 +92,8 @@ export async function POST(req: NextRequest) {
 
   // Notify the advertiser
   if (action === "approve") {
-    await resend.emails.send({
-      from: "Find My Mahj Game <hello@findmymahjgame.com>",
+    await sendEmail({
+      kind: "advertise-approve",
       to: submission.contact_email,
       subject: "Your listing is approved!",
       html: `

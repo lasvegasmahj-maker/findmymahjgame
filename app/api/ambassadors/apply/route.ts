@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { Resend } from "resend";
+import { sendEmail } from "@/lib/email";
 import { clampText, isValidEmail, escapeHtml } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
 
@@ -8,7 +8,6 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 const ROLES = ["Teacher", "Host", "Organizer", "Club leader", "Other"];
 
@@ -46,8 +45,8 @@ export async function POST(req: NextRequest) {
   const firstName = escapeHtml((row.name || "").trim().split(/\s+/)[0] || "there");
   const place = [row.city, row.state].filter(Boolean).join(", ");
 
-  await resend.emails.send({
-    from: "Find My Mahj Game <hello@findmymahjgame.com>",
+  await sendEmail({
+    kind: "ambassador-apply",
     to: row.email,
     replyTo: "hello@findmymahjgame.com",
     subject: "Thank you for applying to be a Founding Ambassador",
@@ -60,8 +59,8 @@ export async function POST(req: NextRequest) {
     </div>`,
   }).catch(() => {});
 
-  await resend.emails.send({
-    from: "Find My Mahj Game <hello@findmymahjgame.com>",
+  await sendEmail({
+    kind: "ambassador-apply",
     to: "hello@findmymahjgame.com",
     replyTo: row.email,
     subject: `New Ambassador application: ${row.name}${place ? ` (${escapeHtml(place)})` : ""}`,
