@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { createServerClient } from "@/lib/supabase-server";
 import { STATES, type StateData } from "@/lib/states-data";
 import { safeHttpUrl } from "@/lib/sanitize";
+import { attendInfo } from "@/lib/event-level";
 
 export const revalidate = 600;
 export const dynamicParams = true;
@@ -123,7 +124,7 @@ export default async function CityPage({ params }: { params: Promise<{ state: st
                 {e.event_type && <div style={{ textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.8rem", fontWeight: 800, color: "var(--pink-text)", marginBottom: "0.4rem" }}>{String(e.event_type).replace(/_/g, " ")}</div>}
                 <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--navy)" }}>{e.event_name || "Mahjong"}</div>
                 {(e.day_time || e.venue) && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[e.day_time, e.venue].filter(Boolean).join(" - ")}</div>}
-                {e.beginner_friendly === true && <div style={{ display: "inline-block", marginTop: "0.5rem", fontSize: "0.8rem", fontWeight: 800, color: "#1a6e3a", background: "rgba(46,201,92,0.14)", borderRadius: 50, padding: "0.2rem 0.7rem" }}>Beginners welcome</div>}
+                {(() => { const a = attendInfo(e.event_type, e.beginner_friendly); return <div style={{ display: "inline-block", marginTop: "0.5rem", fontSize: "0.8rem", fontWeight: 800, color: a.color, background: a.bg, borderRadius: 50, padding: "0.2rem 0.7rem" }}>{a.label}</div>; })()}
               </>
             );
             return url ? <a key={e.id} href={url} target="_blank" rel="noopener noreferrer" style={{ ...card, textDecoration: "none", display: "block" }}>{inner}</a> : <div key={e.id} style={card}>{inner}</div>;

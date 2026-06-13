@@ -4,6 +4,7 @@ import NotifyMe from "@/components/notify-me";
 import { createServerClient } from "@/lib/supabase-server";
 import { nearMatches } from "@/lib/near-match";
 import { safeHttpUrl } from "@/lib/sanitize";
+import { attendInfo } from "@/lib/event-level";
 
 export const metadata: Metadata = {
   title: "Mahjong Events and Open Plays Near You",
@@ -22,17 +23,16 @@ function rank(t: string | null | undefined): number {
 }
 // Discovery filters: each chip narrows the public listings to one kind of
 // Mahjong activity. "open_play" folds in recurring weekly games; "event" covers
-// the destination/special formats; "beginner" surfaces beginner-friendly rows.
-const TYPE_GROUPS: Record<string, (t: string | null | undefined, beginner: boolean) => boolean> = {
+// the destination/special formats.
+const TYPE_GROUPS: Record<string, (t: string | null | undefined) => boolean> = {
   open_play: (t) => ["openplay", "recurring"].includes(norm(t)),
   tournament: (t) => norm(t) === "tournament",
   league: (t) => norm(t) === "league",
   event: (t) => ["event", "special", "retreat", "cruise", "conference", "festival", "fundraiser", "social"].includes(norm(t)),
-  beginner: (_t, beginner) => beginner === true,
 };
 const CHIPS: [string, string][] = [
   ["all", "All"], ["open_play", "Open plays"], ["tournament", "Tournaments"],
-  ["league", "Leagues"], ["event", "Events & retreats"], ["beginner", "Beginner friendly"],
+  ["league", "Leagues"], ["event", "Events & retreats"],
 ];
 function whenLabel(e: { event_date?: string | null; day_time?: string | null; day_of_week?: string | null; time_of_day?: string | null }): string {
   if (e.day_time && !e.event_date) return e.day_time;
@@ -65,7 +65,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
     rows = rows.filter((e) => nearMatches(n, e.city, e.state));
   }
   const typeFilter = TYPE_GROUPS[activeType];
-  if (typeFilter) rows = rows.filter((e) => typeFilter(e.event_type, e.beginner_friendly === true));
+  if (typeFilter) rows = rows.filter((e) => typeFilter(e.event_type));
 
   const FRESH_MS = 90 * 24 * 60 * 60 * 1000;
   const isFresh = (at?: string | null) => !!at && Date.now() - new Date(at).getTime() < FRESH_MS;
@@ -136,9 +136,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
                 {whenLabel(e) && <div style={{ fontSize: "1.05rem", color: "var(--navy)", marginTop: "0.4rem" }}>{whenLabel(e)}</div>}
                 {(e.venue || e.city) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[e.venue, e.city, e.state].filter(Boolean).join(", ")}</div>}
                 <div style={{ marginTop: "0.45rem", display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
-                  {e.beginner_friendly === true && (
-                    <span style={{ display: "inline-block", fontSize: "0.85rem", fontWeight: 800, color: "#1a6e3a", background: "rgba(46,201,92,0.14)", borderRadius: 50, padding: "0.2rem 0.7rem" }}>Beginners welcome</span>
-                  )}
+                  {(() => { const a = attendInfo(e.event_type, e.beginner_friendly); return <span style={{ display: "inline-block", fontSize: "0.85rem", fontWeight: 800, color: a.color, background: a.bg, borderRadius: 50, padding: "0.2rem 0.7rem" }}>{a.label}</span>; })()}
                   {isFresh(e.confirmed_active_at) && (
                     <span style={{ display: "inline-block", fontSize: "0.85rem", fontWeight: 800, color: "var(--green-dark, #1a6e3a)", background: "rgba(46,201,92,0.12)", borderRadius: 50, padding: "0.2rem 0.7rem" }}>
                       Confirmed active {new Date(e.confirmed_active_at!).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })}

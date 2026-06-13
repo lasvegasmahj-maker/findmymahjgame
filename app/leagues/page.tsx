@@ -4,6 +4,7 @@ import NotifyMe from "@/components/notify-me";
 import { createServerClient } from "@/lib/supabase-server";
 import { nearMatches } from "@/lib/near-match";
 import { safeHttpUrl } from "@/lib/sanitize";
+import { attendInfo } from "@/lib/event-level";
 
 export const metadata: Metadata = {
   title: "Mahjong Leagues Near You",
@@ -92,9 +93,7 @@ export default async function LeaguesPage({ searchParams }: { searchParams: Prom
                 {whenLabel(e) && <div style={{ fontSize: "1.05rem", color: "var(--navy)", marginTop: "0.4rem" }}>{whenLabel(e)}</div>}
                 {(e.venue || e.city) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[e.venue, e.city, e.state].filter(Boolean).join(", ")}</div>}
                 <div style={{ marginTop: "0.45rem", display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
-                  {e.beginner_friendly === true && (
-                    <span style={{ display: "inline-block", fontSize: "0.85rem", fontWeight: 800, color: "#1a6e3a", background: "rgba(46,201,92,0.14)", borderRadius: 50, padding: "0.2rem 0.7rem" }}>Beginners welcome</span>
-                  )}
+                  {(() => { const a = attendInfo(e.event_type, e.beginner_friendly); return <span style={{ display: "inline-block", fontSize: "0.85rem", fontWeight: 800, color: a.color, background: a.bg, borderRadius: 50, padding: "0.2rem 0.7rem" }}>{a.label}</span>; })()}
                   {isFresh(e.confirmed_active_at) && (
                     <span style={{ display: "inline-block", fontSize: "0.85rem", fontWeight: 800, color: "var(--green-dark, #1a6e3a)", background: "rgba(46,201,92,0.12)", borderRadius: 50, padding: "0.2rem 0.7rem" }}>
                       Confirmed active {new Date(e.confirmed_active_at!).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })}
