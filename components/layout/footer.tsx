@@ -15,7 +15,6 @@ export default function Footer() {
             <Link href="/teachers">Teachers</Link>
             <Link href="/states">Browse States</Link>
             <Link href="/newsletter">Newsletter</Link>
-            <Link href="/help">Help</Link>
           </div>
           <div>
             <h4>Explore</h4>
