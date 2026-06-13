@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 
@@ -15,6 +16,7 @@ const ACCEPTED: Record<string, string> = {
 const MAX_BYTES = 5 * 1024 * 1024;
 
 export async function POST(req: NextRequest) {
+  if (!(await rateLimit(req, "upload-logo", 5, 60))) return NextResponse.json({ error: "Too many requests. Please wait a minute and try again." }, { status: 429 });
   const form = await req.formData().catch(() => null);
   const file = form?.get("file");
 
@@ -31,6 +33,17 @@ export async function POST(req: NextRequest) {
 
   const filename = `${crypto.randomUUID()}.${ext}`;
   const bytes = Buffer.from(await file.arrayBuffer());
+
+  // The Content-Type header is attacker-controlled; confirm the real bytes
+  // match so a script can't ride in as image/png.
+  const sig =
+    bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff ? "image/jpeg" :
+    bytes.length >= 8 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47 ? "image/png" :
+    bytes.length >= 12 && bytes.toString("ascii", 0, 4) === "RIFF" && bytes.toString("ascii", 8, 12) === "WEBP" ? "image/webp" :
+    null;
+  if (sig !== file.type) {
+    return NextResponse.json({ error: "That file does not look like a real image. Please upload a JPEG, PNG, or WebP." }, { status: 400 });
+  }
 
   const { error } = await supabase.storage
     .from("logos")

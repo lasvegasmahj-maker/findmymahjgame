@@ -7,10 +7,10 @@ export default function ShareSheet({ url, message }: { url: string; message: str
   const enc = encodeURIComponent;
 
   const buttons: { label: string; href: string; bg: string }[] = [
-    { label: "📲  Text my friends", href: `sms:?&body=${enc(text)}`, bg: "#1a1f5e" },
-    { label: "💬  Share on WhatsApp", href: `https://wa.me/?text=${enc(text)}`, bg: "#25D366" },
-    { label: "📧  Share by email", href: `mailto:?subject=${enc("Come play mahjong with me")}&body=${enc(text)}`, bg: "#6b7280" },
-    { label: "📘  Share on Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`, bg: "#1877F2" },
+    { label: "Text my friends", href: `sms:?&body=${enc(text)}`, bg: "#1a1f5e" },
+    { label: "Share on WhatsApp", href: `https://wa.me/?text=${enc(text)}`, bg: "#25D366" },
+    { label: "Share by email", href: `mailto:?subject=${enc("Come play mahjong with me")}&body=${enc(text)}`, bg: "#6b7280" },
+    { label: "Share on Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${enc(url)}`, bg: "#1877F2" },
   ];
 
   return (

@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { rateLimit } from "@/lib/rate-limit";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
@@ -132,6 +133,7 @@ function buildApprovalEmail(data: Record<string, string>, submissionId: string):
 }
 
 export async function POST(req: NextRequest) {
+  if (!(await rateLimit(req, "advertise-submit", 3, 60))) return NextResponse.json({ error: "Too many requests. Please wait a minute and try again." }, { status: 429 });
   try {
     const body = await req.json();
     const {
@@ -212,7 +214,7 @@ export async function POST(req: NextRequest) {
       .select("id")
       .single();
 
-    if (dbError) throw new Error(dbError.message);
+    if (dbError) { console.error("advertise-submit db error:", dbError.message); return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 }); }
 
     const submissionId = saved.id as string;
 
@@ -249,7 +251,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("advertise-submit failed:", err); return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }

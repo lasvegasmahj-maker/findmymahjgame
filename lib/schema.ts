@@ -210,8 +210,15 @@ export function buildStatePageSchema({ stateName, stateSlug, stateDesc, venues, 
   }
 
   // Individual Event schemas
+  const _todayMid = new Date();
+  _todayMid.setHours(0, 0, 0, 0);
   for (const event of events) {
     if (!event.event_date) continue;
+    const _start = new Date(event.event_date);
+    if (isNaN(_start.getTime())) continue;
+    // Skip past one-time events; their EventScheduled markup is a Google
+    // structured-data quality error. Recurring rows omit a future event_date.
+    if (_start < _todayMid) continue;
 
     const eventSchema: Record<string, unknown> = {
       "@context": "https://schema.org",

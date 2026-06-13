@@ -80,6 +80,7 @@ export async function POST(req: NextRequest) {
     } else {
       next = clampText(b[f], f === "description" ? 600 : 200) || null;
     }
+    if ((f === "business_name" || f === "event_name") && !next) continue;
     if (next !== (listing[f] ?? null)) {
       changes[f] = next;
       previous[f] = listing[f] ?? null;

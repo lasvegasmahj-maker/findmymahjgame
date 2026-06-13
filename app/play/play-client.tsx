@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import SeatDots from "@/components/seat-dots";
 
 const TIMES = ["Morning", "Afternoon", "Evening"];
@@ -95,7 +96,7 @@ export default function PlayClient() {
 
   const shell = (children: React.ReactNode) => (
     <main style={{ maxWidth: 560, margin: "0 auto", padding: "1.5rem 1.2rem 4rem" }}>
-      <a href="/" style={{ fontSize: "1.05rem", color: "var(--pink)", fontWeight: 700, textDecoration: "none" }}>&larr; Back</a>
+      <Link href="/" style={{ fontSize: "1.05rem", color: "var(--pink)", fontWeight: 700, textDecoration: "none" }}>&larr; Back</Link>
       {children}
     </main>
   );
@@ -130,18 +131,18 @@ export default function PlayClient() {
             const title = `${g.day_of_week || ""} ${g.time_of_day || ""} Mahjong`.trim();
             const place = [g.venue_name, g.city].filter(Boolean).join(", ");
             return (
-              <a key={g.share_code} href={`/t/${g.share_code}`} style={{ display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.3rem", textDecoration: "none" }}>
+              <Link key={g.share_code} href={`/t/${g.share_code}`} style={{ display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.3rem", textDecoration: "none" }}>
                 <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--navy)" }}>{title}</div>
                 {place && <div style={{ fontSize: "1.1rem", color: "var(--muted)", margin: "0.3rem 0 0.8rem" }}>{place}</div>}
                 <SeatDots filled={g.filled} total={g.seats_total || 4} size="1.3rem" />
                 <div style={{ marginTop: "0.8rem", color: "var(--pink)", fontWeight: 800, fontSize: "1.1rem" }}>Join this game &rarr;</div>
-              </a>
+              </Link>
             );
           })}
         </div>
         <div style={{ marginTop: "1.6rem", textAlign: "center" }}>
           <p style={{ fontSize: "1.05rem", color: "var(--muted)" }}>Don&rsquo;t see your game?</p>
-          <a href="/start" style={{ display: "inline-block", color: "var(--pink)", fontWeight: 800, fontSize: "1.15rem", margin: "0.4rem 0" }}>Start your own table &rarr;</a><br />
+          <Link href="/start" style={{ display: "inline-block", color: "var(--pink)", fontWeight: 800, fontSize: "1.15rem", margin: "0.4rem 0" }}>Start your own table &rarr;</Link><br />
           <button type="button" onClick={() => { setCaptureWhy("notify"); setStep("capture"); }} style={{ background: "none", border: "none", color: "var(--pink)", fontWeight: 700, fontSize: "1.05rem", cursor: "pointer", textDecoration: "underline" }}>Or tell us when a new game opens</button>
         </div>
       </>
@@ -153,7 +154,7 @@ export default function PlayClient() {
     return shell(
       <div style={{ textAlign: "center", paddingTop: "2rem" }}>
         <h1 style={{ fontSize: "1.9rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>You&rsquo;re on the list!</h1>
-        <p style={{ fontSize: "1.2rem", color: "var(--navy)", lineHeight: 1.6 }}>We&rsquo;ll reach out as soon as there&rsquo;s a game near {city}. Want one sooner? <a href="/start" style={{ color: "var(--pink)", fontWeight: 700 }}>Start your own table</a> and invite friends.</p>
+        <p style={{ fontSize: "1.2rem", color: "var(--navy)", lineHeight: 1.6 }}>We&rsquo;ll reach out as soon as there&rsquo;s a game near {city}. Want one sooner? <Link href="/start" style={{ color: "var(--pink)", fontWeight: 700 }}>Start your own table</Link> and invite friends.</p>
       </div>
     );
   }
@@ -167,7 +168,7 @@ export default function PlayClient() {
       </h1>
       <p style={{ fontSize: "1.15rem", color: "var(--muted)", lineHeight: 1.5 }}>
         {captureWhy === "notify" ? "Leave your name and we will tell you the moment a new table opens." : "Some tables fill by invitation, so check back soon. We'll reach out the moment a game opens near you, or "}
-        {captureWhy !== "notify" && <a href="/start" style={{ color: "var(--pink)", fontWeight: 700 }}>start your own</a>}
+        {captureWhy !== "notify" && <Link href="/start" style={{ color: "var(--pink)", fontWeight: 700 }}>start your own</Link>}
         {captureWhy !== "notify" && "."}
       </p>
       <form onSubmit={submitCapture}>

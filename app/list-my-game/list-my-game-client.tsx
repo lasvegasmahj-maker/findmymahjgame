@@ -87,32 +87,27 @@ export default function ListMyGameClient() {
             color: "var(--navy)",
             marginBottom: "0.8rem",
           }}
-        >
-          Listing submitted!
+        >Listing submitted!
         </h1>
-        <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.7, marginBottom: "2rem" }}>
-          We&rsquo;ll review and approve your listing within 1-2 business days. Once live, you&rsquo;ll appear on your state page so local players can find you.
+        <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.7, marginBottom: "2rem" }}>We&rsquo;ll review and approve your listing within 1-2 business days. Once live, you&rsquo;ll appear on your state page so local players can find you.
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", alignItems: "center" }}>
           {stateSlug && (
             <a
               href={`/states/${stateSlug}`}
               style={{ display: "inline-block", padding: "0.75rem 1.8rem", background: "var(--navy)", color: "white", borderRadius: 10, fontWeight: 700, textDecoration: "none", fontSize: "0.95rem" }}
-            >
-              Browse Players in {selectedStateName} &rarr;
+            >Browse Players in {selectedStateName} &rarr;
             </a>
           )}
           <a
             href="/states"
             style={{ color: "var(--pink)", fontWeight: 600, textDecoration: "none", fontSize: "0.9rem" }}
-          >
-            Browse all 50 states &rarr;
+          >Browse all 50 states &rarr;
           </a>
           <a
             href="/"
             style={{ color: "var(--muted)", fontSize: "0.85rem", textDecoration: "none" }}
-          >
-            Back to home
+          >Back to home
           </a>
         </div>
       </div>
@@ -124,8 +119,7 @@ export default function ListMyGameClient() {
       <div className="page-hero">
         <div className="eyebrow">Free Player Listing</div>
         <h1>Create My Free Listing</h1>
-        <p>
-          List yourself so other players in your area can find you. Always free, no promo code needed.
+        <p>List yourself so other players in your area can find you. Always free, no promo code needed.
         </p>
       </div>
 
@@ -138,18 +132,15 @@ export default function ListMyGameClient() {
             padding: "2.5rem",
           }}
         >
-          <h2 style={{ border: "none", marginTop: 0, marginBottom: "0.3rem" }}>
-            Tell us about yourself
+          <h2 style={{ border: "none", marginTop: 0, marginBottom: "0.3rem" }}>Tell us about yourself
           </h2>
-          <p style={{ color: "var(--muted)", fontSize: "0.9rem", marginBottom: "2rem" }}>
-            Your email will never be shown publicly. We use it only to forward connection requests.
+          <p style={{ color: "var(--muted)", fontSize: "0.9rem", marginBottom: "2rem" }}>Your email will never be shown publicly. We use it only to forward connection requests.
           </p>
 
           <form onSubmit={handleSubmit}>
             {/* Name */}
             <div style={{ marginBottom: "1.2rem" }}>
-              <label style={labelStyle}>
-                Your Name <span style={{ fontWeight: 400, color: "var(--muted)" }}>(first name + last initial only, e.g. Sandra M.)</span>
+              <label style={labelStyle}>Your Name <span style={{ fontWeight: 400, color: "var(--muted)" }}>(first name + last initial only, e.g. Sandra M.)</span>
               </label>
               <input
                 type="text"
@@ -211,8 +202,7 @@ export default function ListMyGameClient() {
 
             {/* Availability */}
             <div style={{ marginBottom: "1.2rem" }}>
-              <label style={labelStyle}>
-                Availability <span style={{ fontWeight: 400, color: "var(--muted)" }}>(e.g. Weekday Mornings, Weekend Afternoons)</span>
+              <label style={labelStyle}>Availability <span style={{ fontWeight: 400, color: "var(--muted)" }}>(e.g. Weekday Mornings, Weekend Afternoons)</span>
               </label>
               <input
                 type="text"
@@ -225,8 +215,7 @@ export default function ListMyGameClient() {
 
             {/* Bio */}
             <div style={{ marginBottom: "1.2rem" }}>
-              <label style={labelStyle}>
-                About You <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional, max 200 characters)</span>
+              <label style={labelStyle}>About You <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional, max 200 characters)</span>
               </label>
               <textarea
                 placeholder="Tell players a little about yourself..."
@@ -242,8 +231,7 @@ export default function ListMyGameClient() {
 
             {/* Email */}
             <div style={{ marginBottom: "1.8rem" }}>
-              <label style={labelStyle}>
-                Email Address <span style={{ fontWeight: 400, color: "var(--muted)" }}>(for contact, will NOT be shown publicly)</span>
+              <label style={labelStyle}>Email Address <span style={{ fontWeight: 400, color: "var(--muted)" }}>(for contact, will NOT be shown publicly)</span>
               </label>
               <input
                 type="email"
@@ -292,8 +280,7 @@ export default function ListMyGameClient() {
               {submitting ? "Creating your listing..." : "Create My Free Listing →"}
             </button>
 
-            <p style={{ fontSize: "0.78rem", color: "var(--muted)", textAlign: "center", marginTop: "1rem" }}>
-              Always free. No credit card. No promo code needed.
+            <p style={{ fontSize: "0.78rem", color: "var(--muted)", textAlign: "center", marginTop: "1rem" }}>Always free. No credit card. No promo code needed.
             </p>
           </form>
         </div>

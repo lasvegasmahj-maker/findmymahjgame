@@ -71,10 +71,6 @@ const FAQ_ITEMS = [
     a: "Find My Mahj Game is a national directory. It is a sister site to Las Vegas Mahjong (lasvegasmahj.com), which focuses specifically on mahjong in the Las Vegas area.",
   },
   {
-    q: "Who runs Find My Mahj Game?",
-    a: "Find My Mahj Game was founded by Shauna Bruckman, a certified Open Mah Jongg instructor and lifelong mahjong player, to help players across the country find their game.",
-  },
-  {
     q: "How do I contact you?",
     a: "Email us at hello@findmymahjgame.com or visit /contact. We read every message.",
   },

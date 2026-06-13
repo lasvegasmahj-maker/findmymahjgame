@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "@/lib/email";
@@ -18,7 +19,11 @@ const norm = (s: string | null) => (s || "").toLowerCase().replace(/[^a-z0-9 ]/g
 
 export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
-  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) {
+  const presented = req.headers.get("authorization") || "";
+  const expected = `Bearer ${secret}`;
+  const ok = !!secret && presented.length === expected.length &&
+    crypto.timingSafeEqual(Buffer.from(presented), Buffer.from(expected));
+  if (!ok) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -57,7 +62,7 @@ export async function GET(req: NextRequest) {
   }
 
   const { data: existingDrafts } = await supabase
-    .from("match_drafts").select("request_ids").in("status", ["draft", "approved", "skipped"]).gte("created_at", new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString());
+    .from("match_drafts").select("request_ids").in("status", ["draft", "approved"]).gte("created_at", new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString());
   const alreadyDrafted = new Set((existingDrafts || []).flatMap((d) => d.request_ids as string[]));
 
   const drafts: { city: string; day_pref: string | null; time_pref: string | null; request_ids: string[]; names: string[] }[] = [];

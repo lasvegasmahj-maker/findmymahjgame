@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { rateLimit } from "@/lib/rate-limit";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { escapeHtml, isValidEmail, clampText } from "@/lib/sanitize";
@@ -20,15 +21,13 @@ const PRICING_HTML = `
 
   <div style="background: #f4f6ff; padding: 28px 32px; border-radius: 0 0 12px 12px; border: 1px solid #e8eaf0; border-top: none;">
 
-    <p style="font-size: 0.95rem; color: #6b7280; line-height: 1.7; margin-bottom: 20px;">
-      Thanks for your interest in advertising on Find My Mahj Game! Here are our current options. Once you've picked a plan, click the button at the bottom to submit your full listing details.
+    <p style="font-size: 0.95rem; color: #6b7280; line-height: 1.7; margin-bottom: 20px;">Thanks for your interest in advertising on Find My Mahj Game! Here are our current options. Once you've picked a plan, click the button at the bottom to submit your full listing details.
     </p>
 
     <!-- Founding Partner highlight -->
     <div style="background: linear-gradient(135deg, #fffdf0, #fff8dc); border: 2px solid #f5c842; border-radius: 10px; padding: 18px 20px; margin-bottom: 24px;">
       <div style="font-family: Georgia, serif; font-size: 1rem; color: #5a4000; margin-bottom: 6px;">Founding Partner Offer</div>
-      <p style="font-size: 0.88rem; color: #7a6020; margin: 0 0 8px; line-height: 1.6;">
-        You're getting in early. Use code <strong>FINDMYMAHJ</strong> to unlock <strong>6 months free</strong> on any listing. After your free period, Founding Partners lock in <strong>30% off their rate for life</strong> -- as long as you stay listed. Only a limited number of spots are available.
+      <p style="font-size: 0.88rem; color: #7a6020; margin: 0 0 8px; line-height: 1.6;">You're getting in early. Use code <strong>FINDMYMAHJ</strong> to unlock <strong>6 months free</strong> on any listing. After your free period, Founding Partners lock in <strong>30% off their rate for life</strong> -- as long as you stay listed. Only a limited number of spots are available.
       </p>
       <p style="font-size: 0.82rem; color: #a07800; margin: 0;">Just mention the code when you reply and we'll apply it to your listing.</p>
     </div>
@@ -49,7 +48,7 @@ const PRICING_HTML = `
         <td style="padding: 10px 12px; color: #1a6e3a; font-weight: 700; border-bottom: 1px solid #e8eaf0;">$129/yr</td>
       </tr>
       <tr style="background: #f4f6ff;">
-        <td style="padding: 10px 12px; font-weight: 700; color: #1a1f5e; border-bottom: 1px solid #e8eaf0;">Featured Spot ⭐</td>
+        <td style="padding: 10px 12px; font-weight: 700; color: #1a1f5e; border-bottom: 1px solid #e8eaf0;">Featured Spot </td>
         <td style="padding: 10px 12px; color: #6b7280; border-bottom: 1px solid #e8eaf0;">Top placement, highlighted listing, photo</td>
         <td style="padding: 10px 12px; color: #e91e8c; font-weight: 700; border-bottom: 1px solid #e8eaf0;">$39/mo</td>
         <td style="padding: 10px 12px; color: #1a6e3a; font-weight: 700; border-bottom: 1px solid #e8eaf0;">$329/yr</td>
@@ -118,14 +117,14 @@ const PRICING_HTML = `
       <a href="https://findmymahjgame.com/advertise/submit" style="background: #e91e8c; color: white; padding: 12px 32px; border-radius: 6px; font-weight: 700; font-size: 0.95rem; text-decoration: none; display: inline-block;">Submit My Listing Details &rarr;</a>
     </div>
 
-    <p style="font-size: 0.75rem; color: #9ca3af; text-align: center; margin-top: 24px;">
-      Find My Mahj Game &mdash; findmymahjgame.com
+    <p style="font-size: 0.75rem; color: #9ca3af; text-align: center; margin-top: 24px;">Find My Mahj Game &mdash; findmymahjgame.com
     </p>
   </div>
 </div>
 `;
 
 export async function POST(req: NextRequest) {
+  if (!(await rateLimit(req, "advertise-inquiry", 3, 60))) return NextResponse.json({ error: "Too many requests. Please wait a minute and try again." }, { status: 429 });
   try {
     const raw = await req.json();
 
@@ -181,7 +180,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("advertise-inquiry failed:", err); return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }

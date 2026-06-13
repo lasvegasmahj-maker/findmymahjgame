@@ -6,10 +6,10 @@ import { AD_EMAIL } from "@/lib/constants";
 type ListingType = "venue" | "instructor" | "event" | "brand" | "";
 
 const TYPE_OPTIONS = [
-  { value: "venue", label: "Venue Listing", icon: "🏛", desc: "Restaurant, studio, community space" },
-  { value: "instructor", label: "Instructor Listing", icon: "🎓", desc: "Mahjong teacher or certified instructor" },
-  { value: "event", label: "Event / Tournament", icon: "🎫", desc: "Open play, tournament, retreat, workshop" },
-  { value: "brand", label: "Brand Advertising", icon: "🛍️", desc: "Mahjong sets, accessories, related products" },
+  { value: "venue", label: "Venue Listing", icon: "", desc: "Restaurant, studio, community space" },
+  { value: "instructor", label: "Instructor Listing", icon: "", desc: "Mahjong teacher or certified instructor" },
+  { value: "event", label: "Event / Tournament", icon: "", desc: "Open play, tournament, retreat, workshop" },
+  { value: "brand", label: "Brand Advertising", icon: "", desc: "Mahjong sets, accessories, related products" },
 ];
 
 export default function SubmitClient() {
@@ -75,18 +75,14 @@ export default function SubmitClient() {
   if (status === "success") {
     return (
       <div className="page-body" style={{ maxWidth: 600, textAlign: "center", paddingTop: "4rem" }}>
-        <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🎉</div>
-        <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.8rem", color: "var(--navy)", marginBottom: "0.75rem" }}>
-          Listing submitted!
+        <div style={{ fontSize: "3rem", marginBottom: "1rem" }}></div>
+        <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.8rem", color: "var(--navy)", marginBottom: "0.75rem" }}>Listing submitted!
         </h1>
-        <p style={{ color: "var(--muted)", lineHeight: 1.7, marginBottom: "0.5rem" }}>
-          We'll review your details and send you an approval confirmation within 24 hours. Once approved, you'll be live.
+        <p style={{ color: "var(--muted)", lineHeight: 1.7, marginBottom: "0.5rem" }}>We'll review your details and send you an approval confirmation within 24 hours. Once approved, you'll be live.
         </p>
-        <p style={{ color: "var(--muted)", fontSize: "0.88rem", marginBottom: "0.5rem" }}>
-          No logo yet? Email it to <a href={`mailto:${AD_EMAIL}`}>{AD_EMAIL}</a> anytime and we'll add it for you.
+        <p style={{ color: "var(--muted)", fontSize: "0.88rem", marginBottom: "0.5rem" }}>No logo yet? Email it to <a href={`mailto:${AD_EMAIL}`}>{AD_EMAIL}</a> anytime and we'll add it for you.
         </p>
-        <p style={{ color: "var(--muted)", fontSize: "0.88rem" }}>
-          Questions? <a href={`mailto:${AD_EMAIL}`}>{AD_EMAIL}</a>
+        <p style={{ color: "var(--muted)", fontSize: "0.88rem" }}>Questions? <a href={`mailto:${AD_EMAIL}`}>{AD_EMAIL}</a>
         </p>
       </div>
     );
@@ -192,8 +188,7 @@ export default function SubmitClient() {
                 {logoError && (
                   <p style={{ fontSize: "0.78rem", color: "#dc2626", marginTop: "0.35rem" }}>{logoError}</p>
                 )}
-                <p style={{ fontSize: "0.78rem", color: "var(--muted)", marginTop: "0.35rem" }}>
-                  JPEG, PNG, or WebP, up to 5 MB.
+                <p style={{ fontSize: "0.78rem", color: "var(--muted)", marginTop: "0.35rem" }}>JPEG, PNG, or WebP, up to 5 MB.
                 </p>
               </div>
               <div className="form-group">
@@ -207,16 +202,14 @@ export default function SubmitClient() {
           {listingType && (
             <>
               {status === "error" && (
-                <p style={{ color: "#dc2626", fontSize: "0.85rem", marginBottom: "1rem" }}>
-                  Something went wrong. Email <a href={`mailto:${AD_EMAIL}`}>{AD_EMAIL}</a> directly.
+                <p style={{ color: "#dc2626", fontSize: "0.85rem", marginBottom: "1rem" }}>Something went wrong. Email <a href={`mailto:${AD_EMAIL}`}>{AD_EMAIL}</a> directly.
                 </p>
               )}
               <button type="submit" disabled={status === "submitting"}
                 style={{ background: "var(--pink)", color: "white", border: "none", borderRadius: 8, padding: "1rem 2.5rem", fontSize: "1rem", fontWeight: 700, cursor: "pointer", width: "100%", opacity: status === "submitting" ? 0.7 : 1 }}>
                 {status === "submitting" ? "Submitting..." : "Submit My Listing for Review →"}
               </button>
-              <p style={{ fontSize: "0.78rem", color: "var(--muted)", textAlign: "center", marginTop: "0.75rem" }}>
-                We'll review and send you an approval within 24 hours.
+              <p style={{ fontSize: "0.78rem", color: "var(--muted)", textAlign: "center", marginTop: "0.75rem" }}>We'll review and send you an approval within 24 hours.
               </p>
             </>
           )}
@@ -230,7 +223,7 @@ export default function SubmitClient() {
 function VenueFields({ form, set }: { form: Record<string, string>; set: (k: string, v: string) => void }) {
   return (
     <div style={{ background: "white", border: "1.5px solid var(--border)", borderRadius: 14, padding: "1.8rem", marginBottom: "1.5rem" }}>
-      <h2 style={{ border: "none", marginTop: 0, marginBottom: "1.2rem", fontSize: "1.1rem" }}>🏛 Venue Details</h2>
+      <h2 style={{ border: "none", marginTop: 0, marginBottom: "1.2rem", fontSize: "1.1rem" }}> Venue Details</h2>
       <div className="form-group">
         <label className="form-label">Venue Name</label>
         <input type="text" required placeholder="The Mahjong Cafe" value={form.displayName || ""}
@@ -275,7 +268,7 @@ function VenueFields({ form, set }: { form: Record<string, string>; set: (k: str
 function InstructorFields({ form, set }: { form: Record<string, string>; set: (k: string, v: string) => void }) {
   return (
     <div style={{ background: "white", border: "1.5px solid var(--border)", borderRadius: 14, padding: "1.8rem", marginBottom: "1.5rem" }}>
-      <h2 style={{ border: "none", marginTop: 0, marginBottom: "1.2rem", fontSize: "1.1rem" }}>🎓 Instructor Details</h2>
+      <h2 style={{ border: "none", marginTop: 0, marginBottom: "1.2rem", fontSize: "1.1rem" }}> Instructor Details</h2>
       <div className="form-group">
         <label className="form-label">Instructor / Business Name</label>
         <input type="text" required placeholder="Jane Smith Mahjong" value={form.displayName || ""}
@@ -310,7 +303,7 @@ function InstructorFields({ form, set }: { form: Record<string, string>; set: (k
 function EventFields({ form, set }: { form: Record<string, string>; set: (k: string, v: string) => void }) {
   return (
     <div style={{ background: "white", border: "1.5px solid var(--border)", borderRadius: 14, padding: "1.8rem", marginBottom: "1.5rem" }}>
-      <h2 style={{ border: "none", marginTop: 0, marginBottom: "1.2rem", fontSize: "1.1rem" }}>🎫 Event Details</h2>
+      <h2 style={{ border: "none", marginTop: 0, marginBottom: "1.2rem", fontSize: "1.1rem" }}> Event Details</h2>
       <div className="form-group">
         <label className="form-label">Event Name</label>
         <input type="text" required placeholder="Spring Mahjong Tournament" value={form.displayName || ""}
@@ -374,7 +367,7 @@ function EventFields({ form, set }: { form: Record<string, string>; set: (k: str
 function BrandFields({ form, set }: { form: Record<string, string>; set: (k: string, v: string) => void }) {
   return (
     <div style={{ background: "white", border: "1.5px solid var(--border)", borderRadius: 14, padding: "1.8rem", marginBottom: "1.5rem" }}>
-      <h2 style={{ border: "none", marginTop: 0, marginBottom: "1.2rem", fontSize: "1.1rem" }}>🛍️ Brand Details</h2>
+      <h2 style={{ border: "none", marginTop: 0, marginBottom: "1.2rem", fontSize: "1.1rem" }}> Brand Details</h2>
       <div className="form-group">
         <label className="form-label">Company / Brand Name</label>
         <input type="text" required placeholder="Oh My Mahjong" value={form.displayName || ""}

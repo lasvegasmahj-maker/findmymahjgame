@@ -757,7 +757,7 @@ body {
   border: 1.5px solid var(--border);
   border-radius: 8px;
   font-family: var(--font-dm-sans), "DM Sans", sans-serif;
-  font-size: 0.9rem;
+  font-size: 16px;
   color: var(--text);
   background: white;
   outline: none;

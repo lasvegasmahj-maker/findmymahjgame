@@ -34,6 +34,6 @@ export default function AddToCalendar({
       display: "flex", alignItems: "center", justifyContent: "center", minHeight: 60,
       borderRadius: 14, background: "white", color: "var(--navy)", border: "2px solid var(--navy)",
       fontSize: "1.2rem", fontWeight: 800, textDecoration: "none",
-    }}>📅&nbsp; Add to Calendar</a>
+    }}>&nbsp; Add to Calendar</a>
   );
 }

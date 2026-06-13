@@ -11,7 +11,7 @@ const inputStyle: React.CSSProperties = {
   border: "1.5px solid var(--border)",
   borderRadius: 8,
   fontFamily: "'DM Sans', sans-serif",
-  fontSize: "0.9rem",
+  fontSize: "16px",
   color: "var(--text)",
   background: "white",
   outline: "none",
@@ -160,7 +160,7 @@ export default function GetListedClient() {
           </a>
           <a
             href="/advertise"
-            style={{ color: "var(--pink)", fontWeight: 600, textDecoration: "none", fontSize: "0.9rem" }}
+            style={{ color: "var(--pink)", fontWeight: 600, textDecoration: "none", fontSize: "16px" }}
           >See advertising options
           </a>
           <a
@@ -193,7 +193,7 @@ export default function GetListedClient() {
         >
           <h2 style={{ border: "none", marginTop: 0, marginBottom: "0.3rem" }}>Tell us about what you offer
           </h2>
-          <p style={{ color: "var(--muted)", fontSize: "0.9rem", marginBottom: "2rem" }}>Have a promo code? Enter it below to unlock a special offer.
+          <p style={{ color: "var(--muted)", fontSize: "16px", marginBottom: "2rem" }}>Have a promo code? Enter it below to unlock a special offer.
           </p>
 
           <form onSubmit={handleSubmit}>

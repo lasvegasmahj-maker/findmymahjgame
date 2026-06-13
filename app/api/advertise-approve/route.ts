@@ -12,7 +12,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-function verifyToken(token: string): { submissionId: string; action: string } | null {
+export function verifyToken(token: string): { submissionId: string; action: string } | null {
   try {
     const decoded = Buffer.from(token, "base64url").toString("utf8");
     const parts = decoded.split(":");
@@ -31,17 +31,32 @@ function verifyToken(token: string): { submissionId: string; action: string } | 
   }
 }
 
+// GET never mutates: mail scanners prefetch emailed links, so the approve/
+// reject links land on a confirm page and only the founder's form POST acts.
 export async function GET(req: NextRequest) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://findmymahjgame.com";
-  const token = req.nextUrl.searchParams.get("token");
+  const token = req.nextUrl.searchParams.get("token") || "";
+  return NextResponse.redirect(`${siteUrl}/advertise/approve-confirm?token=${encodeURIComponent(token)}`);
+}
 
+export async function POST(req: NextRequest) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://findmymahjgame.com";
+  let token = "";
+  const ct = req.headers.get("content-type") || "";
+  if (ct.includes("form")) {
+    const form = await req.formData().catch(() => null);
+    token = String(form?.get("token") || "");
+  } else {
+    const b = await req.json().catch(() => ({}));
+    token = String(b?.token || "");
+  }
   if (!token) {
-    return NextResponse.redirect(`${siteUrl}/advertise/approved?result=invalid`);
+    return NextResponse.redirect(`${siteUrl}/advertise/approved?result=invalid`, 303);
   }
 
   const verified = verifyToken(token);
   if (!verified) {
-    return NextResponse.redirect(`${siteUrl}/advertise/approved?result=invalid`);
+    return NextResponse.redirect(`${siteUrl}/advertise/approved?result=invalid`, 303);
   }
 
   const { submissionId, action } = verified;
@@ -54,11 +69,11 @@ export async function GET(req: NextRequest) {
     .single();
 
   if (fetchErr || !submission) {
-    return NextResponse.redirect(`${siteUrl}/advertise/approved?result=notfound`);
+    return NextResponse.redirect(`${siteUrl}/advertise/approved?result=notfound`, 303);
   }
 
   if (submission.status !== "pending") {
-    return NextResponse.redirect(`${siteUrl}/advertise/approved?result=already&action=${submission.status}`);
+    return NextResponse.redirect(`${siteUrl}/advertise/approved?result=already&action=${submission.status}`, 303);
   }
 
   const newStatus = action === "approve" ? "approved" : "rejected";
@@ -73,7 +88,7 @@ export async function GET(req: NextRequest) {
     .select("id");
 
   if (!updated || updated.length === 0) {
-    return NextResponse.redirect(`${siteUrl}/advertise/approved?result=already&action=${newStatus}`);
+    return NextResponse.redirect(`${siteUrl}/advertise/approved?result=already&action=${newStatus}`, 303);
   }
 
   // Notify the advertiser
@@ -100,6 +115,7 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.redirect(
-    `${siteUrl}/advertise/approved?result=${action === "approve" ? "approved" : "rejected"}&name=${encodeURIComponent(submission.display_name ?? submission.contact_name)}`
+    `${siteUrl}/advertise/approved?result=${action === "approve" ? "approved" : "rejected"}&name=${encodeURIComponent(submission.display_name ?? submission.contact_name)}`,
+    303
   );
 }

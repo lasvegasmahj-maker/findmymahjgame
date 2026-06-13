@@ -25,8 +25,7 @@ export default function HowItWorksClient() {
       <div className="page-hero">
         <div className="eyebrow">How It Works</div>
         <h1>Everything You Need to Know</h1>
-        <p>
-          Whether you&rsquo;re a player looking for a game or a business wanting to reach mahjong
+        <p>Whether you&rsquo;re a player looking for a game or a business wanting to reach mahjong
           players, we make it simple.
         </p>
       </div>
@@ -41,8 +40,7 @@ export default function HowItWorksClient() {
                 : "text-muted border-transparent"
             }`}
             onClick={() => setActiveTab("players")}
-          >
-            For Players
+          >For Players
           </button>
           <button
             className={`py-3 px-6 text-[0.92rem] font-semibold cursor-pointer border-b-2 -mb-[2px] transition-all bg-transparent ${
@@ -51,8 +49,7 @@ export default function HowItWorksClient() {
                 : "text-muted border-transparent"
             }`}
             onClick={() => setActiveTab("advertisers")}
-          >
-            For Advertisers &amp; Venues
+          >For Advertisers &amp; Venues
           </button>
         </div>
 
@@ -75,8 +72,7 @@ export default function HowItWorksClient() {
             </div>
 
             <div className="highlight-box">
-              <p>
-                Player listings are always <strong>100% free</strong>. Find My Mahj Game will never
+              <p>Player listings are always <strong>100% free</strong>. Find My Mahj Game will never
                 charge players to find or list a game.
               </p>
             </div>
@@ -99,24 +95,20 @@ export default function HowItWorksClient() {
               <div className="bg-bg border border-border rounded-xl p-5">
                 <h3 className="text-[0.9rem] font-bold text-navy mb-1">Starter Listing</h3>
                 <div className="font-heading text-[1.4rem] text-pink font-black mb-1">$19/mo</div>
-                <p className="text-[0.78rem] text-muted !mb-0">
-                  Name, city, hours, description, website link
+                <p className="text-[0.78rem] text-muted !mb-0">Name, city, hours, description, website link
                 </p>
               </div>
               <div className="bg-bg border border-pink rounded-xl p-5">
-                <h3 className="text-[0.9rem] font-bold text-navy mb-1">
-                  Featured Spot ⭐ Most Popular
+                <h3 className="text-[0.9rem] font-bold text-navy mb-1">Featured Spot  Most Popular
                 </h3>
                 <div className="font-heading text-[1.4rem] text-pink font-black mb-1">$39/mo</div>
-                <p className="text-[0.78rem] text-muted !mb-0">
-                  Top placement + highlighted listing + photo
+                <p className="text-[0.78rem] text-muted !mb-0">Top placement + highlighted listing + photo
                 </p>
               </div>
               <div className="bg-bg border border-border rounded-xl p-5">
                 <h3 className="text-[0.9rem] font-bold text-navy mb-1">Official Mahj Spot</h3>
                 <div className="font-heading text-[1.4rem] text-pink font-black mb-1">$79/mo</div>
-                <p className="text-[0.78rem] text-muted !mb-0">
-                  Featured + homepage + badge you can display
+                <p className="text-[0.78rem] text-muted !mb-0">Featured + homepage + badge you can display
                 </p>
               </div>
             </div>
@@ -125,8 +117,7 @@ export default function HowItWorksClient() {
               <Link
                 href="/advertise"
                 className="bg-pink text-white py-3 px-8 rounded-md font-bold no-underline inline-block"
-              >
-                See All Advertising Options &rarr;
+              >See All Advertising Options &rarr;
               </Link>
             </p>
           </div>

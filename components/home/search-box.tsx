@@ -54,7 +54,7 @@ export default function SearchBox() {
   return (
     <div className="inline-search">
       <div className="inline-search-inner">
-        <p className="inline-search-label">Search by city &mdash; find players, groups &amp; events near you</p>
+        <p className="inline-search-label">Search by city, find players, groups &amp; events near you</p>
         <div className="inline-search-box">
           <input
             type="text"
