@@ -76,8 +76,9 @@ export default function RootLayout({
         <script {...schemaScriptProps(buildHomepageSchema())} />
       </head>
       <body className="min-h-full flex flex-col">
+        <a href="#main" className="skip-link">Skip to main content</a>
         <Header />
-        <main className="flex-1">{children}</main>
+        <main id="main" className="flex-1">{children}</main>
         <Footer />
         {/* No proactive install prompt by design. The PWA stays installable via
             the browser's own Add to Home Screen. A gentle, value-gated suggestion

@@ -791,3 +791,7 @@ select option:hover {
 }
 .form-textarea { height: 110px; resize: vertical; line-height: 1.6; }
 .form-optional { font-weight: 400; color: var(--muted); font-size: 0.78rem; margin-left: 0.3rem; }
+
+/* Bypass blocks: keyboard users can jump straight to content (WCAG 2.4.1). */
+.skip-link { position: absolute; left: -9999px; top: 0; z-index: 1000; background: var(--navy); color: #fff; padding: 0.7rem 1.2rem; border-radius: 0 0 8px 0; font-weight: 800; text-decoration: none; }
+.skip-link:focus { left: 0; }
