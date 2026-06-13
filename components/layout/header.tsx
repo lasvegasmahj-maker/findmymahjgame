@@ -9,6 +9,7 @@ export default function Header() {
       <div className="nav-right">
         <Link href="/events" className="nav-advertise">Events</Link>
         <Link href="/teachers" className="nav-advertise">Teachers</Link>
+        <Link href="/tournaments" className="nav-advertise">Tournaments</Link>
         <Link href="/states" className="nav-advertise">Browse States</Link>
         <Link href="/help" className="nav-advertise">Help</Link>
         <Link href="/newsletter" className="nav-advertise">Newsletter</Link>
