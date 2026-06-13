@@ -21,28 +21,50 @@ const isBeginnerFriendly = (s: string) => /beginner|new player|all levels|learn/
 
 const field: React.CSSProperties = { minHeight: 54, padding: "0 1rem", border: "2px solid var(--border)", borderRadius: 12, fontSize: "1.1rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", flex: "1 1 200px" };
 const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border: "none", borderRadius: 12, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" };
+const chipBase: React.CSSProperties = { display: "inline-block", padding: "0.5rem 1.1rem", borderRadius: 50, fontSize: "1rem", fontWeight: 800, textDecoration: "none", border: "2px solid var(--border)" };
 
-export default async function TeachersPage({ searchParams }: { searchParams: Promise<{ near?: string }> }) {
-  const { near } = await searchParams;
+export default async function TeachersPage({ searchParams }: { searchParams: Promise<{ near?: string; filter?: string }> }) {
+  const { near, filter } = await searchParams;
+  const activeFilter = (filter || "all").toLowerCase();
   const supabase = createServerClient();
   const { data } = await supabase.from("venue_listings").select("id, business_name, venue_type, city, state, description, website, instagram, display_email, logo_url, tier, created_at").eq("status", "published").or("state.is.null,state.neq.NV");
 
-  let rows = (data || []).filter((r) => TEACHER_TYPE.test(`${r.venue_type || ""} ${r.description || ""}`));
+  let rows = (data || [])
+    .filter((r) => TEACHER_TYPE.test(`${r.venue_type || ""} ${r.description || ""}`))
+    .map((r) => ({ ...r, _beginner: isBeginnerFriendly(`${r.venue_type || ""} ${r.description || ""}`) }));
   if (near && near.trim()) {
     const n = near.trim().toLowerCase();
     rows = rows.filter((r) => nearMatches(n, r.city, r.state));
   }
+  if (activeFilter === "beginner") rows = rows.filter((r) => r._beginner);
+
+  const chipHref = (k: string) => {
+    const qs = new URLSearchParams();
+    if (near && near.trim()) qs.set("near", near.trim());
+    if (k !== "all") qs.set("filter", k);
+    const s = qs.toString();
+    return `/teachers${s ? `?${s}` : ""}`;
+  };
+  const CHIPS: [string, string][] = [["all", "All teachers"], ["beginner", "Beginners welcome"]];
 
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
       <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", textAlign: "center", margin: "0 0 0.4rem" }}>Find a mahjong teacher near you</h1>
       <p style={{ fontSize: "1.2rem", color: "var(--muted)", textAlign: "center", lineHeight: 1.5, margin: "0 0 1.8rem" }}>Lessons and classes, beginners welcome. These teachers are listed free, and you contact them directly.</p>
 
-      <form method="get" style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center", maxWidth: 520, margin: "0 auto 2.4rem" }}>
+      <form method="get" style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center", maxWidth: 520, margin: "0 auto 1.2rem" }}>
         <label htmlFor="near" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>Your city or area</label>
         <input id="near" name="near" defaultValue={near || ""} placeholder="Your city or state" style={field} />
+        {activeFilter !== "all" && <input type="hidden" name="filter" value={activeFilter} />}
         <button type="submit" style={goBtn}>Search</button>
       </form>
+
+      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center", margin: "0 auto 2rem" }}>
+        {CHIPS.map(([k, label]) => {
+          const active = activeFilter === k || (k === "all" && activeFilter !== "beginner");
+          return <Link key={k} href={chipHref(k)} style={{ ...chipBase, background: active ? "var(--navy)" : "white", color: active ? "white" : "var(--navy)", borderColor: active ? "var(--navy)" : "var(--border)" }}>{label}</Link>;
+        })}
+      </div>
 
       {near && /vegas|nevada|henderson|summerlin|\bnv\b/i.test(near) && (
         <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.1rem 1.3rem", maxWidth: 560, margin: "0 auto 1.6rem", textAlign: "center" }}>
@@ -63,11 +85,11 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
       {rows.length > 0 ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 300px), 1fr))", gap: "1.2rem" }}>
           {rows.map((t) => {
-            const beginner = isBeginnerFriendly(`${t.venue_type || ""} ${t.description || ""}`);
+            const beginner = t._beginner;
             const safeSite = safeHttpUrl(t.website);
             const external = !!safeSite;
             return (
-              external ? (<a key={t.id} href={safeSite!} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} style={{ display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", textDecoration: "none" }}>
+              external ? (<a key={t.id} href={safeSite!} target="_blank" rel="noopener noreferrer" style={{ display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", textDecoration: "none" }}>
                 <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{t.business_name || "Teacher"}</div>
                 {(t.city || t.state) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[t.city, t.state].filter(Boolean).join(", ")}</div>}
                 {beginner && <div style={{ display: "inline-block", background: "rgba(46,201,92,0.14)", color: "#1a6e3a", fontWeight: 800, fontSize: "0.85rem", padding: "0.2rem 0.7rem", borderRadius: 50, marginTop: "0.6rem" }}>Beginners welcome</div>}
@@ -90,7 +112,7 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
         </div>
       ) : (
         <div style={{ background: "var(--bg)", borderRadius: 18, padding: "2.4rem 1.6rem", textAlign: "center", maxWidth: 560, margin: "0 auto" }}>
-          <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.6rem" }}>No teachers listed{near ? ` in ${near}` : ""} yet.</div>
+          <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.6rem" }}>No teachers listed{near ? ` in ${near}` : ""}{activeFilter === "beginner" ? " for beginners" : ""} yet.</div>
           <p style={{ fontSize: "1.1rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "1.6rem" }}>Are you a teacher? Get listed free so players can find you. Or get the weekly note as teachers are added.</p>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", maxWidth: 320, margin: "0 auto" }}>
             <Link href="/get-listed" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Get listed free</Link>
