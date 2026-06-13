@@ -64,7 +64,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const supabase = createServerClient();
     const [ev, ve, pl] = await Promise.all([
       supabase.from("event_listings").select("city, state").eq("status", "published"),
-      supabase.from("venue_listings").select("city, state").eq("status", "published"),
+      supabase.from("venue_listings").select("id, city, state, venue_type, description").eq("status", "published"),
       supabase.from("player_listings").select("city, state").eq("status", "published"),
     ]);
     for (const r of [...(ev.data || []), ...(ve.data || []), ...(pl.data || [])]) {
@@ -76,9 +76,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch { /* keep the launch metros */ }
 
+  const TEACHER_TYPE = /instructor|teacher|lesson|studio|school|class/i;
+  const teacherPages: MetadataRoute.Sitemap = [];
+  try {
+    const supabase2 = createServerClient();
+    const { data: tv } = await supabase2.from("venue_listings").select("id, state, venue_type, description").eq("status", "published");
+    for (const t of tv || []) {
+      if (t.state === "NV") continue;
+      if (!TEACHER_TYPE.test(`${t.venue_type || ""} ${t.description || ""}`)) continue;
+      teacherPages.push({ url: `${BASE}/teachers/${t.id}`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.6 });
+    }
+  } catch { /* skip teacher profiles if unavailable */ }
+
   const cityPages: MetadataRoute.Sitemap = [...cityKeys].map((k) => ({
     url: `${BASE}/states/${k}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.85,
   }));
 
-  return [...staticPages, ...statePages, ...cityPages];
+  return [...staticPages, ...statePages, ...cityPages, ...teacherPages];
 }
