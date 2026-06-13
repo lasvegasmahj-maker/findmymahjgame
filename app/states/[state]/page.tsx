@@ -104,6 +104,13 @@ export default async function StatePage({ params }: { params: Promise<{ state: s
   const events = eventsRes.data || [];
   const venues = venuesRes.data || [];
 
+  const STATE_CITIES: Record<string, [string, string][]> = {
+    texas: [["dallas", "Dallas"], ["houston", "Houston"], ["austin", "Austin"], ["san-antonio", "San Antonio"]],
+    nevada: [["las-vegas", "Las Vegas"]],
+    arizona: [["scottsdale", "Scottsdale"]],
+    florida: [["boca-raton", "Boca Raton"], ["naples", "Naples"]],
+  };
+
   const stateSchema = buildStatePageSchema({
     stateName: data.name,
     stateSlug: data.slug,
@@ -121,6 +128,16 @@ export default async function StatePage({ params }: { params: Promise<{ state: s
         events={events}
         venues={venues}
       />
+      {STATE_CITIES[data.slug] && (
+        <section style={{ maxWidth: 900, margin: "0 auto", padding: "0.5rem 1.2rem 3rem" }}>
+          <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.5rem", color: "var(--navy)", textAlign: "center", margin: "0 0 1rem" }}>Mahjong by city in {data.name}</h2>
+          <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center" }}>
+            {STATE_CITIES[data.slug].map(([slug, name]) => (
+              <a key={slug} href={`/states/${data.slug}/${slug}`} style={{ padding: "0.55rem 1.1rem", borderRadius: 50, border: "2px solid var(--border)", color: "var(--navy)", fontWeight: 800, textDecoration: "none" }}>{name}</a>
+            ))}
+          </div>
+        </section>
+      )}
     </>
   );
 }
