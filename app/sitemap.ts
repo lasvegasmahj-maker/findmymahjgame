@@ -32,5 +32,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.9,
   }));
 
-  return [...staticPages, ...statePages];
+  const CITY_PAGES: [string, string][] = [
+    ["texas", "dallas"], ["texas", "houston"], ["texas", "austin"], ["texas", "san-antonio"],
+    ["nevada", "las-vegas"], ["arizona", "scottsdale"], ["florida", "boca-raton"], ["florida", "naples"],
+  ];
+  const cityPages: MetadataRoute.Sitemap = CITY_PAGES.map(([st, c]) => ({
+    url: `${BASE}/states/${st}/${c}`,
+    lastModified: now,
+    changeFrequency: "daily" as const,
+    priority: 0.85,
+  }));
+
+  return [...staticPages, ...statePages, ...cityPages];
 }
