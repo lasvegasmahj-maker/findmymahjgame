@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import NotifyMe from "@/components/notify-me";
 import { notFound } from "next/navigation";
 import { createServerClient } from "@/lib/supabase-server";
 import { STATES, type StateData } from "@/lib/states-data";
@@ -44,9 +45,8 @@ export async function generateMetadata({ params }: { params: Promise<{ state: st
   const st = resolveState(state);
   const cityName = titleize(city);
   if (!st) return { title: "Mahjong Near You", robots: { index: false } };
-  const title = `Mahjong in ${cityName}, ${st.abbr}: Open Play, Teachers and Events`;
   return {
-    title: title.slice(0, 70),
+    title: { absolute: `Mahjong in ${cityName}, ${st.abbr} | Find My Mahj Game` },
     description: `Find American Mahjong open plays, games, teachers, venues and events in ${cityName}, ${st.name}. Free for players, and money never crosses the table.`,
     alternates: { canonical: `https://findmymahjgame.com/states/${st.slug}/${city}` },
   };
@@ -175,6 +175,7 @@ export default async function CityPage({ params }: { params: Promise<{ state: st
         </div>
       ) : <EmptyCta what="a place to play" />}
 
+      <div style={{ marginTop: "2.5rem" }}><NotifyMe defaultCity={cityName} defaultState={st.abbr} heading={`Notify me when more Mahjong comes to ${cityName}`} /></div>
       <div style={{ textAlign: "center", marginTop: "3rem", display: "flex", flexDirection: "column", gap: "0.8rem", maxWidth: 360, marginInline: "auto" }}>
         <Link href={`/states/${st.slug}`} style={{ minHeight: 54, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "var(--navy)", color: "white", fontWeight: 800, fontSize: "1.05rem", textDecoration: "none" }}>See all of {st.name}</Link>
         <Link href="/play" style={{ minHeight: 54, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "white", color: "var(--navy)", border: "2px solid var(--navy)", fontWeight: 800, fontSize: "1.05rem", textDecoration: "none" }}>Looking for players? Find a game</Link>

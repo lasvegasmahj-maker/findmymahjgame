@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import NotifyMe from "@/components/notify-me";
 import { createServerClient } from "@/lib/supabase-server";
 import { nearMatches } from "@/lib/near-match";
 import { safeHttpUrl } from "@/lib/sanitize";
@@ -165,6 +166,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
             <Link href="/start" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "var(--navy)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Start a table</Link>
             <Link href="/newsletter" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "white", color: "var(--navy)", border: "2px solid var(--navy)", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Get the weekly list</Link>
           </div>
+          <div style={{ marginTop: "1.6rem" }}><NotifyMe defaultCity={near || ""} /></div>
         </div>
       )}
 
