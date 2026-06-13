@@ -96,7 +96,7 @@ export default function AdvertiseClient() {
               <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.3rem", color: "var(--navy)", marginBottom: "0.5rem" }}>Pricing on its way!</h3>
               <p style={{ color: "var(--muted)", fontSize: "0.95rem", marginBottom: "1.5rem" }}>Check your inbox. Once you've reviewed options and are ready, click the link in the email to fill out your full listing details.
               </p>
-              <a href="/advertise/submit" style={{ display: "inline-block", background: "var(--pink)", color: "white", padding: "0.8rem 2rem", borderRadius: 8, fontWeight: 700, textDecoration: "none", fontSize: "0.95rem" }}>Ready now? Submit Your Listing →
+              <a href="/advertise/submit" style={{ display: "inline-block", background: "var(--pink)", color: "white", padding: "0.8rem 2rem", borderRadius: 8, fontWeight: 700, textDecoration: "none", fontSize: "0.95rem" }}>Ready now? Submit Your Listing &rarr;
               </a>
             </div>
           ) : (
@@ -134,7 +134,7 @@ export default function AdvertiseClient() {
               )}
               <button type="submit" disabled={status === "submitting"}
                 style={{ background: "var(--pink)", color: "white", border: "none", borderRadius: 8, padding: "0.9rem 2.5rem", fontSize: "1rem", fontWeight: 700, cursor: "pointer", width: "100%", opacity: status === "submitting" ? 0.7 : 1, transition: "opacity 0.2s" }}>
-                {status === "submitting" ? "Sending..." : "Get Pricing →"}
+                {status === "submitting" ? "Sending..." : "Get Pricing &rarr;"}
               </button>
             </form>
           )}

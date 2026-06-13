@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
 
   const { data: requests, error: reqErr } = await supabase
     .from("play_requests")
-    .select("id, name, email, phone, city, state, day_pref, time_pref, created_at, status")
+    .select("id, name, email, city, state, day_pref, time_pref, created_at, status")
     .eq("status", "new")
     .order("created_at", { ascending: true })
     .limit(200);

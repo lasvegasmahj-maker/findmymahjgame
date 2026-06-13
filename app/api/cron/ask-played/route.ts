@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "@/lib/email";
 import { signGameToken } from "@/lib/game-token";
@@ -14,7 +15,10 @@ const supabase = createClient(
 // it as the Authorization bearer for cron invocations).
 export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
-  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) {
+  const presented = req.headers.get("authorization") || "";
+  const expected = `Bearer ${secret}`;
+  const ok = !!secret && presented.length === expected.length && crypto.timingSafeEqual(Buffer.from(presented), Buffer.from(expected));
+  if (!ok) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

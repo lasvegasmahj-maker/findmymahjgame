@@ -21,6 +21,7 @@ export default function AddToCalendar({
   title, dayOfWeek, timeOfDay, place,
 }: { title: string; dayOfWeek: string | null; timeOfDay: string | null; place?: string | null }) {
   const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time mount flag to avoid SSR/client hydration mismatch on timezone-dependent dates
   useEffect(() => { setMounted(true); }, []);
 
   if (!dayOfWeek || !(dayOfWeek in DAY_IDX)) return null;
