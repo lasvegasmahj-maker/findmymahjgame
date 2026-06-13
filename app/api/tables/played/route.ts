@@ -37,12 +37,12 @@ export async function POST(req: NextRequest) {
   const locked = readErr || !cur || cur.played === true || (cur.played_at && v.answer !== "yes");
   if (locked) {
     if (readErr) console.error("played: read failed, skipping write", readErr.message);
-    return NextResponse.redirect(`${siteUrl}/played?result=${v.answer}`, 303);
+    return NextResponse.redirect(`${siteUrl}/played?result=${v.answer}${v.answer === "yes" ? `&token=${encodeURIComponent(token)}` : ""}`, 303);
   }
   const { error: writeErr } = await supabase
     .from("tables")
     .update({ played: v.answer === "yes", played_at: new Date().toISOString() })
     .eq("id", v.tableId);
   if (writeErr) console.error("played: update failed", writeErr.message);
-  return NextResponse.redirect(`${siteUrl}/played?result=${v.answer}`, 303);
+  return NextResponse.redirect(`${siteUrl}/played?result=${v.answer}${v.answer === "yes" ? `&token=${encodeURIComponent(token)}` : ""}`, 303);
 }
