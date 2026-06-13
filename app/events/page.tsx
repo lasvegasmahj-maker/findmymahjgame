@@ -74,6 +74,25 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
     return (isFresh(b.confirmed_active_at) ? 1 : 0) - (isFresh(a.confirmed_active_at) ? 1 : 0);
   });
 
+  const _today = new Date(); _today.setHours(0, 0, 0, 0);
+  const eventSchema = rows
+    .filter((e) => {
+      if (!e.event_date) return false;
+      const d = new Date(e.event_date);
+      return !isNaN(d.getTime()) && d >= _today;
+    })
+    .slice(0, 50)
+    .map((e) => ({
+      "@context": "https://schema.org",
+      "@type": "Event",
+      name: e.event_name || "Mahjong",
+      startDate: e.event_date,
+      eventStatus: "https://schema.org/EventScheduled",
+      eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+      location: { "@type": "Place", name: e.venue || [e.city, e.state].filter(Boolean).join(", ") || "See listing", address: [e.city, e.state].filter(Boolean).join(", ") || "United States" },
+      ...(safeHttpUrl(e.registration_url) ? { url: safeHttpUrl(e.registration_url)! } : {}),
+    }));
+
   const chipHref = (k: string) => {
     const qs = new URLSearchParams();
     if (near && near.trim()) qs.set("near", near.trim());
@@ -84,6 +103,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
 
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
+      {eventSchema.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(eventSchema) }} />}
       <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", textAlign: "center", margin: "0 0 0.4rem" }}>Where can I play this week?</h1>
       <p style={{ fontSize: "1.2rem", color: "var(--muted)", textAlign: "center", lineHeight: 1.5, margin: "0 0 1.8rem" }}>American Mahjong open plays, leagues, tournaments, and events near you.</p>
 
