@@ -1,0 +1,101 @@
+Opportunity,Impact,Effort,Priority,Owner,Status,Source
+No error boundary: any server-component crash shows Next.js's bare unstyled 'Application error' page (FIXED: added app/error.tsx),High,Med,P0,Eng,Open,war-room
+Live site serves noindex on /events and /teachers (the two top discovery pages); current source is correct but production is a stale deploy,High,Med,P0,Eng,Open,war-room
+"Teachers with no website show a dead card: no email, no Instagram, no way to contact them",High,Low,P0,Eng,Open,war-room
+"Hero shows a giant 0 / 0 / 0 stat block at launch, signaling a dead, empty site",High,Med,P0,Eng,Open,war-room
+/events and /teachers return 404 in production (stale deploy: committed pages not live),High,Med,P0,Eng,Open,war-room
+Build and launch the 'Bench' substitute-finder (availability flag on listings + per-city 'Need a 4th today?' page + 'need a sub' broadcast).,High,High,P0,Eng,Open,competitive
+"Add 'money never crosses the table' + safety/trust copy to the homepage hero, every player card, the Connect modal, /how-it-works and FAQ.",High,Low,P0,Eng,Open,competitive
+Seed real inventory in 4-5 Texas metros (import venues/libraries/JCCs/clubs + onboard ambassadors) before promoting search.,High,High,P0,Eng,Open,competitive
+Fix the broken /events and /teachers routes (currently hard 404s) — build them as crawlable national+state directory hubs and add to sitemap,High,Medium,P0,Eng,Open,competitive
+"Get the site indexed: verify Google Search Console, submit sitemap, request indexing, confirm no leftover staging noindex.",High,Low,P0,Eng,Open,competitive
+Verify Supabase Row-Level Security is ON with explicit policies on every listing/PII table; confirm anon role cannot read contact PII or wri,High,Medium,P0,Eng,Open,competitive
+"Ship the launch sitemap and fix the duplicate title-suffix bug FIRST. Live sitemap.xml is still 60 URLs and MISSING /events, /teachers, /pla",High - nothing else indexes or ranks correctly until these ship; titles drive CTR on every page.,Low (S) - one deploy plus a one-line edit per page.,P0 - L,Eng,Open,seo
+"Render Players + Events + Venues all in the server HTML on state pages (CSS-only tabs or stacked sections), not conditional JSX. Today only ","High - lets 50 existing state pages compete for open-play/event/teacher intent they currently cannot, and removes a structured-data mismatch.",Medium (M) - refactor app/states/[state]/client.tsx tab rendering.,P0 - L,Eng,Open,seo
+Map subtitle overpromises live players against an empty launch DB,High,Med,P1,Eng,Open,war-room
+Teacher cards without a website are a dead end: no way to contact them,High,Med,P1,Eng,Open,war-room
+"State-page event cards look clickable but do nothing (cursor:pointer, no handler)",High,Med,P1,Eng,Open,war-room
+"Success message promises an inbox email, but the subscriber never receives one",High,Med,P1,Eng,Open,war-room
+"Signups can be silently lost: Mailchimp is not configured, so the only durable store is a founder email",High,Med,P1,Eng,Open,war-room
+"FAQ promises listings go live ""within 24 hours"" but the real form says ""1-2 business days""",High,Med,P1,Eng,Open,war-room
+"FAQ tells users to pick a ""Group / Open Play Host"" listing type that does not exist on the form",High,Med,P1,Eng,Open,war-room
+Em dash in the hero subhead violates the hard no-dash brand rule,High,Med,P1,Eng,Open,war-room
+Em dash in the Players 'Who We Serve' paragraph violates the hard no-dash brand rule,High,Med,P1,Eng,Open,war-room
+"""Public email (shown to players)"" field contradicts the ""Your email is never shown publicly"" note on the same form",High,Med,P1,Eng,Open,war-room
+"Results step asks her to ""Join"" a stranger's game with zero safety context",High,Med,P1,Eng,Open,war-room
+Advertiser Terms page renders two literal em dashes (&mdash;) in headings,High,Med,P1,Eng,Open,war-room
+Annual Plans cancellation heading also renders a literal em dash,High,Med,P1,Eng,Open,war-room
+Advertiser pricing email contains an em dash and a stray double-hyphen dash,High,Med,P1,Eng,Open,war-room
+Pricing email footer em dash (&mdash;),High,Med,P1,Eng,Open,war-room
+On-page Founding Partner box hides the real headline offer (6 months free + 30% off for life),High,Med,P1,Eng,Open,war-room
+Player who lands on a full table hits a host-oriented dead end with no way forward,High,Med,P1,Eng,Open,war-room
+"""Confirmed active"" trust badge never expires, so it shows stale months as if fresh",High,Med,P1,Eng,Open,war-room
+Freshness badge shows an absolute old month instead of a current-reading recency,High,Med,P1,Eng,Open,war-room
+Joiner is promised host contact that the product does not deliver until the table is full,High,Low,P1,Eng,Open,war-room
+No global-error boundary as last-resort safety net if the root layout itself throws (FIXED: added app/global-error.tsx),High,Med,P1,Eng,Open,war-room
+"Footer features Florida, California, New York, Nevada but omits Texas, the launch state",High,Med,P1,Eng,Open,war-room
+"Brand's defining trust promise ""money never crosses the table"" is missing from the homepage",High,Med,P1,Eng,Open,war-room
+"Over-promise ""thousands of mahjong players"" in advertiser pitch on the homepage",High,Med,P1,Eng,Open,war-room
+Forwarded claim link lets a stranger squat-claim a listing and lock out the real owner,High,Med,P1,Eng,Open,war-room
+"Most user-facing emails bypass the suppression list, risking domain reputation at launch",High,Med,P1,Eng,Open,war-room
+"No honeypot field on any public form (advertise, get-listed, subscribe, ambassadors, contact)",High,Med,P1,Eng,Open,war-room
+Rate limiting fails OPEN and depends on a manually-run SQL file that may not be applied in production,High,Med,P1,Eng,Open,war-room
+/teachers is indexable + high-priority in sitemap but ships near-empty at launch (thin content),High,Med,P1,Eng,Open,war-room
+The /events page emits zero Event JSON-LD (no structured data on the main events surface),High,Med,P1,Eng,Open,war-room
+"No city pages exist; every city search collapses to a state page, surrendering high-intent local SEO",High,Med,P1,Eng,Open,war-room
+"Homepage has no crawlable body links to the three core hubs (states, teachers, events); the map is the only path and it is aria-hidden + tab",High,Med,P1,Eng,Open,war-room
+Home page title doubles the brand and renders at ~84 chars,High,Med,P1,Eng,Open,war-room
+SearchAction urlTemplate points to a route that 404s for free-text queries,High,Med,P1,Eng,Open,war-room
+Founder's own sponsor logo on the Nevada state page is a broken image (404) with no fallback,High,Med,P1,Eng,Open,war-room
+Homepage US map has no tappable state fallback on phones; small states are un-tappable for the 45-70 audience,High,Med,P1,Eng,Open,war-room
+/venues hub is noindexed (and absent from sitemap) despite targeting a prime local-intent query,High,Med,P1,Eng,Open,war-room
+50 indexable state pages launch empty and near-identical (thin/doorway-content risk for the whole site),High,Med,P1,Eng,Open,war-room
+Empty state-page hero shows literal '0 Players Listed / 0 Events / 0 Venues' to first visitors,High,Med,P1,Eng,Open,war-room
+"State social-share images always say ""Your State"" (params not awaited in Next 16)",High,Med,P1,Eng,Open,war-room
+"Live sitemap.xml is stale: missing 6 routes that are in app/sitemap.ts (and 3 live pages are absent, costing indexing at launch)",High,Med,P1,Eng,Open,war-room
+"Three routes in sitemap.ts return 404 live (/events, /teachers, /newsletter) despite existing in the repo, sitemapping dead URLs once redepl",High,Med,P1,Eng,Open,war-room
+"Hero is missing the core trust promise (""money never crosses the table"") and safety reassurance",High,Med,P1,Eng,Open,war-room
+"Page reassures teachers, not players: the woman searching has no trust cue aimed at her",High,Med,P1,Eng,Open,war-room
+"Event cards with no registration link are a dead end: no CTA, no contact, no next step",High,Med,P1,Eng,Open,war-room
+"Price never shown on event cards, so visitors cannot tell if a game is free",High,Med,P1,Eng,Open,war-room
+Newsletter signup is missing from the live home page entirely,High,Med,P1,Eng,Open,war-room
+About page has no player-facing CTA button; the only end-of-page CTA is for advertisers,High,Med,P1,Eng,Open,war-room
+"FAQ never answers the #1 safety question: ""Will strangers see my contact info?""",High,Med,P1,Eng,Open,war-room
+"FAQ says ""how others can reach you,"" contradicting the actual private-forwarding model (data honesty)",High,Med,P1,Eng,Open,war-room
+No privacy/anti-spam reassurance next to the form,High,Med,P1,Eng,Open,war-room
+"Success confirmation appears far above the form, so submitters may not see it",High,Med,P1,Eng,Open,war-room
+Success redirect _next does not target the confirmation anchor,High,Med,P1,Eng,Open,war-room
+"Required open-ended essay (""Why do you want to help?"") blocks the submit button",High,Med,P1,Eng,Open,war-room
+"Label still says ""Why do you want to help?"" without the optional marker (pairs with the fix above)",High,Med,P1,Eng,Open,war-room
+Page never says becoming an ambassador is free with no obligation,High,Med,P1,Eng,Open,war-room
+"Seat-claim button goes grey and dead with no explanation, reading as 'broken' to an older user",High,Med,P1,Eng,Open,war-room
+Make the seat-claim button always clickable so the missing-field message can fire,High,Med,P1,Eng,Open,war-room
+Step 1 of Play has no trust or 'free' reassurance before asking for location,High,Med,P1,Eng,Open,war-room
+"'Use My Location' is the loudest first action, triggering a scary browser permission prompt with no explanation",High,Med,P1,Eng,Open,war-room
+"Disabled ""Create My Table"" button gives no reason why nothing happens when tapped",High,Med,P1,Eng,Open,war-room
+Start page never says it is free or that money never crosses the table,High,Med,P1,Eng,Open,war-room
+"""Get listed FREE"" buttons send business owners to a page that never says it is free and implies paid",High,Med,P1,Eng,Open,war-room
+"Page leads with ""Have a promo code?"" instead of the value of listing",High,Med,P1,Eng,Open,war-room
+Primary intent (find players) has no matching CTA; both empty-state and footer CTAs only say 'Create My Free Listing',High,Med,P1,Eng,Open,war-room
+City filter is a dead end: selecting a city with no listings drops her into an empty state with no recovery,High,Med,P1,Eng,Open,war-room
+Home hero has no trust/safety reassurance above the fold,High,Med,P1,Eng,Open,war-room
+How It Works (Players) describes a flow that does not exist in the app,High,Med,P1,Eng,Open,war-room
+Homepage hero has zero trust or safety signal before asking for an action,High,Med,P1,Eng,Open,war-room
+Advertise 'Get Pricing' form has no try/catch: a network error freezes the button on 'Sending...' forever,High,Med,P1,Eng,Open,war-room
+Advertiser listing submission form has no try/catch: a network error freezes the button on 'Submitting...' forever and loses the whole listi,High,Med,P1,Eng,Open,war-room
+Nevada sponsor logo is a broken 404 (hardcoded src renders a broken image at launch),High,Med,P1,Eng,Open,war-room
+"Free Player Listing form: every field's label is not connected to its input (no htmlFor/id, no aria-label)",High,Med,P1,Eng,Open,war-room
+Get Listed (business) form: all fields have unassociated labels and unnamed inputs,High,Med,P1,Eng,Open,war-room
+Contact form fields have labels with no htmlFor and inputs with no name,High,Med,P1,Eng,Open,war-room
+Advertise 'Submit Your Listing' form: shared form-label/form-input pattern leaves every field unassociated,High,Med,P1,Eng,Open,war-room
+Green text (#2ec95c) fails AA badly on light backgrounds (homepage + state pages),High,Med,P1,Eng,Open,war-room
+Open Play event tag uses inaccessible green; switch to --green-dark,High,Med,P1,Eng,Open,war-room
+"List-my-game form inputs use 0.9rem (14.4px), triggering iOS zoom on the core listing-creation flow",High,Med,P1,Eng,Open,war-room
+"Contact form Name, Email, and Message fields use Tailwind text-[0.9rem] (14.4px), triggering iOS zoom",High,Med,P1,Eng,Open,war-room
+Add to Calendar link causes a hydration mismatch on the post-create table screen,High,Med,P1,Eng,Open,war-room
+AddToCalendar still needs the mount guard wired into the component body,High,Med,P1,Eng,Open,war-room
+"ZIP search silently returns zero results on Teachers, Events, and Venues pages",High,Med,P1,Eng,Open,war-room
+"No Playwright tests exist at all, despite CLAUDE.md mandating them and the pre-push gate assuming a test suite",High,Med,P1,Eng,Open,war-room
+Missing security-regression spec: public surfaces must never leak contact info (contact_email/phone/host_email/stripe_payment_id),High,Med,P1,Eng,Open,war-room
+Missing spec for the matcher funnel (/play): the core conversion flow has no test,High,Med,P1,Eng,Open,war-room
+Missing spec for the 'nearly-full table' safety filter in /api/tables/find,High,Med,P1,Eng,Open,war-room
