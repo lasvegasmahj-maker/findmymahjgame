@@ -32,7 +32,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
 
       <div className="page-body" style={{ maxWidth: 860 }}>
         {sent && (
-          <div role="alert" style={{ background: "rgba(46,201,92,0.12)", border: "2px solid #2ec95c", borderRadius: 12, padding: "1rem 1.4rem", marginBottom: "1.6rem", textAlign: "center", color: "#1a6e3a", fontWeight: 700 }}>Thank you! Your message is on its way. A real person reads every one.
+          <div id="sent" role="alert" style={{ background: "rgba(46,201,92,0.12)", border: "2px solid #2ec95c", borderRadius: 12, padding: "1rem 1.4rem", marginBottom: "1.6rem", textAlign: "center", color: "#1a6e3a", fontWeight: 700 }}>Thank you! Your message is on its way. A real person reads every one.
           </div>
         )}
         {/* Contact Cards */}
@@ -79,7 +79,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
         <div className="bg-bg border border-border rounded-2xl p-8 my-8">
           <h2 style={{ border: "none", marginTop: 0 }}>Send Us a Message</h2>
           <form action={FORMSPREE_URL} method="POST">
-            <input type="hidden" name="_next" value="https://findmymahjgame.com/contact?sent=1" />
+            <input type="hidden" name="_next" value="https://findmymahjgame.com/contact?sent=1#sent" />
             <div className="grid grid-cols-2 gap-4 mb-5 max-sm:grid-cols-1">
               <div>
                 <label className="block text-[0.82rem] font-bold text-navy mb-1">Your Name</label>
@@ -88,7 +88,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
                   name="name"
                   placeholder="Jane Smith"
                   required
-                  className="w-full py-2.5 px-4 border-[1.5px] border-border rounded-lg font-body text-[0.9rem] text-text bg-white outline-none focus:border-pink transition-colors"
+                  className="w-full py-2.5 px-4 border-[1.5px] border-border rounded-lg font-body text-[1rem] text-text bg-white outline-none focus:border-pink transition-colors"
                 />
               </div>
               <div>
@@ -99,7 +99,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
                   name="email"
                   placeholder="jane@example.com"
                   required
-                  className="w-full py-2.5 px-4 border-[1.5px] border-border rounded-lg font-body text-[0.9rem] text-text bg-white outline-none focus:border-pink transition-colors"
+                  className="w-full py-2.5 px-4 border-[1.5px] border-border rounded-lg font-body text-[1rem] text-text bg-white outline-none focus:border-pink transition-colors"
                 />
               </div>
             </div>
@@ -127,7 +127,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
                 name="message"
                 placeholder="Tell us what you need..."
                 required
-                className="w-full py-2.5 px-4 border-[1.5px] border-border rounded-lg font-body text-[0.9rem] text-text bg-white outline-none focus:border-pink transition-colors h-[120px] resize-y"
+                className="w-full py-2.5 px-4 border-[1.5px] border-border rounded-lg font-body text-[1rem] text-text bg-white outline-none focus:border-pink transition-colors h-[120px] resize-y"
               />
             </div>
             <button
@@ -135,6 +135,8 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
               className="bg-pink text-white border-none rounded-lg py-3.5 px-10 font-body text-[1rem] font-bold cursor-pointer w-full hover:opacity-90 transition-opacity"
             >Send Message &rarr;
             </button>
+            <p className="text-[0.78rem] text-muted text-center mt-4 mb-0">A real person reads every message. We never sell or share your email. See our <Link href="/privacy" className="text-pink no-underline">privacy policy</Link>.
+            </p>
           </form>
         </div>
 

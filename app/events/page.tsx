@@ -49,10 +49,12 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
     const n = near.trim().toLowerCase();
     rows = rows.filter((e) => nearMatches(n, e.city, e.state));
   }
+  const FRESH_MS = 90 * 24 * 60 * 60 * 1000;
+  const isFresh = (at?: string | null) => !!at && Date.now() - new Date(at).getTime() < FRESH_MS;
   rows = [...rows].sort((a, b) => {
     const byType = rank(a.event_type) - rank(b.event_type);
     if (byType !== 0) return byType;
-    return (b.confirmed_active_at ? 1 : 0) - (a.confirmed_active_at ? 1 : 0);
+    return (isFresh(b.confirmed_active_at) ? 1 : 0) - (isFresh(a.confirmed_active_at) ? 1 : 0);
   });
 
   return (
@@ -62,7 +64,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
 
       <form method="get" style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center", maxWidth: 520, margin: "0 auto 2.4rem" }}>
         <label htmlFor="near" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>Your city or area</label>
-        <input id="near" name="near" defaultValue={near || ""} placeholder="Your city or ZIP" style={field} />
+        <input id="near" name="near" defaultValue={near || ""} placeholder="Your city or state" style={field} />
         <button type="submit" style={goBtn}>Search</button>
       </form>
 
@@ -77,9 +79,9 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
                 <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{e.event_name || "Mahjong"}</div>
                 {whenLabel(e) && <div style={{ fontSize: "1.05rem", color: "var(--navy)", marginTop: "0.4rem" }}>{whenLabel(e)}</div>}
                 {(e.venue || e.city) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[e.venue, e.city, e.state].filter(Boolean).join(", ")}</div>}
-                {e.confirmed_active_at && (
+                {isFresh(e.confirmed_active_at) && (
                   <div style={{ display: "inline-block", marginTop: "0.45rem", fontSize: "0.85rem", fontWeight: 800, color: "var(--green-dark, #1a6e3a)", background: "rgba(46,201,92,0.12)", borderRadius: 50, padding: "0.2rem 0.7rem" }}>
-                    Confirmed active {new Date(e.confirmed_active_at).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })}
+                    Confirmed active {new Date(e.confirmed_active_at!).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })}
                   </div>
                 )}
                 {e.description && !external && <div style={{ fontSize: "0.98rem", color: "var(--muted)", marginTop: "0.4rem", lineHeight: 1.5 }}>{String(e.description).slice(0, 140)}</div>}

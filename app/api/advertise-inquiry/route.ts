@@ -27,7 +27,7 @@ const PRICING_HTML = `
     <!-- Founding Partner highlight -->
     <div style="background: linear-gradient(135deg, #fffdf0, #fff8dc); border: 2px solid #f5c842; border-radius: 10px; padding: 18px 20px; margin-bottom: 24px;">
       <div style="font-family: Georgia, serif; font-size: 1rem; color: #5a4000; margin-bottom: 6px;">Founding Partner Offer</div>
-      <p style="font-size: 0.88rem; color: #7a6020; margin: 0 0 8px; line-height: 1.6;">You're getting in early. Use code <strong>FINDMYMAHJ</strong> to unlock <strong>6 months free</strong> on any listing. After your free period, Founding Partners lock in <strong>30% off their rate for life</strong> -- as long as you stay listed. Only a limited number of spots are available.
+      <p style="font-size: 0.88rem; color: #7a6020; margin: 0 0 8px; line-height: 1.6;">You're getting in early. Use code <strong>FINDMYMAHJ</strong> to unlock <strong>6 months free</strong> on any listing. After your free period, Founding Partners lock in <strong>30% off their rate for life</strong>, for as long as you stay listed. Only a limited number of spots are available.
       </p>
       <p style="font-size: 0.82rem; color: #a07800; margin: 0;">Just mention the code when you reply and we'll apply it to your listing.</p>
     </div>
@@ -117,7 +117,7 @@ const PRICING_HTML = `
       <a href="https://findmymahjgame.com/advertise/submit" style="background: #e91e8c; color: white; padding: 12px 32px; border-radius: 6px; font-weight: 700; font-size: 0.95rem; text-decoration: none; display: inline-block;">Submit My Listing Details &rarr;</a>
     </div>
 
-    <p style="font-size: 0.75rem; color: #9ca3af; text-align: center; margin-top: 24px;">Find My Mahj Game &mdash; findmymahjgame.com
+    <p style="font-size: 0.75rem; color: #9ca3af; text-align: center; margin-top: 24px;">Find My Mahj Game. findmymahjgame.com
     </p>
   </div>
 </div>

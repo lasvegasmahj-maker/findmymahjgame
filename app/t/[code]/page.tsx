@@ -103,8 +103,9 @@ export default async function TablePage({
           let anyone flip games to played or dead and poison the freshness data. */}
       {isFull && (
         <div style={card}>
-          <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.5rem" }}>Your table is full!</div>
-          <p style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: 0, marginBottom: 0 }}>After your game, we&rsquo;ll email the host to ask how it went. Have a wonderful time.</p>
+          <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.5rem" }}>This table is full</div>
+          <p style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: 0, marginBottom: "0.9rem" }}>All four seats are taken. If you are one of the players, the host will be in touch with the details. If you were hoping to join, we can find you another game.</p>
+          <Link href="/play" style={{ display: "inline-block", color: "var(--pink)", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Find another game near you &rarr;</Link>
         </div>
       )}
 

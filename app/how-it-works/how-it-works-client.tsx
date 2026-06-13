@@ -32,7 +32,7 @@ export default function HowItWorksClient() {
 
       <div className="page-body" style={{ maxWidth: 860 }}>
         {/* Tabs */}
-        <div className="flex gap-0 border-b-2 border-border my-8">
+        <div className="flex gap-0 border-b-2 border-border my-8 overflow-x-auto">
           <button
             className={`py-3 px-6 text-[0.92rem] font-semibold cursor-pointer border-b-2 -mb-[2px] transition-all bg-transparent ${
               activeTab === "players"

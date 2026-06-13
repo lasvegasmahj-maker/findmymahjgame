@@ -8,7 +8,7 @@ import { STATES } from "@/lib/states-data";
 import SeatDots from "@/components/seat-dots";
 
 export const metadata: Metadata = {
-  title: "Find My Mahj Game | Mahjong Players, Groups and Events Nationwide",
+  title: { absolute: "Find My Mahj Game | Mahjong Players & Groups Nationwide" },
   description:
     "Find mahjong players, groups, open plays, venues and events in all 50 states. Free for players. Click your state to get started.",
   alternates: {
@@ -53,8 +53,10 @@ export default async function Home() {
   events.forEach((r) => bump(r.state, "events"));
   venues.forEach((r) => bump(r.state, "venues"));
 
+  const _todayISO = new Date().toISOString().slice(0, 10);
   const featuredEvents = events
     .filter((e) => ["tournament", "retreat"].includes(e.event_type))
+    .filter((e) => !e.event_date || e.event_date >= _todayISO)
     .slice(0, 6);
   const featuredVenues = venues.slice(0, 6);
 
@@ -81,7 +83,7 @@ export default async function Home() {
       {/* HERO: senior-simple, three big actions */}
       <section className="hero" style={{ paddingBottom: "1.5rem" }}>
         <h1>Find people to play <em>mahjong</em> with</h1>
-        <p>Near you. Free. In all 50 states.</p>
+        <p>Near you. Free. In all 50 states. Money never crosses the table.</p>
         <div style={{ maxWidth: 440, margin: "0.8rem auto 0", display: "flex", flexDirection: "column", gap: "1.4rem" }}>
           <div>
             <Link href="/play" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "var(--navy)", color: "white" }}>I Want to Play</Link>
@@ -130,7 +132,8 @@ export default async function Home() {
           <div className="map-header">
             <p className="section-label" style={{ textAlign: "center" }}>Find My Local Mahj Game</p>
             <h2 className="section-title" style={{ textAlign: "center" }}>Find Players &amp; Events Near You</h2>
-            <p className="map-subtitle" style={{ textAlign: "center" }}>Click your state to see players looking for a group, add your own listing, and find local events, or search by city below.</p>
+            <p className="map-subtitle" style={{ textAlign: "center" }}>Click your state to add your free listing, find local events and venues, and connect with players near you, or search by city below.</p>
+            <p style={{ textAlign: "center", marginTop: "0.6rem", fontSize: "1rem" }}><Link href="/events" style={{ color: "var(--pink)", fontWeight: 700 }}>Browse events</Link> &middot; <Link href="/teachers" style={{ color: "var(--pink)", fontWeight: 700 }}>Find a teacher</Link> &middot; <Link href="/venues" style={{ color: "var(--pink)", fontWeight: 700 }}>Explore venues</Link></p>
           </div>
 
           {/* Full-width map */}
@@ -150,7 +153,7 @@ export default async function Home() {
           <div style={{ maxWidth: 1100, margin: "0 auto" }}>
             <p className="section-label" style={{ textAlign: "center" }}>Go the Distance</p>
             <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", marginBottom: "0.5rem", textAlign: "center" }}>Retreats &amp; Tournaments</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.2rem", marginTop: "2rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: "1.2rem", marginTop: "2rem" }}>
               {featuredEvents.map((e) => {
                 const slug = ABBR_TO_SLUG[(e.state || "").toUpperCase()];
                 const safeReg = safeHttpUrl(e.registration_url);
@@ -176,7 +179,7 @@ export default async function Home() {
           <div style={{ maxWidth: 1100, margin: "0 auto" }}>
             <p className="section-label" style={{ textAlign: "center" }}>Play Near You</p>
             <h2 className="section-title" style={{ textAlign: "center", marginBottom: "0.5rem" }}>Mahjong-Friendly Venues</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.2rem", marginTop: "2rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: "1.2rem", marginTop: "2rem" }}>
               {featuredVenues.map((v) => {
                 const slug = ABBR_TO_SLUG[(v.state || "").toUpperCase()];
                 const safeSite = safeHttpUrl(v.website);
@@ -202,7 +205,7 @@ export default async function Home() {
           <p className="section-label" style={{ textAlign: "center" }}>Take Your Game on the Road</p>
           <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", marginBottom: "0.5rem", textAlign: "center" }}>Traveling and Want to Play?</h2>
           <p style={{ color: "var(--muted)", marginBottom: "2.5rem", fontSize: "1rem", textAlign: "center" }}>Don&rsquo;t let travel stop your game, find players wherever you land or connect with fellow cruise passengers before you board.</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1.2rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", gap: "1.2rem" }}>
             <div className="anywhere-card">
               <h3>Traveling? Find a Game</h3>
               <p>Visiting a new city? Use the map to find local players wherever you land. Never go without mahjong again!</p>
@@ -229,9 +232,9 @@ export default async function Home() {
       {/* ADVERTISE */}
       <section id="advertise" className="ads-section">
         <div className="ads-inner">
-          <p className="section-label" style={{ color: "var(--green)" }}>Advertise With Us</p>
+          <p className="section-label" style={{ color: "var(--green-dark)" }}>Advertise With Us</p>
           <h2 className="section-title">Reach Mahjong Players Nationwide</h2>
-          <p style={{ color: "var(--muted)", lineHeight: 1.7, margin: "1rem auto 2.5rem", maxWidth: 480 }}>Interested in advertising your brand, company, or event to thousands of mahjong players? We&rsquo;d love to hear from you!</p>
+          <p style={{ color: "var(--muted)", lineHeight: 1.7, margin: "1rem auto 2.5rem", maxWidth: 480 }}>Interested in advertising your brand, company, or event to an engaged niche of American Mahjong players? We&rsquo;d love to hear from you!</p>
           <Link href="/advertise" className="btn-cta-primary">Get In Touch &rarr;</Link>
         </div>
       </section>

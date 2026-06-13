@@ -29,6 +29,7 @@ export default function Footer() {
           <div>
             <h4>Players</h4>
             <Link href="/list-my-game">Create a Free Listing</Link>
+            <Link href="/states/texas">Texas</Link>
             <Link href="/states/florida">Florida</Link>
             <Link href="/states/california">California</Link>
             <Link href="/states/new-york">New York</Link>

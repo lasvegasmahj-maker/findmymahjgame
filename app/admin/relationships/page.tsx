@@ -138,7 +138,9 @@ export default function RelationshipsPage() {
                   {c.nv_guardrail && <span style={{ color: "#dc2626", fontSize: "0.75rem", fontWeight: 800 }}> NV GUARDRAIL</span>}
                 </div>
                 <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginTop: "0.2rem" }}>
-                  {[c.city && `${c.city}, ${c.state}`, c.contact_type, c.email, c.phone, c.best_channel && `via ${c.best_channel}`].filter(Boolean).join(" · ")}
+                  {[c.city && `${c.city}, ${c.state}`, c.contact_type, c.best_channel && `via ${c.best_channel}`].filter(Boolean).join(" · ")}
+                  {c.email && <> · <a href={`mailto:${c.email}`} style={{ color: "var(--pink)", fontWeight: 600 }}>{c.email}</a></>}
+                  {c.phone && <> · <a href={`tel:${c.phone}`} style={{ color: "var(--pink)", fontWeight: 600 }}>{c.phone}</a></>}
                 </div>
                 {c.notes && <div style={{ fontSize: "0.84rem", color: "var(--navy)", marginTop: "0.3rem", whiteSpace: "pre-wrap" }}>{c.notes}</div>}
                 {(c.last_touch || c.next_touch) && (

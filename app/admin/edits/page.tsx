@@ -58,7 +58,10 @@ export default function EditsQueuePage() {
   if (!authed) return <div style={{ maxWidth: 600, margin: "4rem auto", textAlign: "center", fontFamily: "'DM Sans', sans-serif" }}><p>Please <a href="/admin" style={{ color: "var(--pink)", fontWeight: 700 }}>sign in to admin</a> first.</p></div>;
 
   const pending = items.filter((e) => e.status === "pending");
-  const decided = items.filter((e) => e.status !== "pending").slice(0, 20);
+  const decided = items
+    .filter((e) => e.status !== "pending")
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .slice(0, 20);
 
   function card(e: Edit) {
     return (

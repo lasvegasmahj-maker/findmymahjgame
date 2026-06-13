@@ -45,7 +45,7 @@ export default function AdvertiserTermsPage() {
           </li>
         </ul>
 
-        <h2>Cancellation &mdash; Monthly Plans</h2>
+        <h2>Cancellation: Monthly Plans</h2>
         <ul>
           <li>
             Monthly plans may be cancelled with 30 days written notice to{" "}
@@ -55,7 +55,7 @@ export default function AdvertiserTermsPage() {
           <li>No partial refunds for the current month</li>
         </ul>
 
-        <h2>Cancellation &mdash; Annual Plans</h2>
+        <h2>Cancellation: Annual Plans</h2>
         <ul>
           <li>Annual plans are non-refundable after 30 days from the start date</li>
           <li>

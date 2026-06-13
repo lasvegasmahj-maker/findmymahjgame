@@ -28,6 +28,10 @@ export default function ClaimClient({
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!ready) {
+      setErr(!name.trim() ? "Please add your first name." : "Add a phone number or an email so we can reach you.");
+      return;
+    }
     setStatus("submitting"); setErr("");
     try {
       const res = await fetch("/api/tables/claim", {
@@ -50,7 +54,7 @@ export default function ClaimClient({
       <div style={{ textAlign: "center", padding: "0.5rem 0" }}>
         <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#1a9648", marginBottom: "0.8rem" }}>You&rsquo;re in!</div>
         <div style={{ display: "inline-block" }}><SeatDots filled={filled + 1} total={total} you /></div>
-        <p style={{ fontSize: "1.1rem", color: "var(--navy)", lineHeight: 1.5, margin: "0.8rem 0 1rem" }}>We saved your seat. The host will be in touch with the details.</p>
+        <p style={{ fontSize: "1.1rem", color: "var(--navy)", lineHeight: 1.5, margin: "0.8rem 0 1rem" }}>We saved your seat. As soon as the table fills, we will email the whole group to pick a time and a public place to meet. Share the link below to fill it faster.</p>
         <div style={{ maxWidth: 320, margin: "0 auto" }}>
           <AddToCalendar title={title} dayOfWeek={dayOfWeek} timeOfDay={timeOfDay} place={place} />
         </div>
@@ -78,10 +82,10 @@ export default function ClaimClient({
       <input style={fieldStyle} type="email" aria-label="Email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
       <p style={{ fontSize: "0.95rem", color: "var(--muted)", margin: "0 0 0.8rem" }}>Add a phone, an email, or both, so we can reach you. We never show it to anyone.</p>
       {err && <p role="alert" style={{ color: "#dc2626", fontSize: "1.05rem" }}>{err}</p>}
-      <button type="submit" disabled={!ready || status === "submitting"} style={{
+      <button type="submit" disabled={status === "submitting"} style={{
         width: "100%", minHeight: 68, borderRadius: 16, border: "none",
-        background: ready ? "var(--pink)" : "#d9b3cc", color: "white",
-        fontSize: "1.4rem", fontWeight: 800, cursor: ready ? "pointer" : "not-allowed", fontFamily: "'DM Sans', sans-serif",
+        background: "var(--pink)", color: "white",
+        fontSize: "1.4rem", fontWeight: 800, cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
       }}>{status === "submitting" ? "Saving..." : "Yes, I'm in!"}</button>
     </form>
   );

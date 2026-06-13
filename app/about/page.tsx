@@ -25,7 +25,7 @@ export default function AboutPage() {
         <div className="eyebrow">About Us</div>
         <h1>The National Mahjong Player Directory</h1>
         <p>
-          Find My Mahj Game connects players, venues and events across all 50 states &mdash; free for players, always.
+          Find My Mahj Game connects players, venues and events across all 50 states, free for players, always.
         </p>
       </div>
 
@@ -92,7 +92,7 @@ export default function AboutPage() {
         <h3>Players</h3>
         <p>
           Find a game near you, discover open play nights, connect with local players, and explore
-          mahjong events across the country &mdash; all for free.{" "}
+          mahjong events across the country, all for free.{" "}
           <Link href="/list-my-game">Create your free player listing</Link> and let players in your
           area find you.
         </p>

@@ -33,7 +33,7 @@ export default function NewsletterSignup({ dark = false }: { dark?: boolean }) {
   if (state === "done") {
     return (
       <p style={{ color: labelColor, fontSize: "1.1rem", margin: 0, lineHeight: 1.5 }}>
-        Thank you. You are on the list, watch your inbox for the next issue.
+        Thank you. You are on the list. Look out for Find My Mahj Weekly in your inbox.
       </p>
     );
   }

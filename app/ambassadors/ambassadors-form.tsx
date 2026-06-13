@@ -32,7 +32,7 @@ export default function AmbassadorForm() {
   const [status, setStatus] = useState<"idle" | "submitting" | "error" | "done">("idle");
   const [err, setErr] = useState("");
 
-  const ready = name.trim() && email.trim() && city.trim() && state && role && why.trim();
+  const ready = name.trim() && email.trim() && city.trim() && state && role;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -100,7 +100,7 @@ export default function AmbassadorForm() {
         {REACH.map((r) => <option key={r} value={r}>{r}</option>)}
       </select>
 
-      <div style={labelStyle}>Why do you want to help?</div>
+      <div style={labelStyle}>Why do you want to help? <span style={optional}>(optional)</span></div>
       <textarea style={{ ...fieldStyle, minHeight: 120, resize: "vertical", paddingTop: "0.8rem", lineHeight: 1.5 }} aria-label="Why do you want to help?" placeholder="Tell us a little about how you bring players together." value={why} onChange={(e) => setWhy(e.target.value)} />
 
       {err && <p role="alert" style={{ color: "#dc2626", fontSize: "1.05rem", marginTop: "1rem" }}>{err}</p>}

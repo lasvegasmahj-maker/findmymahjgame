@@ -36,13 +36,7 @@ export default async function MetricsPage() {
 
   const tCreated: Record<string, number> = {};
   T.forEach((t) => { tCreated[t.id as string] = new Date(t.created_at as string).getTime(); });
-  const seatMax: Record<string, number> = {};
-  S.forEach((s) => {
-    const id = s.table_id as string;
-    const ts = new Date(s.created_at as string).getTime();
-    if (!(id in seatMax) || ts > seatMax[id]) seatMax[id] = ts;
-  });
-  const fillTimes = T.filter((t) => t.status === "full" && seatMax[t.id as string]).map((t) => seatMax[t.id as string] - tCreated[t.id as string]);
+  const fillTimes = T.filter((t) => t.filled_at && tCreated[t.id as string]).map((t) => new Date(t.filled_at as string).getTime() - tCreated[t.id as string]);
   const avgFill = fillTimes.length ? fillTimes.reduce((a, b) => a + b, 0) / fillTimes.length : null;
   const fmtDur = (ms: number | null) => ms == null ? "n/a" : ms < 3600000 ? `${Math.round(ms / 60000)} min` : `${Math.round((ms / 3600000) * 10) / 10} hr`;
 
@@ -74,7 +68,10 @@ export default async function MetricsPage() {
 
   return (
     <main style={{ maxWidth: 760, margin: "0 auto", padding: "2rem 1.5rem 4rem" }}>
-      <h1 style={{ fontSize: "1.9rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif", marginBottom: "0.3rem" }}>Tables Dashboard</h1>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.8rem", marginBottom: "0.3rem" }}>
+        <h1 style={{ fontSize: "1.9rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif", margin: 0 }}>Tables Dashboard</h1>
+        <a href="/admin" style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 6, padding: "0.5rem 1rem", fontSize: "0.82rem", fontWeight: 600, color: "var(--navy)", textDecoration: "none", fontFamily: "'DM Sans', sans-serif" }}>&larr; Admin</a>
+      </div>
       <p style={{ color: "var(--muted)", marginBottom: "1.5rem" }}>North Star funnel: Created → Filled → Played → Recurring</p>
 
       <div style={{ display: "flex", gap: "0.6rem", alignItems: "stretch", marginBottom: "2rem", flexWrap: "wrap" }}>

@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 const FAQ_ITEMS = [
   {
     q: "Is Find My Mahj Game free to use?",
-    a: "Yes. Searching for mahjong players, groups, and events is completely free. Creating a player listing is also free. We charge only for business or venue advertising packages.",
+    a: "Yes. Searching for mahjong players, groups, and events is completely free, and so is creating a player listing. Money never crosses the table between players. We make money only from optional business and venue advertising packages, never from you.",
   },
   {
     q: "What kind of mahjong is played here?",
@@ -28,11 +28,15 @@ const FAQ_ITEMS = [
   },
   {
     q: "How do I create a free player listing?",
-    a: "Go to /list-my-game and fill out the short form. Your listing goes live after review, usually within 24 hours. You can include your city, skill level, preferred style, and how others can reach you.",
+    a: "Go to /list-my-game and fill out the short form. We review and approve listings within 1-2 business days. You can include your city, skill level, availability, and a short bio.",
+  },
+  {
+    q: "Is my information private and safe?",
+    a: "Yes. You list yourself with your first name and last initial only (for example, Sandra M.), never your full name. Your email address is never shown publicly. When another player wants to connect, we forward their request to you privately, so you decide who to reply to. You stay in control.",
   },
   {
     q: "Can I list my mahjong group or club?",
-    a: "Yes. Groups and open play hosts can create a listing at /list-my-game. Select 'Group / Open Play Host' as your listing type.",
+    a: "Yes. Groups and open play hosts can create a free listing at /list-my-game. Add your city and describe your group and how to join in the bio, or email hello@findmymahjgame.com and we will set it up for you.",
   },
   {
     q: "How do I list a mahjong event or tournament?",

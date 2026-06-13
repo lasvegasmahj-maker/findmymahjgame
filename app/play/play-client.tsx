@@ -106,7 +106,7 @@ export default function PlayClient() {
     return shell(
       <>
         <h1 style={{ fontSize: "2rem", color: "var(--navy)", margin: "0.8rem 0 0.3rem", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>I Want to Play</h1>
-        <p style={{ fontSize: "1.15rem", color: "var(--muted)", lineHeight: 1.5 }}>Find a game near you.</p>
+        <p style={{ fontSize: "1.15rem", color: "var(--muted)", lineHeight: 1.5 }}>Find a game near you. Always free, and we never share your information.</p>
         <button type="button" onClick={useMyLocation} disabled={searching} style={{ width: "100%", minHeight: 68, marginTop: "1.4rem", borderRadius: 16, border: "none", background: "var(--navy)", color: "white", fontSize: "1.3rem", fontWeight: 800, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
           {searching ? "Looking..." : "Use My Location"}
         </button>
@@ -126,6 +126,7 @@ export default function PlayClient() {
       <>
         <h1 style={{ fontSize: "1.8rem", color: "var(--navy)", margin: "0.8rem 0 0.3rem", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>Games near {city}</h1>
         <p style={{ fontSize: "1.1rem", color: "var(--muted)" }}>Tap a game to join it.</p>
+        <p style={{ fontSize: "1rem", color: "var(--navy)", lineHeight: 1.5, marginTop: "0.4rem" }}>You decide before you commit. Groups meet in public places, and we never share your phone number or home address.</p>
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1.2rem" }}>
           {games.map((g) => {
             const title = `${g.day_of_week || ""} ${g.time_of_day || ""} Mahjong`.trim();

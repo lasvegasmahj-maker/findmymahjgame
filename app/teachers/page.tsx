@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: "Find a Mahjong Teacher Near You",
   description: "Find an American Mahjong teacher near you. Lessons, classes, and beginner-friendly instructors, city by city.",
   alternates: { canonical: "https://findmymahjgame.com/teachers" },
+  robots: { index: false, follow: true },
 };
 
 export const revalidate = 300;
@@ -35,11 +36,11 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
       <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", textAlign: "center", margin: "0 0 0.4rem" }}>Find a mahjong teacher near you</h1>
-      <p style={{ fontSize: "1.2rem", color: "var(--muted)", textAlign: "center", lineHeight: 1.5, margin: "0 0 1.8rem" }}>Lessons and classes, beginners welcome.</p>
+      <p style={{ fontSize: "1.2rem", color: "var(--muted)", textAlign: "center", lineHeight: 1.5, margin: "0 0 1.8rem" }}>Lessons and classes, beginners welcome. These teachers are listed free, and you contact them directly.</p>
 
       <form method="get" style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center", maxWidth: 520, margin: "0 auto 2.4rem" }}>
         <label htmlFor="near" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>Your city or area</label>
-        <input id="near" name="near" defaultValue={near || ""} placeholder="Your city or ZIP" style={field} />
+        <input id="near" name="near" defaultValue={near || ""} placeholder="Your city or state" style={field} />
         <button type="submit" style={goBtn}>Search</button>
       </form>
 
@@ -77,6 +78,12 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
                 {(t.city || t.state) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[t.city, t.state].filter(Boolean).join(", ")}</div>}
                 {beginner && <div style={{ display: "inline-block", background: "rgba(46,201,92,0.14)", color: "#1a6e3a", fontWeight: 800, fontSize: "0.85rem", padding: "0.2rem 0.7rem", borderRadius: 50, marginTop: "0.6rem" }}>Beginners welcome</div>}
                 {t.description && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.5rem", lineHeight: 1.5 }}>{String(t.description).slice(0, 110)}{String(t.description).length > 110 ? "..." : ""}</div>}
+                {(t.display_email || t.instagram) && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", marginTop: "0.8rem" }}>
+                    {t.display_email && <a href={`mailto:${t.display_email}`} style={{ color: "var(--pink)", fontWeight: 800 }}>Email</a>}
+                    {t.instagram && <a href={`https://instagram.com/${t.instagram.replace("@", "")}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink)", fontWeight: 800 }}>{t.instagram.startsWith("@") ? t.instagram : `@${t.instagram}`}</a>}
+                  </div>
+                )}
               </div>)
             );
           })}

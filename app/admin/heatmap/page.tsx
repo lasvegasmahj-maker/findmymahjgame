@@ -54,7 +54,10 @@ export default async function HeatmapPage() {
 
   return (
     <main style={{ maxWidth: 760, margin: "0 auto", padding: "2rem 1.5rem 4rem" }}>
-      <h1 style={{ fontSize: "1.9rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif", marginBottom: "0.3rem" }}>Waitlist Heat Map</h1>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.8rem", marginBottom: "0.3rem" }}>
+        <h1 style={{ fontSize: "1.9rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif", margin: 0 }}>Waitlist Heat Map</h1>
+        <a href="/admin" style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 6, padding: "0.5rem 1rem", fontSize: "0.82rem", fontWeight: 600, color: "var(--navy)", textDecoration: "none", fontFamily: "'DM Sans', sans-serif" }}>&larr; Admin</a>
+      </div>
       <p style={{ color: "var(--muted)", marginBottom: "0.3rem" }}>Where players are asking to play, ranked by demand. Admin only.</p>
       <p style={{ color: "var(--muted)", marginBottom: "1.5rem", fontSize: "0.9rem" }}>{totalDemand} total requests across {rows.length} cities. Demand comes from the &ldquo;I Want to Play&rdquo; form. Supply is tables started in that city.</p>
 

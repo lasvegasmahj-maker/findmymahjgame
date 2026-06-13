@@ -202,11 +202,37 @@ export default function AdminPage() {
   const [pendingCount, setPendingCount] = useState(0);
   const [newInquiryCount, setNewInquiryCount] = useState(0);
   const [newAmbassadorCount, setNewAmbassadorCount] = useState(0);
+  const [pendingEditCount, setPendingEditCount] = useState(0);
   const [focusTasks, setFocusTasks] = useState<{ id: string; task: string; priority: string; due_date: string | null; status: string; waiting_on: string | null }[]>([]);
+
+  useEffect(() => {
+    if (!authed) return;
+    fetch("/api/admin/edits", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : { items: [] }))
+      .then((j) => setPendingEditCount(((j.items || []) as { status: string }[]).filter((e) => e.status === "pending").length))
+      .catch(() => {});
+  }, [authed]);
+  const [matchMsg, setMatchMsg] = useState<{ text: string; ok: boolean } | null>(null);
 
   // Probe the session once on mount. The data route returns 401 without a valid cookie.
   useEffect(() => {
     fetch("/api/admin/data?tab=inquiries", { cache: "no-store" }).then((res) => setAuthed(res.ok));
+  }, []);
+
+  // The match approve/skip confirm flow redirects back here with ?match=...;
+  // surface the outcome so the founder sees their one-click decision landed.
+  useEffect(() => {
+    const m = new URLSearchParams(window.location.search).get("match");
+    if (!m) return;
+    const map: Record<string, { text: string; ok: boolean }> = {
+      approved: { text: "Match approved. Each player was emailed a claim link.", ok: true },
+      skipped: { text: "Match skipped. Those players are back in the pool.", ok: true },
+      "already-decided": { text: "That match was already decided. No change made.", ok: true },
+      "approved-but-emails-failed": { text: "Match approved, but the invite emails did not send. Players were put back in the pool. Try again.", ok: false },
+      error: { text: "Something went wrong creating the table. Nothing was sent. Please try again.", ok: false },
+    };
+    setMatchMsg(map[m] || null);
+    window.history.replaceState(null, "", window.location.pathname);
   }, []);
 
   useEffect(() => {
@@ -220,7 +246,8 @@ export default function AdminPage() {
       .then((j) => {
         const today = new Date().toISOString().slice(0, 10);
         const items = (j.items || []) as { id: string; task: string; priority: string; due_date: string | null; status: string; waiting_on: string | null; snoozed_until: string | null }[];
-        const open = items.filter((t) => ["open", "in_progress", "waiting"].includes(t.status));
+        const snoozeExpired = (t: { status: string; snoozed_until: string | null }) => t.status === "snoozed" && (!t.snoozed_until || t.snoozed_until <= today);
+        const open = items.filter((t) => ["open", "in_progress"].includes(t.status) || snoozeExpired(t));
         const ranked = [
           ...open.filter((t) => t.due_date && t.due_date <= today),
           ...open.filter((t) => (!t.due_date || t.due_date > today) && t.priority === "high"),
@@ -279,8 +306,9 @@ export default function AdminPage() {
       const res = await fetch(`/api/admin/claim-link?table=${table}&id=${id}`);
       const d = await res.json();
       if (!res.ok) { window.alert(d.error || "Could not create the link."); return; }
-      window.prompt(`Claim link for ${label} (copy it into your outreach email). Still-running and ended links are in the console.`, d.claim);
-      console.log("links for", label, d);
+      window.prompt(`Claim link for ${label} (copy it into your outreach email).`, d.claim);
+      window.prompt(`"Still running?" link for ${label} (for freshness check-in emails).`, d.stillRunning);
+      window.prompt(`"Has ended" link for ${label} (for freshness check-in emails).`, d.ended);
     } catch {
       window.alert("Network error. Please try again.");
     }
@@ -413,7 +441,21 @@ export default function AdminPage() {
   const showBanner = bannerParts.length > 0;
 
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "2rem" }}>
+    <div className="admin-shell" style={{ maxWidth: 1200, margin: "0 auto", padding: "2rem" }}>
+      {matchMsg && (
+        <div style={{
+          background: matchMsg.ok ? "rgba(46,201,92,0.1)" : "#fee2e2",
+          border: matchMsg.ok ? "1px solid rgba(46,201,92,0.4)" : "1px solid #fca5a5",
+          borderRadius: 12,
+          padding: "1rem 1.5rem",
+          marginBottom: "1.5rem",
+          fontSize: "0.92rem",
+          fontWeight: 600,
+          color: matchMsg.ok ? "#1a9648" : "#dc2626",
+        }}>
+          {matchMsg.text}
+        </div>
+      )}
       {showBanner && (
         <div style={{
           background: "linear-gradient(135deg, rgba(233,30,140,0.08), rgba(245,200,66,0.12))",
@@ -451,6 +493,7 @@ export default function AdminPage() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "2rem" }}>
         <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.8rem", color: "var(--navy)" }}>Admin Dashboard</h1>
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+          <a href="/admin/today" style={{ background: "var(--navy)", color: "white", borderRadius: 6, padding: "0.5rem 1rem", fontSize: "0.82rem", fontWeight: 700, textDecoration: "none", fontFamily: "'DM Sans', sans-serif" }}>Today</a>
           <a href="/admin/tasks" style={{ background: "var(--pink)", color: "white", borderRadius: 6, padding: "0.5rem 1rem", fontSize: "0.82rem", fontWeight: 700, textDecoration: "none", fontFamily: "'DM Sans', sans-serif" }}>Tasks</a>
           <a href="/admin/edits" style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 6, padding: "0.5rem 1rem", fontSize: "0.82rem", fontWeight: 600, textDecoration: "none", color: "var(--navy)", fontFamily: "'DM Sans', sans-serif" }}>Edits</a>
           <a href="/admin/relationships" style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 6, padding: "0.5rem 1rem", fontSize: "0.82rem", fontWeight: 600, textDecoration: "none", color: "var(--navy)", fontFamily: "'DM Sans', sans-serif" }}>Relationships</a>

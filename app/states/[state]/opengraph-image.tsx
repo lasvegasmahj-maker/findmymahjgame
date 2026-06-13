@@ -6,8 +6,9 @@ export const alt = "Find mahjong players and groups in this state";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default function OGImage({ params }: { params: { state: string } }) {
-  const data = STATES[params.state];
+export default async function OGImage({ params }: { params: Promise<{ state: string }> }) {
+  const { state } = await params;
+  const data = STATES[state];
   const stateName = data?.name ?? "Your State";
   const cities = data?.cities.slice(0, 3).join(", ") ?? "";
 

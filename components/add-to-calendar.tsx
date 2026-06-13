@@ -1,8 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 // "Add to Calendar" so players remember when their table is. Computes the next
 // occurrence of the table's day + time in the user's own timezone and links to
 // Google Calendar (sufficient for preview). Renders nothing if day/time unknown.
+// Client-only render: the next-occurrence date depends on the viewer's local
+// timezone, so computing it during SSR (server is UTC) would mismatch on hydration.
 const DAY_IDX: Record<string, number> = {
   Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6,
 };
@@ -16,7 +20,11 @@ function gfmt(d: Date) {
 export default function AddToCalendar({
   title, dayOfWeek, timeOfDay, place,
 }: { title: string; dayOfWeek: string | null; timeOfDay: string | null; place?: string | null }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   if (!dayOfWeek || !(dayOfWeek in DAY_IDX)) return null;
+  if (!mounted) return null;
 
   const now = new Date();
   const start = new Date(now);

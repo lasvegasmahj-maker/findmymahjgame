@@ -41,6 +41,9 @@ export default function AmbassadorsPage() {
         <p style={{ fontSize: "1.1rem", color: "var(--muted)", lineHeight: 1.6, margin: 0 }}>
           Teachers, hosts, organizers, and club leaders. If you can bring even a few players together, you can be a Founding Ambassador.
         </p>
+        <p style={{ fontSize: "1.1rem", color: "var(--navy)", lineHeight: 1.6, margin: "0.9rem 0 0", fontWeight: 700 }}>
+          It is free. There is no cost and no quota. You help as much or as little as you like.
+        </p>
       </div>
 
       <div style={{ background: "white", border: "2px solid var(--border)", borderRadius: 18, padding: "1.6rem 1.5rem", marginBottom: "2.2rem" }}>

@@ -72,7 +72,7 @@ export default function ClaimForm({ token, table, listing, fields }: Props) {
         {status === "submitting" ? "Saving..." : "Confirm my listing"}
       </button>
       <p style={{ fontSize: "0.9rem", color: "var(--muted)", marginTop: "0.8rem", lineHeight: 1.5 }}>
-        Changes are reviewed by a real person before they appear. Your email is never shown publicly.
+        Changes are reviewed by a real person before they appear. The email you enter here, so we can reach you, is never shown publicly. Only the public email you choose above appears on your listing.
       </p>
     </form>
   );

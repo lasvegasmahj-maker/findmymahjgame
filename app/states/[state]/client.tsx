@@ -51,7 +51,8 @@ interface Props {
 }
 
 function SponsorLogo({ src, name }: { src: string | null; name: string }) {
-  if (src) {
+  const [failed, setFailed] = useState(false);
+  if (src && !failed) {
     return (
       // Plain img: logo_url is an arbitrary advertiser host, which next/image
       // rejects unless every host is whitelisted in next.config.
@@ -60,6 +61,7 @@ function SponsorLogo({ src, name }: { src: string | null; name: string }) {
           src={src}
           alt={name}
           loading="lazy"
+          onError={() => setFailed(true)}
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
         />
       </div>
@@ -88,7 +90,7 @@ function formatEventDate(dateStr: string | null) {
 
 function EventTypeBadge({ type }: { type: string }) {
   const labels: Record<string, { label: string; color: string }> = {
-    open_play: { label: "Open Play", color: "var(--green)" },
+    open_play: { label: "Open Play", color: "var(--green-dark)" },
     lesson: { label: "Lesson", color: "var(--pink)" },
     tournament: { label: "Tournament", color: "var(--navy)" },
     retreat: { label: "Retreat", color: "#7c5cbf" },
@@ -194,18 +196,25 @@ export default function StatePageClient({ stateData, players, events, venues }: 
         <h1 style={{ fontSize: "clamp(2.2rem, 5vw, 3.5rem)", marginBottom: "0.8rem" }}>Mahjong in <span style={{ color: "var(--pink)" }}>{stateData.name}</span>
         </h1>
         <p style={{ maxWidth: 520 }}>{stateData.desc}</p>
-        <div style={{ display: "flex", gap: "3rem", justifyContent: "center", marginTop: "2.5rem", flexWrap: "wrap" }}>
-          {[
-            { num: players.length, label: "Players Listed" },
-            { num: events.length, label: "Events" },
-            { num: venues.length, label: "Venues" },
-          ].map((s) => (
-            <div key={s.label} style={{ textAlign: "center" }}>
-              <div style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2rem", color: "white", fontWeight: 900 }}>{s.num}</div>
-              <div style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.5)", marginTop: "0.2rem" }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
+        {players.length + events.length + venues.length > 0 ? (
+          <div style={{ display: "flex", gap: "3rem", justifyContent: "center", marginTop: "2.5rem", flexWrap: "wrap" }}>
+            {[
+              { num: players.length, label: "Players Listed" },
+              { num: events.length, label: "Events" },
+              { num: venues.length, label: "Venues" },
+            ].map((s) => (
+              <div key={s.label} style={{ textAlign: "center" }}>
+                <div style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2rem", color: "white", fontWeight: 900 }}>{s.num}</div>
+                <div style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.5)", marginTop: "0.2rem" }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ marginTop: "2.5rem" }}>
+            <p style={{ color: "rgba(255,255,255,0.75)", maxWidth: 480, margin: "0 auto 1.5rem" }}>Be one of the first players listed in {stateData.name}. It is free to join, and we will help you find a game.</p>
+            <Link href="/list-my-game" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>Create My Free Listing &rarr;</Link>
+          </div>
+        )}
       </section>
 
       {/* Search Bar */}
@@ -243,7 +252,9 @@ export default function StatePageClient({ stateData, players, events, venues }: 
           <div>
             <p className="section-label">Looking for a Group</p>
             <h2 className="section-title" style={{ marginBottom: "0.5rem" }}>Players in {stateData.name}</h2>
-            <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", lineHeight: 1.7 }}>Connect with mahjong players across {stateData.name} looking for their perfect weekly game.
+            <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "0.6rem", lineHeight: 1.7 }}>Connect with mahjong players across {stateData.name} looking for their perfect weekly game.
+            </p>
+            <p style={{ fontSize: "0.9rem", color: "var(--muted)", marginBottom: "2rem", lineHeight: 1.7 }}>Always free for players. Money never crosses the table. We pass your message along privately, and your email is never shown publicly or sold.
             </p>
 
             {filteredPlayers.length > 0 ? (
@@ -287,7 +298,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
               <div style={{ background: "linear-gradient(135deg, rgba(233,30,140,0.04), rgba(233,30,140,0.08))", border: "1px solid rgba(233,30,140,0.18)", borderRadius: 16, padding: "1.5rem 2rem", marginBottom: "2rem" }}>
                 <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--pink)", display: "block", marginBottom: "0.8rem" }}>Sponsored</span>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: "1.2rem", flexWrap: "wrap" }}>
-                  <SponsorLogo src="https://lasvegasmahj.com/logo.png" name="Las Vegas Mahjong" />
+                  <SponsorLogo src={null} name="Las Vegas Mahjong" />
                   <div style={{ flex: 1, minWidth: 200 }}>
                     <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--navy)", marginBottom: "0.3rem" }}>Las Vegas Mahjong</div>
                     <div style={{ fontSize: "0.82rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "0.6rem" }}>Lessons, open play and events with certified instructor Shauna in Las Vegas. All levels welcome.</div>
@@ -323,7 +334,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             {filteredEvents.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "2rem" }}>
                 {filteredEvents.map((event) => (
-                  <div key={event.id} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.5rem 2rem", transition: "all 0.2s", cursor: "pointer" }}>
+                  <div key={event.id} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.5rem 2rem" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
                       <div>
                         <EventTypeBadge type={event.event_type} />

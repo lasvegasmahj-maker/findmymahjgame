@@ -64,12 +64,16 @@ export default function SubmitClient() {
     if (payload.facebook && payload.facebook.startsWith("@")) {
       payload.facebook = `https://facebook.com/${payload.facebook.slice(1)}`;
     }
-    const res = await fetch("/api/advertise-submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    setStatus(res.ok ? "success" : "error");
+    try {
+      const res = await fetch("/api/advertise-submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      setStatus(res.ok ? "success" : "error");
+    } catch {
+      setStatus("error");
+    }
   }
 
   if (status === "success") {
