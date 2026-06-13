@@ -27,12 +27,23 @@ type Teacher = {
 
 async function getTeacher(id: string): Promise<Teacher | null> {
   const supabase = createServerClient();
-  const { data } = await supabase
+  let { data } = await supabase
     .from("venue_listings")
     .select("id, business_name, venue_type, city, state, description, website, instagram, display_email, confirmed_active_at")
     .eq("id", id)
     .eq("status", "published")
     .maybeSingle();
+  if (!data) {
+    // confirmed_active_at arrives with the claims-freshness migration; until it
+    // is applied that select errors, so retry without it and the profile still renders.
+    const r = await supabase
+      .from("venue_listings")
+      .select("id, business_name, venue_type, city, state, description, website, instagram, display_email")
+      .eq("id", id)
+      .eq("status", "published")
+      .maybeSingle();
+    data = r.data ? { ...r.data, confirmed_active_at: null } : null;
+  }
   if (!data) return null;
   const t = data as Teacher;
   if (t.state === "NV") return null;
