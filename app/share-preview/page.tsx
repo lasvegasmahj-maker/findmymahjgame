@@ -65,7 +65,7 @@ export default function SharePreviewPage() {
         </span>
         <div style={{ fontSize: "0.8rem", color: "var(--muted)", margin: "0.6rem 0 0.8rem" }}>📅 {MOCK_PLAYER.availability}</div>
         <p style={{ fontSize: "0.78rem", color: "var(--muted)", lineHeight: 1.5, marginBottom: "0.9rem" }}>{MOCK_PLAYER.bio}</p>
-        <div style={{ width: "100%", border: "1.5px solid var(--pink)", color: "var(--pink)", borderRadius: 6, padding: "0.5rem", fontWeight: 700, fontSize: "0.8rem", textAlign: "center" }}>
+        <div style={{ width: "100%", border: "1.5px solid var(--pink)", color: "var(--pink-text)", borderRadius: 6, padding: "0.5rem", fontWeight: 700, fontSize: "0.8rem", textAlign: "center" }}>
           Connect
         </div>
       </div>
@@ -95,7 +95,7 @@ export default function SharePreviewPage() {
           <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 8, padding: "0.9rem 1rem", fontSize: "0.85rem", color: "var(--muted)", lineHeight: 1.65, marginBottom: "0.5rem" }}>
             {SHARE_TEXT}
             <br /><br />
-            <span style={{ color: "var(--pink)" }}>{SHARE_URL}</span>
+            <span style={{ color: "var(--pink-text)" }}>{SHARE_URL}</span>
           </div>
           <button onClick={copyText} style={{ width: "100%", background: copiedText ? "var(--green)" : "transparent", color: copiedText ? "white" : "var(--navy)", border: `1.5px solid ${copiedText ? "var(--green)" : "var(--border)"}`, borderRadius: 6, padding: "0.55rem", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s" }}>
             {copiedText ? "Copied!" : "Copy Caption + Link"}
@@ -136,7 +136,7 @@ export default function SharePreviewPage() {
       </div>
 
       <p style={{ textAlign: "center", fontSize: "0.78rem", color: "var(--muted)", marginTop: "1.5rem" }}>
-        This is a preview. <Link href="/list-my-game" style={{ color: "var(--pink)" }}>Create your real listing</Link>
+        This is a preview. <Link href="/list-my-game" style={{ color: "var(--pink-text)" }}>Create your real listing</Link>
       </p>
     </div>
   );

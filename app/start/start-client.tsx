@@ -66,7 +66,7 @@ export default function StartClient() {
 
   return (
     <main style={{ maxWidth: 560, margin: "0 auto", padding: "1.5rem 1.2rem 4rem" }}>
-      <a href="/" style={{ fontSize: "1.05rem", color: "var(--pink)", fontWeight: 700, textDecoration: "none" }}>&larr; Back</a>
+      <a href="/" style={{ fontSize: "1.05rem", color: "var(--pink-text)", fontWeight: 700, textDecoration: "none" }}>&larr; Back</a>
       <h1 style={{ fontSize: "2rem", color: "var(--navy)", margin: "0.8rem 0 0.3rem", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>Start a Table</h1>
       <p style={{ fontSize: "1.15rem", color: "var(--muted)", lineHeight: 1.5 }}>Pick a day and time, and your area. We will help you find players nearby. It is free, and money never crosses the table.</p>
 

@@ -30,7 +30,7 @@ export default function NotFound() {
       <div className="page-body" style={{ maxWidth: 680, textAlign: "center" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem", alignItems: "center", marginBottom: "2.5rem" }}>
           <Link href="/" className="btn-cta-primary">Back to Home &rarr;</Link>
-          <Link href="/list-my-game" style={{ color: "var(--pink)", fontWeight: 600, textDecoration: "none", fontSize: "0.9rem" }}>
+          <Link href="/list-my-game" style={{ color: "var(--pink-text)", fontWeight: 600, textDecoration: "none", fontSize: "0.9rem" }}>
             Create a Free Player Listing
           </Link>
         </div>
@@ -60,7 +60,7 @@ export default function NotFound() {
             ))}
           </div>
           <div style={{ marginTop: "1.2rem", paddingTop: "1rem", borderTop: "1px solid var(--border)" }}>
-            <Link href="/states" style={{ color: "var(--pink)", fontSize: "0.85rem", fontWeight: 600, textDecoration: "none" }}>
+            <Link href="/states" style={{ color: "var(--pink-text)", fontSize: "0.85rem", fontWeight: 600, textDecoration: "none" }}>
               View all 50 states &rarr;
             </Link>
           </div>

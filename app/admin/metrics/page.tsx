@@ -17,7 +17,7 @@ export default async function MetricsPage() {
     return (
       <main style={{ maxWidth: 480, margin: "0 auto", padding: "4rem 1.5rem", textAlign: "center" }}>
         <p style={{ fontSize: "1.1rem", color: "var(--navy)" }}>Please sign in to view metrics.</p>
-        <a href="/admin" style={{ color: "var(--pink)", fontWeight: 700 }}>Go to Admin</a>
+        <a href="/admin" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Go to Admin</a>
       </main>
     );
   }

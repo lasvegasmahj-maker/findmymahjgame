@@ -62,7 +62,7 @@ export default function TravelPage() {
         {CITIES.map((c) => (
           <Link key={c.href} href={c.href} style={card}>
             <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--navy)" }}>{c.label}</div>
-            <div style={{ marginTop: "0.6rem", color: "var(--pink)", fontWeight: 800, fontSize: "1.05rem" }}>See games &rarr;</div>
+            <div style={{ marginTop: "0.6rem", color: "var(--pink-text)", fontWeight: 800, fontSize: "1.05rem" }}>See games &rarr;</div>
           </Link>
         ))}
       </div>
@@ -73,7 +73,7 @@ export default function TravelPage() {
         {SNOWBIRD.map((s) => (
           <Link key={s.href} href={s.href} style={card}>
             <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--navy)" }}>{s.label}</div>
-            <div style={{ marginTop: "0.6rem", color: "var(--pink)", fontWeight: 800, fontSize: "1.05rem" }}>Browse the state &rarr;</div>
+            <div style={{ marginTop: "0.6rem", color: "var(--pink-text)", fontWeight: 800, fontSize: "1.05rem" }}>Browse the state &rarr;</div>
           </Link>
         ))}
       </div>

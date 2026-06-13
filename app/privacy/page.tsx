@@ -55,12 +55,12 @@ export default function PrivacyPage() {
 
           <section>
             <h2 style={{ color: "var(--navy)", fontSize: "1.1rem", marginBottom: "0.7rem" }}>Data Removal</h2>
-            <p>To have your listing or personal information removed, email us at <a href="mailto:hello@findmymahjgame.com" style={{ color: "var(--pink)", fontWeight: 600 }}>hello@findmymahjgame.com</a>. We will process all removal requests within 7 days.</p>
+            <p>To have your listing or personal information removed, email us at <a href="mailto:hello@findmymahjgame.com" style={{ color: "var(--pink-text)", fontWeight: 600 }}>hello@findmymahjgame.com</a>. We will process all removal requests within 7 days.</p>
           </section>
 
           <section>
             <h2 style={{ color: "var(--navy)", fontSize: "1.1rem", marginBottom: "0.7rem" }}>Contact</h2>
-            <p>Questions about this policy? <Link href="/contact" style={{ color: "var(--pink)", fontWeight: 600 }}>Contact us</Link> or email <a href="mailto:hello@findmymahjgame.com" style={{ color: "var(--pink)", fontWeight: 600 }}>hello@findmymahjgame.com</a>.</p>
+            <p>Questions about this policy? <Link href="/contact" style={{ color: "var(--pink-text)", fontWeight: 600 }}>Contact us</Link> or email <a href="mailto:hello@findmymahjgame.com" style={{ color: "var(--pink-text)", fontWeight: 600 }}>hello@findmymahjgame.com</a>.</p>
           </section>
 
         </div>

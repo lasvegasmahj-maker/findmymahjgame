@@ -22,7 +22,7 @@ export default function SeatDots({
   return (
     <div>
       <div style={{ fontSize: size, letterSpacing: "0.25em", lineHeight: 1 }} aria-hidden="true">
-        <span style={{ color: "var(--pink)" }}>{"●".repeat(f)}</span>
+        <span style={{ color: "var(--pink-text)" }}>{"●".repeat(f)}</span>
         <span style={{ color: "#cbd5e1" }}>{"○".repeat(remaining)}</span>
       </div>
       <div style={{ fontSize: "1.15rem", fontWeight: 800, color: remaining <= 0 ? "#1a9648" : "var(--navy)", marginTop: "0.4rem" }}>

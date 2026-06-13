@@ -156,7 +156,7 @@ export default function FounderTasksPage() {
   }
 
   if (authed === null) return null;
-  if (!authed) return <div style={{ maxWidth: 600, margin: "4rem auto", textAlign: "center", fontFamily: "'DM Sans', sans-serif" }}><p>Please <a href="/admin" style={{ color: "var(--pink)", fontWeight: 700 }}>sign in to admin</a> first.</p></div>;
+  if (!authed) return <div style={{ maxWidth: 600, margin: "4rem auto", textAlign: "center", fontFamily: "'DM Sans', sans-serif" }}><p>Please <a href="/admin" style={{ color: "var(--pink-text)", fontWeight: 700 }}>sign in to admin</a> first.</p></div>;
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: "2rem 1.2rem 4rem", fontFamily: "'DM Sans', sans-serif" }}>
@@ -192,7 +192,7 @@ export default function FounderTasksPage() {
         <>
           {focus.length > 0 && (
             <div style={{ background: "#fff5fa", border: "1px solid rgba(233,30,140,0.25)", borderRadius: 12, padding: "1rem 1.2rem", marginBottom: "2rem" }}>
-              <h2 style={{ fontSize: "1rem", fontWeight: 800, color: "var(--pink)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.7rem" }}>Today&rsquo;s focus</h2>
+              <h2 style={{ fontSize: "1rem", fontWeight: 800, color: "var(--pink-text)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.7rem" }}>Today&rsquo;s focus</h2>
               {focus.map(row)}
             </div>
           )}

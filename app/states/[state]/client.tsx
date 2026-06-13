@@ -91,7 +91,7 @@ function formatEventDate(dateStr: string | null) {
 function EventTypeBadge({ type }: { type: string }) {
   const labels: Record<string, { label: string; color: string }> = {
     open_play: { label: "Open Play", color: "var(--green-dark)" },
-    lesson: { label: "Lesson", color: "var(--pink)" },
+    lesson: { label: "Lesson", color: "var(--pink-text)" },
     tournament: { label: "Tournament", color: "var(--navy)" },
     retreat: { label: "Retreat", color: "#7c5cbf" },
     social: { label: "Social", color: "#00c9b1" },
@@ -188,12 +188,12 @@ export default function StatePageClient({ stateData, players, events, venues }: 
       {/* Hero */}
       <section className="page-hero" style={{ padding: "3.5rem 2rem" }}>
         <p style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.5)", marginBottom: "1.2rem" }}>
-          <Link href="/" style={{ color: "var(--pink)", textDecoration: "none" }}>Home</Link>
+          <Link href="/" style={{ color: "var(--pink-text)", textDecoration: "none" }}>Home</Link>
           {" "}&rsaquo;{" "}
-          <Link href="/#map" style={{ color: "var(--pink)", textDecoration: "none" }}>Find Players</Link>
+          <Link href="/#map" style={{ color: "var(--pink-text)", textDecoration: "none" }}>Find Players</Link>
           {" "}&rsaquo; {stateData.name}
         </p>
-        <h1 style={{ fontSize: "clamp(2.2rem, 5vw, 3.5rem)", marginBottom: "0.8rem" }}>Mahjong in <span style={{ color: "var(--pink)" }}>{stateData.name}</span>
+        <h1 style={{ fontSize: "clamp(2.2rem, 5vw, 3.5rem)", marginBottom: "0.8rem" }}>Mahjong in <span style={{ color: "var(--pink-text)" }}>{stateData.name}</span>
         </h1>
         <p style={{ maxWidth: 520 }}>{stateData.desc}</p>
         {players.length + events.length + venues.length > 0 ? (
@@ -296,16 +296,16 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             {/* Las Vegas Mahjong — sponsored only on Nevada */}
             {stateData.abbr === "NV" && (
               <div style={{ background: "linear-gradient(135deg, rgba(233,30,140,0.04), rgba(233,30,140,0.08))", border: "1px solid rgba(233,30,140,0.18)", borderRadius: 16, padding: "1.5rem 2rem", marginBottom: "2rem" }}>
-                <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--pink)", display: "block", marginBottom: "0.8rem" }}>Sponsored</span>
+                <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--pink-text)", display: "block", marginBottom: "0.8rem" }}>Sponsored</span>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: "1.2rem", flexWrap: "wrap" }}>
                   <SponsorLogo src={null} name="Las Vegas Mahjong" />
                   <div style={{ flex: 1, minWidth: 200 }}>
                     <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--navy)", marginBottom: "0.3rem" }}>Las Vegas Mahjong</div>
                     <div style={{ fontSize: "0.82rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "0.6rem" }}>Lessons, open play and events with certified instructor Shauna in Las Vegas. All levels welcome.</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem" }}>
-                      <a href="https://lasvegasmahj.com" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>lasvegasmahj.com</a>
-                      <a href="mailto:lasvegasmahj@gmail.com" style={{ fontSize: "0.8rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>lasvegasmahj@gmail.com</a>
-                      <a href="https://instagram.com/lasvegasmahjong" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>@lasvegasmahjong</a>
+                      <a href="https://lasvegasmahj.com" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", color: "var(--pink-text)", textDecoration: "none", fontWeight: 600 }}>lasvegasmahj.com</a>
+                      <a href="mailto:lasvegasmahj@gmail.com" style={{ fontSize: "0.8rem", color: "var(--pink-text)", textDecoration: "none", fontWeight: 600 }}>lasvegasmahj@gmail.com</a>
+                      <a href="https://instagram.com/lasvegasmahjong" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", color: "var(--pink-text)", textDecoration: "none", fontWeight: 600 }}>@lasvegasmahjong</a>
                     </div>
                   </div>
                 </div>
@@ -395,16 +395,16 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                       : <div className="venue-stripe" style={{ background: "var(--pink)" }} />
                     }
                     <div className="venue-body">
-                      <div className="venue-type" style={{ color: "var(--pink)" }}>{venue.venue_type} &middot; {venue.city}</div>
+                      <div className="venue-type" style={{ color: "var(--pink-text)" }}>{venue.venue_type} &middot; {venue.city}</div>
                       <h3 className="venue-name">{venue.business_name}</h3>
                       <p className="venue-meta">{venue.city}, {venue.state}</p>
                       {venue.description && <p className="venue-desc">{venue.description}</p>}
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem", alignItems: "center", marginBottom: "0.9rem" }}>
                         {venue.display_email && (
-                          <a href={`mailto:${venue.display_email}`} style={{ fontSize: "0.78rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>{venue.display_email}</a>
+                          <a href={`mailto:${venue.display_email}`} style={{ fontSize: "0.78rem", color: "var(--pink-text)", textDecoration: "none", fontWeight: 600 }}>{venue.display_email}</a>
                         )}
                         {venue.instagram && (
-                          <a href={`https://instagram.com/${venue.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.78rem", color: "var(--pink)", textDecoration: "none", fontWeight: 600 }}>{venue.instagram.startsWith("@") ? venue.instagram : `@${venue.instagram}`}</a>
+                          <a href={`https://instagram.com/${venue.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.78rem", color: "var(--pink-text)", textDecoration: "none", fontWeight: 600 }}>{venue.instagram.startsWith("@") ? venue.instagram : `@${venue.instagram}`}</a>
                         )}
                       </div>
                       {venue.website ? (
@@ -472,7 +472,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                     {connectForm.player.name.charAt(0)}
                   </div>
                   <div>
-                    <p style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--pink)", marginBottom: "0.2rem" }}>Connect with</p>
+                    <p style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--pink-text)", marginBottom: "0.2rem" }}>Connect with</p>
                     <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.3rem", color: "var(--navy)", margin: 0 }}>{connectForm.player.name}</h3>
                     <p style={{ fontSize: "0.8rem", color: "var(--muted)", margin: 0 }}>{connectForm.player.city}, {connectForm.player.state} &middot; <LevelBadge level={connectForm.player.skill_level} /></p>
                   </div>

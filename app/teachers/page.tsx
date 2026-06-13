@@ -68,13 +68,13 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
         <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.1rem 1.3rem", maxWidth: 560, margin: "0 auto 1.6rem", textAlign: "center" }}>
           <p style={{ fontSize: "1.05rem", color: "var(--navy)", lineHeight: 1.5, margin: 0 }}>
             Looking for mahjong lessons in Las Vegas? Visit{" "}
-            <a href="https://lasvegasmahj.com" target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink)", fontWeight: 800 }}>Las Vegas Mahjong</a>.
+            <a href="https://lasvegasmahj.com" target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink-text)", fontWeight: 800 }}>Las Vegas Mahjong</a>.
           </p>
         </div>
       )}
 
       <div style={{ background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.3rem 1.5rem", maxWidth: 680, margin: "0 auto 2.2rem", textAlign: "center" }}>
-        <p style={{ fontSize: "0.85rem", fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--pink)", margin: "0 0 0.4rem" }}>Our promise to teachers</p>
+        <p style={{ fontSize: "0.85rem", fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--pink-text)", margin: "0 0 0.4rem" }}>Our promise to teachers</p>
         <p style={{ fontSize: "1.05rem", color: "var(--navy)", lineHeight: 1.6, margin: 0 }}>
           Find My Mahj Game never stands between you and your students. They book on your own site, and money never crosses the table. No booking cuts, no paid placement, ever.
         </p>
@@ -88,7 +88,7 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
               {(t.city || t.state) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[t.city, t.state].filter(Boolean).join(", ")}</div>}
               {t._beginner && <div style={{ display: "inline-block", background: "rgba(46,201,92,0.14)", color: "#1a6e3a", fontWeight: 800, fontSize: "0.85rem", padding: "0.2rem 0.7rem", borderRadius: 50, marginTop: "0.6rem" }}>Beginners welcome</div>}
               {t.description && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.5rem", lineHeight: 1.5 }}>{String(t.description).slice(0, 110)}{String(t.description).length > 110 ? "..." : ""}</div>}
-              <div style={{ marginTop: "0.8rem", color: "var(--pink)", fontWeight: 800 }}>View details &rarr;</div>
+              <div style={{ marginTop: "0.8rem", color: "var(--pink-text)", fontWeight: 800 }}>View details &rarr;</div>
             </Link>
           ))}
         </div>
@@ -105,7 +105,7 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
 
       {rows.length > 0 && (
         <div style={{ textAlign: "center", marginTop: "2.5rem" }}>
-          <Link href="/get-listed" style={{ color: "var(--pink)", fontWeight: 800, fontSize: "1.1rem" }}>Are you a teacher? Get listed free &rarr;</Link>
+          <Link href="/get-listed" style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.1rem" }}>Are you a teacher? Get listed free &rarr;</Link>
         </div>
       )}
     </main>

@@ -99,7 +99,7 @@ export default async function Home() {
           </div>
         </div>
         <div style={{ marginTop: "1.6rem", textAlign: "center" }}>
-          <Link href="/how-it-works" style={{ fontSize: "1.1rem", color: "var(--pink)", fontWeight: 700 }}>New to mahjong? Learn how</Link>
+          <Link href="/how-it-works" style={{ fontSize: "1.1rem", color: "var(--pink-text)", fontWeight: 700 }}>New to mahjong? Learn how</Link>
         </div>
       </section>
 
@@ -117,7 +117,7 @@ export default async function Home() {
                     <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)" }}>{title}</div>
                     {g.city && <div style={{ fontSize: "1.05rem", color: "var(--muted)", margin: "0.3rem 0 0.7rem" }}>{g.city}</div>}
                     <SeatDots filled={g.filled} total={g.total} size="1.2rem" />
-                    <div style={{ marginTop: "0.7rem", color: "var(--pink)", fontWeight: 800 }}>Join this game &rarr;</div>
+                    <div style={{ marginTop: "0.7rem", color: "var(--pink-text)", fontWeight: 800 }}>Join this game &rarr;</div>
                   </a>
                 );
               })}
@@ -133,7 +133,7 @@ export default async function Home() {
             <p className="section-label" style={{ textAlign: "center" }}>Find My Local Mahj Game</p>
             <h2 className="section-title" style={{ textAlign: "center" }}>Find Players &amp; Events Near You</h2>
             <p className="map-subtitle" style={{ textAlign: "center" }}>Click your state to add your free listing, find local events and venues, and connect with players near you, or search by city below.</p>
-            <p style={{ textAlign: "center", marginTop: "0.6rem", fontSize: "1rem", lineHeight: 2 }}><Link href="/events" style={{ color: "var(--pink)", fontWeight: 700 }}>Open plays &amp; events</Link> &middot; <Link href="/teachers" style={{ color: "var(--pink)", fontWeight: 700 }}>Teachers</Link> &middot; <Link href="/tournaments" style={{ color: "var(--pink)", fontWeight: 700 }}>Tournaments</Link> &middot; <Link href="/leagues" style={{ color: "var(--pink)", fontWeight: 700 }}>Leagues</Link> &middot; <Link href="/venues" style={{ color: "var(--pink)", fontWeight: 700 }}>Venues</Link> &middot; <Link href="/travel" style={{ color: "var(--pink)", fontWeight: 700 }}>Travel</Link></p>
+            <p style={{ textAlign: "center", marginTop: "0.6rem", fontSize: "1rem", lineHeight: 2 }}><Link href="/events" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Open plays &amp; events</Link> &middot; <Link href="/teachers" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Teachers</Link> &middot; <Link href="/tournaments" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Tournaments</Link> &middot; <Link href="/leagues" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Leagues</Link> &middot; <Link href="/venues" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Venues</Link> &middot; <Link href="/travel" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Travel</Link></p>
           </div>
 
           {/* Full-width map */}
@@ -160,7 +160,7 @@ export default async function Home() {
                 const href = safeReg || (slug ? `/states/${slug}` : "/#map");
                 return (
                   <a key={e.id} href={href} className="rt-card" target={safeReg ? "_blank" : undefined} rel={safeReg ? "noopener noreferrer" : undefined}>
-                    <div className="rt-tag" style={{ color: "var(--pink)" }}>{e.event_type === "retreat" ? "Retreat" : "Tournament"}</div>
+                    <div className="rt-tag" style={{ color: "var(--pink-text)" }}>{e.event_type === "retreat" ? "Retreat" : "Tournament"}</div>
                     <h3 className="rt-title">{e.event_name}</h3>
                     <p className="rt-meta">{[e.city, e.state].filter(Boolean).join(", ")}</p>
                     {e.event_date && <p className="rt-meta">{new Date(e.event_date).toLocaleDateString("en-US", { timeZone: "UTC", month: "long", day: "numeric", year: "numeric" })}</p>}

@@ -87,7 +87,7 @@ export default function RelationshipsPage() {
   }
 
   if (authed === null) return null;
-  if (!authed) return <div style={{ maxWidth: 600, margin: "4rem auto", textAlign: "center", fontFamily: "'DM Sans', sans-serif" }}><p>Please <a href="/admin" style={{ color: "var(--pink)", fontWeight: 700 }}>sign in to admin</a> first.</p></div>;
+  if (!authed) return <div style={{ maxWidth: 600, margin: "4rem auto", textAlign: "center", fontFamily: "'DM Sans', sans-serif" }}><p>Please <a href="/admin" style={{ color: "var(--pink-text)", fontWeight: 700 }}>sign in to admin</a> first.</p></div>;
 
   const counts: Record<string, number> = {};
   for (const c of items) counts[c.status] = (counts[c.status] || 0) + 1;
@@ -131,7 +131,7 @@ export default function RelationshipsPage() {
             <div style={{ display: "flex", alignItems: "flex-start", gap: "0.8rem", flexWrap: "wrap" }}>
               <div style={{ flex: "1 1 300px" }}>
                 <div style={{ fontSize: "0.98rem", fontWeight: 700, color: "var(--navy)" }}>
-                  {c.wave === 1 && <span style={{ color: "var(--pink)", fontWeight: 800 }}>W1 </span>}
+                  {c.wave === 1 && <span style={{ color: "var(--pink-text)", fontWeight: 800 }}>W1 </span>}
                   {c.rank ? <span style={{ color: "var(--muted)", fontWeight: 600 }}>#{c.rank} </span> : null}
                   {c.name}
                   {c.organization && <span style={{ color: "var(--muted)", fontWeight: 500 }}> &middot; {c.organization}</span>}
@@ -139,8 +139,8 @@ export default function RelationshipsPage() {
                 </div>
                 <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginTop: "0.2rem" }}>
                   {[c.city && `${c.city}, ${c.state}`, c.contact_type, c.best_channel && `via ${c.best_channel}`].filter(Boolean).join(" · ")}
-                  {c.email && <> · <a href={`mailto:${c.email}`} style={{ color: "var(--pink)", fontWeight: 600 }}>{c.email}</a></>}
-                  {c.phone && <> · <a href={`tel:${c.phone}`} style={{ color: "var(--pink)", fontWeight: 600 }}>{c.phone}</a></>}
+                  {c.email && <> · <a href={`mailto:${c.email}`} style={{ color: "var(--pink-text)", fontWeight: 600 }}>{c.email}</a></>}
+                  {c.phone && <> · <a href={`tel:${c.phone}`} style={{ color: "var(--pink-text)", fontWeight: 600 }}>{c.phone}</a></>}
                 </div>
                 {c.notes && <div style={{ fontSize: "0.84rem", color: "var(--navy)", marginTop: "0.3rem", whiteSpace: "pre-wrap" }}>{c.notes}</div>}
                 {(c.last_touch || c.next_touch) && (

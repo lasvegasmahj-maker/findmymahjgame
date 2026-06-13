@@ -81,7 +81,7 @@ export default function TodayPage() {
   if (!authed) {
     return (
       <div style={{ maxWidth: 600, margin: "4rem auto", textAlign: "center", fontFamily: "'DM Sans', sans-serif" }}>
-        <p>Please <a href="/admin" style={{ color: "var(--pink)", fontWeight: 700 }}>sign in to admin</a> first.</p>
+        <p>Please <a href="/admin" style={{ color: "var(--pink-text)", fontWeight: 700 }}>sign in to admin</a> first.</p>
       </div>
     );
   }

@@ -4,6 +4,7 @@ import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import { buildHomepageSchema, schemaScriptProps } from "@/lib/schema";
 import SWRegister from "@/components/sw-register";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -82,6 +83,7 @@ export default function RootLayout({
             the browser's own Add to Home Screen. A gentle, value-gated suggestion
             may be added later (Phase 2). */}
         <SWRegister />
+        <Analytics />
       </body>
     </html>
   );

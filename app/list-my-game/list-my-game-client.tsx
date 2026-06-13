@@ -101,7 +101,7 @@ export default function ListMyGameClient() {
           )}
           <a
             href="/states"
-            style={{ color: "var(--pink)", fontWeight: 600, textDecoration: "none", fontSize: "0.9rem" }}
+            style={{ color: "var(--pink-text)", fontWeight: 600, textDecoration: "none", fontSize: "0.9rem" }}
           >Browse all 50 states &rarr;
           </a>
           <a

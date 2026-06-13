@@ -58,7 +58,7 @@ export default async function TablePage({
 
   return (
     <main style={{ maxWidth: 560, margin: "0 auto", padding: "1.5rem 1.2rem 4rem" }}>
-      <Link href="/" style={{ fontSize: "1.05rem", color: "var(--pink)", fontWeight: 700, textDecoration: "none" }}>&larr; Home</Link>
+      <Link href="/" style={{ fontSize: "1.05rem", color: "var(--pink-text)", fontWeight: 700, textDecoration: "none" }}>&larr; Home</Link>
 
       {created && (
         <div style={{ background: "rgba(46,201,92,0.12)", border: "2px solid #2ec95c", borderRadius: 16, padding: "1.4rem", margin: "1rem 0", textAlign: "center" }}>
@@ -80,7 +80,7 @@ export default async function TablePage({
           {t.skill === "beginner" ? "Beginners welcome" : t.skill === "experienced" ? "Experienced players" : "Anyone can join"}
         </div>
         <SeatDots filled={filled} total={total} />
-        {remaining === 1 && <div style={{ marginTop: "0.7rem", fontSize: "1.15rem", fontWeight: 800, color: "var(--pink)" }}>Need a 4th! Just 1 seat left, share now to fill it.</div>}
+        {remaining === 1 && <div style={{ marginTop: "0.7rem", fontSize: "1.15rem", fontWeight: 800, color: "var(--pink-text)" }}>Need a 4th! Just 1 seat left, share now to fill it.</div>}
         <div style={{ fontSize: "1.1rem", color: "var(--navy)", marginTop: "0.9rem" }}>
           {filled <= 1 ? "Just the host so far" : `${filled} players are in so far`}
         </div>
@@ -105,7 +105,7 @@ export default async function TablePage({
         <div style={card}>
           <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.5rem" }}>This table is full</div>
           <p style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: 0, marginBottom: "0.9rem" }}>All four seats are taken. If you are one of the players, the host will be in touch with the details. If you were hoping to join, we can find you another game.</p>
-          <Link href="/play" style={{ display: "inline-block", color: "var(--pink)", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Find another game near you &rarr;</Link>
+          <Link href="/play" style={{ display: "inline-block", color: "var(--pink-text)", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Find another game near you &rarr;</Link>
         </div>
       )}
 

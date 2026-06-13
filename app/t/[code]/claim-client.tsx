@@ -62,7 +62,7 @@ export default function ClaimClient({
     );
   }
   if (status === "full") {
-    return <p style={{ fontSize: "1.15rem", color: "var(--navy)" }}>This table just filled up. <a href="/play" style={{ color: "var(--pink)", fontWeight: 700 }}>Tell us you want to play</a> and we&rsquo;ll find you another.</p>;
+    return <p style={{ fontSize: "1.15rem", color: "var(--navy)" }}>This table just filled up. <a href="/play" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Tell us you want to play</a> and we&rsquo;ll find you another.</p>;
   }
 
   if (!open) {

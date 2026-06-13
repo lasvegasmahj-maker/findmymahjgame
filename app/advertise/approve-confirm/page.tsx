@@ -12,7 +12,7 @@ export default async function AdvertiseApproveConfirm({ searchParams }: { search
   const shell = (children: React.ReactNode) => (
     <main style={{ maxWidth: 540, margin: "0 auto", padding: "4rem 1.2rem", textAlign: "center", fontFamily: "'DM Sans', sans-serif" }}>
       {children}
-      <div><Link href="/admin" style={{ display: "inline-block", marginTop: "1.5rem", color: "var(--pink)", fontWeight: 700, textDecoration: "none" }}>&larr; Admin</Link></div>
+      <div><Link href="/admin" style={{ display: "inline-block", marginTop: "1.5rem", color: "var(--pink-text)", fontWeight: 700, textDecoration: "none" }}>&larr; Admin</Link></div>
     </main>
   );
 

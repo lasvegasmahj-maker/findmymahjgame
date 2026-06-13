@@ -69,7 +69,7 @@ export default async function VenuesPage({ searchParams }: { searchParams: Promi
                 <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{v.business_name || "Venue"}</div>
                 {(v.city || v.state) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[v.city, v.state].filter(Boolean).join(", ")}</div>}
                 {v.description && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.5rem", lineHeight: 1.5 }}>{String(v.description).slice(0, 110)}{String(v.description).length > 110 ? "..." : ""}</div>}
-                <div style={{ marginTop: "0.8rem", color: "var(--pink)", fontWeight: 800 }}>View details &rarr;</div>
+                <div style={{ marginTop: "0.8rem", color: "var(--pink-text)", fontWeight: 800 }}>View details &rarr;</div>
               </a>) : (<div key={v.id} style={{ display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem" }}>
                 {v.venue_type && <div style={{ display: "inline-block", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.78rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.5rem" }}>{v.venue_type}</div>}
                 <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{v.business_name || "Venue"}</div>
@@ -92,7 +92,7 @@ export default async function VenuesPage({ searchParams }: { searchParams: Promi
 
       {rows.length > 0 && (
         <div style={{ textAlign: "center", marginTop: "2.5rem" }}>
-          <Link href="/get-listed" style={{ color: "var(--pink)", fontWeight: 800, fontSize: "1.1rem" }}>Mahjong-friendly business? List it free &rarr;</Link>
+          <Link href="/get-listed" style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.1rem" }}>Mahjong-friendly business? List it free &rarr;</Link>
         </div>
       )}
     </main>

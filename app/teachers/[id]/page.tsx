@@ -99,7 +99,7 @@ export default async function TeacherProfilePage({ params }: { params: Promise<{
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumb, profile]) }} />
 
       <nav style={{ fontSize: "0.95rem", color: "var(--muted)", marginBottom: "0.8rem" }}>
-        <Link href="/teachers" style={{ color: "var(--pink)", fontWeight: 700 }}>Teachers</Link> &rsaquo; {name}
+        <Link href="/teachers" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Teachers</Link> &rsaquo; {name}
       </nav>
 
       <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", margin: "0 0 0.4rem" }}>{name}</h1>
@@ -122,11 +122,11 @@ export default async function TeacherProfilePage({ params }: { params: Promise<{
 
       {(site || t.display_email || t.instagram) && (
         <div style={{ background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem 1.5rem", marginBottom: "1.8rem" }}>
-          <p style={{ fontSize: "0.85rem", fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--pink)", margin: "0 0 0.8rem" }}>Contact directly</p>
+          <p style={{ fontSize: "0.85rem", fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--pink-text)", margin: "0 0 0.8rem" }}>Contact directly</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "1.4rem", alignItems: "center" }}>
-            {site && <a href={site} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink)", fontWeight: 800, fontSize: "1.1rem" }}>Visit website &rarr;</a>}
-            {t.display_email && <a href={`mailto:${t.display_email}`} style={{ color: "var(--pink)", fontWeight: 800, fontSize: "1.1rem" }}>Email</a>}
-            {t.instagram && <a href={`https://instagram.com/${t.instagram.replace("@", "")}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink)", fontWeight: 800, fontSize: "1.1rem" }}>{t.instagram.startsWith("@") ? t.instagram : `@${t.instagram}`}</a>}
+            {site && <a href={site} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.1rem" }}>Visit website &rarr;</a>}
+            {t.display_email && <a href={`mailto:${t.display_email}`} style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.1rem" }}>Email</a>}
+            {t.instagram && <a href={`https://instagram.com/${t.instagram.replace("@", "")}`} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.1rem" }}>{t.instagram.startsWith("@") ? t.instagram : `@${t.instagram}`}</a>}
           </div>
         </div>
       )}
@@ -136,7 +136,7 @@ export default async function TeacherProfilePage({ params }: { params: Promise<{
       </div>
 
       <div style={{ textAlign: "center" }}>
-        <Link href="/teachers" style={{ color: "var(--pink)", fontWeight: 800, fontSize: "1.1rem" }}>&larr; See all teachers</Link>
+        <Link href="/teachers" style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.1rem" }}>&larr; See all teachers</Link>
       </div>
     </main>
   );

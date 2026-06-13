@@ -16,7 +16,7 @@ const pointText: React.CSSProperties = { fontSize: "1.15rem", color: "var(--navy
 export default function AmbassadorsPage() {
   return (
     <main style={{ maxWidth: 620, margin: "0 auto", padding: "1.5rem 1.2rem 4rem" }}>
-      <Link href="/" style={{ fontSize: "1.05rem", color: "var(--pink)", fontWeight: 700, textDecoration: "none" }}>&larr; Home</Link>
+      <Link href="/" style={{ fontSize: "1.05rem", color: "var(--pink-text)", fontWeight: 700, textDecoration: "none" }}>&larr; Home</Link>
 
       <div style={{ display: "inline-block", marginTop: "1rem", background: "rgba(245,200,66,0.18)", color: "#8a6d00", fontWeight: 800, fontSize: "0.9rem", letterSpacing: "0.05em", textTransform: "uppercase", padding: "0.4rem 0.9rem", borderRadius: 999 }}>
         Founding Ambassador Program

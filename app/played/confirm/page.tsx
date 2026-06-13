@@ -15,7 +15,7 @@ export default async function PlayedConfirmPage({ searchParams }: { searchParams
       <main style={{ maxWidth: 520, margin: "0 auto", padding: "4rem 1.2rem", textAlign: "center" }}>
         <h1 style={{ fontSize: "1.9rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>That link has expired</h1>
         <p style={{ fontSize: "1.15rem", color: "var(--navy)", lineHeight: 1.6 }}>No worries. If your table played, just reply to our email and tell us.</p>
-        <Link href="/" style={{ display: "inline-block", marginTop: "1.5rem", fontSize: "1.1rem", color: "var(--pink)", fontWeight: 700, textDecoration: "none" }}>&larr; Back home</Link>
+        <Link href="/" style={{ display: "inline-block", marginTop: "1.5rem", fontSize: "1.1rem", color: "var(--pink-text)", fontWeight: 700, textDecoration: "none" }}>&larr; Back home</Link>
       </main>
     );
   }

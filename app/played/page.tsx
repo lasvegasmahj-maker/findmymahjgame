@@ -33,7 +33,7 @@ export default async function PlayedPage({ searchParams }: { searchParams: Promi
       )}
 
       <br />
-      <Link href="/" style={{ display: "inline-block", marginTop: "1.5rem", fontSize: "1.1rem", color: "var(--pink)", fontWeight: 700, textDecoration: "none" }}>&larr; Back home</Link>
+      <Link href="/" style={{ display: "inline-block", marginTop: "1.5rem", fontSize: "1.1rem", color: "var(--pink-text)", fontWeight: 700, textDecoration: "none" }}>&larr; Back home</Link>
     </main>
   );
 }

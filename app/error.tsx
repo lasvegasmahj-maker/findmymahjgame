@@ -16,7 +16,7 @@ export default function Error({ reset }: { error: Error & { digest?: string }; r
           <button onClick={reset} className="btn-cta-primary" style={{ border: "none", cursor: "pointer", fontFamily: "inherit" }}>
             Try Again
           </button>
-          <Link href="/" style={{ color: "var(--pink)", fontWeight: 600, textDecoration: "none", fontSize: "0.9rem" }}>
+          <Link href="/" style={{ color: "var(--pink-text)", fontWeight: 600, textDecoration: "none", fontSize: "0.9rem" }}>
             Back to Home
           </Link>
         </div>

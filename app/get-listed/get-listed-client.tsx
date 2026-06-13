@@ -160,7 +160,7 @@ export default function GetListedClient() {
           </a>
           <a
             href="/advertise"
-            style={{ color: "var(--pink)", fontWeight: 600, textDecoration: "none", fontSize: "16px" }}
+            style={{ color: "var(--pink-text)", fontWeight: 600, textDecoration: "none", fontSize: "16px" }}
           >See advertising options
           </a>
           <a

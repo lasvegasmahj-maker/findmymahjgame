@@ -54,7 +54,7 @@ export default async function ApprovedPage({
       <p style={{ color: "var(--muted)", lineHeight: 1.7, marginBottom: "2rem" }}>
         {content.message}
       </p>
-      <Link href="/advertise" style={{ color: "var(--pink)", fontWeight: 700, textDecoration: "none", fontSize: "0.9rem" }}>Back to Advertise page →
+      <Link href="/advertise" style={{ color: "var(--pink-text)", fontWeight: 700, textDecoration: "none", fontSize: "0.9rem" }}>Back to Advertise page →
       </Link>
     </div>
   );

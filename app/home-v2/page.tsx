@@ -61,7 +61,7 @@ export default async function HomeV2() {
           </div>
         </div>
         <div style={{ marginTop: "1.6rem", textAlign: "center" }}>
-          <Link href="/how-it-works" style={{ fontSize: "1.1rem", color: "var(--pink)", fontWeight: 700 }}>New to mahjong? Learn how</Link>
+          <Link href="/how-it-works" style={{ fontSize: "1.1rem", color: "var(--pink-text)", fontWeight: 700 }}>New to mahjong? Learn how</Link>
         </div>
       </section>
 

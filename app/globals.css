@@ -8,6 +8,7 @@
   --navy: #1a1f5e;
   --navy-light: #252b7a;
   --pink: #e91e8c;
+  --pink-text: #b3146e; /* AA 4.5:1 on white for links/text; bright --pink stays for buttons/bg */
   --green-dark: #1a6e3a;
   --gray-mid: #6b7280;
   --green: #2ec95c;

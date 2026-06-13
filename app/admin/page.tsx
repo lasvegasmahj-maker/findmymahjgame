@@ -413,7 +413,7 @@ export default function AdminPage() {
   function StatusBadge({ status }: { status: string }) {
     const colors: Record<string, { bg: string; color: string }> = {
       published: { bg: "rgba(46,201,92,0.1)", color: "#1a9648" },
-      new: { bg: "rgba(233,30,140,0.1)", color: "var(--pink)" },
+      new: { bg: "rgba(233,30,140,0.1)", color: "var(--pink-text)" },
       read: { bg: "rgba(26,31,94,0.08)", color: "var(--navy)" },
       replied: { bg: "rgba(46,201,92,0.1)", color: "#1a9648" },
       flagged: { bg: "rgba(245,200,66,0.15)", color: "#a07800" },
@@ -477,8 +477,8 @@ export default function AdminPage() {
       {focusTasks.length > 0 && (
         <div style={{ background: "#fff5fa", border: "1px solid rgba(233,30,140,0.25)", borderRadius: 12, padding: "0.9rem 1.2rem", marginBottom: "1.5rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-            <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "var(--pink)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Today&rsquo;s focus</span>
-            <a href="/admin/tasks" style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--pink)" }}>All tasks &rarr;</a>
+            <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "var(--pink-text)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Today&rsquo;s focus</span>
+            <a href="/admin/tasks" style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--pink-text)" }}>All tasks &rarr;</a>
           </div>
           {focusTasks.map((t) => (
             <div key={t.id} style={{ fontSize: "0.9rem", color: "var(--navy)", padding: "0.25rem 0", fontWeight: t.priority === "high" ? 700 : 500 }}>
@@ -547,7 +547,7 @@ export default function AdminPage() {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.8rem" }}>
                     <div>
                       <strong style={{ color: "var(--navy)", fontSize: "1rem" }}>{inq.name}</strong>
-                      <a href={`mailto:${inq.email}`} style={{ color: "var(--pink)", fontSize: "0.82rem", marginLeft: "0.8rem", fontWeight: 600 }}>{inq.email}</a>
+                      <a href={`mailto:${inq.email}`} style={{ color: "var(--pink-text)", fontSize: "0.82rem", marginLeft: "0.8rem", fontWeight: 600 }}>{inq.email}</a>
                       {inq.company && <span style={{ color: "var(--muted)", fontSize: "0.82rem", marginLeft: "0.8rem" }}>({inq.company})</span>}
                       {(inq.inquiry_type === "advertising" || inq.inquiry_type === "get_listed") && (
                         <span style={{ marginLeft: "0.8rem", fontSize: "0.78rem", fontWeight: 700, color: "#a07800", background: "rgba(245,200,66,0.15)", borderRadius: 4, padding: "0.15rem 0.6rem" }}>
@@ -645,7 +645,7 @@ export default function AdminPage() {
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.9rem", fontWeight: 600, color: "var(--navy)" }}>
                       {v.business_name}
                       <div style={{ fontSize: "0.75rem", fontWeight: 400, color: "var(--muted)", marginTop: "0.15rem" }}>
-                        {safeHttpUrl(v.website) ? <a href={safeHttpUrl(v.website)} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink)" }}>{String(v.website).replace(/^https?:\/\//, "").slice(0, 40)}</a> : "no website"}
+                        {safeHttpUrl(v.website) ? <a href={safeHttpUrl(v.website)} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink-text)" }}>{String(v.website).replace(/^https?:\/\//, "").slice(0, 40)}</a> : "no website"}
                         {v.description ? ` · ${String(v.description).slice(0, 80)}` : ""}
                       </div>
                     </td>
@@ -693,7 +693,7 @@ export default function AdminPage() {
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.9rem", fontWeight: 600, color: "var(--navy)" }}>
                       {ev.event_name}
                       <div style={{ fontSize: "0.75rem", fontWeight: 400, color: "var(--muted)", marginTop: "0.15rem" }}>
-                        {safeHttpUrl(ev.registration_url) ? <a href={safeHttpUrl(ev.registration_url)} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink)" }}>{String(ev.registration_url).replace(/^https?:\/\//, "").slice(0, 40)}</a> : "no link"}
+                        {safeHttpUrl(ev.registration_url) ? <a href={safeHttpUrl(ev.registration_url)} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink-text)" }}>{String(ev.registration_url).replace(/^https?:\/\//, "").slice(0, 40)}</a> : "no link"}
                         {ev.description ? ` · ${String(ev.description).slice(0, 80)}` : ""}
                       </div>
                     </td>

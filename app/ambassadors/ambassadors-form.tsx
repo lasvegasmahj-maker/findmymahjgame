@@ -63,7 +63,7 @@ export default function AmbassadorForm() {
         <p style={{ fontSize: "1.15rem", color: "var(--navy)", lineHeight: 1.6 }}>
           Your application is in. We sent a confirmation to <strong>{email}</strong> and a real person will reach out soon about becoming a Founding Ambassador.
         </p>
-        <Link href="/" style={{ display: "inline-block", marginTop: "1rem", color: "var(--pink)", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Back to home</Link>
+        <Link href="/" style={{ display: "inline-block", marginTop: "1rem", color: "var(--pink-text)", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Back to home</Link>
       </div>
     );
   }

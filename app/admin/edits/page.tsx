@@ -55,7 +55,7 @@ export default function EditsQueuePage() {
   }
 
   if (authed === null) return null;
-  if (!authed) return <div style={{ maxWidth: 600, margin: "4rem auto", textAlign: "center", fontFamily: "'DM Sans', sans-serif" }}><p>Please <a href="/admin" style={{ color: "var(--pink)", fontWeight: 700 }}>sign in to admin</a> first.</p></div>;
+  if (!authed) return <div style={{ maxWidth: 600, margin: "4rem auto", textAlign: "center", fontFamily: "'DM Sans', sans-serif" }}><p>Please <a href="/admin" style={{ color: "var(--pink-text)", fontWeight: 700 }}>sign in to admin</a> first.</p></div>;
 
   const pending = items.filter((e) => e.status === "pending");
   const decided = items
@@ -67,7 +67,7 @@ export default function EditsQueuePage() {
     return (
       <div key={e.id} style={{ background: "white", border: "1px solid var(--border)", borderRadius: 10, padding: "1rem 1.2rem", marginBottom: "0.7rem" }}>
         <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginBottom: "0.5rem" }}>
-          {e.listing_table === "venue_listings" ? "Teacher/Venue" : "Event"} edit from <a href={`mailto:${e.claimer_email}`} style={{ color: "var(--pink)", fontWeight: 600 }}>{e.claimer_email}</a> · {new Date(e.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+          {e.listing_table === "venue_listings" ? "Teacher/Venue" : "Event"} edit from <a href={`mailto:${e.claimer_email}`} style={{ color: "var(--pink-text)", fontWeight: 600 }}>{e.claimer_email}</a> · {new Date(e.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
         </div>
         {Object.entries(e.changes).map(([k, val]) => (
           <div key={k} style={{ fontSize: "0.92rem", marginBottom: "0.35rem" }}>
