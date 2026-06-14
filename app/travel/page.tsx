@@ -83,6 +83,7 @@ export default async function TravelPage() {
       <p style={{ fontSize: "1.1rem", color: "var(--navy)", textAlign: "center", lineHeight: 1.6, margin: "0 auto 1.6rem", maxWidth: 660 }}>Free for players.</p>
 
       <h2 id="retreats" style={sectionH2}>Mahjong cruises &amp; retreats</h2>
+      <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.6, margin: "0 0 1.2rem", maxWidth: 660 }}>Going on a regular cruise (not a mahjong one) and want players aboard? <Link href="/cruise" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Find mahjong players on your sailing &rarr;</Link></p>
       {cruises.length > 0 ? (
         <div style={cardGrid}>
           {cruises.map((e) => {

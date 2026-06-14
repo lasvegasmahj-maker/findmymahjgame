@@ -214,7 +214,7 @@ export default async function Home() {
             <div className="anywhere-card">
               <h3>Going on a Cruise?</h3>
               <p>Setting sail? Don&rsquo;t forget your tiles! Post your cruise ship and dates to find fellow passengers who play, someone might even bring a set. Your perfect sea-day game is waiting!</p>
-              <Link href="/list-my-game" className="btn-anywhere">Find Cruise Passengers &rarr;</Link>
+              <Link href="/cruise" className="btn-anywhere">Find Players on Your Cruise &rarr;</Link>
             </div>
           </div>
         </div>
