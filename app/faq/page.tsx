@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 const FAQ_ITEMS = [
   {
     q: "Is Find My Mahj Game free to use?",
-    a: "Yes. Searching for mahjong players, groups, and events is completely free, and so is creating a player listing. Money never crosses the table between players. We make money only from optional business and venue advertising packages, never from you.",
+    a: "Yes. Searching for mahjong players, groups, and events is completely free, and so is creating a player listing. We make money only from optional business and venue advertising packages, never from you.",
   },
   {
     q: "What kind of mahjong is played here?",

@@ -7,7 +7,7 @@ import NotifyMe from "@/components/notify-me";
 
 export const metadata: Metadata = {
   title: "Travel Mahjong & Cruises: Find a Game Anywhere",
-  description: "Traveling or cruising? Find American Mahjong open plays, games, events, retreats, and cruises in the places you go. Free for players, and money never crosses the table.",
+  description: "Traveling or cruising? Find American Mahjong open plays, games, events, retreats, and cruises in the places you go. Free for players.",
   alternates: { canonical: "https://findmymahjgame.com/travel" },
 };
 
@@ -80,7 +80,7 @@ export default async function TravelPage() {
 
       <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", textAlign: "center", margin: "0 0 0.4rem" }}>Travel Mahjong &amp; cruises: find a game anywhere</h1>
       <p style={{ fontSize: "1.2rem", color: "var(--muted)", textAlign: "center", lineHeight: 1.5, margin: "0 auto 1rem", maxWidth: 660 }}>Going somewhere? Check before you pack the card. See who is playing American Mahjong, and find open plays, events, retreats, and cruises in the places you travel.</p>
-      <p style={{ fontSize: "1.1rem", color: "var(--navy)", textAlign: "center", lineHeight: 1.6, margin: "0 auto 1.6rem", maxWidth: 660 }}>Free for players, and money never crosses the table.</p>
+      <p style={{ fontSize: "1.1rem", color: "var(--navy)", textAlign: "center", lineHeight: 1.6, margin: "0 auto 1.6rem", maxWidth: 660 }}>Free for players.</p>
 
       <h2 id="retreats" style={sectionH2}>Mahjong cruises &amp; retreats</h2>
       {cruises.length > 0 ? (

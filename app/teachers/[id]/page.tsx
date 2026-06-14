@@ -60,7 +60,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const title = `${name}: Mahjong Lessons in ${city}`.slice(0, 70);
   return {
     title,
-    description: `${name} teaches American Mahjong${t.city ? ` in ${t.city}${t.state ? `, ${t.state}` : ""}` : ""}. Book on their own site, and money never crosses the table.`,
+    description: `${name} teaches American Mahjong${t.city ? ` in ${t.city}${t.state ? `, ${t.state}` : ""}` : ""}. Book on their own site.`,
     alternates: { canonical: `https://findmymahjgame.com/teachers/${id}` },
   };
 }
@@ -132,7 +132,7 @@ export default async function TeacherProfilePage({ params }: { params: Promise<{
       )}
 
       <div style={{ background: "var(--bg)", borderRadius: 16, padding: "1.3rem 1.5rem", marginBottom: "2.2rem" }}>
-        <p style={{ fontSize: "1.05rem", color: "var(--navy)", lineHeight: 1.6, margin: 0 }}>You book on their own site, and money never crosses the table. Find My Mahj Game never stands between you and your teacher.</p>
+        <p style={{ fontSize: "1.05rem", color: "var(--navy)", lineHeight: 1.6, margin: 0 }}>You book on their own site. Find My Mahj Game never stands between you and your teacher.</p>
       </div>
 
       <div style={{ textAlign: "center" }}>

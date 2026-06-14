@@ -254,7 +254,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             <h2 className="section-title" style={{ marginBottom: "0.5rem" }}>Players in {stateData.name}</h2>
             <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "0.6rem", lineHeight: 1.7 }}>Connect with mahjong players across {stateData.name} looking for their perfect weekly game.
             </p>
-            <p style={{ fontSize: "0.9rem", color: "var(--muted)", marginBottom: "2rem", lineHeight: 1.7 }}>Always free for players. Money never crosses the table. We pass your message along privately, and your email is never shown publicly or sold.
+            <p style={{ fontSize: "0.9rem", color: "var(--muted)", marginBottom: "2rem", lineHeight: 1.7 }}>Always free for players. We pass your message along privately, and your email is never shown publicly or sold.
             </p>
 
             {filteredPlayers.length > 0 ? (

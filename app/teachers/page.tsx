@@ -77,7 +77,7 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
       <div style={{ background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.3rem 1.5rem", maxWidth: 680, margin: "0 auto 2.2rem", textAlign: "center" }}>
         <p style={{ fontSize: "0.85rem", fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--pink-text)", margin: "0 0 0.4rem" }}>Our promise to teachers</p>
         <p style={{ fontSize: "1.05rem", color: "var(--navy)", lineHeight: 1.6, margin: 0 }}>
-          Find My Mahj Game never stands between you and your students. They book on your own site, and money never crosses the table. No booking cuts, no paid placement, ever.
+          Find My Mahj Game never stands between you and your students. They book on your own site. No booking cuts, no paid placement, ever.
         </p>
       </div>
 

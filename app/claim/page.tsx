@@ -72,7 +72,7 @@ export default async function ClaimPage({ searchParams }: { searchParams: Promis
     <>
       <h1 style={{ fontSize: "1.9rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif", marginBottom: "0.4rem" }}>This is you: {name}</h1>
       <p style={{ fontSize: "1.1rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "1.6rem" }}>
-        Welcome! Check the details below, fix anything that is wrong, and this listing is yours. Listing here is free, with no charge ever. Players are sent to your own website and pages; money never crosses our table.
+        Welcome! Check the details below, fix anything that is wrong, and this listing is yours. Listing here is free, with no charge ever. Players are sent to your own website and pages.
       </p>
       <ClaimForm token={token} table={table} listing={safe} fields={fields} />
     </>

@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: { params: Promise<{ state: st
   if (!st) return { title: "Mahjong Near You", robots: { index: false } };
   return {
     title: { absolute: `Mahjong in ${cityName}, ${st.abbr} | Find My Mahj Game` },
-    description: `Find American Mahjong open plays, games, teachers, venues and events in ${cityName}, ${st.name}. Free for players, and money never crosses the table.`,
+    description: `Find American Mahjong open plays, games, teachers, venues and events in ${cityName}, ${st.name}. Free for players.`,
     alternates: { canonical: `https://findmymahjgame.com/states/${st.slug}/${city}` },
   };
 }
@@ -112,7 +112,7 @@ export default async function CityPage({ params }: { params: Promise<{ state: st
         <Link href={`/states/${st.slug}`} style={{ color: "var(--pink-text)", fontWeight: 700 }}>{st.name}</Link> &rsaquo; {cityName}
       </nav>
       <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", margin: "0 0 0.4rem" }}>Mahjong in {cityName}, {st.abbr}</h1>
-      <p style={{ fontSize: "1.2rem", color: "var(--muted)", lineHeight: 1.5, margin: "0 0 1rem" }}>Open plays, teachers, venues, and events near {cityName}. Free for players, and money never crosses the table.</p>
+      <p style={{ fontSize: "1.2rem", color: "var(--muted)", lineHeight: 1.5, margin: "0 0 1rem" }}>Open plays, teachers, venues, and events near {cityName}. Free for players.</p>
 
       <h2 style={sectionH2}>Open play and events</h2>
       {events.length > 0 ? (
