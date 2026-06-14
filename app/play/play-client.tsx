@@ -117,10 +117,10 @@ export default function PlayClient() {
         <button type="button" onClick={useMyLocation} disabled={searching} style={{ width: "100%", minHeight: 68, marginTop: "1.4rem", borderRadius: 16, border: "none", background: "var(--navy)", color: "white", fontSize: "1.3rem", fontWeight: 800, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
           {searching ? "Looking..." : "Use My Location"}
         </button>
-        <div style={{ textAlign: "center", color: "var(--muted)", fontSize: "1.05rem", margin: "1rem 0 0.2rem" }}>or type your town or ZIP code</div>
+        <div style={{ textAlign: "center", color: "var(--muted)", fontSize: "1.05rem", margin: "1rem 0 0.2rem" }}>or type your city or ZIP code</div>
         {geoMsg && <p role="alert" style={{ color: "#dc2626", fontSize: "1.05rem", textAlign: "center", marginTop: 0 }}>{geoMsg}</p>}
         <form onSubmit={findGames}>
-          <input style={fieldStyle} inputMode="text" aria-label="Town, city, or ZIP code" placeholder="Town, city, or ZIP code" value={city} onChange={(e) => setCity(e.target.value)} />
+          <input style={fieldStyle} inputMode="text" aria-label="City or ZIP code" placeholder="City or ZIP code" value={city} onChange={(e) => setCity(e.target.value)} />
           <button type="submit" disabled={!city.trim() || searching} style={bigBtn(!!city.trim())}>{searching ? "Looking..." : "Find a Game"}</button>
         </form>
       </>
