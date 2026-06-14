@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     city: clampText(b.city, 80),
     state: clampText(b.state, 60),
     skill_level: SKILLS.includes(skill) ? skill : "any",
-    availability: clampText(b.availability, 200) || null,
+    availability: clampText(b.availability, 300) || null,
     bio: clampText(b.bio, 600) || null,
     contact_email: clampText(b.email, 254) || null,
     status: "pending_review",

@@ -5,6 +5,10 @@ import { STATES } from "@/lib/states-data";
 
 const STATE_OPTIONS = Object.values(STATES).sort((a, b) => a.name.localeCompare(b.name));
 
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const TIMES = ["Day", "Night"];
+const AVAIL_OPTIONS = DAYS.flatMap((d) => TIMES.map((t) => `${d} ${t}`));
+
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "0.7rem 1rem",
@@ -32,7 +36,7 @@ export default function ListMyGameClient() {
     city: "",
     state: "",
     skill_level: "",
-    availability: "",
+    availability: [] as string[],
     bio: "",
     email: "",
   });
@@ -54,7 +58,7 @@ export default function ListMyGameClient() {
           city: form.city,
           state: form.state,
           skill_level: form.skill_level.toLowerCase(),
-          availability: form.availability || null,
+          availability: form.availability.length ? AVAIL_OPTIONS.filter((k) => form.availability.includes(k)).join(", ") : null,
           bio: form.bio || null,
           email: form.email,
         }),
@@ -72,6 +76,14 @@ export default function ListMyGameClient() {
       setSubmitting(false);
     }
   }
+
+  const toggleAvail = (key: string) =>
+    setForm((f) => ({
+      ...f,
+      availability: f.availability.includes(key)
+        ? f.availability.filter((k) => k !== key)
+        : [...f.availability, key],
+    }));
 
   const selectedStateName =
     STATE_OPTIONS.find((s) => s.abbr === form.state)?.name || form.state;
@@ -202,15 +214,25 @@ export default function ListMyGameClient() {
 
             {/* Availability */}
             <div style={{ marginBottom: "1.2rem" }}>
-              <label style={labelStyle}>Availability <span style={{ fontWeight: 400, color: "var(--muted)" }}>(e.g. Weekday Mornings, Weekend Afternoons)</span>
+              <label style={labelStyle}>Availability <span style={{ fontWeight: 400, color: "var(--muted)" }}>(check all that apply)</span>
               </label>
-              <input
-                type="text"
-                placeholder="Weekday Mornings"
-                value={form.availability}
-                onChange={(e) => setForm({ ...form, availability: e.target.value })}
-                style={inputStyle}
-              />
+              <div style={{ display: "grid", gap: "0.5rem" }}>
+                {DAYS.map((d) => (
+                  <div key={d} style={{ display: "grid", gridTemplateColumns: "1fr auto auto", alignItems: "center", gap: "0.5rem" }}>
+                    <span style={{ fontWeight: 700, color: "var(--navy)", fontSize: "0.95rem" }}>{d}</span>
+                    {TIMES.map((t) => {
+                      const key = `${d} ${t}`;
+                      const checked = form.availability.includes(key);
+                      return (
+                        <label key={t} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.4rem", cursor: "pointer", padding: "0.45rem 0.7rem", border: `1.5px solid ${checked ? "var(--pink)" : "var(--border)"}`, borderRadius: 8, background: checked ? "rgba(233,30,140,0.08)" : "white", minHeight: 44, minWidth: 76 }}>
+                          <input type="checkbox" checked={checked} onChange={() => toggleAvail(key)} style={{ width: 18, height: 18, accentColor: "var(--pink)" }} />
+                          <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--navy)" }}>{t}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Bio */}
