@@ -80,11 +80,36 @@ export default async function Home() {
 
   return (
     <>
-      {/* HERO: senior-simple, three big actions */}
-      <section className="hero" style={{ paddingBottom: "1.5rem" }}>
+      {/* HERO */}
+      <section className="hero" style={{ paddingBottom: "1.8rem" }}>
         <h1>Find people to play <em>mahjong</em> with</h1>
         <p>Open plays, teachers, events, and games near you. Free, and money never crosses the table.</p>
-        <div style={{ maxWidth: 440, margin: "0.8rem auto 0", display: "flex", flexDirection: "column", gap: "1.4rem" }}>
+      </section>
+
+      {/* MAP SECTION */}
+      <section className="map-section" id="map">
+        <div className="map-inner">
+          <div className="map-header">
+            <p className="section-label" style={{ textAlign: "center" }}>Find My Local Mahj Game</p>
+            <h2 className="section-title" style={{ textAlign: "center" }}>Find Players &amp; Events Near You</h2>
+            <p className="map-subtitle" style={{ textAlign: "center" }}>Click your state to add your free listing, find local events and venues, and connect with players near you, or search by city below.</p>
+            <p style={{ textAlign: "center", marginTop: "0.6rem", fontSize: "1rem", lineHeight: 2 }}><Link href="/events" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Open plays &amp; events</Link> &middot; <Link href="/teachers" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Teachers</Link> &middot; <Link href="/tournaments" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Tournaments</Link> &middot; <Link href="/leagues" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Leagues</Link> &middot; <Link href="/venues" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Venues</Link> &middot; <Link href="/travel" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Travel</Link></p>
+          </div>
+
+          {/* Full-width map */}
+          <div className="map-wrapper">
+            <USMap stateCounts={stateCounts} />
+          </div>
+
+          {/* Search below map */}
+          <SearchBox />
+
+        </div>
+      </section>
+
+      {/* PRIMARY ACTIONS: shown below the map so players orient first, then act */}
+      <section style={{ background: "white", padding: "2.6rem 1.2rem 3.4rem", textAlign: "center", borderTop: "1px solid var(--border)" }}>
+        <div style={{ maxWidth: 440, margin: "0 auto", display: "flex", flexDirection: "column", gap: "1.4rem" }}>
           <div>
             <Link href="/play" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "var(--navy)", color: "white" }}>I Want to Play</Link>
             <div style={{ fontSize: "1rem", color: "var(--muted)", textAlign: "center", marginTop: "0.4rem" }}>Find a game near you</div>
@@ -94,7 +119,7 @@ export default async function Home() {
             <div style={{ fontSize: "1rem", color: "var(--muted)", textAlign: "center", marginTop: "0.4rem" }}>Invite players to join</div>
           </div>
         </div>
-        <div style={{ marginTop: "1.6rem", textAlign: "center" }}>
+        <div style={{ marginTop: "1.6rem" }}>
           <Link href="/how-it-works" style={{ fontSize: "1.1rem", color: "var(--pink-text)", fontWeight: 700 }}>New to mahjong? Learn how</Link>
         </div>
       </section>
@@ -121,27 +146,6 @@ export default async function Home() {
           </div>
         </section>
       )}
-
-      {/* MAP SECTION */}
-      <section className="map-section" id="map">
-        <div className="map-inner">
-          <div className="map-header">
-            <p className="section-label" style={{ textAlign: "center" }}>Find My Local Mahj Game</p>
-            <h2 className="section-title" style={{ textAlign: "center" }}>Find Players &amp; Events Near You</h2>
-            <p className="map-subtitle" style={{ textAlign: "center" }}>Click your state to add your free listing, find local events and venues, and connect with players near you, or search by city below.</p>
-            <p style={{ textAlign: "center", marginTop: "0.6rem", fontSize: "1rem", lineHeight: 2 }}><Link href="/events" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Open plays &amp; events</Link> &middot; <Link href="/teachers" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Teachers</Link> &middot; <Link href="/tournaments" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Tournaments</Link> &middot; <Link href="/leagues" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Leagues</Link> &middot; <Link href="/venues" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Venues</Link> &middot; <Link href="/travel" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Travel</Link></p>
-          </div>
-
-          {/* Full-width map */}
-          <div className="map-wrapper">
-            <USMap stateCounts={stateCounts} />
-          </div>
-
-          {/* Search below map */}
-          <SearchBox />
-
-        </div>
-      </section>
 
       {/* RETREATS & TOURNAMENTS (only when real listings exist) */}
       {featuredEvents.length > 0 && (
