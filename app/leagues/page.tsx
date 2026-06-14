@@ -34,9 +34,9 @@ export default async function LeaguesPage({ searchParams }: { searchParams: Prom
   const { near } = await searchParams;
   const supabase = createServerClient();
   const todayISO = new Date().toISOString().slice(0, 10);
-  let { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly, confirmed_active_at").eq("status", "published").eq("event_type", "league").or(`event_date.is.null,event_date.gte.${todayISO}`).order("event_date", { ascending: true });
+  let { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly, confirmed_active_at, host").eq("status", "published").eq("event_type", "league").or(`event_date.is.null,event_date.gte.${todayISO}`).order("event_date", { ascending: true });
   if (!data) {
-    const fallback = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly").eq("status", "published").eq("event_type", "league").or(`event_date.is.null,event_date.gte.${todayISO}`).order("event_date", { ascending: true });
+    const fallback = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly, host").eq("status", "published").eq("event_type", "league").or(`event_date.is.null,event_date.gte.${todayISO}`).order("event_date", { ascending: true });
     data = (fallback.data || []).map((r) => ({ ...r, confirmed_active_at: null }));
   }
 
@@ -92,6 +92,7 @@ export default async function LeaguesPage({ searchParams }: { searchParams: Prom
                 <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{e.event_name || "Mahjong League"}</div>
                 {whenLabel(e) && <div style={{ fontSize: "1.05rem", color: "var(--navy)", marginTop: "0.4rem" }}>{whenLabel(e)}</div>}
                 {(e.venue || e.city) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[e.venue, e.city, e.state].filter(Boolean).join(", ")}</div>}
+                {e.host && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.2rem" }}>Hosted by {e.host}</div>}
                 <div style={{ marginTop: "0.45rem", display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
                   {(() => { const a = attendInfo(e.event_type, e.beginner_friendly); return <span style={{ display: "inline-block", fontSize: "0.85rem", fontWeight: 800, color: a.color, background: a.bg, borderRadius: 50, padding: "0.2rem 0.7rem" }}>{a.label}</span>; })()}
                   {isFresh(e.confirmed_active_at) && (
@@ -101,7 +102,7 @@ export default async function LeaguesPage({ searchParams }: { searchParams: Prom
                   )}
                 </div>
                 {e.description && !external && <div style={{ fontSize: "0.98rem", color: "var(--muted)", marginTop: "0.4rem", lineHeight: 1.5 }}>{String(e.description).slice(0, 140)}</div>}
-                {external && <div style={{ marginTop: "0.9rem", color: "var(--pink-text)", fontWeight: 800, fontSize: "1.15rem" }}>View details &rarr;</div>}
+                {external && <div style={{ marginTop: "0.9rem", color: "var(--pink-text)", fontWeight: 800, fontSize: "1.15rem" }}>Sign up &rarr;</div>}
               </>
             );
             const cardStyle = { display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", textDecoration: "none" } as const;

@@ -19,7 +19,7 @@ type CruiseRow = {
   id: string; event_name: string | null; event_type: string | null; city: string | null;
   state: string | null; venue: string | null; description: string | null;
   event_date: string | null; registration_url: string | null; day_time: string | null;
-  beginner_friendly: string | null;
+  beginner_friendly: string | null; host: string | null;
 };
 
 const CITIES = [
@@ -49,7 +49,7 @@ export default async function TravelPage() {
   try {
     const { data } = await supabase
       .from("event_listings")
-      .select("id, event_name, event_type, city, state, venue, description, event_date, registration_url, day_time, beginner_friendly")
+      .select("id, event_name, event_type, city, state, venue, description, event_date, registration_url, day_time, beginner_friendly, host")
       .eq("status", "published");
     cruises = (data || [])
       .filter((e) => ["cruise", "retreat"].includes(norm(e.event_type)))
@@ -95,8 +95,9 @@ export default async function TravelPage() {
                 <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--navy)" }}>{e.event_name || "Mahjong getaway"}</div>
                 {when && <div style={{ fontSize: "1rem", color: "var(--navy)", marginTop: "0.3rem" }}>{when}</div>}
                 {(e.venue || e.city) && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.2rem" }}>{[e.venue, e.city, e.state].filter(Boolean).join(", ")}</div>}
+                {e.host && <div style={{ fontSize: "0.95rem", color: "var(--muted)", marginTop: "0.2rem" }}>Hosted by {e.host}</div>}
                 {(() => { const a = attendInfo(e.event_type, e.beginner_friendly); return <div style={{ display: "inline-block", marginTop: "0.5rem", fontSize: "0.8rem", fontWeight: 800, color: a.color, background: a.bg, borderRadius: 50, padding: "0.2rem 0.7rem" }}>{a.label}</div>; })()}
-                {url && <div style={{ marginTop: "0.7rem", color: "var(--pink-text)", fontWeight: 800 }}>View details &rarr;</div>}
+                {url && <div style={{ marginTop: "0.7rem", color: "var(--pink-text)", fontWeight: 800 }}>Sign up &rarr;</div>}
               </>
             );
             return url ? <a key={e.id} href={url} target="_blank" rel="noopener noreferrer" style={card}>{inner}</a> : <div key={e.id} style={card}>{inner}</div>;

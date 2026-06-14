@@ -313,6 +313,11 @@ function EventFields({ form, set }: { form: Record<string, string>; set: (k: str
         <input type="text" required placeholder="Spring Mahjong Tournament" value={form.displayName || ""}
           onChange={e => set("displayName", e.target.value)} className="form-input" />
       </div>
+      <div className="form-group">
+        <label className="form-label">Hosted by / Organizer</label>
+        <input type="text" required placeholder="Las Vegas Mahjong Club (or your name)" value={form.host || ""}
+          onChange={e => set("host", e.target.value)} className="form-input" />
+      </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
         <div className="form-group" style={{ marginBottom: 0 }}>
           <label className="form-label">Event Type</label>
@@ -327,8 +332,8 @@ function EventFields({ form, set }: { form: Record<string, string>; set: (k: str
           </select>
         </div>
         <div className="form-group" style={{ marginBottom: 0 }}>
-          <label className="form-label">Date(s)</label>
-          <input type="text" required placeholder="June 14, 2026" value={form.eventDate || ""}
+          <label className="form-label">Date &amp; time</label>
+          <input type="text" required placeholder="June 14, 2026, 1-4pm (or Tuesdays 6:30pm)" value={form.eventDate || ""}
             onChange={e => set("eventDate", e.target.value)} className="form-input" />
         </div>
       </div>
@@ -355,8 +360,8 @@ function EventFields({ form, set }: { form: Record<string, string>; set: (k: str
           onChange={e => set("price", e.target.value)} className="form-input" />
       </div>
       <div className="form-group">
-        <label className="form-label">Registration / Ticket Link <span className="form-optional">(optional)</span></label>
-        <input type="url" placeholder="https://eventbrite.com/..." value={form.registrationUrl || ""}
+        <label className="form-label">Sign-up / invite link <span className="form-optional">(optional)</span></label>
+        <input type="url" placeholder="Where people sign up: your page, a form, Eventbrite, or a link to your invite" value={form.registrationUrl || ""}
           onChange={e => set("registrationUrl", e.target.value)} className="form-input" />
       </div>
       <div className="form-group">
