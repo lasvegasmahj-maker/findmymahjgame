@@ -19,8 +19,10 @@ const norm = (t: string | null | undefined) => (t || "").toLowerCase().replace(/
 const field: React.CSSProperties = { minHeight: 54, padding: "0 1rem", border: "2px solid var(--border)", borderRadius: 12, fontSize: "1.1rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", flex: "1 1 200px" };
 const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border: "none", borderRadius: 12, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" };
 
-export default async function TournamentsPage({ searchParams }: { searchParams: Promise<{ near?: string }> }) {
-  const { near } = await searchParams;
+export default async function TournamentsPage({ searchParams }: { searchParams: Promise<{ near?: string; sort?: string }> }) {
+  const { near, sort } = await searchParams;
+  const activeSort = (sort || "state").toLowerCase();
+  const groupBy: "state" | "city" | null = activeSort === "city" ? "city" : activeSort === "soonest" ? null : "state";
   const supabase = createServerClient();
   const todayISO = new Date().toISOString().slice(0, 10);
   let { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, registration_url, day_time, frequency, beginner_friendly, confirmed_active_at, host").eq("status", "published").or(`event_date.gte.${todayISO},event_date.is.null,frequency.not.is.null`).order("event_date", { ascending: true });
@@ -57,6 +59,15 @@ export default async function TournamentsPage({ searchParams }: { searchParams: 
       ...(safeHttpUrl(e.registration_url) ? { url: safeHttpUrl(e.registration_url)! } : {}),
     }));
 
+  const sortHref = (k: string) => {
+    const qs = new URLSearchParams();
+    if (near && near.trim()) qs.set("near", near.trim());
+    if (k !== "state") qs.set("sort", k);
+    const s = qs.toString();
+    return `/tournaments${s ? `?${s}` : ""}`;
+  };
+  const SORTS: [string, string][] = [["state", "By state"], ["soonest", "Soonest"], ["city", "By city"]];
+
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
       {eventSchema.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(eventSchema) }} />}
@@ -66,11 +77,20 @@ export default async function TournamentsPage({ searchParams }: { searchParams: 
       <form method="get" style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center", maxWidth: 520, margin: "0 auto 2.2rem" }}>
         <label htmlFor="near" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>Your city or area</label>
         <input id="near" name="near" defaultValue={near || ""} placeholder="Your city or state" style={field} />
+        {activeSort !== "state" && <input type="hidden" name="sort" value={activeSort} />}
         <button type="submit" style={goBtn}>Search</button>
       </form>
 
       {rows.length > 0 ? (
-        <GroupedEvents rows={rows as GroupedRow[]} typeLabel="Tournament" cta="Register" />
+        <>
+          <div style={{ display: "flex", gap: "0.9rem", flexWrap: "wrap", justifyContent: "center", alignItems: "center", margin: "0 auto 2rem" }}>
+            <span style={{ fontSize: "0.9rem", color: "var(--muted)", fontWeight: 700 }}>Sort:</span>
+            {SORTS.map(([k, label]) => (
+              <Link key={k} href={sortHref(k)} style={{ fontSize: "0.95rem", fontWeight: 700, textDecoration: "none", color: activeSort === k ? "var(--pink-text)" : "var(--muted)", borderBottom: activeSort === k ? "2px solid var(--pink)" : "2px solid transparent", paddingBottom: "0.1rem" }}>{label}</Link>
+            ))}
+          </div>
+          <GroupedEvents rows={rows as GroupedRow[]} typeLabel="Tournament" cta="Register" groupBy={groupBy} />
+        </>
       ) : (
         <div style={{ background: "var(--bg)", borderRadius: 18, padding: "2.4rem 1.6rem", textAlign: "center", maxWidth: 560, margin: "0 auto" }}>
           <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.6rem" }}>No tournaments listed{near ? ` in ${near}` : ""} yet.</div>
