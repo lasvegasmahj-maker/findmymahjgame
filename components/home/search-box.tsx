@@ -34,14 +34,23 @@ export default function SearchBox() {
   const [query, setQuery] = useState("");
   const [noMatch, setNoMatch] = useState(false);
 
-  const handleSearch = useCallback(() => {
-    const slug = findStateByInput(query);
-    if (slug) {
-      setNoMatch(false);
-      router.push(`/states/${slug}`);
-    } else {
+  const handleSearch = useCallback(async () => {
+    const raw = query.trim();
+    if (!raw) return;
+    // A 5-digit ZIP is resolved to its state server-side, then routed there.
+    if (/^\d{5}$/.test(raw)) {
+      try {
+        const r = await fetch(`/api/geocode?zip=${raw}`);
+        const g = await r.json().catch(() => ({}));
+        const zipSlug = findStateByInput(g.state || "") || findStateByInput(g.city || "");
+        if (zipSlug) { setNoMatch(false); router.push(`/states/${zipSlug}`); return; }
+      } catch { /* fall through to no-match */ }
       setNoMatch(true);
+      return;
     }
+    const slug = findStateByInput(raw);
+    if (slug) { setNoMatch(false); router.push(`/states/${slug}`); }
+    else setNoMatch(true);
   }, [query, router]);
 
   const handleKeyDown = useCallback(
@@ -54,11 +63,11 @@ export default function SearchBox() {
   return (
     <div className="inline-search">
       <div className="inline-search-inner">
-        <p className="inline-search-label">Search by city, find players, groups &amp; events near you</p>
+        <p className="inline-search-label">Search by city, state, or ZIP, find players, groups &amp; events near you</p>
         <div className="inline-search-box">
           <input
             type="text"
-            aria-label="Enter your city" placeholder="Enter your city..."
+            aria-label="City, state, or ZIP code" placeholder="City, state, or ZIP code"
             value={query}
             onChange={(e) => { setQuery(e.target.value); setNoMatch(false); }}
             onKeyDown={handleKeyDown}
