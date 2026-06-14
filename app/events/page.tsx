@@ -48,9 +48,10 @@ const field: React.CSSProperties = { minHeight: 54, padding: "0 1rem", border: "
 const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border: "none", borderRadius: 12, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" };
 const chipBase: React.CSSProperties = { display: "inline-block", padding: "0.5rem 1.1rem", borderRadius: 50, fontSize: "1rem", fontWeight: 800, textDecoration: "none", border: "2px solid var(--border)" };
 
-export default async function EventsPage({ searchParams }: { searchParams: Promise<{ near?: string; type?: string }> }) {
-  const { near, type } = await searchParams;
+export default async function EventsPage({ searchParams }: { searchParams: Promise<{ near?: string; type?: string; sort?: string }> }) {
+  const { near, type, sort } = await searchParams;
   const activeType = (type || "all").toLowerCase();
+  const activeSort = (sort || "featured").toLowerCase();
   const supabase = createServerClient();
   const todayISO = new Date().toISOString().slice(0, 10);
   let { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly, confirmed_active_at, host").eq("status", "published").or(`event_date.is.null,event_date.gte.${todayISO},event_type.in.(open_play,openplay,recurring)`).order("event_date", { ascending: true });
@@ -69,11 +70,24 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
 
   const FRESH_MS = 90 * 24 * 60 * 60 * 1000;
   const isFresh = (at?: string | null) => !!at && Date.now() - new Date(at).getTime() < FRESH_MS;
-  rows = [...rows].sort((a, b) => {
-    const byType = rank(a.event_type) - rank(b.event_type);
-    if (byType !== 0) return byType;
-    return (isFresh(b.confirmed_active_at) ? 1 : 0) - (isFresh(a.confirmed_active_at) ? 1 : 0);
-  });
+  const byDate = (a: { event_date?: string | null }, b: { event_date?: string | null }) => {
+    const da = a.event_date ? new Date(a.event_date).getTime() : Infinity;
+    const db = b.event_date ? new Date(b.event_date).getTime() : Infinity;
+    return da - db;
+  };
+  if (activeSort === "soonest") {
+    rows = [...rows].sort(byDate);
+  } else if (activeSort === "state") {
+    rows = [...rows].sort((a, b) => (a.state || "").localeCompare(b.state || "") || byDate(a, b));
+  } else if (activeSort === "city") {
+    rows = [...rows].sort((a, b) => (a.city || "").localeCompare(b.city || "") || byDate(a, b));
+  } else {
+    rows = [...rows].sort((a, b) => {
+      const byType = rank(a.event_type) - rank(b.event_type);
+      if (byType !== 0) return byType;
+      return (isFresh(b.confirmed_active_at) ? 1 : 0) - (isFresh(a.confirmed_active_at) ? 1 : 0);
+    });
+  }
 
   const _today = new Date(); _today.setHours(0, 0, 0, 0);
   const eventSchema = rows
@@ -98,9 +112,19 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
     const qs = new URLSearchParams();
     if (near && near.trim()) qs.set("near", near.trim());
     if (k !== "all") qs.set("type", k);
+    if (activeSort !== "featured") qs.set("sort", activeSort);
     const s = qs.toString();
     return `/events${s ? `?${s}` : ""}`;
   };
+  const sortHref = (k: string) => {
+    const qs = new URLSearchParams();
+    if (near && near.trim()) qs.set("near", near.trim());
+    if (activeType !== "all") qs.set("type", activeType);
+    if (k !== "featured") qs.set("sort", k);
+    const s = qs.toString();
+    return `/events${s ? `?${s}` : ""}`;
+  };
+  const SORTS: [string, string][] = [["featured", "Featured"], ["soonest", "Soonest"], ["state", "By state"], ["city", "By city"]];
 
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
@@ -112,16 +136,24 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
         <label htmlFor="near" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>Your city or area</label>
         <input id="near" name="near" defaultValue={near || ""} placeholder="Your city or state" style={field} />
         {activeType !== "all" && <input type="hidden" name="type" value={activeType} />}
+        {activeSort !== "featured" && <input type="hidden" name="sort" value={activeSort} />}
         <button type="submit" style={goBtn}>Search</button>
       </form>
 
-      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center", margin: "0 auto 2.2rem" }}>
+      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center", margin: "0 auto 1rem" }}>
         {CHIPS.map(([k, label]) => {
           const active = activeType === k || (k === "all" && !TYPE_GROUPS[activeType]);
           return (
             <Link key={k} href={chipHref(k)} style={{ ...chipBase, background: active ? "var(--navy)" : "white", color: active ? "white" : "var(--navy)", borderColor: active ? "var(--navy)" : "var(--border)" }}>{label}</Link>
           );
         })}
+      </div>
+
+      <div style={{ display: "flex", gap: "0.9rem", flexWrap: "wrap", justifyContent: "center", alignItems: "center", margin: "0 auto 2.2rem" }}>
+        <span style={{ fontSize: "0.9rem", color: "var(--muted)", fontWeight: 700 }}>Sort:</span>
+        {SORTS.map(([k, label]) => (
+          <Link key={k} href={sortHref(k)} style={{ fontSize: "0.95rem", fontWeight: 700, textDecoration: "none", color: activeSort === k ? "var(--pink-text)" : "var(--muted)", borderBottom: activeSort === k ? "2px solid var(--pink)" : "2px solid transparent", paddingBottom: "0.1rem" }}>{label}</Link>
+        ))}
       </div>
 
       {rows.length > 0 ? (

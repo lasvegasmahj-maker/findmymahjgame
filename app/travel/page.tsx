@@ -51,9 +51,10 @@ export default async function TravelPage() {
       .from("event_listings")
       .select("id, event_name, event_type, city, state, venue, description, event_date, registration_url, day_time, beginner_friendly, host")
       .eq("status", "published");
-    cruises = (data || [])
+    cruises = ((data || [])
       .filter((e) => ["cruise", "retreat"].includes(norm(e.event_type)))
-      .filter((e) => !e.event_date || e.event_date >= todayISO) as CruiseRow[];
+      .filter((e) => !e.event_date || e.event_date >= todayISO)
+      .sort((a, b) => (a.event_date || "9999-99-99").localeCompare(b.event_date || "9999-99-99"))) as CruiseRow[];
   } catch { /* table not ready: fall through to the empty state */ }
 
   const breadcrumb = {
