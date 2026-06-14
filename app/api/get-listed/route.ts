@@ -39,6 +39,10 @@ export async function POST(req: NextRequest) {
   const details = [
     `Business type: ${clampText(b.business_type, 80) || "n/a"}`,
     `Location: ${clampText(b.city, 80) || "?"}, ${clampText(b.state, 30) || "?"}`,
+    clampText(b.host, 120) ? `Host: ${clampText(b.host, 120)}` : "",
+    clampText(b.event_date, 100) ? `Date & time: ${clampText(b.event_date, 100)}` : "",
+    clampText(b.venue, 200) ? `Venue: ${clampText(b.venue, 200)}` : "",
+    safeHttpUrl(b.signup_url) ? `Sign-up link: ${safeHttpUrl(b.signup_url)}` : "",
     `Website: ${safeHttpUrl(b.website) || "none"}`,
     `Instagram: ${clampText(b.instagram, 120) || "none"}`,
     `Logo: ${safeHttpUrl(b.logo_url) || "none"}`,

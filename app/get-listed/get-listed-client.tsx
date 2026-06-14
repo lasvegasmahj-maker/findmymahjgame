@@ -40,6 +40,10 @@ export default function GetListedClient() {
     description: "",
     promo_code: "",
     logo_url: "",
+    host: "",
+    event_date: "",
+    venue: "",
+    signup_url: "",
   });
   const [promoStatus, setPromoStatus] = useState<PromoStatus>("idle");
   const [logoUploading, setLogoUploading] = useState(false);
@@ -68,6 +72,9 @@ export default function GetListedClient() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+
+  const EVENT_TYPES = ["Open Play", "Tournament", "Retreat", "League"];
+  const isEvent = EVENT_TYPES.includes(form.type);
 
   async function validatePromo() {
     const code = form.promo_code.trim().toUpperCase();
@@ -100,6 +107,10 @@ export default function GetListedClient() {
       setError("Please add a website or Instagram handle so players can reach you.");
       return;
     }
+    if (isEvent && (!form.host.trim() || !form.event_date.trim())) {
+      setError("Please add who is hosting and the date & time.");
+      return;
+    }
 
     setSubmitting(true);
 
@@ -118,6 +129,10 @@ export default function GetListedClient() {
           instagram: form.instagram || null,
           logo_url: form.logo_url || null,
           message: form.description,
+          host: form.host || null,
+          event_date: form.event_date || null,
+          venue: form.venue || null,
+          signup_url: form.signup_url || null,
           promo_code: form.promo_code.trim().toUpperCase() || null,
         }),
       });
@@ -199,10 +214,10 @@ export default function GetListedClient() {
           <form onSubmit={handleSubmit}>
             {/* Business Name */}
             <div style={{ marginBottom: "1.2rem" }}>
-              <label style={labelStyle}>Business / Name</label>
+              <label style={labelStyle}>{isEvent ? "Event name" : "Business / Name"}</label>
               <input
                 type="text"
-                placeholder="NYC Mahjong Studio"
+                placeholder={isEvent ? "Spring Mahjong Tournament" : "NYC Mahjong Studio"}
                 required
                 value={form.business_name}
                 onChange={(e) => setForm({ ...form, business_name: e.target.value })}
@@ -237,7 +252,10 @@ export default function GetListedClient() {
                 <option value="">Select a type...</option>
                 <option value="Mahjong Instructor">Mahjong Instructor</option>
                 <option value="Venue">Venue</option>
-                <option value="Event Organizer">Event Organizer</option>
+                <option value="Open Play">Open Play</option>
+                <option value="Tournament">Tournament</option>
+                <option value="Retreat">Retreat</option>
+                <option value="League">League</option>
                 <option value="Brand">Brand</option>
               </select>
             </div>
@@ -272,6 +290,29 @@ export default function GetListedClient() {
                 </select>
               </div>
             </div>
+
+            {isEvent && (
+              <>
+                <div style={{ marginBottom: "1.2rem" }}>
+                  <label style={labelStyle}>Hosted by / Organizer</label>
+                  <input type="text" required placeholder="Las Vegas Mahjong Club (or your name)" value={form.host} onChange={(e) => setForm({ ...form, host: e.target.value })} style={inputStyle} />
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.2rem" }}>
+                  <div>
+                    <label style={labelStyle}>Date &amp; time</label>
+                    <input type="text" required placeholder="Tuesdays 6:30pm (or June 14, 1-4pm)" value={form.event_date} onChange={(e) => setForm({ ...form, event_date: e.target.value })} style={inputStyle} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Venue / location <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span></label>
+                    <input type="text" placeholder="Honey Salt Restaurant" value={form.venue} onChange={(e) => setForm({ ...form, venue: e.target.value })} style={inputStyle} />
+                  </div>
+                </div>
+                <div style={{ marginBottom: "1.2rem" }}>
+                  <label style={labelStyle}>Sign-up / invite link <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span></label>
+                  <input type="url" placeholder="Where players sign up: your page, a form, or a link to your invite" value={form.signup_url} onChange={(e) => setForm({ ...form, signup_url: e.target.value })} style={inputStyle} />
+                </div>
+              </>
+            )}
 
             {/* Email */}
             <div style={{ marginBottom: "1.2rem" }}>
@@ -320,9 +361,9 @@ export default function GetListedClient() {
 
             {/* Description */}
             <div style={{ marginBottom: "1.2rem" }}>
-              <label style={labelStyle}>Tell players about what you offer</label>
+              <label style={labelStyle}>{isEvent ? "About this event" : "Tell players about what you offer"}</label>
               <textarea
-                placeholder="Describe your classes, venue, or events..."
+                placeholder={isEvent ? "What is it, who is it for, and what should players expect?" : "Describe your classes, venue, or events..."}
                 required
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
