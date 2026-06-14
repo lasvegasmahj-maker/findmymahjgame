@@ -34,6 +34,15 @@ const CHIPS: [string, string][] = [
   ["all", "All"], ["open_play", "Open plays"], ["tournament", "Tournaments"],
   ["league", "Leagues"], ["event", "Events & retreats"],
 ];
+// Empty-state copy adapts to the active filter so a "Tournaments" view talks
+// about tournaments (and offers to list one), not casual games.
+const EMPTY_META: Record<string, { label: string; cta?: string; href?: string; phrase?: string; organizer?: boolean }> = {
+  all: { label: "public games" },
+  open_play: { label: "open plays" },
+  tournament: { label: "tournaments", cta: "List a tournament", href: "/get-listed?type=Tournament", phrase: "a Mahjong tournament", organizer: true },
+  league: { label: "leagues", cta: "List a league", href: "/get-listed?type=League", phrase: "a Mahjong league", organizer: true },
+  event: { label: "events or retreats", cta: "List an event or retreat", href: "/get-listed?type=Retreat", phrase: "a Mahjong event or retreat", organizer: true },
+};
 function whenLabel(e: { event_date?: string | null; day_time?: string | null; day_of_week?: string | null; time_of_day?: string | null }): string {
   if (e.day_time && !e.event_date) return e.day_time;
   if (e.day_time && e.event_date && new Date(e.event_date).getTime() < Date.now()) return e.day_time;
@@ -52,6 +61,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
   const { near, type, sort } = await searchParams;
   const activeType = (type || "all").toLowerCase();
   const activeSort = (sort || "featured").toLowerCase();
+  const em = EMPTY_META[activeType] || EMPTY_META.all;
   const supabase = createServerClient();
   const todayISO = new Date().toISOString().slice(0, 10);
   let { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly, confirmed_active_at, host").eq("status", "published").or(`event_date.is.null,event_date.gte.${todayISO},event_type.in.(open_play,openplay,recurring)`).order("event_date", { ascending: true });
@@ -190,20 +200,32 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
         </div>
       ) : (
         <div style={{ background: "var(--bg)", borderRadius: 18, padding: "2.4rem 1.6rem", textAlign: "center", maxWidth: 560, margin: "0 auto" }}>
-          <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.6rem" }}>No public games listed{near ? ` in ${near}` : ""} yet.</div>
-          <p style={{ fontSize: "1.1rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "1.6rem" }}>Be the first. You can list a game, start your own table, or get the weekly note when games open near you.</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", maxWidth: 320, margin: "0 auto" }}>
-            <Link href="/get-listed" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>List your game</Link>
-            <Link href="/start" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "var(--navy)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Start a table</Link>
-            <Link href="/newsletter" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "white", color: "var(--navy)", border: "2px solid var(--navy)", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Get the weekly list</Link>
-          </div>
+          <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.6rem" }}>No {em.label} listed{near ? ` in ${near}` : ""} yet.</div>
+          {em.organizer ? (
+            <>
+              <p style={{ fontSize: "1.1rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "1.6rem" }}>Be the first. If you run {em.phrase}, list it here so players can find it.</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", maxWidth: 320, margin: "0 auto" }}>
+                <Link href={em.href!} style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>{em.cta}</Link>
+                <Link href="/newsletter" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "white", color: "var(--navy)", border: "2px solid var(--navy)", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Get the weekly list</Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <p style={{ fontSize: "1.1rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "1.6rem" }}>Be the first. You can list a game, start your own table, or get the weekly note when games open near you.</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", maxWidth: 320, margin: "0 auto" }}>
+                <Link href="/get-listed" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>List your game</Link>
+                <Link href="/start" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "var(--navy)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Start a table</Link>
+                <Link href="/newsletter" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "white", color: "var(--navy)", border: "2px solid var(--navy)", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Get the weekly list</Link>
+              </div>
+            </>
+          )}
           <div style={{ marginTop: "1.6rem" }}><NotifyMe defaultCity={near || ""} /></div>
         </div>
       )}
 
       {rows.length > 0 && (
         <div style={{ textAlign: "center", marginTop: "2.5rem" }}>
-          <Link href="/get-listed" style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.1rem" }}>Run a game? List it here &rarr;</Link>
+          <Link href={em.href || "/get-listed"} style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.1rem" }}>{em.organizer ? `Run ${em.phrase}? List it here` : "Run a game? List it here"} &rarr;</Link>
         </div>
       )}
     </main>

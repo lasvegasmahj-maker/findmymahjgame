@@ -28,10 +28,10 @@ const labelStyle: React.CSSProperties = {
 
 type PromoStatus = "idle" | "checking" | "valid" | "invalid";
 
-export default function GetListedClient() {
+export default function GetListedClient({ defaultType = "" }: { defaultType?: string }) {
   const [form, setForm] = useState({
     business_name: "",
-    type: "",
+    type: ["Mahjong Instructor", "Venue", "Open Play", "Tournament", "Retreat", "League", "Brand"].includes(defaultType) ? defaultType : "",
     city: "",
     state: "",
     email: "",
