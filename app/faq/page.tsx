@@ -36,7 +36,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Can I list my mahjong group or club?",
-    a: "Yes. Groups and open play hosts can create a free listing at /list-my-game. Add your city and describe your group and how to join in the bio, or email hello@findmymahjgame.com and we will set it up for you.",
+    a: "Yes. Groups and open play hosts can create a listing at /list-my-game. Add your city and describe your group and how to join in the bio, or email hello@findmymahjgame.com and we will set it up for you.",
   },
   {
     q: "How do I list a mahjong event or tournament?",
@@ -44,7 +44,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "I am a mahjong instructor. Can I get listed?",
-    a: "Yes. Instructors can create a free player listing at /list-my-game and indicate that they offer lessons. Paid instructor spotlight placements are available through /advertise.",
+    a: "Yes. Instructors can create a listing at /list-my-game and indicate that they offer lessons. Paid instructor spotlight placements are available through /advertise.",
   },
   {
     q: "How do I update or remove my listing?",

@@ -60,8 +60,8 @@ const sectionH2: React.CSSProperties = { fontFamily: "var(--font-playfair), 'Pla
 function EmptyCta({ what }: { what: string }) {
   return (
     <div style={{ background: "var(--bg)", borderRadius: 14, padding: "1.4rem", textAlign: "center" }}>
-      <p style={{ fontSize: "1.05rem", color: "var(--navy)", lineHeight: 1.5, margin: "0 0 0.9rem" }}>Be one of the first to list {what} here. It is free.</p>
-      <Link href="/get-listed" style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.05rem" }}>List it free &rarr;</Link>
+      <p style={{ fontSize: "1.05rem", color: "var(--navy)", lineHeight: 1.5, margin: "0 0 0.9rem" }}>Be one of the first to list {what} here.</p>
+      <Link href="/get-listed" style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.05rem" }}>List it here &rarr;</Link>
     </div>
   );
 }

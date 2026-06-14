@@ -106,7 +106,7 @@ export default async function TravelPage() {
           <p style={{ fontSize: "1.1rem", color: "var(--muted)", lineHeight: 1.6, textAlign: "center", margin: "0 0 1.2rem" }}>No Mahjong cruises or retreats are listed yet. Tell us where you want to play and we will let you know the moment one is added.</p>
           <NotifyMe heading="Notify me about Mahjong cruises and retreats" />
           <div style={{ textAlign: "center", marginTop: "1rem" }}>
-            <Link href="/get-listed" style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.05rem" }}>Run a Mahjong cruise or retreat? List it free &rarr;</Link>
+            <Link href="/get-listed" style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.05rem" }}>Run a Mahjong cruise or retreat? List it here &rarr;</Link>
           </div>
         </div>
       )}
