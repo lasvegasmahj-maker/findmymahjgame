@@ -39,7 +39,8 @@ export default async function CruisePage() {
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: "https://findmymahjgame.com" },
-      { "@type": "ListItem", position: 2, name: "Cruise", item: "https://findmymahjgame.com/cruise" },
+      { "@type": "ListItem", position: 2, name: "Travel", item: "https://findmymahjgame.com/travel" },
+      { "@type": "ListItem", position: 3, name: "Cruising", item: "https://findmymahjgame.com/cruise" },
     ],
   };
   const collectionPage = {
@@ -56,6 +57,7 @@ export default async function CruisePage() {
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumb, collectionPage]) }} />
 
+      <p style={{ textAlign: "center", margin: "0 0 0.8rem" }}><Link href="/travel" style={{ color: "var(--pink-text)", fontWeight: 700, fontSize: "1rem" }}>&lsaquo; Travel</Link></p>
       <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", textAlign: "center", margin: "0 0 0.4rem" }}>Find mahjong players on your cruise</h1>
       <p style={{ fontSize: "1.2rem", color: "var(--muted)", textAlign: "center", lineHeight: 1.5, margin: "0 auto 0.8rem", maxWidth: 680 }}>Going on a cruise and want a game on board? Post your ship and sailing dates, then see who else who plays American Mahjong is on the same trip. Free for players.</p>
       <p style={{ fontSize: "1rem", color: "var(--navy)", textAlign: "center", lineHeight: 1.6, margin: "0 auto 2rem", maxWidth: 680 }}>Looking for an organized mahjong cruise or retreat instead? <Link href="/travel#retreats" style={{ color: "var(--pink-text)", fontWeight: 700 }}>See those here</Link>.</p>

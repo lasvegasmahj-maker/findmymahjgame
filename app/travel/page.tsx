@@ -82,8 +82,14 @@ export default async function TravelPage() {
       <p style={{ fontSize: "1.2rem", color: "var(--muted)", textAlign: "center", lineHeight: 1.5, margin: "0 auto 1rem", maxWidth: 660 }}>Going somewhere? Check before you pack the card. See who is playing American Mahjong, and find open plays, events, retreats, and cruises in the places you travel.</p>
       <p style={{ fontSize: "1.1rem", color: "var(--navy)", textAlign: "center", lineHeight: 1.6, margin: "0 auto 1.6rem", maxWidth: 660 }}>Free for players.</p>
 
+      <h2 style={sectionH2}>Cruising? Find your game</h2>
+      <div style={{ background: "var(--bg)", border: "2px solid var(--border)", borderRadius: 16, padding: "1.5rem 1.6rem", maxWidth: 680 }}>
+        <p style={{ fontSize: "1.1rem", color: "var(--navy)", lineHeight: 1.6, margin: "0 0 1.1rem" }}>On a regular cruise and want a game on board? Post your ship and sailing dates and connect with other American Mahjong players on the same trip. Free for players, no organized event needed.</p>
+        <Link href="/cruise" style={{ display: "inline-flex", minHeight: 54, alignItems: "center", padding: "0 1.5rem", borderRadius: 14, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.05rem", textDecoration: "none" }}>Post your cruise &amp; find players &rarr;</Link>
+      </div>
+
       <h2 id="retreats" style={sectionH2}>Mahjong cruises &amp; retreats</h2>
-      <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.6, margin: "0 0 1.2rem", maxWidth: 660 }}>Going on a regular cruise (not a mahjong one) and want players aboard? <Link href="/cruise" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Find mahjong players on your sailing &rarr;</Link></p>
+      <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.6, margin: "0 0 1.2rem", maxWidth: 660 }}>Organized mahjong cruises and retreats you can travel to, run by hosts. (Looking to find players on a regular cruise instead? That is free, just above.)</p>
       {cruises.length > 0 ? (
         <div style={cardGrid}>
           {cruises.map((e) => {
