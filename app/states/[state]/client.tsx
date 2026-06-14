@@ -133,36 +133,18 @@ export default function StatePageClient({ stateData, players, events, venues }: 
     if (!connectForm) return;
     setConnectForm({ ...connectForm, submitting: true });
     try {
-  
-      const inqRes = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/inquiries`, {
-        method: "POST",
-        headers: {
-          "apikey": process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-          "Content-Type": "application/json",
-          "Prefer": "return=minimal",
-        },
-        body: JSON.stringify({
-          name: connectForm.name,
-          email: connectForm.email,
-          inquiry_type: "player_connect",
-          interest: `Connect with ${connectForm.player.name} in ${connectForm.player.city}, ${connectForm.player.state}`,
-          message: connectForm.message,
-          status: "new",
-        }),
-      });
-      if (!inqRes.ok) throw new Error("insert failed");
-
-      await fetch("/api/notify", {
+      const res = await fetch("/api/connect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: "connect",
-          subject: `New Connect Request: ${connectForm.name} wants to play with ${connectForm.player.name}`,
-          body: `From: ${connectForm.name} (${connectForm.email})\nPlayer: ${connectForm.player.name} (${connectForm.player.city}, ${connectForm.player.state})\nSkill Level: ${connectForm.player.skill_level}\n\nMessage:\n${connectForm.message || "(no message)"}`,
+          player_id: connectForm.player.id,
+          name: connectForm.name,
+          email: connectForm.email,
+          message: connectForm.message,
         }),
       });
-  
+      if (!res.ok) throw new Error("send failed");
+
       setConnectForm({ ...connectForm, submitting: false, submitted: true });
     } catch {
       window.alert("We could not send your request. Please check your connection and try again.");
@@ -460,7 +442,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             {connectForm.submitted ? (
               <div style={{ textAlign: "center", padding: "1rem 0" }}>
                 <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.5rem" }}>Request Sent!</h3>
-                <p style={{ color: "var(--muted)", fontSize: "0.95rem", lineHeight: 1.7 }}>Your connection request to <strong>{connectForm.player.name}</strong> has been received. We&rsquo;ll pass your message along and you&rsquo;ll hear back via email.
+                <p style={{ color: "var(--muted)", fontSize: "0.95rem", lineHeight: 1.7 }}>Your request was sent straight to <strong>{connectForm.player.name}</strong>. If it&rsquo;s a good match, they&rsquo;ll reply right to your email.
                 </p>
                 <button onClick={() => setConnectForm(null)} style={{ marginTop: "1.5rem", background: "var(--pink)", color: "white", border: "none", borderRadius: 8, padding: "0.8rem 2rem", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>Done</button>
               </div>
@@ -510,7 +492,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                   >
                     {connectForm.submitting ? "Sending..." : "Send Connection Request →"}
                   </button>
-                  <p style={{ fontSize: "0.75rem", color: "var(--muted)", textAlign: "center", marginTop: "0.8rem" }}>Free for players. Your email is never shown publicly or sold. We&rsquo;ll pass your request along to {connectForm.player.name.split(" ")[0]}.
+                  <p style={{ fontSize: "0.75rem", color: "var(--muted)", textAlign: "center", marginTop: "0.8rem" }}>Free for players. Your email is never shown publicly or sold. Your request goes straight to {connectForm.player.name.split(" ")[0]}, who can reply to you directly.
                   </p>
                 </form>
               </>
