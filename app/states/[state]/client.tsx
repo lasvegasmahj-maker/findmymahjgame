@@ -162,9 +162,13 @@ export default function StatePageClient({ stateData, players, events, venues }: 
     ? events
     : events.filter(e => e.city.toLowerCase() === selectedCity.toLowerCase());
 
+  // Instructors/teachers live in venue_listings too; keep them out of the Venues
+  // tab so it shows actual locations only (they appear on /teachers).
+  const TEACHER_TYPE = /instructor|teacher|lesson|studio|school|class/i;
+  const locationVenues = venues.filter(v => !TEACHER_TYPE.test(`${v.venue_type || ""} ${v.description || ""}`));
   const filteredVenues = selectedCity === `All of ${stateData.name}`
-    ? venues
-    : venues.filter(v => v.city.toLowerCase() === selectedCity.toLowerCase());
+    ? locationVenues
+    : locationVenues.filter(v => v.city.toLowerCase() === selectedCity.toLowerCase());
 
   return (
     <>
