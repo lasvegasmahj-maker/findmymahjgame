@@ -46,6 +46,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "That email does not look right." }, { status: 400 });
   }
   const city = clampText(b?.city, 80) || null;
+  const usState = clampText(b?.state, 60) || null;
+  if (!usState) {
+    return NextResponse.json({ error: "Please choose your state so we can send games near you." }, { status: 400 });
+  }
 
   const inMailchimp = await addToMailchimp(email, city);
 
@@ -55,7 +59,7 @@ export async function POST(req: NextRequest) {
     subject: `Newsletter signup: ${email}`,
     html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:20px;">
       <h2 style="color:#1a1f5e;">New newsletter signup</h2>
-      <p style="color:#374151;line-height:1.7;"><strong>Email:</strong> ${escapeHtml(email)}${city ? `<br/><strong>City:</strong> ${escapeHtml(city)}` : ""}</p>
+      <p style="color:#374151;line-height:1.7;"><strong>Email:</strong> ${escapeHtml(email)}<br/><strong>State:</strong> ${escapeHtml(usState)}${city ? `<br/><strong>City:</strong> ${escapeHtml(city)}` : ""}</p>
     </div>`,
   });
   const notified = sent.ok;
