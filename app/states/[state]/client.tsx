@@ -112,8 +112,44 @@ interface ConnectForm {
   submitting: boolean;
 }
 
+function VenueCard({ venue }: { venue: Venue }) {
+  return (
+    <div className="venue-card">
+      {venue.logo_url
+        ? (
+          <div style={{ position: "relative", width: "100%", height: 80 }}>
+            <img src={venue.logo_url} alt={venue.business_name} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
+        )
+        : <div className="venue-stripe" style={{ background: "var(--pink)" }} />
+      }
+      <div className="venue-body">
+        <div className="venue-type" style={{ color: "var(--pink-text)" }}>{venue.venue_type} &middot; {venue.city}</div>
+        <h3 className="venue-name">{venue.business_name}</h3>
+        <p className="venue-meta">{venue.city}, {venue.state}</p>
+        {venue.description && <p className="venue-desc">{venue.description}</p>}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem", alignItems: "center", marginBottom: "0.9rem" }}>
+          {venue.display_email && (
+            <a href={`mailto:${venue.display_email}`} style={{ fontSize: "0.78rem", color: "var(--pink-text)", textDecoration: "none", fontWeight: 600 }}>{venue.display_email}</a>
+          )}
+          {venue.instagram && (
+            <a href={`https://instagram.com/${venue.instagram.replace("@", "")}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.78rem", color: "var(--pink-text)", textDecoration: "none", fontWeight: 600 }}>{venue.instagram.startsWith("@") ? venue.instagram : `@${venue.instagram}`}</a>
+          )}
+        </div>
+        {venue.website ? (
+          <a href={venue.website} target="_blank" rel="noopener noreferrer" className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Visit Website &rarr;</a>
+        ) : venue.instagram ? (
+          <a href={`https://instagram.com/${venue.instagram.replace("@", "")}`} target="_blank" rel="noopener noreferrer" className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Visit Instagram &rarr;</a>
+        ) : (
+          <Link href={`/contact`} className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Get Info &rarr;</Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function StatePageClient({ stateData, players, events, venues }: Props) {
-  const [activeTab, setActiveTab] = useState<"players" | "events" | "venues">("players");
+  const [activeTab, setActiveTab] = useState<"players" | "events" | "venues" | "teachers">("players");
   const [selectedCity, setSelectedCity] = useState(`All of ${stateData.name}`);
   const allCities = [`All of ${stateData.name}`, ...stateData.cities];
   const [connectForm, setConnectForm] = useState<ConnectForm | null>(null);
@@ -170,6 +206,11 @@ export default function StatePageClient({ stateData, players, events, venues }: 
     ? locationVenues
     : locationVenues.filter(v => v.city.toLowerCase() === selectedCity.toLowerCase());
 
+  const teacherVenues = venues.filter(v => TEACHER_TYPE.test(`${v.venue_type || ""} ${v.description || ""}`));
+  const filteredTeachers = selectedCity === `All of ${stateData.name}`
+    ? teacherVenues
+    : teacherVenues.filter(v => v.city.toLowerCase() === selectedCity.toLowerCase());
+
   return (
     <>
       {/* Hero */}
@@ -214,7 +255,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             </select>
           </div>
         </div>
-        <p style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.82rem", color: "rgba(255,255,255,0.55)" }}>Showing all players, events &amp; venues across <strong style={{ color: "white" }}>{stateData.name}</strong>
+        <p style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.82rem", color: "rgba(255,255,255,0.55)" }}>Showing all players, events, venues &amp; teachers across <strong style={{ color: "white" }}>{stateData.name}</strong>
         </p>
       </div>
 
@@ -226,6 +267,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             { id: "players" as const, label: "Players", count: filteredPlayers.length },
             { id: "events" as const, label: "Events", count: filteredEvents.length },
             { id: "venues" as const, label: "Venues", count: filteredVenues.length },
+            { id: "teachers" as const, label: "Teachers", count: filteredTeachers.length },
           ]).map((tab) => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)} aria-pressed={activeTab === tab.id ? "true" : "false"} style={{ padding: "1rem 1.4rem", flexShrink: 0, whiteSpace: "nowrap", fontSize: "1.05rem", fontWeight: activeTab === tab.id ? 800 : 600, cursor: "pointer", background: "transparent", border: "none", borderBottom: "3px solid", borderBottomColor: activeTab === tab.id ? "var(--pink)" : "transparent", marginBottom: -2, color: activeTab === tab.id ? "var(--navy)" : "var(--muted)", fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s", display: "flex", alignItems: "center", gap: "0.4rem" }}>
               {tab.label}
@@ -369,42 +411,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
               <>
               <div className="dir-grid" style={{ marginBottom: "2rem" }}>
                 {filteredVenues.map((venue) => (
-                  <div key={venue.id} className="venue-card">
-                    {venue.logo_url
-                      ? (
-                        <div style={{ position: "relative", width: "100%", height: 80 }}>
-                          <img
-                            src={venue.logo_url}
-                            alt={venue.business_name}
-                            loading="lazy"
-                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                          />
-                        </div>
-                      )
-                      : <div className="venue-stripe" style={{ background: "var(--pink)" }} />
-                    }
-                    <div className="venue-body">
-                      <div className="venue-type" style={{ color: "var(--pink-text)" }}>{venue.venue_type} &middot; {venue.city}</div>
-                      <h3 className="venue-name">{venue.business_name}</h3>
-                      <p className="venue-meta">{venue.city}, {venue.state}</p>
-                      {venue.description && <p className="venue-desc">{venue.description}</p>}
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem", alignItems: "center", marginBottom: "0.9rem" }}>
-                        {venue.display_email && (
-                          <a href={`mailto:${venue.display_email}`} style={{ fontSize: "0.78rem", color: "var(--pink-text)", textDecoration: "none", fontWeight: 600 }}>{venue.display_email}</a>
-                        )}
-                        {venue.instagram && (
-                          <a href={`https://instagram.com/${venue.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.78rem", color: "var(--pink-text)", textDecoration: "none", fontWeight: 600 }}>{venue.instagram.startsWith("@") ? venue.instagram : `@${venue.instagram}`}</a>
-                        )}
-                      </div>
-                      {venue.website ? (
-                        <a href={venue.website} target="_blank" rel="noopener noreferrer" className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Visit Website &rarr;</a>
-                      ) : venue.instagram ? (
-                        <a href={`https://instagram.com/${venue.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer" className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Visit Instagram &rarr;</a>
-                      ) : (
-                        <Link href={`/contact`} className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Get Info &rarr;</Link>
-                      )}
-                    </div>
-                  </div>
+                  <VenueCard key={venue.id} venue={venue} />
                 ))}
               </div>
               <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
@@ -421,6 +428,35 @@ export default function StatePageClient({ stateData, players, events, venues }: 
               </div>
             )}
 
+          </div>
+        )}
+
+        {/* ══════════ TEACHERS TAB ══════════ */}
+        {activeTab === "teachers" && (
+          <div>
+            <p className="section-label">Learn to Play</p>
+            <h2 className="section-title" style={{ marginBottom: "0.5rem" }}>Teachers in {stateData.name}</h2>
+            <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", lineHeight: 1.7 }}>American Mahjong instructors offering lessons in {stateData.name}. You contact them directly.
+            </p>
+
+            {filteredTeachers.length > 0 ? (
+              <>
+                <div className="dir-grid" style={{ marginBottom: "2rem" }}>
+                  {filteredTeachers.map((venue) => <VenueCard key={venue.id} venue={venue} />)}
+                </div>
+                <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
+                  <p style={{ fontSize: "0.95rem", color: "var(--muted)", marginBottom: "0.8rem" }}>Teach mahjong in {stateData.name}?</p>
+                  <Link href="/get-listed?type=Mahjong%20Instructor" style={{ display: "inline-flex", minHeight: 52, alignItems: "center", justifyContent: "center", padding: "0 1.6rem", borderRadius: 14, background: "var(--navy)", color: "white", fontWeight: 800, fontSize: "1.05rem", textDecoration: "none" }}>Want to add your lessons? &rarr;</Link>
+                </div>
+              </>
+            ) : (
+              <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center", marginBottom: "2rem" }}>
+                <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>No teachers listed yet</h3>
+                <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Teach American Mahjong in {stateData.name}? Get in front of players looking to learn.
+                </p>
+                <Link href="/get-listed?type=Mahjong%20Instructor" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>List your lessons &rarr;</Link>
+              </div>
+            )}
           </div>
         )}
 
