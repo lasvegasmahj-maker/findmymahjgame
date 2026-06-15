@@ -92,17 +92,17 @@ export default async function Home() {
           <div className="map-header">
             <p className="section-label" style={{ textAlign: "center" }}>Find My Local Mahj Game</p>
             <h2 className="section-title" style={{ textAlign: "center" }}>Find Players &amp; Events Near You</h2>
-            <p className="map-subtitle" style={{ textAlign: "center" }}>Click your state to add your listing, find local events and venues, and connect with players near you, or search by city below.</p>
+            <p className="map-subtitle" style={{ textAlign: "center" }}>Search your city, state, or ZIP, or click your state on the map to find local players, events, and venues.</p>
             <p style={{ textAlign: "center", marginTop: "0.6rem", fontSize: "1rem", lineHeight: 2 }}><Link href="/events" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Open plays &amp; events</Link> &middot; <Link href="/teachers" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Teachers</Link> &middot; <Link href="/tournaments" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Tournaments</Link> &middot; <Link href="/leagues" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Leagues</Link> &middot; <Link href="/venues" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Venues</Link> &middot; <Link href="/travel" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Travel</Link></p>
           </div>
+
+          {/* Search above the map */}
+          <SearchBox />
 
           {/* Full-width map */}
           <div className="map-wrapper">
             <USMap stateCounts={stateCounts} />
           </div>
-
-          {/* Search below map */}
-          <SearchBox />
 
         </div>
       </section>
