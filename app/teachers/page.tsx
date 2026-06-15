@@ -6,7 +6,7 @@ import { nearMatches } from "@/lib/near-match";
 
 export const metadata: Metadata = {
   title: "Find a Mahjong Teacher Near You",
-  description: "Find an American Mahjong teacher near you. Lessons, classes, and beginner-friendly instructors, city by city.",
+  description: "Find an American Mahjong teacher near you. Lessons and classes from instructors, city by city.",
   alternates: { canonical: "https://findmymahjgame.com/teachers" },
 };
 
@@ -16,7 +16,6 @@ export const revalidate = 300;
 // Las Vegas guardrail: Nevada is Las Vegas Mahjong's home teaching market,
 // so competing Nevada teachers are excluded here on purpose.
 const TEACHER_TYPE = /instructor|teacher|lesson|studio|school|class/i;
-const isBeginnerFriendly = (s: string) => /beginner|new player|all levels|learn/i.test(s);
 
 const field: React.CSSProperties = { minHeight: 54, padding: "0 1rem", border: "2px solid var(--border)", borderRadius: 12, fontSize: "1.1rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", flex: "1 1 200px" };
 const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border: "none", borderRadius: 12, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" };
@@ -27,8 +26,7 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
   const { data } = await supabase.from("venue_listings").select("id, business_name, venue_type, city, state, description, website, instagram, display_email, logo_url, tier, created_at").eq("status", "published").or("state.is.null,state.neq.NV");
 
   let rows = (data || [])
-    .filter((r) => TEACHER_TYPE.test(`${r.venue_type || ""} ${r.description || ""}`))
-    .map((r) => ({ ...r, _beginner: isBeginnerFriendly(`${r.venue_type || ""} ${r.description || ""}`) }));
+    .filter((r) => TEACHER_TYPE.test(`${r.venue_type || ""} ${r.description || ""}`));
   if (near && near.trim()) {
     const n = near.trim().toLowerCase();
     rows = rows.filter((r) => nearMatches(n, r.city, r.state));
@@ -36,7 +34,7 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
       <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", textAlign: "center", margin: "0 0 0.4rem" }}>Find a mahjong teacher near you</h1>
-      <p style={{ fontSize: "1.2rem", color: "var(--muted)", textAlign: "center", lineHeight: 1.5, margin: "0 0 1.8rem" }}>Lessons and classes, beginners welcome. These teachers are listed here, and you contact them directly.</p>
+      <p style={{ fontSize: "1.2rem", color: "var(--muted)", textAlign: "center", lineHeight: 1.5, margin: "0 0 1.8rem" }}>Lessons and classes from American Mahjong instructors. These teachers are listed here, and you contact them directly.</p>
 
       <form method="get" style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center", maxWidth: 520, margin: "0 auto 1.2rem" }}>
         <label htmlFor="near" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>Your city or area</label>
@@ -66,7 +64,6 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
             <Link key={t.id} href={`/teachers/${t.id}`} style={{ display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", textDecoration: "none" }}>
               <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{t.business_name || "Teacher"}</div>
               {(t.city || t.state) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[t.city, t.state].filter(Boolean).join(", ")}</div>}
-              {t._beginner && <div style={{ display: "inline-block", background: "rgba(46,201,92,0.14)", color: "#1a6e3a", fontWeight: 800, fontSize: "0.85rem", padding: "0.2rem 0.7rem", borderRadius: 50, marginTop: "0.6rem" }}>Beginners welcome</div>}
               {t.description && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.5rem", lineHeight: 1.5 }}>{String(t.description).slice(0, 110)}{String(t.description).length > 110 ? "..." : ""}</div>}
               <div style={{ marginTop: "0.8rem", color: "var(--pink-text)", fontWeight: 800 }}>View details &rarr;</div>
             </Link>
