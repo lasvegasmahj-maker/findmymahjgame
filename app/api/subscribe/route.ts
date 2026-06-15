@@ -4,12 +4,15 @@ import { clampText, isValidEmail, escapeHtml } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
 
 
-async function addToMailchimp(email: string, city: string | null): Promise<boolean> {
+async function addToMailchimp(email: string, city: string | null, usState: string | null): Promise<boolean> {
   const key = process.env.MAILCHIMP_API_KEY;
   const list = process.env.MAILCHIMP_AUDIENCE_ID;
   if (!key || !list) return false;
   const dc = key.split("-")[1];
   if (!dc) return false;
+  const merge_fields: Record<string, string> = {};
+  if (usState) merge_fields.STATE = usState;
+  if (city) merge_fields.CITY = city;
   try {
     const res = await fetch(`https://${dc}.api.mailchimp.com/3.0/lists/${list}/members`, {
       method: "POST",
@@ -20,7 +23,7 @@ async function addToMailchimp(email: string, city: string | null): Promise<boole
       body: JSON.stringify({
         email_address: email,
         status: "subscribed",
-        ...(city ? { merge_fields: { CITY: city } } : {}),
+        ...(Object.keys(merge_fields).length ? { merge_fields } : {}),
       }),
     });
     // "Member Exists" (400) still counts as recorded.
@@ -51,7 +54,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Please choose your state so we can send games near you." }, { status: 400 });
   }
 
-  const inMailchimp = await addToMailchimp(email, city);
+  const inMailchimp = await addToMailchimp(email, city, usState);
 
   const sent = await sendEmail({
     to: "hello@findmymahjgame.com",
