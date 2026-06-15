@@ -362,6 +362,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             </p>
 
             {filteredVenues.length > 0 ? (
+              <>
               <div className="dir-grid" style={{ marginBottom: "2rem" }}>
                 {filteredVenues.map((venue) => (
                   <div key={venue.id} className="venue-card">
@@ -402,12 +403,17 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                   </div>
                 ))}
               </div>
+              <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
+                <p style={{ fontSize: "0.95rem", color: "var(--muted)", marginBottom: "0.8rem" }}>Own a mahjong-friendly venue in {stateData.name}?</p>
+                <Link href="/get-listed?type=Venue" style={{ display: "inline-flex", minHeight: 52, alignItems: "center", justifyContent: "center", padding: "0 1.6rem", borderRadius: 14, background: "var(--navy)", color: "white", fontWeight: 800, fontSize: "1.05rem", textDecoration: "none" }}>Want to add your venue? &rarr;</Link>
+              </div>
+              </>
             ) : (
               <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center", marginBottom: "2rem" }}>
                 <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>No venues listed yet</h3>
                 <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Own a mahjong-friendly venue? Get discovered by players searching for places to play.
                 </p>
-                <Link href="/advertise" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>List Your Venue &rarr;</Link>
+                <Link href="/get-listed?type=Venue" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>List Your Venue &rarr;</Link>
               </div>
             )}
 
