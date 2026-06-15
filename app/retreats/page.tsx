@@ -25,9 +25,9 @@ export default async function RetreatsPage({ searchParams }: { searchParams: Pro
   const groupBy: "state" | "city" | null = activeSort === "city" ? "city" : activeSort === "soonest" ? null : "state";
   const supabase = createServerClient();
   const todayISO = new Date().toISOString().slice(0, 10);
-  let { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, registration_url, day_time, frequency, beginner_friendly, confirmed_active_at, host").eq("status", "published").or(`event_date.gte.${todayISO},event_date.is.null`).order("event_date", { ascending: true });
+  let { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, registration_url, price, day_time, frequency, beginner_friendly, confirmed_active_at, host").eq("status", "published").or(`event_date.gte.${todayISO},event_date.is.null`).order("event_date", { ascending: true });
   if (!data) {
-    const fallback = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, registration_url, day_time, frequency, beginner_friendly, host").eq("status", "published").or(`event_date.gte.${todayISO},event_date.is.null`).order("event_date", { ascending: true });
+    const fallback = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, registration_url, price, day_time, frequency, beginner_friendly, host").eq("status", "published").or(`event_date.gte.${todayISO},event_date.is.null`).order("event_date", { ascending: true });
     data = (fallback.data || []).map((r) => ({ ...r, confirmed_active_at: null }));
   }
 

@@ -25,6 +25,7 @@ interface Event {
   description: string | null;
   event_date: string | null;
   price: string | null;
+  host: string | null;
   registration_url: string | null;
   tier: string;
 }
@@ -325,10 +326,11 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                            {formatEventDate(event.event_date)}
                           {event.venue && <> &nbsp;&middot;&nbsp;{event.venue}, {event.city}</>}
                         </div>
+                        {event.host && <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginTop: "0.3rem" }}>Hosted by {event.host}</div>}
                         {event.description && <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginTop: "0.4rem", lineHeight: 1.5 }}>{event.description}</div>}
                       </div>
                       <div style={{ textAlign: "right", flexShrink: 0 }}>
-                        <div style={{ fontSize: "0.88rem", fontWeight: 700, color: event.price === "Free" ? "var(--green)" : "var(--navy)", marginBottom: "0.5rem" }}>{event.price || "Free"}</div>
+                        {event.price && <div style={{ fontSize: "0.88rem", fontWeight: 700, color: event.price.toLowerCase() === "free" ? "var(--green)" : "var(--navy)", marginBottom: "0.5rem" }}>{event.price}</div>}
                         {event.registration_url ? (
                           <a href={event.registration_url} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", background: "var(--navy)", color: "white", padding: "0.5rem 1.2rem", borderRadius: 6, fontSize: "0.78rem", fontWeight: 700, textDecoration: "none" }}>Register &rarr;</a>
                         ) : (
