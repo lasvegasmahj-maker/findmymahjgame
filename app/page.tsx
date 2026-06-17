@@ -105,6 +105,12 @@ export default async function Home() {
             <USMap stateCounts={stateCounts} />
           </div>
 
+          {/* Can't find a game? Create a listing (after the find tools) */}
+          <div style={{ textAlign: "center", marginTop: "1.8rem" }}>
+            <p style={{ fontSize: "1.05rem", color: "var(--muted)", margin: "0 0 0.7rem" }}>Can&rsquo;t find a game near you?</p>
+            <Link href="/list-my-game" style={{ display: "inline-flex", minHeight: 54, alignItems: "center", justifyContent: "center", padding: "0 1.8rem", borderRadius: 14, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Create your own listing</Link>
+          </div>
+
         </div>
       </section>
 
