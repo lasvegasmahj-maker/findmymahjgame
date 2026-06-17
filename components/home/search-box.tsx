@@ -63,7 +63,6 @@ export default function SearchBox() {
   return (
     <div className="inline-search">
       <div className="inline-search-inner">
-        <p className="inline-search-label">Find players, groups &amp; events near you</p>
         <div className="inline-search-box">
           <input
             type="text"
@@ -80,7 +79,8 @@ export default function SearchBox() {
           </p>
         )}
         <div style={{ textAlign: "center", marginTop: "1.2rem", paddingTop: "1.2rem", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-          <Link href="/list-my-game" className="listing-cta">Create My Own Listing to Find My Mahj Game</Link>
+          <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "0.95rem", margin: "0 0 0.7rem" }}>Can&rsquo;t find a game near you?</p>
+          <Link href="/list-my-game" className="listing-cta">Create your own listing</Link>
         </div>
       </div>
     </div>

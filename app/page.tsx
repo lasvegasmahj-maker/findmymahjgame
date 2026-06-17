@@ -84,6 +84,7 @@ export default async function Home() {
       <section className="hero" style={{ paddingBottom: "1.8rem" }}>
         <h1>Find people to play <em>mahjong</em> with</h1>
         <p>Open plays, teachers, events, and games near you.<br />Always free for players.</p>
+        <div style={{ marginTop: "0.2rem" }}><Link href="/how-it-works" style={{ fontSize: "1.1rem", color: "var(--pink-text)", fontWeight: 700 }}>New to mahjong? Learn how</Link></div>
       </section>
 
       {/* MAP SECTION */}
@@ -104,23 +105,6 @@ export default async function Home() {
             <USMap stateCounts={stateCounts} />
           </div>
 
-        </div>
-      </section>
-
-      {/* PRIMARY ACTIONS: shown below the map so players orient first, then act */}
-      <section style={{ background: "white", padding: "2.6rem 1.2rem 3.4rem", textAlign: "center", borderTop: "1px solid var(--border)" }}>
-        <div style={{ maxWidth: 440, margin: "0 auto", display: "flex", flexDirection: "column", gap: "1.4rem" }}>
-          <div>
-            <Link href="/play" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "var(--navy)", color: "white" }}>I Want to Play</Link>
-            <div style={{ fontSize: "1rem", color: "var(--muted)", textAlign: "center", marginTop: "0.4rem" }}>Find a game near you</div>
-          </div>
-          <div>
-            <Link href="/start" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 72, borderRadius: 16, fontSize: "1.4rem", fontWeight: 800, textDecoration: "none", background: "var(--pink)", color: "white" }}>Start a Table</Link>
-            <div style={{ fontSize: "1rem", color: "var(--muted)", textAlign: "center", marginTop: "0.4rem" }}>Invite players to join</div>
-          </div>
-        </div>
-        <div style={{ marginTop: "1.6rem" }}>
-          <Link href="/how-it-works" style={{ fontSize: "1.1rem", color: "var(--pink-text)", fontWeight: 700 }}>New to mahjong? Learn how</Link>
         </div>
       </section>
 
