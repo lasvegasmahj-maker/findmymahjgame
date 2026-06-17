@@ -63,6 +63,8 @@ export default function SearchBox() {
   return (
     <div className="inline-search">
       <div className="inline-search-inner">
+        <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.5rem", color: "white", textAlign: "center", margin: "0 0 0.3rem" }}>Find Players &amp; Events Near You</h2>
+        <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "0.95rem", textAlign: "center", margin: "0 0 1rem", lineHeight: 1.5 }}>Search your city, state, or ZIP, or click your state on the map to find local players, events, and venues.</p>
         <div className="inline-search-box">
           <input
             type="text"
