@@ -92,6 +92,10 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
   } else if (activeSort === "city") {
     rows = [...rows].sort((a, b) => (a.city || "").localeCompare(b.city || "") || byDate(a, b));
   } else {
+    // "Featured" sort, preserved for the future paid (Verified Community Leader)
+    // tier. Reachable now via ?sort=featured; re-add it to SORTS below to surface
+    // it in the UI once paid listings exist. Today it ranks by event type, then
+    // freshness; when the paid tier ships, sort verified/paid listings first here.
     rows = [...rows].sort((a, b) => {
       const byType = rank(a.event_type) - rank(b.event_type);
       if (byType !== 0) return byType;
@@ -134,7 +138,11 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
     const s = qs.toString();
     return `/events${s ? `?${s}` : ""}`;
   };
-  const SORTS: [string, string][] = [["state", "By state"], ["date", "By date"]];
+  const SORTS: [string, string][] = [
+    ["state", "By state"],
+    ["date", "By date"],
+    // ["featured", "Featured"], // re-enable when the paid Verified Community Leader tier is live (sort logic above)
+  ];
 
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
