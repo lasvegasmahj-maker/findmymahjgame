@@ -151,6 +151,7 @@ function VenueCard({ venue }: { venue: Venue }) {
 export default function StatePageClient({ stateData, players, events, venues }: Props) {
   const [activeTab, setActiveTab] = useState<"players" | "events" | "teachers">("players");
   const [selectedCity, setSelectedCity] = useState(`All of ${stateData.name}`);
+  const [eventSort, setEventSort] = useState<"date" | "city">("date");
   const allCities = [`All of ${stateData.name}`, ...stateData.cities];
   const [connectForm, setConnectForm] = useState<ConnectForm | null>(null);
   const connectDialogRef = useRef<HTMLDivElement | null>(null);
@@ -197,6 +198,47 @@ export default function StatePageClient({ stateData, players, events, venues }: 
   const filteredEvents = selectedCity === `All of ${stateData.name}`
     ? events
     : events.filter(e => e.city.toLowerCase() === selectedCity.toLowerCase());
+
+  const byEventDate = (a: typeof events[number], b: typeof events[number]) => {
+    const da = a.event_date ? new Date(a.event_date).getTime() : Infinity;
+    const db = b.event_date ? new Date(b.event_date).getTime() : Infinity;
+    return da - db;
+  };
+  const eventsByDate = [...filteredEvents].sort(byEventDate);
+  const eventsByCity = Object.entries(
+    filteredEvents.reduce<Record<string, typeof filteredEvents>>((acc, e) => {
+      const c = (e.city || "").trim() || "Other";
+      (acc[c] ||= []).push(e);
+      return acc;
+    }, {})
+  )
+    .map(([city, evs]) => [city, [...evs].sort(byEventDate)] as [string, typeof filteredEvents])
+    .sort((a, b) => a[0].localeCompare(b[0]));
+
+  const renderEventCard = (event: typeof events[number]) => (
+    <div key={event.id} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.5rem 2rem" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
+        <div>
+          <EventTypeBadge type={event.event_type} />
+          <h3 style={{ fontWeight: 700, fontSize: "1.05rem", color: "var(--navy)", margin: "0.3rem 0" }}>{event.event_name}</h3>
+          <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
+            {formatEventDate(event.event_date)}
+            {event.venue && <> &nbsp;&middot;&nbsp;{event.venue}, {event.city}</>}
+          </div>
+          {event.host && <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginTop: "0.3rem" }}>Hosted by {event.host}</div>}
+          {event.description && <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginTop: "0.4rem", lineHeight: 1.5 }}>{event.description}</div>}
+        </div>
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
+          {event.price && <div style={{ fontSize: "0.88rem", fontWeight: 700, color: event.price.toLowerCase() === "free" ? "var(--green)" : "var(--navy)", marginBottom: "0.5rem" }}>{event.price}</div>}
+          {event.registration_url ? (
+            <a href={event.registration_url} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", background: "var(--navy)", color: "white", padding: "0.5rem 1.2rem", borderRadius: 6, fontSize: "0.78rem", fontWeight: 700, textDecoration: "none" }}>Register &rarr;</a>
+          ) : (
+            <Link href="/contact" style={{ display: "inline-block", background: "var(--navy)", color: "white", padding: "0.5rem 1.2rem", borderRadius: 6, fontSize: "0.78rem", fontWeight: 700, textDecoration: "none" }}>Details &rarr;</Link>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
   // Instructors/teachers are stored in venue_listings; surface them on the Teachers tab.
   const TEACHER_TYPE = /instructor|teacher|lesson|studio|school|class/i;
@@ -354,32 +396,32 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             </p>
 
             {filteredEvents.length > 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "2rem" }}>
-                {filteredEvents.map((event) => (
-                  <div key={event.id} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.5rem 2rem" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
-                      <div>
-                        <EventTypeBadge type={event.event_type} />
-                        <h3 style={{ fontWeight: 700, fontSize: "1.05rem", color: "var(--navy)", margin: "0.3rem 0" }}>{event.event_name}</h3>
-                        <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
-                           {formatEventDate(event.event_date)}
-                          {event.venue && <> &nbsp;&middot;&nbsp;{event.venue}, {event.city}</>}
-                        </div>
-                        {event.host && <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginTop: "0.3rem" }}>Hosted by {event.host}</div>}
-                        {event.description && <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginTop: "0.4rem", lineHeight: 1.5 }}>{event.description}</div>}
-                      </div>
-                      <div style={{ textAlign: "right", flexShrink: 0 }}>
-                        {event.price && <div style={{ fontSize: "0.88rem", fontWeight: 700, color: event.price.toLowerCase() === "free" ? "var(--green)" : "var(--navy)", marginBottom: "0.5rem" }}>{event.price}</div>}
-                        {event.registration_url ? (
-                          <a href={event.registration_url} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", background: "var(--navy)", color: "white", padding: "0.5rem 1.2rem", borderRadius: 6, fontSize: "0.78rem", fontWeight: 700, textDecoration: "none" }}>Register &rarr;</a>
-                        ) : (
-                          <Link href="/contact" style={{ display: "inline-block", background: "var(--navy)", color: "white", padding: "0.5rem 1.2rem", borderRadius: 6, fontSize: "0.78rem", fontWeight: 700, textDecoration: "none" }}>Details &rarr;</Link>
-                        )}
-                      </div>
-                    </div>
+              <>
+                {eventsByCity.length > 1 && (
+                  <div style={{ display: "flex", gap: "0.9rem", alignItems: "center", marginBottom: "1.4rem" }}>
+                    <span style={{ fontSize: "0.9rem", color: "var(--muted)", fontWeight: 700 }}>Sort:</span>
+                    {(["date", "city"] as const).map((k) => (
+                      <button key={k} type="button" onClick={() => setEventSort(k)} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: "0.95rem", fontWeight: 700, color: eventSort === k ? "var(--pink-text)" : "var(--muted)", borderBottom: eventSort === k ? "2px solid var(--pink)" : "2px solid transparent", paddingBottom: "0.1rem" }}>{k === "date" ? "By date" : "By city"}</button>
+                    ))}
                   </div>
-                ))}
-              </div>
+                )}
+                {eventSort === "city" && eventsByCity.length > 1 ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "1.8rem", marginBottom: "2rem" }}>
+                    {eventsByCity.map(([city, evs]) => (
+                      <div key={city}>
+                        <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.15rem", color: "var(--navy)", margin: "0 0 0.8rem", paddingBottom: "0.4rem", borderBottom: "2px solid var(--border)" }}>{city}</h3>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                          {evs.map(renderEventCard)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "2rem" }}>
+                    {eventsByDate.map(renderEventCard)}
+                  </div>
+                )}
+              </>
             ) : (
               <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center", marginBottom: "2rem" }}>
                 <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>No events listed yet</h3>

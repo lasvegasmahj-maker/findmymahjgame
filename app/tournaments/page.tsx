@@ -22,7 +22,7 @@ const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border:
 export default async function TournamentsPage({ searchParams }: { searchParams: Promise<{ near?: string; sort?: string }> }) {
   const { near, sort } = await searchParams;
   const activeSort = (sort || "state").toLowerCase();
-  const groupBy: "state" | "city" | null = activeSort === "city" ? "city" : activeSort === "soonest" ? null : "state";
+  const groupBy: "state" | null = activeSort === "date" ? null : "state";
   const supabase = createServerClient();
   const todayISO = new Date().toISOString().slice(0, 10);
   let { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, registration_url, price, day_time, frequency, beginner_friendly, confirmed_active_at, host").eq("status", "published").or(`event_date.gte.${todayISO},event_date.is.null,frequency.not.is.null`).order("event_date", { ascending: true });
@@ -66,7 +66,7 @@ export default async function TournamentsPage({ searchParams }: { searchParams: 
     const s = qs.toString();
     return `/tournaments${s ? `?${s}` : ""}`;
   };
-  const SORTS: [string, string][] = [["state", "By state"], ["soonest", "Soonest"], ["city", "By city"]];
+  const SORTS: [string, string][] = [["state", "By state"], ["date", "By date"]];
 
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>

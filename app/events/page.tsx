@@ -60,7 +60,7 @@ const chipBase: React.CSSProperties = { display: "inline-block", padding: "0.5re
 export default async function EventsPage({ searchParams }: { searchParams: Promise<{ near?: string; type?: string; sort?: string }> }) {
   const { near, type, sort } = await searchParams;
   const activeType = (type || "all").toLowerCase();
-  const activeSort = (sort || "featured").toLowerCase();
+  const activeSort = (sort || "state").toLowerCase();
   const em = EMPTY_META[activeType] || EMPTY_META.all;
   const supabase = createServerClient();
   const todayISO = new Date().toISOString().slice(0, 10);
@@ -85,7 +85,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
     const db = b.event_date ? new Date(b.event_date).getTime() : Infinity;
     return da - db;
   };
-  if (activeSort === "soonest") {
+  if (activeSort === "date") {
     rows = [...rows].sort(byDate);
   } else if (activeSort === "state") {
     rows = [...rows].sort((a, b) => (a.state || "").localeCompare(b.state || "") || byDate(a, b));
@@ -122,7 +122,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
     const qs = new URLSearchParams();
     if (near && near.trim()) qs.set("near", near.trim());
     if (k !== "all") qs.set("type", k);
-    if (activeSort !== "featured") qs.set("sort", activeSort);
+    if (activeSort !== "state") qs.set("sort", activeSort);
     const s = qs.toString();
     return `/events${s ? `?${s}` : ""}`;
   };
@@ -130,11 +130,11 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
     const qs = new URLSearchParams();
     if (near && near.trim()) qs.set("near", near.trim());
     if (activeType !== "all") qs.set("type", activeType);
-    if (k !== "featured") qs.set("sort", k);
+    if (k !== "state") qs.set("sort", k);
     const s = qs.toString();
     return `/events${s ? `?${s}` : ""}`;
   };
-  const SORTS: [string, string][] = [["featured", "Featured"], ["soonest", "Soonest"], ["state", "By state"], ["city", "By city"]];
+  const SORTS: [string, string][] = [["state", "By state"], ["date", "By date"]];
 
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
@@ -146,7 +146,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
         <label htmlFor="near" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>Your city or area</label>
         <input id="near" name="near" defaultValue={near || ""} placeholder="Your city or state" style={field} />
         {activeType !== "all" && <input type="hidden" name="type" value={activeType} />}
-        {activeSort !== "featured" && <input type="hidden" name="sort" value={activeSort} />}
+        {activeSort !== "state" && <input type="hidden" name="sort" value={activeSort} />}
         <button type="submit" style={goBtn}>Search</button>
       </form>
 
