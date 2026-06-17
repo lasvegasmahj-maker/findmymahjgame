@@ -335,9 +335,9 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             )}
 
             <div style={{ background: "var(--navy)", borderRadius: 16, padding: "2.5rem", textAlign: "center" }}>
-              <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.3rem", color: "white", marginBottom: "0.5rem" }}>Want to be listed here? It&rsquo;s free!
+              <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.3rem", color: "white", marginBottom: "0.5rem" }}>Can&rsquo;t find a game in {stateData.name}?
               </h3>
-              <p style={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.55)", marginBottom: "1.5rem" }}>Add your free listing and let local players in {stateData.name} find you.
+              <p style={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.55)", marginBottom: "1.5rem" }}>Add your free listing and let local players find you. It&rsquo;s always free.
               </p>
               <Link href="/list-my-game" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>Create My Free Listing &rarr;
               </Link>
