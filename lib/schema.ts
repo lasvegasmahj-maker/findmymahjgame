@@ -52,7 +52,7 @@ export const ORGANIZATION_NODE = {
     name: "United States",
   },
   description:
-    "The national mahjong directory connecting players, venues and events across all 50 states. Free for players.",
+    "The national mahjong directory connecting players, teachers and events across all 50 states. Free for players.",
 };
 
 /* ── HOMEPAGE: Organization + WebSite + SearchAction ──────────────────────── */
@@ -70,7 +70,7 @@ export function buildHomepageSchema() {
       url: SITE_URL,
       name: SITE_NAME,
       description:
-        "Find mahjong players, groups, open plays, venues and events in all 50 states.",
+        "Find mahjong players, groups, open plays, teachers and events in all 50 states.",
       publisher: { "@id": `${SITE_URL}/#organization` },
       potentialAction: {
         "@type": "SearchAction",
@@ -161,7 +161,7 @@ export function buildStatePageSchema({ stateName, stateSlug, stateDesc, venues, 
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     "@id": `${pageUrl}/#webpage`,
-    name: `Mahjong Players, Venues & Events in ${stateName}`,
+    name: `Mahjong Players, Teachers & Events in ${stateName}`,
     description: stateDesc,
     url: pageUrl,
     isPartOf: { "@id": `${SITE_URL}/#website` },
@@ -174,20 +174,22 @@ export function buildStatePageSchema({ stateName, stateSlug, stateDesc, venues, 
 
   const schemas: object[] = [breadcrumb, collectionPage];
 
-  // Venue ItemList with nested LocalBusiness nodes
-  if (venues.length > 0) {
-    const venueItemList = {
+  // Teacher ItemList (instructors are stored in venue_listings).
+  const TEACHER_TYPE = /instructor|teacher|lesson|studio|school|class/i;
+  const teacherVenues = venues.filter((v) => TEACHER_TYPE.test(`${v.venue_type || ""} ${v.description || ""}`));
+  if (teacherVenues.length > 0) {
+    const teacherItemList = {
       "@context": "https://schema.org",
       "@type": "ItemList",
-      name: `Mahjong Venues in ${stateName}`,
+      name: `Mahjong Teachers in ${stateName}`,
       url: pageUrl,
-      numberOfItems: venues.length,
-      itemListElement: venues.map((venue, index) => ({
+      numberOfItems: teacherVenues.length,
+      itemListElement: teacherVenues.map((venue, index) => ({
         "@type": "ListItem",
         position: index + 1,
         item: {
           "@type": "LocalBusiness",
-          "@id": `${SITE_URL}/#venue-${venue.id}`,
+          "@id": `${SITE_URL}/#teacher-${venue.id}`,
           name: venue.business_name,
           description: venue.description ?? undefined,
           image: venue.logo_url ?? undefined,
@@ -198,15 +200,10 @@ export function buildStatePageSchema({ stateName, stateSlug, stateDesc, venues, 
             addressRegion: venue.state,
             addressCountry: "US",
           },
-          amenityFeature: {
-            "@type": "LocationFeatureSpecification",
-            name: "Mahjong",
-            value: true,
-          },
         },
       })),
     };
-    schemas.push(venueItemList);
+    schemas.push(teacherItemList);
   }
 
   // Individual Event schemas
@@ -364,7 +361,7 @@ export function buildHowItWorksSchema() {
       },
       {
         "@type": "Question",
-        name: "How do businesses and venues get listed?",
+        name: "How do businesses get listed?",
         acceptedAnswer: {
           "@type": "Answer",
           text: "Fill out the form on the Advertise page or email hello@findmymahjgame.com. Listings are reviewed within 1-2 business days. Once approved and paid, your listing goes live within 24-48 hours.",
@@ -372,10 +369,10 @@ export function buildHowItWorksSchema() {
       },
       {
         "@type": "Question",
-        name: "How much does it cost to advertise?",
+        name: "How much does it cost to get listed?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Venue listings start at $19/month. A Featured Spot is $39/month and includes top placement, a highlighted listing, and a photo. The Official Mahj Spot tier is $79/month and includes homepage placement and a badge. Event and instructor listings are also available.",
+          text: "Being listed is free forever, and you are never charged merely to be listed. Players never pay. The optional Verified Community Leader plan is $12/month or $99/year and adds a verified badge, priority placement in search, featured placement on state pages, more photos, and featured events. Ambassador status is our highest recognition and is earned, not bought.",
         },
       },
       {
@@ -391,7 +388,7 @@ export function buildHowItWorksSchema() {
         name: "What states does Find My Mahj Game cover?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Find My Mahj Game covers all 50 US states. Every state has its own directory page with players, events, and venues.",
+          text: "Find My Mahj Game covers all 50 US states. Every state has its own directory page with players, events, and teachers.",
         },
       },
     ],
@@ -402,14 +399,14 @@ export function buildHowItWorksSchema() {
     "@type": "HowTo",
     name: "How to Find a Mahjong Game Near You",
     description:
-      "Use Find My Mahj Game to find mahjong players, events, and venues in your state. Free for players.",
+      "Use Find My Mahj Game to find mahjong players, events, and teachers in your state. Free for players.",
     url: `${SITE_URL}/how-it-works`,
     step: [
       {
         "@type": "HowToStep",
         position: 1,
         name: "Go to your state page",
-        text: "Click your state on the map at findmymahjgame.com or navigate directly to findmymahjgame.com/states/[your-state]. Every state has its own page with players, events, and venues.",
+        text: "Click your state on the map at findmymahjgame.com or navigate directly to findmymahjgame.com/states/[your-state]. Every state has its own page with players, events, and teachers.",
         url: SITE_URL,
       },
       {
@@ -422,15 +419,15 @@ export function buildHowItWorksSchema() {
       {
         "@type": "HowToStep",
         position: 3,
-        name: "Browse players, events, and venues",
-        text: "Switch between the Players, Events, and Where to Play tabs to find exactly what you are looking for.",
+        name: "Browse players, events, and teachers",
+        text: "Switch between the Players, Events, and Teachers tabs to find exactly what you are looking for.",
         url: `${SITE_URL}/how-it-works`,
       },
       {
         "@type": "HowToStep",
         position: 4,
         name: "Connect and play",
-        text: "Click Connect on a player card, RSVP to an event, or visit a venue. It's always free for players.",
+        text: "Click Connect on a player card, RSVP to an event, or contact a teacher. It's always free for players.",
         url: `${SITE_URL}/list-my-game`,
       },
     ],
@@ -473,7 +470,7 @@ export function buildHowItWorksSchema() {
     "@type": "HowTo",
     name: "How to Get Your Business Listed on Find My Mahj Game",
     description:
-      "List your mahjong venue, instructor profile, or event on Find My Mahj Game to reach players searching in your area.",
+      "List your mahjong instructor profile or event on Find My Mahj Game to reach players searching in your area.",
     url: `${SITE_URL}/get-listed`,
     step: [
       {
@@ -559,7 +556,7 @@ export function buildGetListedPageSchema() {
     "@id": `${SITE_URL}/get-listed/#webpage`,
     name: "Get Your Business Listed | Find My Mahj Game",
     description:
-      "List your mahjong venue, instructor profile, or event on the national mahjong directory.",
+      "List your mahjong instructor profile or event on the national mahjong directory.",
     url: `${SITE_URL}/get-listed`,
     isPartOf: { "@id": `${SITE_URL}/#website` },
     breadcrumb: {

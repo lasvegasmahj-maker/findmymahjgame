@@ -10,14 +10,14 @@ import SeatDots from "@/components/seat-dots";
 export const metadata: Metadata = {
   title: { absolute: "Find My Mahj Game | Mahjong Players & Groups Nationwide" },
   description:
-    "Find mahjong players, groups, open plays, venues and events in all 50 states. Free for players. Click your state to get started.",
+    "Find mahjong players, groups, open plays, teachers and events in all 50 states. Free for players. Click your state to get started.",
   alternates: {
     canonical: "https://findmymahjgame.com",
   },
   openGraph: {
     title: "Find My Mahj Game | Mahjong Players, Groups and Events Nationwide",
     description:
-      "Find mahjong players, groups, open plays, venues and events in all 50 states. Free for players. Click your state to get started.",
+      "Find mahjong players, groups, open plays, teachers and events in all 50 states. Free for players. Click your state to get started.",
     url: "https://findmymahjgame.com",
   },
 };
@@ -58,8 +58,6 @@ export default async function Home() {
     .filter((e) => ["tournament", "retreat"].includes(e.event_type))
     .filter((e) => !e.event_date || e.event_date >= _todayISO)
     .slice(0, 6);
-  const featuredVenues = venues.slice(0, 6);
-
   // Forming tables with open seats (never the nearly-full ones; see below).
   const { data: formingRaw } = await supabase
     .from("tables")
@@ -82,31 +80,30 @@ export default async function Home() {
     <>
       {/* HERO */}
       <section className="hero" style={{ paddingBottom: "1.8rem" }}>
-        <h1>Find people to play <em>mahjong</em> with</h1>
-        <p>Open plays, teachers, events, and games near you.<br />Always free for players.</p>
+        <h1>Find Your <em>Mahj Game</em></h1>
+        <p>Search your city, ZIP code, or state to find<br />local games, players, teachers, and events.</p>
+        <SearchBox />
+        <p style={{ marginTop: "0.9rem", marginBottom: 0, fontSize: "0.9rem", color: "var(--muted)", fontWeight: 600 }}>Always free for players.</p>
       </section>
 
       {/* MAP SECTION */}
       <section className="map-section" id="map">
         <div className="map-inner">
           <div className="map-header">
-            <p className="section-label" style={{ textAlign: "center" }}>Find My Local Mahj Game</p>
-            <p style={{ textAlign: "center", marginTop: "0.4rem", fontSize: "1rem", lineHeight: 2 }}><Link href="/events" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Open plays &amp; events</Link> &middot; <Link href="/teachers" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Teachers</Link> &middot; <Link href="/tournaments" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Tournaments</Link> &middot; <Link href="/leagues" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Leagues</Link> &middot; <Link href="/venues" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Venues</Link> &middot; <Link href="/travel" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Travel</Link></p>
+            <h2 className="section-title" style={{ textAlign: "center" }}>Browse mahjong by state</h2>
+            <p style={{ textAlign: "center", marginTop: "0.5rem", fontSize: "1.05rem", color: "var(--muted)" }}>Tap a state on the map to see players, events, and teachers.</p>
           </div>
-
-          {/* Search above the map */}
-          <SearchBox />
 
           {/* Full-width map */}
           <div className="map-wrapper">
             <USMap stateCounts={stateCounts} />
           </div>
 
-          {/* Can't find a game? Create a listing (after the find tools) */}
-          <div style={{ textAlign: "center", marginTop: "1.8rem" }}>
-            <p style={{ fontSize: "1.05rem", color: "var(--muted)", margin: "0 0 0.7rem" }}>Can&rsquo;t find a game near you?</p>
-            <Link href="/list-my-game" style={{ display: "inline-flex", minHeight: 54, alignItems: "center", justifyContent: "center", padding: "0 1.8rem", borderRadius: 14, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Create your own listing</Link>
-          </div>
+          {/* Categories below the map */}
+          <p style={{ textAlign: "center", marginTop: "1.8rem", fontSize: "1rem", lineHeight: 2 }}>
+            <span style={{ color: "var(--muted)", fontWeight: 700 }}>Explore: </span>
+            <Link href="/events" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Open plays &amp; events</Link> &middot; <Link href="/teachers" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Teachers</Link> &middot; <Link href="/tournaments" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Tournaments</Link> &middot; <Link href="/leagues" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Leagues</Link> &middot; <Link href="/travel" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Travel</Link>
+          </p>
 
         </div>
       </section>
@@ -151,32 +148,6 @@ export default async function Home() {
                     <h3 className="rt-title">{e.event_name}</h3>
                     <p className="rt-meta">{[e.city, e.state].filter(Boolean).join(", ")}</p>
                     {e.event_date && <p className="rt-meta">{new Date(e.event_date).toLocaleDateString("en-US", { timeZone: "UTC", month: "long", day: "numeric", year: "numeric" })}</p>}
-                    <span className="rt-btn" style={{ marginTop: "0.8rem", display: "inline-block" }}>View details &rarr;</span>
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* VENUES (only when real listings exist) */}
-      {featuredVenues.length > 0 && (
-        <section id="venues" style={{ background: "white", padding: "5rem 3rem", borderTop: "1px solid var(--border)" }}>
-          <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-            <p className="section-label" style={{ textAlign: "center" }}>Play Near You</p>
-            <h2 className="section-title" style={{ textAlign: "center", marginBottom: "0.5rem" }}>Mahjong-Friendly Venues</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: "1.2rem", marginTop: "2rem" }}>
-              {featuredVenues.map((v) => {
-                const slug = ABBR_TO_SLUG[(v.state || "").toUpperCase()];
-                const safeSite = safeHttpUrl(v.website);
-                const href = safeSite || (slug ? `/states/${slug}` : "/#map");
-                return (
-                  <a key={v.id} href={href} className="rt-card" target={safeSite ? "_blank" : undefined} rel={safeSite ? "noopener noreferrer" : undefined}>
-                    <div className="rt-tag" style={{ color: "var(--navy)" }}>{v.venue_type || "Venue"}</div>
-                    <h3 className="rt-title">{v.business_name}</h3>
-                    <p className="rt-meta">{[v.city, v.state].filter(Boolean).join(", ")}</p>
-                    {v.description && <p className="rt-meta" style={{ marginTop: "0.4rem", color: "var(--muted)" }}>{v.description.slice(0, 90)}{v.description.length > 90 ? "..." : ""}</p>}
                     <span className="rt-btn" style={{ marginTop: "0.8rem", display: "inline-block" }}>View details &rarr;</span>
                   </a>
                 );

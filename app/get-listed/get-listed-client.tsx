@@ -31,7 +31,7 @@ type PromoStatus = "idle" | "checking" | "valid" | "invalid";
 export default function GetListedClient({ defaultType = "" }: { defaultType?: string }) {
   const [form, setForm] = useState({
     business_name: "",
-    type: ["Mahjong Instructor", "Venue", "Open Play", "Tournament", "Retreat", "League", "Brand"].includes(defaultType) ? defaultType : "",
+    type: ["Mahjong Instructor", "Open Play", "Tournament", "Retreat", "League", "Brand"].includes(defaultType) ? defaultType : "",
     city: "",
     state: "",
     email: "",
@@ -192,8 +192,8 @@ export default function GetListedClient({ defaultType = "" }: { defaultType?: st
     <>
       <div className="page-hero">
         <div className="eyebrow">Get Listed</div>
-        <h1>List Your Business, Venue or Event</h1>
-        <p>Reach mahjong players searching for instructors, venues, and events in their area.
+        <h1>List Your Business or Event</h1>
+        <p>Reach mahjong players searching for instructors and events in their area.
         </p>
       </div>
 
@@ -251,7 +251,6 @@ export default function GetListedClient({ defaultType = "" }: { defaultType?: st
               >
                 <option value="">Select a type...</option>
                 <option value="Mahjong Instructor">Mahjong Instructor</option>
-                <option value="Venue">Venue</option>
                 <option value="Open Play">Open Play</option>
                 <option value="Tournament">Tournament</option>
                 <option value="Retreat">Retreat</option>

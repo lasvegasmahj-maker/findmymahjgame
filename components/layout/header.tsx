@@ -14,6 +14,7 @@ export default function Header() {
         <Link href="/retreats" className="nav-advertise">Retreats</Link>
         <Link href="/states" className="nav-advertise">Browse States</Link>
         <Link href="/newsletter" className="nav-advertise">Newsletter</Link>
+        <Link href="/list-my-game" className="nav-cta">Create Listing</Link>
       </div>
     </nav>
   );

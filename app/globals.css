@@ -112,6 +112,18 @@ body {
   transition: opacity 0.2s;
 }
 .btn-login:hover { opacity: 0.9; }
+.nav-cta {
+  background: var(--pink);
+  color: white;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: none;
+  padding: 0.5rem 1.1rem;
+  border-radius: 8px;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+.nav-cta:hover { opacity: 0.9; }
 
 /* ═══════════ NAVY BAR ═══════════ */
 
@@ -726,6 +738,7 @@ body {
   .site-logo { font-size: 1.2rem; }
   .nav-right { gap: 0.2rem 0.9rem; flex-wrap: wrap; justify-content: center; width: 100%; }
   .nav-advertise { font-size: 1rem; padding: 0.6rem 0.3rem; display: inline-flex; align-items: center; min-height: 44px; }
+  .nav-cta { font-size: 0.95rem; padding: 0.55rem 1.1rem; min-height: 44px; display: inline-flex; align-items: center; }
   .footer-cols a { font-size: 0.95rem; }
   .footer-cols h4 { font-size: 0.8rem; }
   .hero { padding: 1.1rem 1.1rem 1.8rem; }

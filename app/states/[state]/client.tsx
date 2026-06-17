@@ -149,7 +149,7 @@ function VenueCard({ venue }: { venue: Venue }) {
 }
 
 export default function StatePageClient({ stateData, players, events, venues }: Props) {
-  const [activeTab, setActiveTab] = useState<"players" | "events" | "venues" | "teachers">("players");
+  const [activeTab, setActiveTab] = useState<"players" | "events" | "teachers">("players");
   const [selectedCity, setSelectedCity] = useState(`All of ${stateData.name}`);
   const allCities = [`All of ${stateData.name}`, ...stateData.cities];
   const [connectForm, setConnectForm] = useState<ConnectForm | null>(null);
@@ -198,14 +198,8 @@ export default function StatePageClient({ stateData, players, events, venues }: 
     ? events
     : events.filter(e => e.city.toLowerCase() === selectedCity.toLowerCase());
 
-  // Instructors/teachers live in venue_listings too; keep them out of the Venues
-  // tab so it shows actual locations only (they appear on /teachers).
+  // Instructors/teachers are stored in venue_listings; surface them on the Teachers tab.
   const TEACHER_TYPE = /instructor|teacher|lesson|studio|school|class/i;
-  const locationVenues = venues.filter(v => !TEACHER_TYPE.test(`${v.venue_type || ""} ${v.description || ""}`));
-  const filteredVenues = selectedCity === `All of ${stateData.name}`
-    ? locationVenues
-    : locationVenues.filter(v => v.city.toLowerCase() === selectedCity.toLowerCase());
-
   const teacherVenues = venues.filter(v => TEACHER_TYPE.test(`${v.venue_type || ""} ${v.description || ""}`));
   const filteredTeachers = selectedCity === `All of ${stateData.name}`
     ? teacherVenues
@@ -224,12 +218,12 @@ export default function StatePageClient({ stateData, players, events, venues }: 
         <h1 style={{ fontSize: "clamp(2.2rem, 5vw, 3.5rem)", marginBottom: "0.8rem" }}>Mahjong in <span style={{ color: "var(--pink-text)" }}>{stateData.name}</span>
         </h1>
         <p style={{ maxWidth: 520 }}>{stateData.desc}</p>
-        {players.length + events.length + venues.length > 0 ? (
+        {players.length + events.length + teacherVenues.length > 0 ? (
           <div style={{ display: "flex", gap: "3rem", justifyContent: "center", marginTop: "2.5rem", flexWrap: "wrap" }}>
             {[
               { num: players.length, label: "Players Listed" },
               { num: events.length, label: "Events" },
-              { num: venues.length, label: "Venues" },
+              { num: teacherVenues.length, label: "Teachers" },
             ].map((s) => (
               <div key={s.label} style={{ textAlign: "center" }}>
                 <div style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2rem", color: "white", fontWeight: 900 }}>{s.num}</div>
@@ -255,7 +249,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             </select>
           </div>
         </div>
-        <p style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.82rem", color: "rgba(255,255,255,0.55)" }}>Showing all players, events, venues &amp; teachers across <strong style={{ color: "white" }}>{stateData.name}</strong>
+        <p style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.82rem", color: "rgba(255,255,255,0.55)" }}>Showing all players, events &amp; teachers across <strong style={{ color: "white" }}>{stateData.name}</strong>
         </p>
       </div>
 
@@ -266,7 +260,6 @@ export default function StatePageClient({ stateData, players, events, venues }: 
           {([
             { id: "players" as const, label: "Players", count: filteredPlayers.length },
             { id: "events" as const, label: "Events", count: filteredEvents.length },
-            { id: "venues" as const, label: "Venues", count: filteredVenues.length },
             { id: "teachers" as const, label: "Teachers", count: filteredTeachers.length },
           ]).map((tab) => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)} aria-pressed={activeTab === tab.id ? "true" : "false"} style={{ padding: "1rem 1.4rem", flexShrink: 0, whiteSpace: "nowrap", fontSize: "1.05rem", fontWeight: activeTab === tab.id ? 800 : 600, cursor: "pointer", background: "transparent", border: "none", borderBottom: "3px solid", borderBottomColor: activeTab === tab.id ? "var(--pink)" : "transparent", marginBottom: -2, color: activeTab === tab.id ? "var(--navy)" : "var(--muted)", fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s", display: "flex", alignItems: "center", gap: "0.4rem" }}>
@@ -393,38 +386,6 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                 <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Host an open play, tournament, or mahjong night? List it and reach players searching for games.
                 </p>
                 <Link href="/advertise" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>List Your Event &rarr;</Link>
-              </div>
-            )}
-
-          </div>
-        )}
-
-        {/* ══════════ VENUES TAB ══════════ */}
-        {activeTab === "venues" && (
-          <div>
-            <p className="section-label">Where to Play</p>
-            <h2 className="section-title" style={{ marginBottom: "0.5rem" }}>Venues in {stateData.name}</h2>
-            <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", lineHeight: 1.7 }}>Restaurants, studios, and community spaces in {stateData.name} that welcome mahjong players.
-            </p>
-
-            {filteredVenues.length > 0 ? (
-              <>
-              <div className="dir-grid" style={{ marginBottom: "2rem" }}>
-                {filteredVenues.map((venue) => (
-                  <VenueCard key={venue.id} venue={venue} />
-                ))}
-              </div>
-              <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-                <p style={{ fontSize: "0.95rem", color: "var(--muted)", marginBottom: "0.8rem" }}>Own a mahjong-friendly venue in {stateData.name}?</p>
-                <Link href="/get-listed?type=Venue" style={{ display: "inline-flex", minHeight: 52, alignItems: "center", justifyContent: "center", padding: "0 1.6rem", borderRadius: 14, background: "var(--navy)", color: "white", fontWeight: 800, fontSize: "1.05rem", textDecoration: "none" }}>Want to add your venue? &rarr;</Link>
-              </div>
-              </>
-            ) : (
-              <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center", marginBottom: "2rem" }}>
-                <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>No venues listed yet</h3>
-                <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Own a mahjong-friendly venue? Get discovered by players searching for places to play.
-                </p>
-                <Link href="/get-listed?type=Venue" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>List Your Venue &rarr;</Link>
               </div>
             )}
 

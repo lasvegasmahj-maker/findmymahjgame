@@ -14,7 +14,7 @@ const STATE_META: Record<string, { title: string; description: string }> = {
   california: {
     title: "Mahjong Players and Groups in California",
     description:
-      "Find mahjong players, open plays, venues and events in California. Search Los Angeles, San Francisco, San Diego, Palm Springs and more. Free for players.",
+      "Find mahjong players, open plays, teachers and events in California. Search Los Angeles, San Francisco, San Diego, Palm Springs and more. Free for players.",
   },
   florida: {
     title: "Mahjong Players and Groups in Florida",
@@ -29,7 +29,7 @@ const STATE_META: Record<string, { title: string; description: string }> = {
   texas: {
     title: "Mahjong Players and Groups in Texas",
     description:
-      "Find mahjong players, open plays, venues and events in Texas. Search Houston, Dallas, Austin, San Antonio and more. Free for players statewide.",
+      "Find mahjong players, open plays, teachers and events in Texas. Search Houston, Dallas, Austin, San Antonio and more. Free for players statewide.",
   },
   nevada: {
     title: "Mahjong Players, Lessons and Events in Nevada",
@@ -58,11 +58,11 @@ export async function generateMetadata({ params }: { params: Promise<{ state: st
   const cityList = data.cities.slice(0, 4).join(", ");
   return {
     title: `Mahjong Players and Groups in ${data.name}`,
-    description: `Find mahjong players, open plays, venues and events in ${data.name}. Search ${cityList} and more. Free directory for players.`,
+    description: `Find mahjong players, open plays, teachers and events in ${data.name}. Search ${cityList} and more. Free directory for players.`,
     alternates: { canonical: `https://findmymahjgame.com/states/${state}` },
     openGraph: {
       title: `Mahjong Players and Groups in ${data.name} | Find My Mahj Game`,
-      description: `Find mahjong players, open plays, venues and events in ${data.name}. Search ${cityList} and more. Free directory for players.`,
+      description: `Find mahjong players, open plays, teachers and events in ${data.name}. Search ${cityList} and more. Free directory for players.`,
       url: `https://findmymahjgame.com/states/${state}`,
     },
   };

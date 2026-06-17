@@ -29,6 +29,13 @@ const nextConfig: NextConfig = {
       ],
     }];
   },
+  async redirects() {
+    return [
+      // "Venues" category is paused; send the orphaned route home so it drops
+      // out of search. Remove this to bring venues back. See project memory.
+      { source: "/venues", destination: "/", permanent: true },
+    ];
+  },
   images: {
     // Allow next/image to optimize images from Supabase storage and sponsor logos
     remotePatterns: [

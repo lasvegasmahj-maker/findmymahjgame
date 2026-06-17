@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     template: "%s | Find My Mahj Game",
   },
   description:
-    "Find mahjong players, groups, open plays, venues and events in all 50 states. Free for players. Join the national mahjong directory today.",
+    "Find mahjong players, groups, open plays, teachers and events in all 50 states. Free for players. Join the national mahjong directory today.",
   metadataBase: new URL("https://findmymahjgame.com"),
   openGraph: {
     siteName: "Find My Mahj Game",

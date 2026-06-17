@@ -83,7 +83,7 @@ export default function AboutPage() {
         <p>
           Find My Mahj Game was built to solve both problems. It is the first and only platform
           built exclusively for the American mahjong community connecting players with local games,
-          groups, events, venues, retreats and tournaments across all 50 states. Whether you just
+          groups, events, teachers, retreats and tournaments across all 50 states. Whether you just
           learned to play or you just moved to a new city, you should never have to wonder where
           your next game is.
         </p>

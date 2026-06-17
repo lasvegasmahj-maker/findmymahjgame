@@ -35,9 +35,10 @@ export default function Footer() {
             <Link href="/states/nevada">Nevada</Link>
           </div>
           <div>
-            <h4>Businesses</h4>
-            <Link href="/get-listed">Get Listed</Link>
-            <Link href="/advertise">Advertise</Link>
+            <h4>Teachers &amp; Organizers</h4>
+            <Link href="/join">Join the Directory</Link>
+            <Link href="/get-listed">Submit a Profile</Link>
+            <Link href="/advertise">Brands &amp; Sponsors</Link>
             <Link href="/advertiser-terms">Advertiser Terms</Link>
           </div>
           <div>
