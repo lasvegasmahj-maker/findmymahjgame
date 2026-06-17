@@ -3,6 +3,7 @@ import { createServerClient } from "@/lib/supabase-server";
 import { notFound } from "next/navigation";
 import StatePageClient from "./client";
 import { buildStatePageSchema, schemaScriptProps } from "@/lib/schema";
+import { DEMO, demoPlayers, demoEvents, demoTeachers } from "@/lib/demo-data";
 
 export const revalidate = 3600; // revalidate every hour
 
@@ -100,9 +101,14 @@ export default async function StatePage({ params }: { params: Promise<{ state: s
       .order("created_at", { ascending: false }),
   ]);
 
-  const players = playersRes.data || [];
-  const events = eventsRes.data || [];
-  const venues = venuesRes.data || [];
+  let players = playersRes.data || [];
+  let events = eventsRes.data || [];
+  let venues = venuesRes.data || [];
+  if (DEMO) {
+    players = demoPlayers.filter((p) => p.state === data.abbr) as unknown as typeof players;
+    events = demoEvents.filter((e) => e.state === data.abbr) as unknown as typeof events;
+    venues = demoTeachers.filter((v) => v.state === data.abbr) as unknown as typeof venues;
+  }
 
   const STATE_CITIES: Record<string, [string, string][]> = {
     texas: [["dallas", "Dallas"], ["houston", "Houston"], ["austin", "Austin"], ["san-antonio", "San Antonio"]],

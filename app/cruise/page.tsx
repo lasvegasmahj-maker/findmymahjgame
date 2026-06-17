@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createServerClient } from "@/lib/supabase-server";
 import CruiseBoard from "./cruise-board";
+import { DEMO, demoCruisePosts } from "@/lib/demo-data";
 
 export const metadata: Metadata = {
   title: "Find Mahjong Players on Your Cruise",
@@ -33,6 +34,7 @@ export default async function CruisePage() {
       .order("depart_date", { ascending: true });
     posts = (data || []).filter((p) => (p.return_date || p.depart_date) >= todayISO) as CruisePost[];
   } catch { /* table not ready yet: show empty board + the post form */ }
+  if (DEMO) posts = demoCruisePosts;
 
   const breadcrumb = {
     "@context": "https://schema.org",

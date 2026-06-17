@@ -3,6 +3,7 @@ import Link from "next/link";
 import NotifyMe from "@/components/notify-me";
 import { createServerClient } from "@/lib/supabase-server";
 import { nearMatches } from "@/lib/near-match";
+import { DEMO, demoTeachers } from "@/lib/demo-data";
 
 export const metadata: Metadata = {
   title: "Find a Mahjong Teacher Near You",
@@ -27,6 +28,7 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
 
   let rows = (data || [])
     .filter((r) => TEACHER_TYPE.test(`${r.venue_type || ""} ${r.description || ""}`));
+  if (DEMO) rows = demoTeachers as unknown as typeof rows;
   if (near && near.trim()) {
     const n = near.trim().toLowerCase();
     rows = rows.filter((r) => nearMatches(n, r.city, r.state));
