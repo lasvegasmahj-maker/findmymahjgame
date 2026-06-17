@@ -84,7 +84,6 @@ export default async function Home() {
       <section className="hero" style={{ paddingBottom: "1.8rem" }}>
         <h1>Find people to play <em>mahjong</em> with</h1>
         <p>Open plays, teachers, events, and games near you.<br />Always free for players.</p>
-        <div style={{ marginTop: "0.2rem" }}><Link href="/how-it-works" style={{ fontSize: "1.1rem", color: "var(--pink-text)", fontWeight: 700 }}>New to mahjong? Learn how</Link></div>
       </section>
 
       {/* MAP SECTION */}
