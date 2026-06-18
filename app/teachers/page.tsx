@@ -3,6 +3,7 @@ import Link from "next/link";
 import NotifyMe from "@/components/notify-me";
 import { createServerClient } from "@/lib/supabase-server";
 import CityAutocomplete from "@/components/city-autocomplete";
+import TeacherCard from "@/components/teacher-card";
 import { nearMatches } from "@/lib/near-match";
 import { DEMO, demoTeachers } from "@/lib/demo-data";
 
@@ -32,7 +33,7 @@ const LAS_VEGAS_MAHJONG = {
   instagram: "lasvegasmahjong",
   display_email: null,
   logo_url: null,
-  instructor: "Shauna B.",
+  instructor: "Shauna Bruckman",
   tier: "pro",
   created_at: "2026-01-01T00:00:00Z",
 };
@@ -75,43 +76,7 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
 
       {rows.length > 0 ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 300px), 1fr))", gap: "1.2rem" }}>
-          {rows.map((t) => {
-            const cardStyle = { display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", textDecoration: "none" } as const;
-            const external = t.id === "las-vegas-mahjong" && !!t.website;
-            const instructor = (t as { instructor?: string }).instructor;
-            const ig = t.instagram ? String(t.instagram).replace(/^@/, "") : "";
-            const head = (
-              <>
-                {t.logo_url && (
-                  <img src={t.logo_url} alt={t.business_name || "Teacher"} loading="lazy" style={{ width: "100%", height: 150, objectFit: "contain", background: "var(--bg)", borderRadius: 10, marginBottom: "0.9rem", border: "1px solid var(--border)" }} />
-                )}
-                <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{t.business_name || "Teacher"}</div>
-                {instructor && <div style={{ fontSize: "1rem", color: "var(--pink-text)", fontWeight: 700, marginTop: "0.2rem" }}>Taught by {instructor}</div>}
-                {(t.city || t.state) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[t.city, t.state].filter(Boolean).join(", ")}</div>}
-              </>
-            );
-            const desc = t.description ? <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.5rem", lineHeight: 1.5 }}>{String(t.description).slice(0, 110)}{String(t.description).length > 110 ? "..." : ""}</div> : null;
-            // Las Vegas Mahjong: a plain container (not a wrapping link) so the
-            // Instagram handle and the website CTA can each be their own link.
-            if (external) {
-              return (
-                <div key={t.id} style={cardStyle}>
-                  {head}
-                  {ig && <a href={`https://instagram.com/${ig}`} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", fontSize: "0.95rem", color: "var(--pink-text)", fontWeight: 600, marginTop: "0.4rem", textDecoration: "none" }}>@{ig}</a>}
-                  {desc}
-                  <a href={t.website!} target="_blank" rel="noopener noreferrer" style={{ display: "block", marginTop: "0.8rem", color: "var(--pink-text)", fontWeight: 800, textDecoration: "none" }}>Visit Las Vegas Mahjong &rarr;</a>
-                </div>
-              );
-            }
-            return (
-              <Link key={t.id} href={`/teachers/${t.id}`} style={cardStyle}>
-                {head}
-                {ig && <div style={{ fontSize: "0.95rem", color: "var(--pink-text)", fontWeight: 600, marginTop: "0.4rem" }}>@{ig}</div>}
-                {desc}
-                <div style={{ marginTop: "0.8rem", color: "var(--pink-text)", fontWeight: 800 }}>View details &rarr;</div>
-              </Link>
-            );
-          })}
+          {rows.map((t) => <TeacherCard key={t.id} t={t} />)}
         </div>
       ) : (
         <div style={{ background: "var(--bg)", borderRadius: 18, padding: "2.4rem 1.6rem", textAlign: "center", maxWidth: 560, margin: "0 auto" }}>

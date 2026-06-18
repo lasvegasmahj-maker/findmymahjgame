@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import type { StateData } from "@/lib/states-data";
+import TeacherCard from "@/components/teacher-card";
 
 interface Player {
   id: string;
@@ -110,42 +111,6 @@ interface ConnectForm {
   message: string;
   submitted: boolean;
   submitting: boolean;
-}
-
-function VenueCard({ venue }: { venue: Venue }) {
-  return (
-    <div className="venue-card">
-      {venue.logo_url
-        ? (
-          <div style={{ position: "relative", width: "100%", height: 80 }}>
-            <img src={venue.logo_url} alt={venue.business_name} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          </div>
-        )
-        : <div className="venue-stripe" style={{ background: "var(--pink)" }} />
-      }
-      <div className="venue-body">
-        <div className="venue-type" style={{ color: "var(--pink-text)" }}>{venue.venue_type} &middot; {venue.city}</div>
-        <h3 className="venue-name">{venue.business_name}</h3>
-        <p className="venue-meta">{venue.city}, {venue.state}</p>
-        {venue.description && <p className="venue-desc">{venue.description}</p>}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem", alignItems: "center", marginBottom: "0.9rem" }}>
-          {venue.display_email && (
-            <a href={`mailto:${venue.display_email}`} style={{ fontSize: "0.78rem", color: "var(--pink-text)", textDecoration: "none", fontWeight: 600 }}>{venue.display_email}</a>
-          )}
-          {venue.instagram && (
-            <a href={`https://instagram.com/${venue.instagram.replace("@", "")}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.78rem", color: "var(--pink-text)", textDecoration: "none", fontWeight: 600 }}>{venue.instagram.startsWith("@") ? venue.instagram : `@${venue.instagram}`}</a>
-          )}
-        </div>
-        {venue.website ? (
-          <a href={venue.website} target="_blank" rel="noopener noreferrer" className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Visit Website &rarr;</a>
-        ) : venue.instagram ? (
-          <a href={`https://instagram.com/${venue.instagram.replace("@", "")}`} target="_blank" rel="noopener noreferrer" className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Visit Instagram &rarr;</a>
-        ) : (
-          <Link href={`/contact`} className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Get Info &rarr;</Link>
-        )}
-      </div>
-    </div>
-  );
 }
 
 export default function StatePageClient({ stateData, players, events, venues }: Props) {
@@ -445,7 +410,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             {filteredTeachers.length > 0 ? (
               <>
                 <div className="dir-grid" style={{ marginBottom: "2rem" }}>
-                  {filteredTeachers.map((venue) => <VenueCard key={venue.id} venue={venue} />)}
+                  {filteredTeachers.map((venue) => <TeacherCard key={venue.id} t={venue} />)}
                 </div>
                 <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
                   <p style={{ fontSize: "0.95rem", color: "var(--muted)", marginBottom: "0.8rem" }}>Teach mahjong in {stateData.name}?</p>
