@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import NotifyMe from "@/components/notify-me";
 import { createServerClient } from "@/lib/supabase-server";
+import CityAutocomplete from "@/components/city-autocomplete";
 import { nearMatches } from "@/lib/near-match";
 import { DEMO, demoTeachers } from "@/lib/demo-data";
 
@@ -61,7 +62,7 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
 
       <form method="get" style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center", maxWidth: 520, margin: "0 auto 1.2rem" }}>
         <label htmlFor="near" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>Your city or area</label>
-        <input id="near" name="near" defaultValue={near || ""} placeholder="Your city or state" style={field} />
+        <CityAutocomplete id="near" name="near" defaultValue={near || ""} placeholder="Your city or state" inputStyle={field} submitOnPick />
         <button type="submit" style={goBtn}>Search</button>
       </form>
 

@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { STATES } from "@/lib/states-data";
+import CityAutocomplete from "@/components/city-autocomplete";
 
 // Build city -> slug lookup once at module level
 const CITY_TO_SLUG: Record<string, string> = {};
@@ -53,25 +54,24 @@ export default function SearchBox() {
     else setNoMatch(true);
   }, [query, router]);
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter") handleSearch();
-    },
-    [handleSearch]
-  );
+  const handlePick = useCallback((_label: string, s: { city: string; state: string }) => {
+    const slug = findStateByInput(s.state) || findStateByInput(s.city);
+    if (slug) { setNoMatch(false); router.push(`/states/${slug}`); }
+    else setNoMatch(true);
+  }, [router]);
 
   return (
     <div className="inline-search">
       <div className="inline-search-inner">
-        <div className="inline-search-box">
-          <input
-            type="text"
-            aria-label="City, state, or ZIP code" placeholder="City, state, or ZIP code"
-            value={query}
-            onChange={(e) => { setQuery(e.target.value); setNoMatch(false); }}
-            onKeyDown={handleKeyDown}
+        <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", marginBottom: "1rem" }}>
+          <CityAutocomplete
+            placeholder="City, state, or ZIP code"
+            inputStyle={{ minHeight: 54, padding: "0 1.2rem", border: "none", borderRadius: 12, fontSize: "1rem", fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif", color: "var(--text)", background: "white", outline: "none" }}
+            onValueChange={(v) => { setQuery(v); setNoMatch(false); }}
+            onPick={handlePick}
+            onEnter={handleSearch}
           />
-          <button onClick={handleSearch}>Find a Game</button>
+          <button type="button" onClick={handleSearch} style={{ minHeight: 54, padding: "0 1.6rem", border: "none", borderRadius: 12, background: "var(--pink)", color: "white", fontWeight: 700, fontSize: "1rem", cursor: "pointer", fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif", flexShrink: 0 }}>Find a Game</button>
         </div>
         {noMatch && (
           <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "0.82rem", marginTop: "0.7rem", textAlign: "center" }}>

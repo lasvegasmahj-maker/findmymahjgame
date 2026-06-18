@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: https:",
-      "connect-src 'self' https://prvsqhtxubjhljrrbkcj.supabase.co https://cdn.jsdelivr.net",
+      "connect-src 'self' https://prvsqhtxubjhljrrbkcj.supabase.co https://cdn.jsdelivr.net https://photon.komoot.io",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self' https://formspree.io",
