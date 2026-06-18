@@ -12,7 +12,6 @@ export default function Header() {
         <Link href="/tournaments" className="nav-advertise">Tournaments</Link>
         <Link href="/travel" className="nav-advertise">Travel</Link>
         <Link href="/retreats" className="nav-advertise">Retreats</Link>
-        <Link href="/states" className="nav-advertise">Browse States</Link>
         <Link href="/newsletter" className="nav-advertise">Newsletter</Link>
         <Link href="/list-my-game" className="nav-cta">Create Listing</Link>
       </div>
