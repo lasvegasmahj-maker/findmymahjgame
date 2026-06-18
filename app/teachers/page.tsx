@@ -34,6 +34,7 @@ const LAS_VEGAS_MAHJONG = {
   display_email: null,
   logo_url: null,
   instructor: "Shauna Bruckman",
+  phone: "847-609-3112",
   tier: "pro",
   created_at: "2026-01-01T00:00:00Z",
 };
