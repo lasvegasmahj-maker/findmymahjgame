@@ -30,7 +30,7 @@ const LAS_VEGAS_MAHJONG = {
   website: "https://lasvegasmahj.com",
   instagram: "lasvegasmahjong",
   display_email: null,
-  logo_url: "https://www.lasvegasmahj.com/shauna.jpg",
+  logo_url: null,
   instructor: "Shauna B.",
   tier: "pro",
   created_at: "2026-01-01T00:00:00Z",
@@ -79,23 +79,36 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
             const external = t.id === "las-vegas-mahjong" && !!t.website;
             const instructor = (t as { instructor?: string }).instructor;
             const ig = t.instagram ? String(t.instagram).replace(/^@/, "") : "";
-            const inner = (
+            const head = (
               <>
                 {t.logo_url && (
-                  <img src={t.logo_url} alt={t.business_name || "Teacher"} loading="lazy" style={{ width: "100%", height: 150, objectFit: "cover", borderRadius: 10, marginBottom: "0.9rem", border: "1px solid var(--border)" }} />
+                  <img src={t.logo_url} alt={t.business_name || "Teacher"} loading="lazy" style={{ width: "100%", height: 150, objectFit: "contain", background: "var(--bg)", borderRadius: 10, marginBottom: "0.9rem", border: "1px solid var(--border)" }} />
                 )}
                 <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{t.business_name || "Teacher"}</div>
                 {instructor && <div style={{ fontSize: "1rem", color: "var(--pink-text)", fontWeight: 700, marginTop: "0.2rem" }}>Taught by {instructor}</div>}
                 {(t.city || t.state) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[t.city, t.state].filter(Boolean).join(", ")}</div>}
-                {ig && <div style={{ fontSize: "0.95rem", color: "var(--pink-text)", fontWeight: 600, marginTop: "0.4rem" }}>@{ig}</div>}
-                {t.description && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.5rem", lineHeight: 1.5 }}>{String(t.description).slice(0, 110)}{String(t.description).length > 110 ? "..." : ""}</div>}
-                <div style={{ marginTop: "0.8rem", color: "var(--pink-text)", fontWeight: 800 }}>{external ? "Visit Las Vegas Mahjong" : "View details"} &rarr;</div>
               </>
             );
-            return external ? (
-              <a key={t.id} href={t.website!} target="_blank" rel="noopener noreferrer" style={cardStyle}>{inner}</a>
-            ) : (
-              <Link key={t.id} href={`/teachers/${t.id}`} style={cardStyle}>{inner}</Link>
+            const desc = t.description ? <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.5rem", lineHeight: 1.5 }}>{String(t.description).slice(0, 110)}{String(t.description).length > 110 ? "..." : ""}</div> : null;
+            // Las Vegas Mahjong: a plain container (not a wrapping link) so the
+            // Instagram handle and the website CTA can each be their own link.
+            if (external) {
+              return (
+                <div key={t.id} style={cardStyle}>
+                  {head}
+                  {ig && <a href={`https://instagram.com/${ig}`} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", fontSize: "0.95rem", color: "var(--pink-text)", fontWeight: 600, marginTop: "0.4rem", textDecoration: "none" }}>@{ig}</a>}
+                  {desc}
+                  <a href={t.website!} target="_blank" rel="noopener noreferrer" style={{ display: "block", marginTop: "0.8rem", color: "var(--pink-text)", fontWeight: 800, textDecoration: "none" }}>Visit Las Vegas Mahjong &rarr;</a>
+                </div>
+              );
+            }
+            return (
+              <Link key={t.id} href={`/teachers/${t.id}`} style={cardStyle}>
+                {head}
+                {ig && <div style={{ fontSize: "0.95rem", color: "var(--pink-text)", fontWeight: 600, marginTop: "0.4rem" }}>@{ig}</div>}
+                {desc}
+                <div style={{ marginTop: "0.8rem", color: "var(--pink-text)", fontWeight: 800 }}>View details &rarr;</div>
+              </Link>
             );
           })}
         </div>
