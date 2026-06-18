@@ -18,6 +18,23 @@ export const revalidate = 300;
 // so competing Nevada teachers are excluded here on purpose.
 const TEACHER_TYPE = /instructor|teacher|lesson|studio|school|class/i;
 
+// Las Vegas Mahjong is the founder's flagship teaching business and is always
+// featured on this page. It links out to lasvegasmahj.com for booking.
+const LAS_VEGAS_MAHJONG = {
+  id: "las-vegas-mahjong",
+  business_name: "Las Vegas Mahjong",
+  venue_type: "Mahjong Instructor",
+  city: "Las Vegas",
+  state: "NV",
+  description: "American Mahjong lessons in Las Vegas, private and group, for every level. Book directly on the Las Vegas Mahjong site.",
+  website: "https://lasvegasmahj.com",
+  instagram: "lasvegasmahjong",
+  display_email: null,
+  logo_url: null,
+  tier: "pro",
+  created_at: "2026-01-01T00:00:00Z",
+};
+
 const field: React.CSSProperties = { minHeight: 54, padding: "0 1rem", border: "2px solid var(--border)", borderRadius: 12, fontSize: "1.1rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", flex: "1 1 200px" };
 const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border: "none", borderRadius: 12, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" };
 
@@ -29,6 +46,9 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
   let rows = (data || [])
     .filter((r) => TEACHER_TYPE.test(`${r.venue_type || ""} ${r.description || ""}`));
   if (DEMO) rows = demoTeachers as unknown as typeof rows;
+  // Always feature Las Vegas Mahjong (the founder's own business). The Nevada
+  // guardrail above excludes competing NV teachers, not this listing.
+  rows = [LAS_VEGAS_MAHJONG, ...rows] as unknown as typeof rows;
   if (near && near.trim()) {
     const n = near.trim().toLowerCase();
     rows = rows.filter((r) => nearMatches(n, r.city, r.state));
@@ -44,15 +64,6 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
         <button type="submit" style={goBtn}>Search</button>
       </form>
 
-      {near && /vegas|nevada|henderson|summerlin|\bnv\b/i.test(near) && (
-        <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 14, padding: "1.1rem 1.3rem", maxWidth: 560, margin: "0 auto 1.6rem", textAlign: "center" }}>
-          <p style={{ fontSize: "1.05rem", color: "var(--navy)", lineHeight: 1.5, margin: 0 }}>
-            Looking for mahjong lessons in Las Vegas? Visit{" "}
-            <a href="https://lasvegasmahj.com" target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink-text)", fontWeight: 800 }}>Las Vegas Mahjong</a>.
-          </p>
-        </div>
-      )}
-
       <div style={{ background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.3rem 1.5rem", maxWidth: 680, margin: "0 auto 2.2rem", textAlign: "center" }}>
         <p style={{ fontSize: "0.85rem", fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--pink-text)", margin: "0 0 0.4rem" }}>Our promise to teachers</p>
         <p style={{ fontSize: "1.05rem", color: "var(--navy)", lineHeight: 1.6, margin: 0 }}>
@@ -62,14 +73,23 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
 
       {rows.length > 0 ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 300px), 1fr))", gap: "1.2rem" }}>
-          {rows.map((t) => (
-            <Link key={t.id} href={`/teachers/${t.id}`} style={{ display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", textDecoration: "none" }}>
-              <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{t.business_name || "Teacher"}</div>
-              {(t.city || t.state) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[t.city, t.state].filter(Boolean).join(", ")}</div>}
-              {t.description && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.5rem", lineHeight: 1.5 }}>{String(t.description).slice(0, 110)}{String(t.description).length > 110 ? "..." : ""}</div>}
-              <div style={{ marginTop: "0.8rem", color: "var(--pink-text)", fontWeight: 800 }}>View details &rarr;</div>
-            </Link>
-          ))}
+          {rows.map((t) => {
+            const cardStyle = { display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", textDecoration: "none" } as const;
+            const external = t.id === "las-vegas-mahjong" && !!t.website;
+            const inner = (
+              <>
+                <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{t.business_name || "Teacher"}</div>
+                {(t.city || t.state) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[t.city, t.state].filter(Boolean).join(", ")}</div>}
+                {t.description && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.5rem", lineHeight: 1.5 }}>{String(t.description).slice(0, 110)}{String(t.description).length > 110 ? "..." : ""}</div>}
+                <div style={{ marginTop: "0.8rem", color: "var(--pink-text)", fontWeight: 800 }}>{external ? "Visit Las Vegas Mahjong" : "View details"} &rarr;</div>
+              </>
+            );
+            return external ? (
+              <a key={t.id} href={t.website!} target="_blank" rel="noopener noreferrer" style={cardStyle}>{inner}</a>
+            ) : (
+              <Link key={t.id} href={`/teachers/${t.id}`} style={cardStyle}>{inner}</Link>
+            );
+          })}
         </div>
       ) : (
         <div style={{ background: "var(--bg)", borderRadius: 18, padding: "2.4rem 1.6rem", textAlign: "center", maxWidth: 560, margin: "0 auto" }}>
