@@ -26,37 +26,6 @@ export default function SubmitClient() {
     set(key, v ? "@" + v : "");
   }
 
-  const [logoUploading, setLogoUploading] = useState(false);
-  const [logoError, setLogoError] = useState("");
-
-  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setLogoError("");
-    const accepted = ["image/jpeg", "image/png", "image/webp"];
-    if (!accepted.includes(file.type)) {
-      setLogoError("Please upload a JPEG, PNG, or WebP image.");
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      setLogoError("That image is over 5 MB. Please upload a smaller file.");
-      return;
-    }
-    setLogoUploading(true);
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/upload-logo", { method: "POST", body: fd });
-      if (!res.ok) throw new Error("upload failed");
-      const { url } = await res.json();
-      set("logoUrl", url);
-    } catch {
-      setLogoError("Upload failed. Please try again, or email it to us.");
-    } finally {
-      setLogoUploading(false);
-    }
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("submitting");
@@ -177,23 +146,6 @@ export default function SubmitClient() {
                   <input type="text" placeholder="@yourpage" value={form.facebook || ""}
                     onChange={e => setHandle("facebook", e.target.value)} className="form-input" />
                 </div>
-              </div>
-              <div className="form-group" style={{ marginTop: "1rem" }}>
-                <label className="form-label">Logo or Image <span className="form-optional">(optional)</span></label>
-                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                  {form.logoUrl && (
-                    <img src={form.logoUrl} alt="Logo preview" style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover", border: "1px solid var(--border)" }} />
-                  )}
-                  <label className="form-input" style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", width: "auto", padding: "0.6rem 1.1rem", margin: 0 }}>
-                    {logoUploading ? "Uploading..." : form.logoUrl ? "Change image" : "Upload image"}
-                    <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleLogoUpload} style={{ display: "none" }} disabled={logoUploading} />
-                  </label>
-                </div>
-                {logoError && (
-                  <p style={{ fontSize: "0.78rem", color: "#dc2626", marginTop: "0.35rem" }}>{logoError}</p>
-                )}
-                <p style={{ fontSize: "0.78rem", color: "var(--muted)", marginTop: "0.35rem" }}>JPEG, PNG, or WebP, up to 5 MB.
-                </p>
               </div>
               <div className="form-group">
                 <label className="form-label">Anything else we should know? <span className="form-optional">(optional)</span></label>

@@ -39,36 +39,12 @@ export default function GetListedClient({ defaultType = "" }: { defaultType?: st
     instagram: "",
     description: "",
     promo_code: "",
-    logo_url: "",
     host: "",
     event_date: "",
     venue: "",
     signup_url: "",
   });
   const [promoStatus, setPromoStatus] = useState<PromoStatus>("idle");
-  const [logoUploading, setLogoUploading] = useState(false);
-
-  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setLogoUploading(true);
-
-    const fd = new FormData();
-    fd.append("file", file);
-    try {
-      const res = await fetch("/api/upload-logo", { method: "POST", body: fd });
-      if (res.ok) {
-        const { url } = await res.json();
-        setForm(prev => ({ ...prev, logo_url: url }));
-      } else {
-        const d = await res.json().catch(() => ({}));
-        setError(d.error || "We could not upload that image. Please try a JPG or PNG under 2 MB.");
-      }
-    } catch {
-      setError("We could not reach the server. Please check your connection and try again.");
-    }
-    setLogoUploading(false);
-  }
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
@@ -127,7 +103,6 @@ export default function GetListedClient({ defaultType = "" }: { defaultType?: st
           state: form.state,
           website: form.website || null,
           instagram: form.instagram || null,
-          logo_url: form.logo_url || null,
           message: form.description,
           host: form.host || null,
           event_date: form.event_date || null,
@@ -223,21 +198,6 @@ export default function GetListedClient({ defaultType = "" }: { defaultType?: st
                 onChange={(e) => setForm({ ...form, business_name: e.target.value })}
                 style={inputStyle}
               />
-            </div>
-
-            {/* Logo upload */}
-            <div style={{ marginBottom: "1.2rem" }}>
-              <label style={labelStyle}>Logo or Photo <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional, JPG or PNG, max 2MB)</span>
-              </label>
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                {form.logo_url && (
-                  <img src={form.logo_url} alt="Logo preview" style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover", border: "1px solid var(--border)" }} />
-                )}
-                <label style={{ display: "inline-block", background: "var(--bg)", border: "1.5px solid var(--border)", borderRadius: 8, padding: "0.6rem 1.2rem", fontSize: "0.88rem", fontWeight: 600, color: "var(--navy)", cursor: "pointer" }}>
-                  {logoUploading ? "Uploading..." : form.logo_url ? "Change Photo" : "Upload Logo / Photo"}
-                  <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: "none" }} disabled={logoUploading} />
-                </label>
-              </div>
             </div>
 
             {/* Type */}

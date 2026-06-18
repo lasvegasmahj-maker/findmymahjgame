@@ -11,7 +11,6 @@ type TeacherLike = {
   website?: string | null;
   instagram?: string | null;
   display_email?: string | null;
-  logo_url?: string | null;
   instructor?: string | null;
 };
 
@@ -21,9 +20,6 @@ export default function TeacherCard({ t }: { t: TeacherLike }) {
   const desc = t.description ? String(t.description) : "";
   return (
     <div style={{ display: "flex", flexDirection: "column", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", height: "100%" }}>
-      {t.logo_url && (
-        <img src={t.logo_url} alt={t.business_name || "Teacher"} loading="lazy" style={{ width: "100%", height: 150, objectFit: "contain", background: "var(--bg)", borderRadius: 10, marginBottom: "0.9rem", border: "1px solid var(--border)" }} />
-      )}
       <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{t.business_name || "Teacher"}</div>
       {t.instructor && <div style={{ fontSize: "1rem", color: "var(--pink-text)", fontWeight: 700, marginTop: "0.2rem" }}>{t.instructor}</div>}
       {(t.city || t.state) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[t.city, t.state].filter(Boolean).join(", ")}</div>}

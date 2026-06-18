@@ -32,7 +32,6 @@ const LAS_VEGAS_MAHJONG = {
   website: "https://lasvegasmahj.com",
   instagram: "lasvegasmahjong",
   display_email: "lasvegasmahj@gmail.com",
-  logo_url: "/las-vegas-mahjong.png",
   instructor: "Shauna Bruckman",
   tier: "pro",
   created_at: "2026-01-01T00:00:00Z",
