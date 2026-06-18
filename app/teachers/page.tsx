@@ -31,10 +31,9 @@ const LAS_VEGAS_MAHJONG = {
   description: "American Mahjong lessons in Las Vegas, private and group, for every level. Book directly on the Las Vegas Mahjong site.",
   website: "https://lasvegasmahj.com",
   instagram: "lasvegasmahjong",
-  display_email: null,
+  display_email: "lasvegasmahj@gmail.com",
   logo_url: null,
   instructor: "Shauna Bruckman",
-  phone: "847-609-3112",
   tier: "pro",
   created_at: "2026-01-01T00:00:00Z",
 };
