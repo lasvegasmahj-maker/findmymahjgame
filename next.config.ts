@@ -34,6 +34,9 @@ const nextConfig: NextConfig = {
       // "Venues" category is paused; send the orphaned route home so it drops
       // out of search. Remove this to bring venues back. See project memory.
       { source: "/venues", destination: "/", permanent: true },
+      // Ambassador program dropped in favor of the Community Leader model.
+      // Preserve inbound links and let search reindex to /join.
+      { source: "/ambassadors", destination: "/join", permanent: true },
     ];
   },
   images: {

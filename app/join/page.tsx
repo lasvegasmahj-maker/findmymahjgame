@@ -62,7 +62,7 @@ export default function JoinPage() {
             <Check>Free profile listing</Check>
             <Check>Free event listings</Check>
             <Check>Founding Partner badge</Check>
-            <Check>Priority consideration for future Ambassador status</Check>
+            <Check>Priority placement as the directory grows</Check>
             <Check>Locked-in discounted pricing on future premium plans</Check>
           </ul>
           <p style={{ marginTop: "1rem", fontWeight: 700, color: "var(--navy)" }}>Use code <span style={{ color: "var(--pink-text)" }}>FINDMYMAHJ</span> when submitting your profile.</p>
@@ -101,23 +101,6 @@ export default function JoinPage() {
             </ul>
           </div>
         </div>
-
-        {/* Ambassador */}
-        <h2>Ambassador Program</h2>
-        <p>Our highest recognition level for active mahjong community builders.</p>
-        <p>Ambassadors are selected based on activity, professionalism, and contribution to the mahjong community.</p>
-        <p style={{ ...label, marginTop: "0.5rem" }}>Benefits include:</p>
-        <ul style={{ ...list, marginBottom: "1rem" }}>
-          <Check>Ambassador badge</Check>
-          <Check>Featured profile placement</Check>
-          <Check>State-level spotlight opportunities</Check>
-          <Check>Newsletter features</Check>
-          <Check>Early access to new platform features</Check>
-          <Check>Ambassador directory recognition</Check>
-          <Check>Community leadership recognition</Check>
-        </ul>
-        <p>Pricing and eligibility details will be announced soon. Applications will open after the directory reaches critical mass.</p>
-        <p style={{ marginTop: "0.6rem" }}><Link href="/ambassadors" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Learn about the Ambassador program &rarr;</Link></p>
 
         {/* Event Listings */}
         <h2>Event Listings</h2>

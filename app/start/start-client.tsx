@@ -31,7 +31,7 @@ export default function StartClient() {
   const [err, setErr] = useState("");
   const [ref, setRef] = useState("");
 
-  // Capture an ambassador referral code from the link (e.g. /start?ref=FMM-LV-RUTH)
+  // Capture a community leader referral code from the link (e.g. /start?ref=FMM-LV-RUTH)
   // so the table they start is credited to them. Uses the existing referred_by field.
   useEffect(() => {
     try {
@@ -77,7 +77,7 @@ export default function StartClient() {
 
       {ref && (
         <div style={{ background: "rgba(245,200,66,0.18)", border: "2px solid var(--gold)", borderRadius: 14, padding: "0.8rem 1.1rem", margin: "0.6rem 0" }}>
-          <div style={{ fontSize: "1.05rem", color: "#8a6d00", fontWeight: 700, lineHeight: 1.5 }}>You came from a local ambassador invite. We will credit your table to them, thank you for joining.</div>
+          <div style={{ fontSize: "1.05rem", color: "#8a6d00", fontWeight: 700, lineHeight: 1.5 }}>You came from a local community leader invite. We will credit your table to them, thank you for joining.</div>
         </div>
       )}
 

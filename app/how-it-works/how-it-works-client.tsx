@@ -92,7 +92,7 @@ export default function HowItWorksClient() {
 
             <h2>Membership Tiers for Teachers &amp; Organizers</h2>
             <p>Being listed is free forever. Premium tiers add visibility, a verified badge, and promotion. Players never pay.</p>
-            <div className="grid grid-cols-3 gap-4 my-6 max-sm:grid-cols-1">
+            <div className="grid grid-cols-2 gap-4 my-6 max-sm:grid-cols-1">
               <div className="bg-bg border border-border rounded-xl p-5">
                 <h3 className="text-[0.9rem] font-bold text-navy mb-1">Free</h3>
                 <div className="font-heading text-[1.4rem] text-pink font-black mb-1">$0 forever</div>
@@ -104,12 +104,6 @@ export default function HowItWorksClient() {
                 </h3>
                 <div className="font-heading text-[1.4rem] text-pink font-black mb-1">$12/mo or $99/yr</div>
                 <p className="text-[0.78rem] text-muted !mb-0">Verified badge, priority placement, featured on state pages, more photos, and featured events.
-                </p>
-              </div>
-              <div className="bg-bg border border-border rounded-xl p-5">
-                <h3 className="text-[0.9rem] font-bold text-navy mb-1">Ambassador</h3>
-                <div className="font-heading text-[1.4rem] text-pink font-black mb-1">Earned</div>
-                <p className="text-[0.78rem] text-muted !mb-0">Top recognition for active community builders, by application. Comped, not bought.
                 </p>
               </div>
             </div>

@@ -372,7 +372,7 @@ export function buildHowItWorksSchema() {
         name: "How much does it cost to get listed?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Being listed is free forever, and you are never charged merely to be listed. Players never pay. The optional Verified Community Leader plan is $12/month or $99/year and adds a verified badge, priority placement in search, featured placement on state pages, more photos, and featured events. Ambassador status is our highest recognition and is earned, not bought.",
+          text: "Being listed is free forever, and you are never charged merely to be listed. Players never pay. The optional Verified Community Leader plan is $12/month or $99/year and adds a verified badge, priority placement in search, featured placement on state pages, more photos, and featured events.",
         },
       },
       {
