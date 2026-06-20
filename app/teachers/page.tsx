@@ -29,7 +29,7 @@ const LAS_VEGAS_MAHJONG = {
   venue_type: "Mahjong Instructor",
   city: "Las Vegas",
   state: "NV",
-  description: "American Mahjong lessons in Las Vegas, private and group, for every level. Book directly on the Las Vegas Mahjong site.",
+  description: "Learn American Mahjong in Las Vegas through private lessons, group classes, open play events, and corporate team-building experiences. Serving beginners, experienced players, social groups, conventions, and businesses throughout the Las Vegas area.",
   website: "https://lasvegasmahj.com",
   instagram: "lasvegasmahjong",
   display_email: "lasvegasmahj@gmail.com",
