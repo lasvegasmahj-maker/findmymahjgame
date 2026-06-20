@@ -3,6 +3,7 @@
 // prefix). The card is a plain container, not a wrapping link, so the Instagram
 // handle and the website link can each be clickable.
 import StatusBadge from "@/components/status-badge";
+import LessonInquiry from "@/components/lesson-inquiry";
 
 type TeacherLike = {
   id: string;
@@ -30,9 +31,10 @@ export default function TeacherCard({ t }: { t: TeacherLike }) {
       {t.display_email && <a href={`mailto:${t.display_email}`} style={{ display: "block", fontSize: "0.95rem", color: "var(--pink-text)", fontWeight: 600, marginTop: "0.4rem", textDecoration: "none" }}>{t.display_email}</a>}
       {ig && <a href={`https://instagram.com/${ig}`} target="_blank" rel="noopener noreferrer" style={{ display: "block", fontSize: "0.95rem", color: "var(--pink-text)", fontWeight: 600, marginTop: "0.4rem", textDecoration: "none" }}>@{ig}</a>}
       {desc && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.5rem", lineHeight: 1.5 }}>{desc.slice(0, 280)}{desc.length > 280 ? "..." : ""}</div>}
-      {site && (
-        <div style={{ marginTop: "auto", paddingTop: "0.9rem" }}>
-          <a href={site} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink-text)", fontWeight: 800, textDecoration: "none" }}>Visit Website &rarr;</a>
+      {(t.tier === "pro" || site) && (
+        <div style={{ marginTop: "auto", paddingTop: "0.9rem", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "0.7rem" }}>
+          {t.tier === "pro" && <LessonInquiry teacherId={t.id} teacherName={t.business_name || "this teacher"} />}
+          {site && <a href={site} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink-text)", fontWeight: 800, textDecoration: "none" }}>Visit Website &rarr;</a>}
         </div>
       )}
     </div>

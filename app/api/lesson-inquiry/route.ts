@@ -1,0 +1,78 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@/lib/supabase-server";
+import { sendEmail } from "@/lib/email";
+import { rateLimit } from "@/lib/rate-limit";
+import { LAS_VEGAS_MAHJONG } from "@/lib/featured-listings";
+
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+const esc = (s: string) => String(s || "").replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c] as string));
+
+export async function POST(req: NextRequest) {
+  if (!(await rateLimit(req, "lesson-inquiry", 8, 60))) {
+    return NextResponse.json({ error: "Please wait a moment and try again." }, { status: 429 });
+  }
+
+  let body: Record<string, string> = {};
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Bad request." }, { status: 400 }); }
+
+  const teacherId = String(body.teacherId || "").trim();
+  const name = String(body.name || "").trim().slice(0, 120);
+  const email = String(body.email || "").trim().slice(0, 160);
+  const phone = String(body.phone || "").trim().slice(0, 40);
+  const area = String(body.area || "").trim().slice(0, 120);
+  const experience = String(body.experience || "").trim().slice(0, 40);
+  const message = String(body.message || "").trim().slice(0, 2000);
+
+  if (!teacherId || !name || !EMAIL_RE.test(email) || !message) {
+    return NextResponse.json({ error: "Please add your name, a valid email, and a message." }, { status: 400 });
+  }
+
+  // Resolve the teacher's email server-side; never trust a client-sent address.
+  let teacherEmail = "";
+  let teacherName = "this teacher";
+  if (teacherId === LAS_VEGAS_MAHJONG.id) {
+    teacherEmail = LAS_VEGAS_MAHJONG.display_email;
+    teacherName = LAS_VEGAS_MAHJONG.business_name;
+  } else {
+    const supabase = createServerClient();
+    const { data } = await supabase
+      .from("venue_listings")
+      .select("business_name, display_email")
+      .eq("id", teacherId)
+      .eq("status", "published")
+      .maybeSingle();
+    if (data?.display_email) {
+      teacherEmail = String(data.display_email);
+      teacherName = String(data.business_name || teacherName);
+    }
+  }
+  if (!teacherEmail || !EMAIL_RE.test(teacherEmail)) {
+    return NextResponse.json({ error: "We could not reach this teacher right now." }, { status: 422 });
+  }
+
+  const html =
+    `<p style="font-size:16px;line-height:1.7;">You have a new lesson request from <strong>${esc(name)}</strong> through Find My Mahj Game.</p>` +
+    `<ul style="font-size:15px;line-height:1.9;color:#1a1f5e;padding-left:18px;">` +
+    `<li><strong>Name:</strong> ${esc(name)}</li>` +
+    `<li><strong>Email:</strong> ${esc(email)}</li>` +
+    (phone ? `<li><strong>Phone:</strong> ${esc(phone)}</li>` : "") +
+    (area ? `<li><strong>Area:</strong> ${esc(area)}</li>` : "") +
+    (experience ? `<li><strong>Experience:</strong> ${esc(experience)}</li>` : "") +
+    `</ul>` +
+    `<p style="font-size:16px;line-height:1.7;"><strong>Message:</strong><br/>${esc(message)}</p>` +
+    `<p style="font-size:14px;color:#6b7280;">Just reply to this email to reach ${esc(name)} directly.</p>`;
+
+  const res = await sendEmail({
+    to: teacherEmail,
+    bcc: "hello@findmymahjgame.com",
+    subject: `New lesson request from ${name}`,
+    html,
+    replyTo: email,
+    kind: "lesson-inquiry",
+  });
+
+  if (!res.ok) {
+    return NextResponse.json({ error: "Something went wrong sending your request. Please try again." }, { status: 500 });
+  }
+  return NextResponse.json({ ok: true });
+}
