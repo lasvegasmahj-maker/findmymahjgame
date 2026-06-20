@@ -102,7 +102,7 @@ export default async function Home() {
           {/* Categories below the map */}
           <p style={{ textAlign: "center", marginTop: "1.8rem", fontSize: "1rem", lineHeight: 2 }}>
             <span style={{ color: "var(--muted)", fontWeight: 700 }}>Explore: </span>
-            <Link href="/events" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Open plays &amp; events</Link> &middot; <Link href="/teachers" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Teachers</Link> &middot; <Link href="/tournaments" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Tournaments</Link> &middot; <Link href="/leagues" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Leagues</Link> &middot; <Link href="/travel" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Travel</Link>
+            <Link href="/events" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Open plays &amp; events</Link> &middot; <Link href="/teachers" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Teachers</Link> &middot; <Link href="/tournaments" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Tournaments</Link> &middot; <Link href="/leagues" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Leagues</Link> &middot; <Link href="/travel" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Getaways</Link>
           </p>
 
         </div>
