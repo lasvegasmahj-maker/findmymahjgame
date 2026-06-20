@@ -112,6 +112,11 @@ export default function ListMyGameClient() {
             </a>
           )}
           <a
+            href={`/events?near=${encodeURIComponent(form.city || selectedStateName || "")}`}
+            style={{ display: "inline-block", padding: "0.75rem 1.8rem", background: "white", color: "var(--navy)", border: "2px solid var(--navy)", borderRadius: 10, fontWeight: 700, textDecoration: "none", fontSize: "0.95rem" }}
+          >See events happening near you &rarr;
+          </a>
+          <a
             href="/states"
             style={{ color: "var(--pink-text)", fontWeight: 600, textDecoration: "none", fontSize: "0.9rem" }}
           >Browse all 50 states &rarr;
