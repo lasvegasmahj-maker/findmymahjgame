@@ -4,9 +4,11 @@ export default function Footer() {
   return (
     <footer className="site-footer">
       <div className="footer-inner">
-        <div>
-          <div className="footer-logo">Find My <span>Mahj Game</span></div>
-          <p className="footer-tagline">Connecting mahjong players across all 50 states.</p>
+        <div className="footer-brand">
+          <Link href="/" aria-label="Find My Mahj Game home" className="footer-logo-link">
+            <img src="/find-my-mahj-game-logo.png" alt="Find My Mahj Game" className="footer-logo-img" />
+          </Link>
+          <p className="footer-tagline">Find local mahjong games, players, teachers, tournaments, and retreats.</p>
         </div>
         <div className="footer-cols">
           <div>

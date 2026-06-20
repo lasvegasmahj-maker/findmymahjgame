@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import NotifyMe from "@/components/notify-me";
+import BrandedEmptyState from "@/components/branded-empty-state";
 import { createServerClient } from "@/lib/supabase-server";
 import CityAutocomplete from "@/components/city-autocomplete";
 import { nearMatches } from "@/lib/near-match";
@@ -95,15 +96,18 @@ export default async function TournamentsPage({ searchParams }: { searchParams: 
           <GroupedEvents rows={rows as GroupedRow[]} typeLabel="Tournament" cta="Register" groupBy={groupBy} />
         </>
       ) : (
-        <div style={{ background: "var(--bg)", borderRadius: 18, padding: "2.4rem 1.6rem", textAlign: "center", maxWidth: 560, margin: "0 auto" }}>
-          <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.6rem" }}>No tournaments listed{near ? ` in ${near}` : ""} yet.</div>
-          <p style={{ fontSize: "1.1rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "1.6rem" }}>Be the first. If you run a Mahjong tournament, list it here and players will find it.</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", maxWidth: 320, margin: "0 auto" }}>
-            <Link href="/get-listed" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>List your tournament</Link>
-            <Link href="/events" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "white", color: "var(--navy)", border: "2px solid var(--navy)", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>See all events and open plays</Link>
-          </div>
-          <div style={{ marginTop: "1.6rem" }}><NotifyMe defaultCity={near || ""} /></div>
-        </div>
+        <BrandedEmptyState
+          title={`No tournaments listed${near ? ` in ${near}` : ""} yet.`}
+          message="Be the first. If you run a Mahjong tournament, list it here and players will find it."
+          ctaHref="/get-listed"
+          ctaLabel="List your tournament"
+          secondary={
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", maxWidth: 320, margin: "0 auto" }}>
+              <Link href="/events" style={{ minHeight: 52, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "white", color: "var(--navy)", border: "2px solid var(--navy)", fontWeight: 800, fontSize: "1.05rem", textDecoration: "none" }}>See all events and open plays</Link>
+              <NotifyMe defaultCity={near || ""} />
+            </div>
+          }
+        />
       )}
 
       {rows.length > 0 && (

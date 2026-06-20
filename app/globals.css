@@ -644,13 +644,18 @@ body {
   padding-bottom: 2rem;
   border-bottom: 1px solid rgba(255,255,255,0.1);
 }
-.footer-logo {
-  font-family: var(--font-playfair), "Playfair Display", serif;
-  font-size: 1.1rem;
-  color: white;
+.footer-logo-link {
+  display: inline-block;
+  background: white;
+  border-radius: 12px;
+  padding: 0.7rem 0.9rem;
+  line-height: 0;
 }
-.footer-logo span { color: var(--pink); }
-.footer-tagline { font-size: 0.82rem; color: rgba(255, 255, 255, 0.7); max-width: 220px; margin-top: 0.5rem; }
+.footer-logo-img { height: 40px; width: auto; display: block; }
+@keyframes brandPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.06); opacity: 0.85; } }
+.brand-pulse { animation: brandPulse 1.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .brand-pulse { animation: none; } }
+.footer-tagline { font-size: 0.82rem; color: rgba(255, 255, 255, 0.7); max-width: 300px; margin-top: 0.8rem; }
 .footer-cols { display: flex; gap: 3rem; }
 .footer-cols h4 {
   font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em;
