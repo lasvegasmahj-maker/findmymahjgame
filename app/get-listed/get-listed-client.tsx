@@ -55,6 +55,9 @@ export default function GetListedClient({ defaultType = "" }: { defaultType?: st
   async function validatePromo() {
     const code = form.promo_code.trim().toUpperCase();
     if (!code) return;
+    // Founding teacher code is accepted directly; its billing record lands with
+    // the Stripe build. Other codes validate against the promo_codes table.
+    if (code === "FINDMYMAHJGAME") { setPromoStatus("valid"); return; }
     setPromoStatus("checking");
 
     try {
@@ -337,7 +340,7 @@ export default function GetListedClient({ defaultType = "" }: { defaultType?: st
               <div style={{ display: "flex", gap: "0.6rem" }}>
                 <input
                   type="text"
-                  placeholder="FINDMYMAHJ"
+                  placeholder="FINDMYMAHJGAME"
                   value={form.promo_code}
                   onChange={(e) => {
                     setForm({ ...form, promo_code: e.target.value });

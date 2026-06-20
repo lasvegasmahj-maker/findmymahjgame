@@ -78,7 +78,19 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
 
   let rows = data || [];
   if (near && near.trim()) {
-    const n = near.trim().toLowerCase();
+    let n = near.trim().toLowerCase();
+    // ZIP search: resolve a 5-digit ZIP to its city so nearby events match.
+    if (/^\d{5}$/.test(near.trim())) {
+      try {
+        const r = await fetch(`https://api.zippopotam.us/us/${near.trim()}`, { cache: "force-cache" });
+        if (r.ok) {
+          const g = await r.json();
+          const place = (g.places || [])[0] || {};
+          const z = String(place["place name"] || "").toLowerCase();
+          if (z) n = z;
+        }
+      } catch { /* zip lookup failed: fall back to raw text match */ }
+    }
     rows = rows.filter((e) => nearMatches(n, e.city, e.state));
   }
   const typeFilter = TYPE_GROUPS[activeType];
@@ -198,7 +210,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
 
       <form method="get" style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center", maxWidth: 520, margin: "0 auto 1.2rem" }}>
         <label htmlFor="near" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>Your city or area</label>
-        <CityAutocomplete id="near" name="near" defaultValue={near || ""} placeholder="Your city or state" inputStyle={field} submitOnPick />
+        <CityAutocomplete id="near" name="near" defaultValue={near || ""} placeholder="Your city, state, or ZIP" inputStyle={field} submitOnPick />
         {activeType !== "all" && <input type="hidden" name="type" value={activeType} />}
         {activeSort !== "state" && <input type="hidden" name="sort" value={activeSort} />}
         <button type="submit" style={goBtn}>Search</button>

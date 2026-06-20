@@ -4,12 +4,12 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Join the Find My Mahj Game Directory",
   description:
-    "Teachers, organizers, leagues, tournaments, retreats, cruises, and community leaders: create a free profile and list your events on the national mahjong directory. Founding Partner spots are open now.",
+    "Teachers, organizers, and community leaders: list your profile and events on the national mahjong directory. Founding teachers get 6 months free, then $89 for the first year.",
   alternates: { canonical: "https://findmymahjgame.com/join" },
   openGraph: {
     title: "Join the Find My Mahj Game Directory",
     description:
-      "Create a free profile and list your events on the national mahjong directory. Founding Partner spots are open now.",
+      "List your profile and events on the national mahjong directory. Founding teachers get 6 months free, then $89 for the first year.",
     url: "https://findmymahjgame.com/join",
   },
 };
@@ -52,28 +52,27 @@ export default function JoinPage() {
       </section>
 
       <div className="page-body" style={{ maxWidth: 920 }}>
-        {/* Founding Partner */}
+        {/* Founding Teacher Offer */}
         <div style={{ ...cardFeatured, background: "#fff5fa", marginBottom: "2.5rem" }}>
-          <p className="eyebrow" style={{ marginBottom: "0.4rem" }}>Limited time</p>
-          <h2 style={{ border: "none", margin: "0 0 0.6rem", fontSize: "1.6rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>Founding Partner Opportunity</h2>
-          <p style={tierLead}>We&rsquo;re currently building the largest national mahjong directory and are inviting early teachers, organizers, and community leaders to join as Founding Partners.</p>
-          <p style={label}>Founding Partners receive:</p>
+          <p className="eyebrow" style={{ marginBottom: "0.4rem" }}>Limited time, founding offer</p>
+          <h2 style={{ border: "none", margin: "0 0 0.6rem", fontSize: "1.6rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>Become a Founding Teacher</h2>
+          <p style={tierLead}>We&rsquo;re building the largest national mahjong directory and inviting early teachers, organizers, and community leaders to join now.</p>
+          <p style={label}>Founding teachers get:</p>
           <ul style={list}>
-            <Check>Free profile listing</Check>
-            <Check>Free event listings</Check>
-            <Check>Founding Partner badge</Check>
+            <Check>Your first 6 months free</Check>
+            <Check>Then just $89 for your first year, locked in</Check>
+            <Check>Founding member badge</Check>
             <Check>Priority placement as the directory grows</Check>
-            <Check>Locked-in discounted pricing on future premium plans</Check>
           </ul>
-          <p style={{ marginTop: "1rem", fontWeight: 700, color: "var(--navy)" }}>Use code <span style={{ color: "var(--pink-text)" }}>FINDMYMAHJ</span> when submitting your profile.</p>
+          <p style={{ marginTop: "1rem", fontWeight: 700, color: "var(--navy)" }}>Use code <span style={{ color: "var(--pink-text)" }}>FINDMYMAHJGAME</span> when you submit your profile.</p>
         </div>
 
-        {/* Free + paid tiers */}
+        {/* Membership + the earned Verified badge */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))", gap: "1.4rem", marginBottom: "2.5rem" }}>
           <div style={card}>
-            <div style={tierName}>Community Listing</div>
-            <div style={price}>Free</div>
-            <p style={{ ...tierLead, marginTop: "0.6rem" }}>Perfect for teachers, organizers, leagues, clubs, and community leaders.</p>
+            <div style={tierName}>Directory Membership</div>
+            <div style={price}>6 months free <span style={{ fontSize: "1rem", color: "var(--muted)", fontWeight: 600 }}>then $89 your first year</span></div>
+            <p style={{ ...tierLead, marginTop: "0.6rem" }}>For teachers, organizers, leagues, clubs, and community leaders.</p>
             <p style={label}>Includes:</p>
             <ul style={list}>
               <Check>Public profile</Check>
@@ -88,17 +87,17 @@ export default function JoinPage() {
 
           <div style={cardFeatured}>
             <div style={tierName}>Verified Community Leader</div>
-            <div style={price}>$12/month <span style={{ fontSize: "1rem", color: "var(--muted)", fontWeight: 600 }}>or $99/year</span></div>
-            <p style={{ ...tierLead, marginTop: "0.6rem" }}>For teachers and organizers who want additional visibility and credibility.</p>
-            <p style={label}>Everything in the Free listing, plus:</p>
+            <div style={price}>Earned <span style={{ fontSize: "1rem", color: "var(--muted)", fontWeight: 600 }}>by meeting our criteria</span></div>
+            <p style={{ ...tierLead, marginTop: "0.6rem" }}>For active community leaders. The Verified badge is earned, not bought, so it always means a real, active teacher.</p>
+            <p style={label}>Everything in your membership, plus:</p>
             <ul style={list}>
               <Check>Verified badge</Check>
-              <Check>Priority placement in search results</Check>
-              <Check>Featured placement on state pages</Check>
+              <Check>Featured placement in search and on state pages</Check>
               <Check>Enhanced profile</Check>
               <Check>Additional photos and media</Check>
               <Check>Featured events</Check>
             </ul>
+            <p style={{ fontSize: "0.92rem", color: "var(--muted)", marginTop: "0.6rem", lineHeight: 1.6 }}>Qualify by running games regularly, having real reach, and keeping your listing verified and active. Players never pay.</p>
           </div>
         </div>
 
