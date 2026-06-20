@@ -264,8 +264,13 @@ export default function StatePageClient({ stateData, players, events, venues, in
           </div>
         ) : (
           <div style={{ marginTop: "2.5rem" }}>
-            <p style={{ color: "rgba(255,255,255,0.75)", maxWidth: 480, margin: "0 auto 1.5rem" }}>Be one of the first players listed in {stateData.name}. It is free to join, and we will help you find a game.</p>
-            <Link href="/list-my-game" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>Create My Free Listing &rarr;</Link>
+            <p style={{ color: "white", fontWeight: 800, fontSize: "1.2rem", margin: "0 auto 0.5rem" }}>Help build mahjong in {stateData.name}</p>
+            <p style={{ color: "rgba(255,255,255,0.75)", maxWidth: 520, margin: "0 auto 1.5rem" }}>We don&rsquo;t have any listings here yet. Are you a teacher, organizer, or player in {stateData.name}? Be one of the first to join the directory.</p>
+            <div style={{ display: "flex", gap: "0.8rem", justifyContent: "center", flexWrap: "wrap", marginBottom: "1rem" }}>
+              <Link href="/get-listed" className="btn-cta-primary" style={{ padding: "0.9rem 2.2rem" }}>Submit a Listing &rarr;</Link>
+              <Link href="/list-my-game" style={{ display: "inline-flex", alignItems: "center", padding: "0.9rem 2.2rem", borderRadius: 10, background: "transparent", color: "white", border: "2px solid rgba(255,255,255,0.5)", fontWeight: 700, textDecoration: "none" }}>Create a free player listing</Link>
+            </div>
+            <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.9rem", margin: 0 }}>Know someone who teaches or hosts mahjong in {stateData.name}? <a href={`mailto:?subject=${encodeURIComponent("Join the Find My Mahj Game directory")}&body=${encodeURIComponent(`I found this national mahjong directory and thought you should list your classes and events: https://findmymahjgame.com/get-listed`)}`} style={{ color: "white", fontWeight: 700 }}>Invite them &rarr;</a></p>
           </div>
         )}
       </section>

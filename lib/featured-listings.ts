@@ -16,5 +16,6 @@ export const LAS_VEGAS_MAHJONG = {
   logo_url: null,
   instructor: "Shauna Bruckman",
   tier: "pro",
+  charter: true,
   created_at: "2026-01-01T00:00:00Z",
 };

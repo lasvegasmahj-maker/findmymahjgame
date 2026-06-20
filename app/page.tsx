@@ -183,7 +183,7 @@ export default async function Home() {
         <div style={{ maxWidth: 620, margin: "0 auto", textAlign: "center" }}>
           <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.6rem", color: "var(--navy)", marginBottom: "0.5rem" }}>Want to help build mahjong in your city?</h2>
           <p style={{ color: "var(--muted)", fontSize: "1.05rem", lineHeight: 1.6, marginBottom: "1.4rem" }}>Teachers, hosts, and organizers help players find safe games and form real tables.</p>
-          <Link href="/join" style={{ display: "inline-block", padding: "0.85rem 1.6rem", borderRadius: 14, fontSize: "1.1rem", fontWeight: 800, textDecoration: "none", color: "var(--navy)", border: "2px solid var(--navy)", background: "white" }}>Become a Community Leader &rarr;</Link>
+          <Link href="/join" style={{ display: "inline-block", padding: "0.85rem 1.6rem", borderRadius: 14, fontSize: "1.1rem", fontWeight: 800, textDecoration: "none", color: "var(--navy)", border: "2px solid var(--navy)", background: "white" }}>Join the Directory &rarr;</Link>
         </div>
       </section>
 

@@ -93,30 +93,33 @@ export default function JoinPage() {
           </ul>
           <p style={label}>Charter Members receive:</p>
           <ul style={list}>
-            <Check>A permanent Charter Member badge</Check>
-            <Check>Locked-in pricing</Check>
-            <Check>Higher placement than standard members</Check>
+            <Check>A permanent &#11088; Charter Member badge</Check>
+            <Check>Locked-in $89/year renewal, as long as you stay active</Check>
+            <Check>Higher placement than standard listings</Check>
             <Check>Permanent recognition as an early supporter</Check>
-            <Check>Priority consideration for Community Leader and Ambassador status</Check>
           </ul>
         </div>
 
-        {/* Status badges (separate, stackable) */}
+        {/* Status badges: Verified is active at launch; Leader/Ambassador come later */}
         <h2>Status badges</h2>
-        <p>These are separate from your membership and from each other, earned in different ways. A teacher can hold several at once, for example Charter Member, Verified Teacher, and Community Leader together.</p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", gap: "1.4rem", margin: "1.2rem 0 2.5rem" }}>
+        <p>Badges are separate from your membership and stack on your profile, for example Charter Member and Verified Teacher together.</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", gap: "1.4rem", margin: "1.2rem 0 2rem" }}>
           <div style={card}>
-            <StatusBadge type="verified" />
-            <p style={{ ...tierLead, margin: "0.8rem 0 0" }}>Identity verified and approved by our team. Shows players you are a real, confirmed teacher.</p>
+            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+              <StatusBadge type="verified" />
+              <StatusBadge type="verified" label="Verified Organizer" />
+            </div>
+            <p style={{ ...tierLead, margin: "0.8rem 0 0" }}>An admin-approved trust badge for real teachers, organizers, and businesses with a complete profile and a website or social account. Shows players you are confirmed and legitimate. Stacks with Charter Member.</p>
           </div>
-          <div style={card}>
+        </div>
+
+        <div style={{ ...card, background: "var(--bg)", borderStyle: "dashed", marginBottom: "2.5rem" }}>
+          <p className="eyebrow" style={{ marginBottom: "0.6rem" }}>Coming later</p>
+          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", opacity: 0.55, marginBottom: "0.8rem" }}>
             <StatusBadge type="leader" />
-            <p style={{ ...tierLead, margin: "0.8rem 0 0" }}>Earned through activity and contribution to the community. Recognizes teachers who keep games and players connected.</p>
-          </div>
-          <div style={card}>
             <StatusBadge type="ambassador" />
-            <p style={{ ...tierLead, margin: "0.8rem 0 0" }}>Invitation only, for exceptional community builders who go above and beyond.</p>
           </div>
+          <p style={{ ...tierLead, margin: 0 }}>Community Leader and Ambassador recognition will launch once the directory has more active listings and event data, so we can assign them fairly.</p>
         </div>
 
         {/* Event Listings */}

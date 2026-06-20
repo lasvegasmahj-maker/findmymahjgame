@@ -107,7 +107,7 @@ export default function AboutPage() {
           <Link href="/list-my-game">Create your free player listing</Link> and let players in your
           area find you.
         </p>
-        <h3>Venues &amp; Studios</h3>
+        <h3>Studios &amp; Hosts</h3>
         <p>
           Get discovered by players actively searching for places to play. Our &ldquo;Where to
           Play&rdquo; directory puts your restaurant, studio, JCC or community space in front of the
