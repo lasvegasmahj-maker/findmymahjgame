@@ -3,8 +3,8 @@ import Link from "next/link";
 export default function Header() {
   return (
     <nav className="site-nav">
-      <Link href="/" className="site-logo">
-        Find My <span>Mahj Game</span>
+      <Link href="/" className="site-logo" aria-label="Find My Mahj Game home">
+        <img src="/find-my-mahj-game-logo.png" alt="Find My Mahj Game" />
       </Link>
       <div className="nav-right">
         <Link href="/events" className="nav-advertise">Events</Link>
