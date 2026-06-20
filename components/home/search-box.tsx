@@ -78,9 +78,6 @@ export default function SearchBox() {
             No match found. <Link href="/states" style={{ color: "white", fontWeight: 600 }}>Browse all 50 states &rarr;</Link>
           </p>
         )}
-        <p style={{ textAlign: "center", marginTop: "0.3rem", marginBottom: 0, color: "rgba(255,255,255,0.8)", fontSize: "0.92rem" }}>
-          Can&rsquo;t find a game nearby? <Link href="/list-my-game" style={{ color: "white", fontWeight: 700, textDecoration: "underline" }}>Create a listing</Link>
-        </p>
       </div>
     </div>
   );
