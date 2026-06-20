@@ -175,10 +175,12 @@ export default function PlayClient() {
         {captureWhy === "notify" ? `Want to know when another game opens in ${city}?` : `No public games in ${city} right now`}
       </h1>
       <p style={{ fontSize: "1.15rem", color: "var(--muted)", lineHeight: 1.5 }}>
-        {captureWhy === "notify" ? "Leave your name and we will tell you the moment a new table opens." : "Some tables fill by invitation, so check back soon. We'll reach out the moment a game opens near you, or "}
-        {captureWhy !== "notify" && <Link href="/start" style={{ color: "var(--pink-text)", fontWeight: 700 }}>start your own</Link>}
-        {captureWhy !== "notify" && "."}
+        {captureWhy === "notify" ? "Leave your name and we will tell you the moment a new table opens." : "Some tables fill by invitation, so check back soon. The fastest way to play is to start your own table and invite a few people, or we can tell you when a game opens near you."}
       </p>
+      {captureWhy === "none" && (
+        <Link href="/start" style={{ display: "flex", minHeight: 64, alignItems: "center", justifyContent: "center", marginTop: "1.3rem", borderRadius: 16, background: "var(--navy)", color: "white", fontWeight: 800, fontSize: "1.3rem", textDecoration: "none" }}>Start your own table &rarr;</Link>
+      )}
+      {captureWhy === "none" && <div style={{ textAlign: "center", color: "var(--muted)", fontSize: "1.1rem", margin: "1.4rem 0 0" }}>Or get notified when a game opens:</div>}
       <form onSubmit={submitCapture}>
         <div style={labelStyle}>Your name</div>
         <input style={fieldStyle} aria-label="Your first name" placeholder="First name" value={name} onChange={(e) => setName(e.target.value)} />

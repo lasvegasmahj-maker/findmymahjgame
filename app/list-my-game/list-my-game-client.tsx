@@ -101,7 +101,7 @@ export default function ListMyGameClient() {
           }}
         >Listing submitted!
         </h1>
-        <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.7, marginBottom: "2rem" }}>We&rsquo;ll review and approve your listing within 1-2 business days. Once live, you&rsquo;ll appear on your state page so local players can find you.
+        <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.7, marginBottom: "2rem" }}>We&rsquo;ll review and approve your listing within 1-2 business days. Once live, you&rsquo;ll appear on your state page (and in local searches) so players near you can find you. To update or remove it later, just email <a href="mailto:hello@findmymahjgame.com" style={{ color: "var(--pink-text)", fontWeight: 600 }}>hello@findmymahjgame.com</a>.
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", alignItems: "center" }}>
           {stateSlug && (

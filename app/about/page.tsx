@@ -57,6 +57,17 @@ export default function AboutPage() {
           ))}
         </div>
 
+        <div className="bg-bg border border-border rounded-2xl p-6 my-8">
+          <h3 className="font-heading text-[1.2rem] text-navy mb-3">Why you can trust Find My Mahj Game</h3>
+          <ul className="text-muted leading-relaxed pl-5 list-disc !mb-0">
+            <li>Run by Shauna, a certified Oh My Mahjong instructor and the founder of{" "}
+              <a href="https://lasvegasmahj.com" target="_blank" rel="noopener noreferrer">Las Vegas Mahjong</a>, a real teaching business.</li>
+            <li>Free for players, always. We never charge you to find a game or to list yourself.</li>
+            <li>Your email is never shown publicly or sold. Connection requests are passed along privately, so you decide who to reply to.</li>
+            <li>Every listing is reviewed by a real person before it goes live.</li>
+          </ul>
+        </div>
+
         <h2>Our Story</h2>
         <p>
           Find My Mahj Game was created by Shauna, a certified Oh My Mahjong (OMM) instructor and

@@ -69,8 +69,9 @@ export async function generateMetadata({ params }: { params: Promise<{ state: st
   };
 }
 
-export default async function StatePage({ params }: { params: Promise<{ state: string }> }) {
+export default async function StatePage({ params, searchParams }: { params: Promise<{ state: string }>; searchParams: Promise<{ city?: string; tab?: string }> }) {
   const { state } = await params;
+  const { city: initialCity, tab: initialTab } = await searchParams;
   const data = STATES[state];
   if (!data) notFound();
 
@@ -131,6 +132,8 @@ export default async function StatePage({ params }: { params: Promise<{ state: s
         players={players}
         events={events}
         venues={venues}
+        initialCity={initialCity}
+        initialTab={initialTab}
       />
       {STATE_CITIES[data.slug] && (
         <section style={{ maxWidth: 900, margin: "0 auto", padding: "0.5rem 1.2rem 3rem" }}>

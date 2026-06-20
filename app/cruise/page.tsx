@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createServerClient } from "@/lib/supabase-server";
 import CruiseBoard from "./cruise-board";
+import NotifyMe from "@/components/notify-me";
 
 export const metadata: Metadata = {
   title: "Find Mahjong Players on Your Cruise",
@@ -63,6 +64,12 @@ export default async function CruisePage() {
       <p style={{ fontSize: "1rem", color: "var(--navy)", textAlign: "center", lineHeight: 1.6, margin: "0 auto 2rem", maxWidth: 680 }}>Looking for an organized mahjong cruise or retreat instead? <Link href="/travel#retreats" style={{ color: "var(--pink-text)", fontWeight: 700 }}>See those here</Link>.</p>
 
       <CruiseBoard posts={posts} />
+
+      {posts.length === 0 && (
+        <div style={{ marginTop: "2.5rem" }}>
+          <NotifyMe heading="No cruises posted yet. Get notified when players post sailings." />
+        </div>
+      )}
     </main>
   );
 }

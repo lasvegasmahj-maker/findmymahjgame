@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   description:
     "Reach the American Mahjong community nationwide. Sponsor the weekly newsletter, a state, or a category. Audience demographics, network stats, and sponsorship options.",
   alternates: { canonical: "https://findmymahjgame.com/advertise" },
+  robots: { index: false, follow: true },
   openGraph: {
     title: "Advertise on Find My Mahj Game | Reach Mahjong Players Nationwide",
     description: "Reach the American Mahjong community nationwide. Sponsor the newsletter, a state, or a category.",

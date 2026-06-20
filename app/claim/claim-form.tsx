@@ -10,7 +10,7 @@ type Props = {
 };
 
 const field: React.CSSProperties = { width: "100%", minHeight: 48, padding: "0.7rem 0.9rem", border: "2px solid var(--border)", borderRadius: 10, fontSize: "1rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", background: "white" };
-const label: React.CSSProperties = { display: "block", fontSize: "0.95rem", fontWeight: 700, color: "var(--navy)", margin: "1rem 0 0.35rem" };
+const label: React.CSSProperties = { display: "block", fontSize: "1rem", fontWeight: 700, color: "var(--navy)", margin: "1rem 0 0.35rem" };
 
 export default function ClaimForm({ token, table, listing, fields }: Props) {
   const [form, setForm] = useState<Record<string, string>>(

@@ -17,5 +17,7 @@ export function nearMatches(near: string, city: string | null, state: string | n
   if (q.length === 2 && /^[a-z]{2}$/.test(q)) return st === q.toUpperCase();
   if (ABBR_BY_NAME[q]) return st === ABBR_BY_NAME[q];
   const fullName = NAME_BY_ABBR[st] || "";
-  return cityLc.includes(q) || fullName.includes(q);
+  if (cityLc.includes(q) || fullName.includes(q)) return true;
+  // Prefix match on any word in the city name ("santa" -> "Santa Monica").
+  return cityLc.split(/[^a-z]+/).some((w) => w.length > 0 && w.startsWith(q));
 }

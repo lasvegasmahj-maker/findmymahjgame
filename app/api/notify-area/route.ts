@@ -21,10 +21,12 @@ export async function POST(req: NextRequest) {
   if (!email || !isValidEmail(email)) {
     return NextResponse.json({ error: "Please enter a valid email." }, { status: 400 });
   }
+  const name = clampText(b.name, 80) || null;
   const city = clampText(b.city, 80) || null;
   const state = clampText(b.state, 60) || null;
 
   const { error } = await supabase.from("play_requests").insert({
+    name,
     email: email.toLowerCase(),
     city,
     state,
@@ -43,7 +45,7 @@ export async function POST(req: NextRequest) {
     subject: `New area demand: ${city || "unknown city"}${state ? `, ${state}` : ""}`,
     html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:20px;">
       <h2 style="color:#1a1f5e;">Someone wants Mahjong near them</h2>
-      <p style="color:#374151;line-height:1.7;">Email: <strong>${escapeHtml(email)}</strong><br/>Area: <strong>${escapeHtml(city || "n/a")}${state ? ", " + escapeHtml(state) : ""}</strong></p>
+      <p style="color:#374151;line-height:1.7;">${name ? `Name: <strong>${escapeHtml(name)}</strong><br/>` : ""}Email: <strong>${escapeHtml(email)}</strong><br/>Area: <strong>${escapeHtml(city || "n/a")}${state ? ", " + escapeHtml(state) : ""}</strong></p>
       <p style="color:#6b7280;font-size:0.9rem;">Demand signal captured from an empty discovery page. Recruit supply here.</p>
     </div>`,
   });

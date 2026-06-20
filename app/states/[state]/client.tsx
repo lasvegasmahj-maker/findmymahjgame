@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import type { StateData } from "@/lib/states-data";
 import TeacherCard from "@/components/teacher-card";
+import FindGameFallback from "@/components/find-game-fallback";
 
 interface Player {
   id: string;
@@ -50,6 +51,8 @@ interface Props {
   players: Player[];
   events: Event[];
   venues: Venue[];
+  initialCity?: string;
+  initialTab?: string;
 }
 
 function SponsorLogo({ src, name }: { src: string | null; name: string }) {
@@ -113,9 +116,9 @@ interface ConnectForm {
   submitting: boolean;
 }
 
-export default function StatePageClient({ stateData, players, events, venues }: Props) {
-  const [activeTab, setActiveTab] = useState<"players" | "events" | "teachers">("players");
-  const [selectedCities, setSelectedCities] = useState<string[]>([]);
+export default function StatePageClient({ stateData, players, events, venues, initialCity, initialTab }: Props) {
+  const [activeTab, setActiveTab] = useState<"players" | "events" | "teachers">(initialTab === "events" || initialTab === "teachers" ? initialTab : "players");
+  const [selectedCities, setSelectedCities] = useState<string[]>(initialCity ? [initialCity] : []);
   const [cityMenuOpen, setCityMenuOpen] = useState(false);
   const cityMenuRef = useRef<HTMLDivElement | null>(null);
   const [eventSort, setEventSort] = useState<"date" | "city">("date");
@@ -123,7 +126,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
   const cityMatch = (c: string | null | undefined) =>
     selectedCities.length === 0 || selectedCities.some((sc) => sc.toLowerCase() === String(c || "").trim().toLowerCase());
   const toggleCity = (city: string) =>
-    setSelectedCities((prev) => (prev.includes(city) ? prev.filter((c) => c !== city) : [...prev, city]));
+    setSelectedCities((prev) => (prev.some((c) => c.toLowerCase() === city.toLowerCase()) ? prev.filter((c) => c.toLowerCase() !== city.toLowerCase()) : [...prev, city]));
   const cityLabel = selectedCities.length === 0
     ? `All of ${stateData.name}`
     : selectedCities.length === 1 ? selectedCities[0] : `${selectedCities.length} areas selected`;
@@ -222,6 +225,17 @@ export default function StatePageClient({ stateData, players, events, venues }: 
   const teacherVenues = venues.filter(v => TEACHER_TYPE.test(`${v.venue_type || ""} ${v.description || ""}`));
   const filteredTeachers = teacherVenues.filter(v => cityMatch(v.city));
 
+  // City filter options: curated state cities plus any city that actually has a
+  // listing, plus a city carried in from search, deduped case-insensitively.
+  const cityOptions: string[] = (() => {
+    const seen = new Set<string>(); const out: string[] = [];
+    for (const c of [...stateData.cities, ...players.map(p => p.city), ...events.map(e => e.city), ...teacherVenues.map(v => v.city), ...(initialCity ? [initialCity] : [])]) {
+      const t = (c || "").trim(); if (!t) continue;
+      const k = t.toLowerCase(); if (seen.has(k)) continue; seen.add(k); out.push(t);
+    }
+    return out.sort((a, b) => a.localeCompare(b));
+  })();
+
   return (
     <>
       {/* Hero */}
@@ -272,8 +286,8 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                     <span style={{ width: 18, height: 18, borderRadius: 4, border: "2px solid var(--border)", background: selectedCities.length === 0 ? "var(--pink)" : "white", borderColor: selectedCities.length === 0 ? "var(--pink)" : "var(--border)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "0.7rem", flexShrink: 0 }}>{selectedCities.length === 0 ? "✓" : ""}</span>
                     All of {stateData.name}
                   </button>
-                  {stateData.cities.map((city) => {
-                    const checked = selectedCities.includes(city);
+                  {cityOptions.map((city) => {
+                    const checked = selectedCities.some((s) => s.toLowerCase() === city.toLowerCase());
                     return (
                       <label key={city} style={{ display: "flex", alignItems: "center", gap: "0.6rem", width: "100%", padding: "0.55rem 0.7rem", borderRadius: 8, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: "0.9rem", color: "var(--navy)" }}>
                         <input type="checkbox" checked={checked} onChange={() => toggleCity(city)} style={{ position: "absolute", opacity: 0, width: 1, height: 1 }} />
@@ -350,6 +364,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                 </p>
                 <Link href="/list-my-game" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>Create My Free Listing &rarr;
                 </Link>
+                <FindGameFallback city={selectedCities[0] || ""} state={stateData.name} />
               </div>
             )}
 
@@ -424,6 +439,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                 <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Host an open play, tournament, or mahjong night? List it and reach players searching for games.
                 </p>
                 <Link href="/get-listed" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>List Your Event &rarr;</Link>
+                <FindGameFallback city={selectedCities[0] || ""} state={stateData.name} />
               </div>
             )}
 

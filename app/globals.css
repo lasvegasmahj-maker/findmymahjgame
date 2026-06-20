@@ -368,6 +368,12 @@ body {
   margin-top: 1rem;
 }
 .inline-search-inner { max-width: 700px; margin: 0 auto; }
+/* On narrow phones, stack the search input over the button so the primary
+   "Find a Game" action never wraps below the fold. */
+@media (max-width: 520px) {
+  .home-search-row { flex-direction: column; }
+  .home-search-row > * { width: 100%; }
+}
 .inline-search-label {
   font-size: 0.8rem;
   font-weight: 700;
