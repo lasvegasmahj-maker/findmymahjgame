@@ -2,7 +2,7 @@
 // they look identical. The instructor name shows on its own line (no "Taught by"
 // prefix). The card is a plain container, not a wrapping link, so the Instagram
 // handle and the website link can each be clickable.
-import FeaturedBadge from "@/components/featured-badge";
+import StatusBadge from "@/components/status-badge";
 
 type TeacherLike = {
   id: string;
@@ -23,7 +23,7 @@ export default function TeacherCard({ t }: { t: TeacherLike }) {
   const desc = t.description ? String(t.description) : "";
   return (
     <div style={{ display: "flex", flexDirection: "column", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", height: "100%" }}>
-      {t.tier === "pro" && <div style={{ marginBottom: "0.6rem" }}><FeaturedBadge label="Verified Teacher" /></div>}
+      {t.tier === "pro" && <div style={{ marginBottom: "0.6rem" }}><StatusBadge type="verified" /></div>}
       <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{t.business_name || "Teacher"}</div>
       {t.instructor && <div style={{ fontSize: "1rem", color: "var(--pink-text)", fontWeight: 700, marginTop: "0.2rem" }}>{t.instructor}</div>}
       {(t.city || t.state) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[t.city, t.state].filter(Boolean).join(", ")}</div>}

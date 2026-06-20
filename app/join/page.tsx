@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import StatusBadge from "@/components/status-badge";
 
 export const metadata: Metadata = {
   title: "Join the Find My Mahj Game Directory",
   description:
-    "Teachers, organizers, and community leaders: list your profile and events on the national mahjong directory. Founding teachers get 6 months free, then $89 for the first year.",
+    "Teachers, organizers, and community leaders: list your profile, classes, and events on the national mahjong directory. 6 months free with code FINDMYMAHJGAME, then $89 a year. Charter Member recognition for early supporters.",
   alternates: { canonical: "https://findmymahjgame.com/join" },
   openGraph: {
     title: "Join the Find My Mahj Game Directory",
     description:
-      "List your profile and events on the national mahjong directory. Founding teachers get 6 months free, then $89 for the first year.",
+      "List your profile, classes, and events on the national mahjong directory. 6 months free with code FINDMYMAHJGAME, then $89 a year.",
     url: "https://findmymahjgame.com/join",
   },
 };
@@ -25,9 +26,14 @@ const cardFeatured: React.CSSProperties = {
   border: "2px solid var(--pink)",
   boxShadow: "0 6px 24px rgba(233,30,140,0.12)",
 };
-const tierName: React.CSSProperties = { fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.3rem" };
+const cardCharter: React.CSSProperties = {
+  ...card,
+  border: "2px solid var(--gold)",
+  background: "#fffdf5",
+};
 const tierLead: React.CSSProperties = { fontSize: "1rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "1rem" };
 const price: React.CSSProperties = { fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.6rem", fontWeight: 900, color: "var(--pink-text)", marginTop: "0.4rem" };
+const sectionH2: React.CSSProperties = { border: "none", margin: "0 0 0.3rem", fontSize: "1.6rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif" };
 const list: React.CSSProperties = { listStyle: "none", margin: "0 0 0.5rem", padding: 0 };
 const liStyle: React.CSSProperties = { fontSize: "0.98rem", color: "var(--navy)", lineHeight: 1.7, paddingLeft: "1.5rem", position: "relative", marginBottom: "0.2rem" };
 const label: React.CSSProperties = { fontWeight: 700, color: "var(--navy)", margin: "0 0 0.5rem" };
@@ -47,57 +53,69 @@ export default function JoinPage() {
       <section className="page-hero">
         <p className="eyebrow">Join the directory</p>
         <h1>Join the Find My Mahj Game Directory</h1>
-        <p>Find My Mahj Game helps players discover mahjong games, teachers, leagues, tournaments, and events across the country.</p>
-        <p style={{ marginTop: "0.8rem" }}>Our goal is simple: make it easy for people to find and connect with mahjong communities.</p>
+        <p>Anyone can join so players can find your games, classes, and events across the country. Players never pay.</p>
+        <p style={{ marginTop: "0.8rem" }}>Join during launch and lock in Charter Member recognition.</p>
       </section>
 
       <div className="page-body" style={{ maxWidth: 920 }}>
-        {/* Founding Teacher Offer */}
-        <div style={{ ...cardFeatured, background: "#fff5fa", marginBottom: "2.5rem" }}>
-          <p className="eyebrow" style={{ marginBottom: "0.4rem" }}>Limited time, founding offer</p>
-          <h2 style={{ border: "none", margin: "0 0 0.6rem", fontSize: "1.6rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>Become a Founding Teacher</h2>
-          <p style={tierLead}>We&rsquo;re building the largest national mahjong directory and inviting early teachers, organizers, and community leaders to join now.</p>
-          <p style={label}>Founding teachers get:</p>
+        {/* Standard membership */}
+        <div style={{ ...cardFeatured, background: "#fff5fa", marginBottom: "1.8rem" }}>
+          <p className="eyebrow" style={{ marginBottom: "0.4rem" }}>Launch offer</p>
+          <h2 style={sectionH2}>Directory Membership</h2>
+          <p style={tierLead}>The standard membership. Everyone can join.</p>
+          <div style={price}>6 months free <span style={{ fontSize: "1rem", color: "var(--muted)", fontWeight: 600 }}>with code FINDMYMAHJGAME</span></div>
+          <p style={{ fontWeight: 700, color: "var(--navy)", margin: "0.2rem 0 1rem" }}>Then $89/year</p>
+          <p style={label}>Includes:</p>
           <ul style={list}>
-            <Check>Your first 6 months free</Check>
-            <Check>Then just $89 for your first year, locked in</Check>
-            <Check>Founding member badge</Check>
-            <Check>Priority placement as the directory grows</Check>
+            <Check>Profile</Check>
+            <Check>Events</Check>
+            <Check>Classes</Check>
+            <Check>Website and social links</Check>
+            <Check>Search placement</Check>
+            <Check>State directory placement</Check>
           </ul>
-          <p style={{ marginTop: "1rem", fontWeight: 700, color: "var(--navy)" }}>Use code <span style={{ color: "var(--pink-text)" }}>FINDMYMAHJGAME</span> when you submit your profile.</p>
         </div>
 
-        {/* Membership + the earned Verified badge */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))", gap: "1.4rem", marginBottom: "2.5rem" }}>
-          <div style={card}>
-            <div style={tierName}>Directory Membership</div>
-            <div style={price}>6 months free <span style={{ fontSize: "1rem", color: "var(--muted)", fontWeight: 600 }}>then $89 your first year</span></div>
-            <p style={{ ...tierLead, marginTop: "0.6rem" }}>For teachers, organizers, leagues, clubs, and community leaders.</p>
-            <p style={label}>Includes:</p>
-            <ul style={list}>
-              <Check>Public profile</Check>
-              <Check>Biography and teaching information</Check>
-              <Check>Website and social links</Check>
-              <Check>Contact information</Check>
-              <Check>Unlimited event listings</Check>
-              <Check>State directory placement</Check>
-              <Check>Search visibility</Check>
-            </ul>
+        {/* Charter Member (replaces Founding Teacher) */}
+        <div style={{ ...cardCharter, marginBottom: "2.5rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flexWrap: "wrap", marginBottom: "0.6rem" }}>
+            <StatusBadge type="charter" />
+            <span className="eyebrow">Early supporters, limited time</span>
           </div>
+          <h2 style={sectionH2}>Charter Member</h2>
+          <p style={tierLead}>A Charter Member is an early adopter who commits to helping build the directory. The badge stays on your profile permanently, our thank-you for being here first. It is recognition, not a tier above the others.</p>
+          <p style={label}>To qualify:</p>
+          <ul style={list}>
+            <Check>Join during the launch period</Check>
+            <Check>Use Find My Mahj Game as a primary directory listing</Check>
+            <Check>List your classes and events on the platform</Check>
+            <Check>Keep an active profile</Check>
+          </ul>
+          <p style={label}>Charter Members receive:</p>
+          <ul style={list}>
+            <Check>A permanent Charter Member badge</Check>
+            <Check>Locked-in pricing</Check>
+            <Check>Higher placement than standard members</Check>
+            <Check>Permanent recognition as an early supporter</Check>
+            <Check>Priority consideration for Community Leader and Ambassador status</Check>
+          </ul>
+        </div>
 
-          <div style={cardFeatured}>
-            <div style={tierName}>Verified Community Leader</div>
-            <div style={price}>Earned <span style={{ fontSize: "1rem", color: "var(--muted)", fontWeight: 600 }}>by meeting our criteria</span></div>
-            <p style={{ ...tierLead, marginTop: "0.6rem" }}>For active community leaders. The Verified badge is earned, not bought, so it always means a real, active teacher.</p>
-            <p style={label}>Everything in your membership, plus:</p>
-            <ul style={list}>
-              <Check>Verified badge</Check>
-              <Check>Featured placement in search and on state pages</Check>
-              <Check>Enhanced profile</Check>
-              <Check>Additional photos and media</Check>
-              <Check>Featured events</Check>
-            </ul>
-            <p style={{ fontSize: "0.92rem", color: "var(--muted)", marginTop: "0.6rem", lineHeight: 1.6 }}>Qualify by running games regularly, having real reach, and keeping your listing verified and active. Players never pay.</p>
+        {/* Status badges (separate, stackable) */}
+        <h2>Status badges</h2>
+        <p>These are separate from your membership and from each other, earned in different ways. A teacher can hold several at once, for example Charter Member, Verified Teacher, and Community Leader together.</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", gap: "1.4rem", margin: "1.2rem 0 2.5rem" }}>
+          <div style={card}>
+            <StatusBadge type="verified" />
+            <p style={{ ...tierLead, margin: "0.8rem 0 0" }}>Identity verified and approved by our team. Shows players you are a real, confirmed teacher.</p>
+          </div>
+          <div style={card}>
+            <StatusBadge type="leader" />
+            <p style={{ ...tierLead, margin: "0.8rem 0 0" }}>Earned through activity and contribution to the community. Recognizes teachers who keep games and players connected.</p>
+          </div>
+          <div style={card}>
+            <StatusBadge type="ambassador" />
+            <p style={{ ...tierLead, margin: "0.8rem 0 0" }}>Invitation only, for exceptional community builders who go above and beyond.</p>
           </div>
         </div>
 
@@ -108,8 +126,8 @@ export default function JoinPage() {
 
         {/* CTA */}
         <div style={{ textAlign: "center", marginTop: "3rem", padding: "2.5rem 1.5rem", background: "var(--bg)", borderRadius: 20, border: "1px solid var(--border)" }}>
-          <h2 style={{ border: "none", margin: "0 0 0.6rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.6rem" }}>Interested in Joining?</h2>
-          <p style={{ color: "var(--muted)", fontSize: "1.05rem", lineHeight: 1.6, maxWidth: 540, margin: "0 auto 1.5rem" }}>Create your profile and submit your events to become part of the growing Find My Mahj Game community.</p>
+          <h2 style={{ border: "none", margin: "0 0 0.6rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.6rem" }}>Ready to join?</h2>
+          <p style={{ color: "var(--muted)", fontSize: "1.05rem", lineHeight: 1.6, maxWidth: 540, margin: "0 auto 1.5rem" }}>Submit your profile with code FINDMYMAHJGAME to claim your 6 months free and Charter Member status.</p>
           <Link href="/get-listed" style={{ display: "inline-flex", minHeight: 56, alignItems: "center", justifyContent: "center", padding: "0 2.2rem", borderRadius: 14, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Submit My Profile &rarr;</Link>
         </div>
       </div>
