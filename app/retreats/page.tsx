@@ -7,7 +7,6 @@ import CityAutocomplete from "@/components/city-autocomplete";
 import { nearMatches } from "@/lib/near-match";
 import { safeHttpUrl } from "@/lib/sanitize";
 import GroupedEvents, { type GroupedRow } from "@/components/grouped-events";
-import { DEMO, demoEvents } from "@/lib/demo-data";
 
 export const metadata: Metadata = {
   title: "Mahjong Retreats by State",
@@ -33,7 +32,6 @@ export default async function RetreatsPage({ searchParams }: { searchParams: Pro
     const fallback = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, registration_url, price, day_time, frequency, beginner_friendly, host").eq("status", "published").or(`event_date.gte.${todayISO},event_date.is.null`).order("event_date", { ascending: true });
     data = (fallback.data || []).map((r) => ({ ...r, confirmed_active_at: null }));
   }
-  if (DEMO) data = demoEvents as unknown as typeof data;
 
   let rows = (data || []).filter((e) => norm(e.event_type) === "retreat");
   if (near && near.trim()) {

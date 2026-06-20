@@ -6,7 +6,6 @@ import { createServerClient } from "@/lib/supabase-server";
 import { safeHttpUrl } from "@/lib/sanitize";
 import { STATES } from "@/lib/states-data";
 import SeatDots from "@/components/seat-dots";
-import { DEMO, demoEvents, demoForming, demoStateCounts } from "@/lib/demo-data";
 
 export const metadata: Metadata = {
   title: { absolute: "Find My Mahj Game | Mahjong Players & Groups Nationwide" },
@@ -55,7 +54,7 @@ export default async function Home() {
   venues.forEach((r) => bump(r.state, "venues"));
 
   const _todayISO = new Date().toISOString().slice(0, 10);
-  const featuredEvents = (DEMO ? (demoEvents as unknown as typeof events) : events)
+  const featuredEvents = events
     .filter((e) => ["tournament", "retreat"].includes(e.event_type))
     .filter((e) => !e.event_date || e.event_date >= _todayISO)
     .slice(0, 6);
@@ -75,7 +74,7 @@ export default async function Home() {
   // surfaced publicly and tables are never ordered by how close to full they
   // are. The last chair of a committed group fills through the host's own
   // shared link, not a stranger's browse. Recency order from the query stands.
-  const formingTop = DEMO ? demoForming : forming.filter((g) => g.total - g.filled !== 1).slice(0, 6);
+  const formingTop = forming.filter((g) => g.total - g.filled !== 1).slice(0, 6);
 
   return (
     <>
@@ -97,7 +96,7 @@ export default async function Home() {
 
           {/* Full-width map */}
           <div className="map-wrapper">
-            <USMap stateCounts={DEMO ? demoStateCounts : stateCounts} />
+            <USMap stateCounts={stateCounts} />
           </div>
 
           {/* Categories below the map */}

@@ -5,7 +5,6 @@ import Footer from "@/components/layout/footer";
 import { buildHomepageSchema, schemaScriptProps } from "@/lib/schema";
 import SWRegister from "@/components/sw-register";
 import { Analytics } from "@vercel/analytics/next";
-import { DEMO } from "@/lib/demo-data";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -70,11 +69,6 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <a href="#main" className="skip-link">Skip to main content</a>
         <Header />
-        {DEMO && (
-          <div style={{ background: "var(--gold)", color: "var(--navy)", textAlign: "center", fontWeight: 800, fontSize: "0.9rem", padding: "0.5rem 1rem" }}>
-            DEMO PREVIEW: sample data to show the layout, not real listings.
-          </div>
-        )}
         <main id="main" className="flex-1">{children}</main>
         <Footer />
         {/* No proactive install prompt by design. The PWA stays installable via

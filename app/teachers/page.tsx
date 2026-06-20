@@ -6,7 +6,7 @@ import { createServerClient } from "@/lib/supabase-server";
 import CityAutocomplete from "@/components/city-autocomplete";
 import TeacherCard from "@/components/teacher-card";
 import { nearMatches } from "@/lib/near-match";
-import { DEMO, demoTeachers } from "@/lib/demo-data";
+import { LAS_VEGAS_MAHJONG } from "@/lib/featured-listings";
 
 export const metadata: Metadata = {
   title: "Find a Mahjong Teacher Near You",
@@ -21,23 +21,6 @@ export const revalidate = 300;
 // so competing Nevada teachers are excluded here on purpose.
 const TEACHER_TYPE = /instructor|teacher|lesson|studio|school|class/i;
 
-// Las Vegas Mahjong is the founder's flagship teaching business and is always
-// featured on this page. It links out to lasvegasmahj.com for booking.
-const LAS_VEGAS_MAHJONG = {
-  id: "las-vegas-mahjong",
-  business_name: "Las Vegas Mahjong",
-  venue_type: "Mahjong Instructor",
-  city: "Las Vegas",
-  state: "NV",
-  description: "Learn American Mahjong in Las Vegas through private lessons, group classes, open play events, and corporate team-building experiences. Serving beginners, experienced players, social groups, conventions, and businesses throughout the Las Vegas area.",
-  website: "https://lasvegasmahj.com",
-  instagram: "lasvegasmahjong",
-  display_email: "lasvegasmahj@gmail.com",
-  instructor: "Shauna Bruckman",
-  tier: "pro",
-  created_at: "2026-01-01T00:00:00Z",
-};
-
 const field: React.CSSProperties = { minHeight: 54, padding: "0 1rem", border: "2px solid var(--border)", borderRadius: 12, fontSize: "1.1rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", flex: "1 1 200px" };
 const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border: "none", borderRadius: 12, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" };
 
@@ -48,7 +31,6 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
 
   let rows = (data || [])
     .filter((r) => TEACHER_TYPE.test(`${r.venue_type || ""} ${r.description || ""}`));
-  if (DEMO) rows = demoTeachers as unknown as typeof rows;
   // Always feature Las Vegas Mahjong (the founder's own business). The Nevada
   // guardrail above excludes competing NV teachers, not this listing.
   rows = [LAS_VEGAS_MAHJONG, ...rows] as unknown as typeof rows;

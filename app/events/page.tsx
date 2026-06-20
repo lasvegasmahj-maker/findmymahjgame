@@ -8,7 +8,6 @@ import { nearMatches } from "@/lib/near-match";
 import { safeHttpUrl } from "@/lib/sanitize";
 import { attendInfo } from "@/lib/event-level";
 import { STATES } from "@/lib/states-data";
-import { DEMO, demoEvents } from "@/lib/demo-data";
 
 export const metadata: Metadata = {
   title: "Mahjong Events and Open Plays Near You",
@@ -76,7 +75,6 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
     const fallback = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly, host").eq("status", "published").or(`event_date.is.null,event_date.gte.${todayISO},event_type.in.(open_play,openplay,recurring)`).order("event_date", { ascending: true });
     data = (fallback.data || []).map((r) => ({ ...r, confirmed_active_at: null }));
   }
-  if (DEMO) data = demoEvents as unknown as typeof data;
 
   let rows = data || [];
   if (near && near.trim()) {
