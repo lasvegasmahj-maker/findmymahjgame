@@ -37,6 +37,9 @@ const nextConfig: NextConfig = {
       // Ambassador program dropped in favor of the Community Leader model.
       // Preserve inbound links and let search reindex to /join.
       { source: "/ambassadors", destination: "/join", permanent: true },
+      // Retreats folded into the Getaways umbrella at /travel (cruises +
+      // retreats together). Preserve inbound links and let search reindex.
+      { source: "/retreats", destination: "/travel", permanent: true },
     ];
   },
   images: {

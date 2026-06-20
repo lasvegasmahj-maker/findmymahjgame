@@ -48,19 +48,11 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
             </a>
           </div>
           <div className="bg-bg border border-border rounded-2xl p-6">
-            <h3 className="font-heading text-[1.1rem] text-navy mb-2">Advertising &amp; Partnerships
-            </h3>
-            <p className="text-[0.88rem] text-muted mb-3">Interested in advertising, venue listings, or event promotions?
-            </p>
-            <Link href="/advertise" className="text-pink font-bold no-underline">See Advertise page &rarr;
-            </Link>
-          </div>
-          <div className="bg-bg border border-border rounded-2xl p-6">
             <h3 className="font-heading text-[1.1rem] text-navy mb-2">List Your Game or Venue
             </h3>
             <p className="text-[0.88rem] text-muted mb-3">Want to get your game, venue or event listed on Find My Mahj Game?
             </p>
-            <Link href="/advertise" className="text-pink font-bold no-underline">See listing options &rarr;
+            <Link href="/get-listed" className="text-pink font-bold no-underline">Get listed &rarr;
             </Link>
           </div>
           <div className="bg-bg border border-border rounded-2xl p-6">

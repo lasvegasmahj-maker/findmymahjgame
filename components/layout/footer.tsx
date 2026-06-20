@@ -40,8 +40,6 @@ export default function Footer() {
             <h4>Teachers &amp; Organizers</h4>
             <Link href="/join">Join the Directory</Link>
             <Link href="/get-listed">Submit a Profile</Link>
-            <Link href="/advertise">Brands &amp; Sponsors</Link>
-            <Link href="/advertiser-terms">Advertiser Terms</Link>
           </div>
           <div>
             <h4>Legal</h4>

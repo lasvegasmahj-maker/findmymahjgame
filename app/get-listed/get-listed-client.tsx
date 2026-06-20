@@ -152,11 +152,6 @@ export default function GetListedClient({ defaultType = "" }: { defaultType?: st
           >Browse Players by State &rarr;
           </a>
           <a
-            href="/advertise"
-            style={{ color: "var(--pink-text)", fontWeight: 600, textDecoration: "none", fontSize: "16px" }}
-          >See advertising options
-          </a>
-          <a
             href="/"
             style={{ color: "var(--muted)", fontSize: "0.85rem", textDecoration: "none" }}
           >Back to home

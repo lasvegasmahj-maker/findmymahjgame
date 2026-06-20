@@ -109,16 +109,10 @@ export default function AboutPage() {
           listing. <Link href="/get-listed">List your event</Link> and we&rsquo;ll promote it on
           your state page.
         </p>
-        <h3>Brands &amp; Retailers</h3>
-        <p>
-          Advertise directly to an engaged niche of mahjong enthusiasts actively spending on sets,
-          accessories and experiences.
-        </p>
-
         <div className="highlight-box">
           <p>
-            Want to advertise or partner with us? See our{" "}
-            <Link href="/advertise">Advertise page</Link> or{" "}
+            Want to list your venue, event, or business? See{" "}
+            <Link href="/get-listed">how to get listed</Link> or{" "}
             <Link href="/how-it-works">learn how it works</Link>. Questions? Email{" "}
             <a href="mailto:hello@findmymahjgame.com">hello@findmymahjgame.com</a>.
           </p>

@@ -49,13 +49,14 @@ const cardGrid: React.CSSProperties = { display: "grid", gridTemplateColumns: "r
 const groupHeader: React.CSSProperties = { fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.5rem", color: "var(--navy)", margin: "0 0 1rem", paddingBottom: "0.4rem", borderBottom: "2px solid var(--border)" };
 const cardStyle: React.CSSProperties = { display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", textDecoration: "none" };
 
-function Card({ e, typeLabel, cta }: { e: GroupedRow; typeLabel: string; cta: string }) {
+function Card({ e, typeLabel, cta }: { e: GroupedRow; typeLabel: string | ((e: GroupedRow) => string); cta: string }) {
   const safeUrl = safeHttpUrl(e.registration_url);
   const external = !!safeUrl;
+  const label = typeof typeLabel === "function" ? typeLabel(e) : typeLabel;
   const inner = (
     <>
-      <div style={{ display: "inline-block", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.85rem", fontWeight: 800, color: "var(--pink-text)", marginBottom: "0.5rem" }}>{typeLabel}</div>
-      <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{e.event_name || typeLabel}</div>
+      <div style={{ display: "inline-block", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.85rem", fontWeight: 800, color: "var(--pink-text)", marginBottom: "0.5rem" }}>{label}</div>
+      <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{e.event_name || label}</div>
       {whenLabel(e) && <div style={{ fontSize: "1.05rem", color: "var(--navy)", marginTop: "0.4rem" }}>{whenLabel(e)}</div>}
       {(e.venue || e.city) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[e.venue, e.city, e.state].filter(Boolean).join(", ")}</div>}
       {e.host && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.2rem" }}>Hosted by {e.host}</div>}
@@ -79,7 +80,7 @@ function Card({ e, typeLabel, cta }: { e: GroupedRow; typeLabel: string; cta: st
   );
 }
 
-export default function GroupedEvents({ rows, typeLabel, cta, groupBy = "state" }: { rows: GroupedRow[]; typeLabel: string; cta: string; groupBy?: "state" | "city" | null }) {
+export default function GroupedEvents({ rows, typeLabel, cta, groupBy = "state" }: { rows: GroupedRow[]; typeLabel: string | ((e: GroupedRow) => string); cta: string; groupBy?: "state" | "city" | null }) {
   if (!groupBy) {
     const items = [...rows].sort(byDate);
     return <div style={cardGrid}>{items.map((e) => <Card key={e.id} e={e} typeLabel={typeLabel} cta={cta} />)}</div>;

@@ -187,15 +187,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ADVERTISE */}
-      <section id="advertise" className="ads-section">
-        <div className="ads-inner">
-          <p className="section-label" style={{ color: "var(--green-dark)" }}>Advertise With Us</p>
-          <h2 className="section-title">Reach Mahjong Players Nationwide</h2>
-          <p style={{ color: "var(--muted)", lineHeight: 1.7, margin: "1rem auto 2.5rem", maxWidth: 480 }}>Interested in advertising your brand, company, or event to an engaged niche of American Mahjong players? We&rsquo;d love to hear from you!</p>
-          <Link href="/advertise" className="btn-cta-primary">Get In Touch &rarr;</Link>
-        </div>
-      </section>
     </>
   );
 }
