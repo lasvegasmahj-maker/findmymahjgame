@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createServerClient } from "@/lib/supabase-server";
 import TeacherCard from "@/components/teacher-card";
 import StatusBadge from "@/components/status-badge";
+import { LAS_VEGAS_MAHJONG } from "@/lib/featured-listings";
 
 export const metadata: Metadata = {
   title: "Founding Advisors | Find My Mahj Game",
@@ -33,7 +34,7 @@ type Advisor = {
 const liStyle: React.CSSProperties = { fontSize: "1rem", color: "var(--navy)", lineHeight: 1.7, paddingLeft: "1.5rem", position: "relative", marginBottom: "0.3rem" };
 
 export default async function FoundingAdvisorsPage() {
-  let advisors: Advisor[] = [];
+  let dbAdvisors: Advisor[] = [];
   try {
     const supabase = createServerClient();
     const { data } = await supabase
@@ -42,11 +43,17 @@ export default async function FoundingAdvisorsPage() {
       .eq("status", "published")
       .eq("founding_advisor", true)
       .order("business_name", { ascending: true });
-    advisors = (data || []) as Advisor[];
+    dbAdvisors = (data || []) as Advisor[];
   } catch {
     // The founding_advisor column ships with the admin assign/remove build.
-    // Until then this page shows the program and a coming-soon state.
+    // Until then this page shows Las Vegas Mahjong plus any flagged advisors.
   }
+  // Las Vegas Mahjong is a Founding Advisor (the flagship example), shown
+  // alongside any advisors flagged in the database.
+  const advisors: Advisor[] = [
+    LAS_VEGAS_MAHJONG as unknown as Advisor,
+    ...dbAdvisors.filter((a) => a.id !== LAS_VEGAS_MAHJONG.id),
+  ];
 
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
