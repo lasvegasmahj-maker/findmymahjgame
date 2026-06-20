@@ -40,6 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/cruise`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${BASE}/list-my-game`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     { url: `${BASE}/join`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${BASE}/founding-advisors`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE}/states`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     { url: `${BASE}/play`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE}/start`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },

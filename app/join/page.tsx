@@ -100,6 +100,23 @@ export default function JoinPage() {
           </ul>
         </div>
 
+        {/* Founding Advisor (invitation only) */}
+        <div style={{ ...cardCharter, border: "2px solid var(--navy)", background: "#f7f8ff", marginBottom: "2.5rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", flexWrap: "wrap", marginBottom: "0.6rem" }}>
+            <StatusBadge type="advisor" />
+            <span className="eyebrow">By invitation only</span>
+          </div>
+          <h2 style={sectionH2}>Founding Advisor</h2>
+          <p style={tierLead}>A small group of respected teachers, organizers, and community leaders, personally invited by us, who help establish Find My Mahj Game during launch. You cannot apply, Founding Advisors are invited.</p>
+          <ul style={list}>
+            <Check>12 months free, then lifetime locked-in Charter pricing</Check>
+            <Check>A permanent Founding Advisor badge and a featured spot on the Founding Advisors page</Check>
+            <Check>Early access to new features and input on what we build</Check>
+            <Check>Stacks with Verified, Community Leader, and Ambassador</Check>
+          </ul>
+          <Link href="/founding-advisors" style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.05rem", textDecoration: "none" }}>Meet our Founding Advisors &rarr;</Link>
+        </div>
+
         {/* Status badges: Verified is active at launch; Leader/Ambassador come later */}
         <h2>Status badges</h2>
         <p>Badges are separate from your membership and stack on your profile, for example Charter Member and Verified Teacher together.</p>

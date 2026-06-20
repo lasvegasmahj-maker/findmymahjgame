@@ -17,6 +17,7 @@ type TeacherLike = {
   instructor?: string | null;
   tier?: string | null;
   charter?: boolean | null;
+  advisor?: boolean | null;
 };
 
 export default function TeacherCard({ t }: { t: TeacherLike }) {
@@ -25,8 +26,9 @@ export default function TeacherCard({ t }: { t: TeacherLike }) {
   const desc = t.description ? String(t.description) : "";
   return (
     <div style={{ display: "flex", flexDirection: "column", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", height: "100%" }}>
-      {(t.charter || t.tier === "pro") && (
+      {(t.advisor || t.charter || t.tier === "pro") && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginBottom: "0.6rem" }}>
+          {t.advisor && <StatusBadge type="advisor" />}
           {t.charter && <StatusBadge type="charter" />}
           {t.tier === "pro" && <StatusBadge type="verified" />}
         </div>
