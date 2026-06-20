@@ -115,14 +115,31 @@ interface ConnectForm {
 
 export default function StatePageClient({ stateData, players, events, venues }: Props) {
   const [activeTab, setActiveTab] = useState<"players" | "events" | "teachers">("players");
-  const [selectedCity, setSelectedCity] = useState(`All of ${stateData.name}`);
+  const [selectedCities, setSelectedCities] = useState<string[]>([]);
+  const [cityMenuOpen, setCityMenuOpen] = useState(false);
+  const cityMenuRef = useRef<HTMLDivElement | null>(null);
   const [eventSort, setEventSort] = useState<"date" | "city">("date");
-  const allCities = [`All of ${stateData.name}`, ...stateData.cities];
+  // Empty selection means "all of the state"; otherwise filter to the chosen cities.
+  const cityMatch = (c: string | null | undefined) =>
+    selectedCities.length === 0 || selectedCities.some((sc) => sc.toLowerCase() === String(c || "").trim().toLowerCase());
+  const toggleCity = (city: string) =>
+    setSelectedCities((prev) => (prev.includes(city) ? prev.filter((c) => c !== city) : [...prev, city]));
+  const cityLabel = selectedCities.length === 0
+    ? `All of ${stateData.name}`
+    : selectedCities.length === 1 ? selectedCities[0] : `${selectedCities.length} areas selected`;
   const [connectForm, setConnectForm] = useState<ConnectForm | null>(null);
   const connectDialogRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (connectForm) connectDialogRef.current?.querySelector<HTMLInputElement>("input")?.focus();
   }, [connectForm?.player.id]);
+  useEffect(() => {
+    if (!cityMenuOpen) return;
+    const onDoc = (e: MouseEvent) => {
+      if (cityMenuRef.current && !cityMenuRef.current.contains(e.target as Node)) setCityMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [cityMenuOpen]);
 
   useEffect(() => {
     if (!connectForm) return;
@@ -155,14 +172,9 @@ export default function StatePageClient({ stateData, players, events, venues }: 
     }
   }
 
-  // Filter by city if selected
-  const filteredPlayers = selectedCity === `All of ${stateData.name}`
-    ? players
-    : players.filter(p => p.city.toLowerCase() === selectedCity.toLowerCase());
-
-  const filteredEvents = selectedCity === `All of ${stateData.name}`
-    ? events
-    : events.filter(e => e.city.toLowerCase() === selectedCity.toLowerCase());
+  // Filter by the selected cities (empty selection = all of the state).
+  const filteredPlayers = players.filter(p => cityMatch(p.city));
+  const filteredEvents = events.filter(e => cityMatch(e.city));
 
   const byEventDate = (a: typeof events[number], b: typeof events[number]) => {
     const da = a.event_date ? new Date(a.event_date).getTime() : Infinity;
@@ -208,9 +220,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
   // Instructors/teachers are stored in venue_listings; surface them on the Teachers tab.
   const TEACHER_TYPE = /instructor|teacher|lesson|studio|school|class/i;
   const teacherVenues = venues.filter(v => TEACHER_TYPE.test(`${v.venue_type || ""} ${v.description || ""}`));
-  const filteredTeachers = selectedCity === `All of ${stateData.name}`
-    ? teacherVenues
-    : teacherVenues.filter(v => v.city.toLowerCase() === selectedCity.toLowerCase());
+  const filteredTeachers = teacherVenues.filter(v => cityMatch(v.city));
 
   return (
     <>
@@ -251,12 +261,33 @@ export default function StatePageClient({ stateData, players, events, venues }: 
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "flex-end", gap: "1.5rem", flexWrap: "wrap", justifyContent: "center" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
             <div style={{ fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)" }}>City / Town</div>
-            <select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)} style={{ background: "white", border: "none", borderRadius: 6, padding: "0.7rem 1.2rem", fontFamily: "'DM Sans', sans-serif", fontSize: "0.9rem", color: "var(--navy)", outline: "none", cursor: "pointer", minWidth: 200 }}>
-              {allCities.map((city) => (<option key={city} value={city}>{city}</option>))}
-            </select>
+            <div ref={cityMenuRef} style={{ position: "relative", minWidth: 220 }}>
+              <button type="button" onClick={() => setCityMenuOpen((o) => !o)} aria-haspopup="true" aria-expanded={cityMenuOpen ? "true" : "false"} style={{ width: "100%", background: "white", border: "none", borderRadius: 6, padding: "0.7rem 1.2rem", fontFamily: "'DM Sans', sans-serif", fontSize: "0.9rem", color: "var(--navy)", outline: "none", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.6rem" }}>
+                <span>{cityLabel}</span>
+                <span aria-hidden="true" style={{ color: "var(--muted)" }}>&#9662;</span>
+              </button>
+              {cityMenuOpen && (
+                <div role="group" aria-label={`Filter by city in ${stateData.name}`} style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, zIndex: 70, background: "white", border: "1px solid var(--border)", borderRadius: 10, boxShadow: "0 12px 32px rgba(26,31,94,0.18)", padding: "0.4rem", maxHeight: 280, overflowY: "auto" }}>
+                  <button type="button" onClick={() => setSelectedCities([])} style={{ display: "flex", alignItems: "center", gap: "0.6rem", width: "100%", textAlign: "left", padding: "0.55rem 0.7rem", border: "none", borderRadius: 8, background: "transparent", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: "0.9rem", color: "var(--navy)", fontWeight: selectedCities.length === 0 ? 800 : 500 }}>
+                    <span style={{ width: 18, height: 18, borderRadius: 4, border: "2px solid var(--border)", background: selectedCities.length === 0 ? "var(--pink)" : "white", borderColor: selectedCities.length === 0 ? "var(--pink)" : "var(--border)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "0.7rem", flexShrink: 0 }}>{selectedCities.length === 0 ? "✓" : ""}</span>
+                    All of {stateData.name}
+                  </button>
+                  {stateData.cities.map((city) => {
+                    const checked = selectedCities.includes(city);
+                    return (
+                      <label key={city} style={{ display: "flex", alignItems: "center", gap: "0.6rem", width: "100%", padding: "0.55rem 0.7rem", borderRadius: 8, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: "0.9rem", color: "var(--navy)" }}>
+                        <input type="checkbox" checked={checked} onChange={() => toggleCity(city)} style={{ position: "absolute", opacity: 0, width: 1, height: 1 }} />
+                        <span style={{ width: 18, height: 18, borderRadius: 4, border: "2px solid", borderColor: checked ? "var(--pink)" : "var(--border)", background: checked ? "var(--pink)" : "white", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "0.7rem", flexShrink: 0 }}>{checked ? "✓" : ""}</span>
+                        {city}
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-        <p style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.82rem", color: "rgba(255,255,255,0.55)" }}>Showing all players, events &amp; teachers across <strong style={{ color: "white" }}>{stateData.name}</strong>
+        <p style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.82rem", color: "rgba(255,255,255,0.55)" }}>{selectedCities.length === 0 ? (<>Showing players, events &amp; teachers across <strong style={{ color: "white" }}>{stateData.name}</strong></>) : (<>Showing players, events &amp; teachers in <strong style={{ color: "white" }}>{selectedCities.join(", ")}</strong></>)}
         </p>
       </div>
 
