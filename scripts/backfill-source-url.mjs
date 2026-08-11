@@ -49,7 +49,7 @@ const unparsed = [];
 for (const { table, nameCol } of TABLES) {
   const { data, error } = await supabase
     .from(table)
-    .select(`id, ${nameCol}, city, state, status, reviewer_notes, source_url`);
+    .select(`id, ${nameCol}, city, state, status, reviewer_notes, source_url${HAS_SOURCE_TYPE ? ", source_type" : ""}`);
   if (error) {
     console.error(`FAILED reading ${table}:`, error.message);
     process.exit(1);
@@ -60,7 +60,11 @@ for (const { table, nameCol } of TABLES) {
   let noNotes = 0;
 
   for (const row of data) {
-    if (row.source_url && String(row.source_url).trim()) {
+    const hasUrl = Boolean(row.source_url && String(row.source_url).trim());
+    const hasType = Boolean(row.source_type && String(row.source_type).trim());
+    // source_url landed before source_type existed. Skipping every row that already has a URL
+    // would leave source_type permanently empty, so the two fields are considered separately.
+    if (hasUrl && (hasType || !HAS_SOURCE_TYPE)) {
       alreadySet++;
       continue;
     }
@@ -71,17 +75,17 @@ for (const { table, nameCol } of TABLES) {
     }
     const m = SOURCE_RE.exec(notes) || ANY_URL_RE.exec(notes);
     const url = cleanUrl(m && m[1]);
+    const sourceType = IMPORTED_RE.test(notes) ? "imported" : "admin";
+
+    if (hasUrl && !hasType) {
+      planned.push({ id: row.id, name: row[nameCol], status: row.status, url: null, source_type: sourceType, typeOnly: true });
+      continue;
+    }
     if (!url) {
       unparsed.push({ table, id: row.id, name: row[nameCol], notes: notes.slice(0, 90) });
       continue;
     }
-    planned.push({
-      id: row.id,
-      name: row[nameCol],
-      status: row.status,
-      url,
-      source_type: IMPORTED_RE.test(notes) ? "imported" : "admin",
-    });
+    planned.push({ id: row.id, name: row[nameCol], status: row.status, url, source_type: sourceType, typeOnly: false });
   }
 
   console.log(`\n=== ${table} ===`);
@@ -90,9 +94,10 @@ for (const { table, nameCol } of TABLES) {
   console.log(`  no reviewer_notes:      ${noNotes}`);
   console.log(`  could not parse a URL:  ${unparsed.filter((u) => u.table === table).length}`);
   console.log(`  WOULD WRITE:            ${planned.length}`);
+  console.log(`     of which source_type only: ${planned.filter((p) => p.typeOnly).length}`);
 
   const hosts = {};
-  for (const p of planned) {
+  for (const p of planned.filter((x) => x.url)) {
     const h = new URL(p.url).hostname;
     hosts[h] = (hosts[h] || 0) + 1;
   }
@@ -102,7 +107,7 @@ for (const { table, nameCol } of TABLES) {
   console.log("  top source hosts:", top.map(([h, c]) => `${h}(${c})`).join(", "));
   console.log("  samples:");
   for (const p of planned.slice(0, 3)) {
-    console.log(`    ${p.name} [${p.status}] -> ${p.url}`);
+    console.log(`    ${p.name} [${p.status}] -> ${p.typeOnly ? `source_type=${p.source_type}` : p.url}`);
   }
 
   totalPlanned += planned.length;
@@ -112,14 +117,17 @@ for (const { table, nameCol } of TABLES) {
     let ok = 0;
     let failed = 0;
     for (const p of planned) {
-      const payload = HAS_SOURCE_TYPE
-        ? { source_url: p.url, source_type: p.source_type }
-        : { source_url: p.url };
-      const { error: upErr } = await supabase
-        .from(table)
-        .update(payload)
-        .eq("id", p.id)
-        .or("source_url.is.null,source_url.eq.");
+      // A type-only fill must not carry the source_url guard, since that row already has one.
+      let write;
+      if (p.typeOnly) {
+        write = supabase.from(table).update({ source_type: p.source_type }).eq("id", p.id).is("source_type", null);
+      } else {
+        const payload = HAS_SOURCE_TYPE
+          ? { source_url: p.url, source_type: p.source_type }
+          : { source_url: p.url };
+        write = supabase.from(table).update(payload).eq("id", p.id).or("source_url.is.null,source_url.eq.");
+      }
+      const { error: upErr } = await write;
       if (upErr) {
         failed++;
         console.error(`    write failed ${p.id}: ${upErr.message}`);
