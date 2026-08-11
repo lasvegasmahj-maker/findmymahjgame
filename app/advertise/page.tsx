@@ -70,8 +70,8 @@ export default async function AdvertisePage() {
     [String(players), "Players listed"],
     [String(teachers), "Teachers listed"],
     [String(events), "Events listed"],
-    [subscribers != null ? String(subscribers) : "—", "Newsletter subscribers"],
   ];
+  if (subscribers != null) stats.push([String(subscribers), "Newsletter subscribers"]);
 
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>

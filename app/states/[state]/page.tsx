@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import StatePageClient from "./client";
 import { buildStatePageSchema, schemaScriptProps } from "@/lib/schema";
 import { LAS_VEGAS_MAHJONG } from "@/lib/featured-listings";
+import { isUpcoming } from "@/lib/schedule";
 
 export const revalidate = 3600; // revalidate every hour
 
@@ -89,10 +90,9 @@ export default async function StatePage({ params, searchParams }: { params: Prom
       .order("created_at", { ascending: false }),
     supabase
       .from("event_listings")
-      .select("id, event_name, event_type, city, state, venue, address, description, event_date, end_date, price, host, registration_url, tier, created_at")
+      .select("id, event_name, event_type, city, state, venue, address, description, event_date, end_date, price, host, registration_url, tier, created_at, day_time, frequency")
       .eq("state", data.abbr)
       .eq("status", "published")
-      .or(`event_date.is.null,event_date.gte.${new Date().toISOString().slice(0, 10)},event_type.in.(open_play,openplay,recurring)`)
       .order("event_date", { ascending: true }),
     supabase
       .from("venue_listings")
@@ -103,7 +103,7 @@ export default async function StatePage({ params, searchParams }: { params: Prom
   ]);
 
   const players = playersRes.data || [];
-  const events = eventsRes.data || [];
+  const events = (eventsRes.data || []).filter((e) => isUpcoming(e));
   let venues = venuesRes.data || [];
   // Always feature Las Vegas Mahjong (the founder's own business) on Nevada,
   // so it appears in the Nevada Teachers tab alongside the Sponsored block.

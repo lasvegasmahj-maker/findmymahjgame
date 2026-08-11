@@ -78,9 +78,15 @@ for (const level of ["high", "medium", "low"]) {
   for (const b of buckets[level].slice(0, SHOW)) console.log(line(b));
 }
 
+const writable = [...buckets.high, ...buckets.medium];
+const cleanRows = writable.filter((b) => b.parsed.ambiguities.length === 0);
+const caveated = writable.filter((b) => b.parsed.ambiguities.length > 0);
+
 console.log("\n=== write plan ===");
-console.log(`WOULD WRITE structured schedule for: ${buckets.high.length + buckets.medium.length} rows`);
-console.log(`WOULD FLAG for human review (no write): ${buckets.low.length} rows`);
+console.log(`day of week and recurrence written (no ambiguity):  ${cleanRows.length} rows`);
+console.log(`times only, flagged for review (has ambiguity):     ${caveated.length} rows`);
+console.log(`untouched, flagged for review (low confidence):     ${buckets.low.length} rows`);
+console.log("a day or a recurrence flag is only written when the parse carries no caveat at all");
 
 if (!APPLY) {
   console.log("\nMode: DRY RUN. Nothing was written. Re-run with --apply.");
@@ -91,19 +97,26 @@ let ok = 0;
 let failed = 0;
 for (const b of [...buckets.high, ...buckets.medium]) {
   const p = b.parsed;
-  let write = supabase
-    .from("event_listings")
-    .update({
-      day_of_week: p.days.length ? p.days : null,
-      start_time: p.startTime,
-      end_time: p.endTime,
-      time_of_day: p.timeOfDay,
-      is_recurring: p.isRecurring,
-      frequency: p.frequency,
-      schedule_confidence: p.confidence,
-      schedule_parsed_at: new Date().toISOString(),
-    })
-    .eq("id", b.row.id);
+  // A recorded ambiguity means the parse is not a fact. Times are still safe to store, but a
+  // day and a recurrence flag are claims a player would act on, so those are written only for
+  // a completely clean parse. "1st and 3rd Wednesday" must never become a weekly Wednesday
+  // game, and a day lifted from a venue name must never become a schedule.
+  const clean = p.ambiguities.length === 0;
+  const payload = {
+    start_time: p.startTime,
+    end_time: p.endTime,
+    time_of_day: p.timeOfDay,
+    schedule_confidence: p.confidence,
+    schedule_parsed_at: new Date().toISOString(),
+  };
+  if (clean) {
+    payload.day_of_week = p.days.length ? p.days : null;
+    payload.is_recurring = p.isRecurring;
+  } else {
+    payload.review_flag = "schedule_needs_review";
+  }
+  // frequency stays the human readable display string; a null parse must not blank it.
+  let write = supabase.from("event_listings").update(payload).eq("id", b.row.id);
   if (!FORCE) write = write.is("schedule_parsed_at", null);
   const { error: upErr } = await write;
   if (upErr) {

@@ -36,11 +36,13 @@ function saveCache(cache) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Lower bound is 17 rather than 24 so Hawaii and Puerto Rico are not discarded as misses.
+// countrycodes=us already constrains the lookup; this box only catches obvious garbage.
 function validCoords(lat, lng) {
   return (
     Number.isFinite(lat) &&
     Number.isFinite(lng) &&
-    lat >= 24 &&
+    lat >= 17 &&
     lat <= 72 &&
     lng >= -180 &&
     lng <= -66

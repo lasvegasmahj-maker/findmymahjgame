@@ -259,6 +259,13 @@ export function parseSchedule(input: ScheduleInput): ParsedSchedule {
   if (days.length > 3) {
     ambiguities.push(`${days.length} days matched, which often means prose mentioned dates in passing`);
   }
+  // "Mahjong Monday at Sunday Press" yields monday and sunday, and the second one is a venue
+  // name, not a game. Any extra day that also appears in the listing title is suspect.
+  if (days.length > 1 && eventName && findDays(eventName).length > 0) {
+    ambiguities.push(
+      "a day word also appears in the listing name, so one of these may be a venue name rather than a schedule"
+    );
+  }
 
   let confidence: ScheduleConfidence;
   const dayFromSchedule =
@@ -320,7 +327,9 @@ export function isUpcoming(
   }
 
   if (recurring) return true;
-  if (!row.event_date) return false;
+  // No date at all means an undated standing listing, not something that has finished.
+  // Treating it as past would silently hide roughly a quarter of the researched backlog.
+  if (!row.event_date) return true;
 
   const when = new Date(row.event_date);
   if (Number.isNaN(when.getTime())) return false;

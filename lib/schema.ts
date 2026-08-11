@@ -372,7 +372,7 @@ export function buildHowItWorksSchema() {
         name: "How much does it cost to get listed?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Being listed is free forever, and you are never charged merely to be listed. Players never pay. The optional Verified Community Leader plan is $12/month or $99/year and adds a verified badge, priority placement in search, featured placement on state pages, more photos, and featured events.",
+          text: "Players never pay to find a game. Teachers and organizers join the directory for $89 a year, with the first 6 months free during launch using code FINDMYMAHJGAME. Membership covers your profile, your classes, and your events across every role you play.",
         },
       },
       {
@@ -536,7 +536,7 @@ export function buildListMyGamePageSchema() {
     "@id": `${SITE_URL}/list-my-game/#webpage`,
     name: "Create a Free Player Listing | Find My Mahj Game",
     description:
-      "List yourself as a mahjong player so others in your area can find you. Free forever — no credit card required.",
+      "List yourself as a mahjong player so others in your area can find you. Free forever, no credit card required.",
     url: `${SITE_URL}/list-my-game`,
     isPartOf: { "@id": `${SITE_URL}/#website` },
     breadcrumb: {

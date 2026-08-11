@@ -119,7 +119,7 @@ for (const { table, nameCol } of TABLES) {
         .from(table)
         .update(payload)
         .eq("id", p.id)
-        .is("source_url", null);
+        .or("source_url.is.null,source_url.eq.");
       if (upErr) {
         failed++;
         console.error(`    write failed ${p.id}: ${upErr.message}`);

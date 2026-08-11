@@ -396,14 +396,38 @@ export async function searchVenues(
   return params.limit ? final.slice(0, params.limit) : final;
 }
 
+// Fetch by primary key. Scanning the published set and filtering in JS would silently 404 any
+// listing past the first page of rows once the backlog is published.
+async function getByIdWithFallback<T>(
+  table: string,
+  baseFields: string[],
+  truthFields: string[],
+  id: string
+): Promise<T | null> {
+  const supabase = createServerClient();
+  const run = async (fields: string[]) => {
+    const { data, error } = await supabase
+      .from(table)
+      .select(fields.join(", "))
+      .eq("id", id)
+      .eq("status", "published")
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return (data as T | null) ?? null;
+  };
+  try {
+    return await run([...baseFields, ...truthFields]);
+  } catch {
+    return await run(baseFields);
+  }
+}
+
 export async function getEvent(id: string): Promise<EventRow | null> {
-  const rows = await searchEvents({ includePast: true, limit: 2000 });
-  return rows.find((r) => r.id === id) || null;
+  return getByIdWithFallback<EventRow>("event_listings", EVENT_BASE_FIELDS, EVENT_TRUTH_FIELDS, id);
 }
 
 export async function getVenue(id: string): Promise<VenueRow | null> {
-  const rows = await searchVenues({ limit: 2000 });
-  return rows.find((r) => r.id === id) || null;
+  return getByIdWithFallback<VenueRow>("venue_listings", VENUE_BASE_FIELDS, VENUE_TRUTH_FIELDS, id);
 }
 
 export type RelaxationStep = {
