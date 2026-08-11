@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createServerClient } from "@/lib/supabase-server";
+import { searchEvents } from "@/lib/search";
 import { safeHttpUrl } from "@/lib/sanitize";
 import NotifyMe from "@/components/notify-me";
 import GroupedEvents, { type GroupedRow } from "@/components/grouped-events";
@@ -15,9 +15,6 @@ export const metadata: Metadata = {
 export const revalidate = 3600;
 
 const norm = (t: string | null | undefined) => (t || "").toLowerCase().replace(/[^a-z]/g, "");
-
-const SELECT_FULL = "id, event_name, event_type, city, state, venue, description, event_date, registration_url, price, day_time, frequency, beginner_friendly, confirmed_active_at, host";
-const SELECT_FALLBACK = "id, event_name, event_type, city, state, venue, description, event_date, registration_url, price, day_time, frequency, beginner_friendly, host";
 
 const CITIES = [
   { label: "Dallas, TX", href: "/states/texas/dallas" },
@@ -44,18 +41,9 @@ export default async function TravelPage({ searchParams }: { searchParams: Promi
   const activeSort = (sort || "state").toLowerCase();
   const groupBy: "state" | null = activeSort === "date" ? null : "state";
 
-  const supabase = createServerClient();
-  const todayISO = new Date().toISOString().slice(0, 10);
   let rows: GroupedRow[] = [];
   try {
-    let { data } = await supabase.from("event_listings").select(SELECT_FULL).eq("status", "published");
-    if (!data) {
-      const fb = await supabase.from("event_listings").select(SELECT_FALLBACK).eq("status", "published");
-      data = (fb.data || []).map((r) => ({ ...r, confirmed_active_at: null }));
-    }
-    rows = ((data || [])
-      .filter((e) => ["cruise", "retreat"].includes(norm(e.event_type)))
-      .filter((e) => !e.event_date || e.event_date >= todayISO)) as GroupedRow[];
+    rows = await searchEvents({ types: ["retreat"] });
   } catch { /* table not ready: fall through to the empty state */ }
 
   const _today = new Date(); _today.setHours(0, 0, 0, 0);

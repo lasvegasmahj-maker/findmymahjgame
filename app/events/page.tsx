@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import NotifyMe from "@/components/notify-me";
 import BrandedEmptyState from "@/components/branded-empty-state";
-import { createServerClient } from "@/lib/supabase-server";
+import { searchEvents } from "@/lib/search";
+import { resolveLocation } from "@/lib/resolve-location";
+import { RADIUS_OPTIONS, formatDistance } from "@/lib/geo";
+import { whenLabel } from "@/lib/event-display";
 import CityAutocomplete from "@/components/city-autocomplete";
-import { nearMatches } from "@/lib/near-match";
 import { safeHttpUrl } from "@/lib/sanitize";
 import { attendInfo } from "@/lib/event-level";
-import { isUpcoming } from "@/lib/schedule";
 import { STATES } from "@/lib/states-data";
 import { schemaScriptProps } from "@/lib/schema";
 
@@ -32,11 +33,12 @@ function rank(t: string | null | undefined): number {
 // Discovery filters: each chip narrows the public listings to one kind of
 // Mahjong activity. "open_play" folds in recurring weekly games; "event" covers
 // the destination/special formats.
-const TYPE_GROUPS: Record<string, (t: string | null | undefined) => boolean> = {
-  open_play: (t) => ["openplay", "recurring"].includes(norm(t)),
-  tournament: (t) => norm(t) === "tournament",
-  league: (t) => norm(t) === "league",
-  event: (t) => ["event", "special", "retreat", "cruise", "conference", "festival", "fundraiser", "social"].includes(norm(t)),
+const TYPE_SEARCH_KEYS: Record<string, string[] | null> = {
+  all: null,
+  open_play: ["open_play"],
+  tournament: ["tournament"],
+  league: ["league"],
+  event: ["social", "retreat"],
 };
 const CHIPS: [string, string][] = [
   ["all", "All"], ["open_play", "Open plays"], ["tournament", "Tournaments"],
@@ -51,51 +53,35 @@ const EMPTY_META: Record<string, { label: string; cta?: string; href?: string; p
   league: { label: "leagues", cta: "List a league", href: "/get-listed?type=League", phrase: "a Mahjong league", organizer: true },
   event: { label: "events or retreats", cta: "List an event or retreat", href: "/get-listed?type=Retreat", phrase: "a Mahjong event or retreat", organizer: true },
 };
-function whenLabel(e: { event_date?: string | null; day_time?: string | null; day_of_week?: string | null; time_of_day?: string | null }): string {
-  if (e.day_time && !e.event_date) return e.day_time;
-  if (e.day_time && e.event_date && new Date(e.event_date).getTime() < Date.now()) return e.day_time;
-  if (e.event_date) {
-    const d = new Date(e.event_date);
-    if (!isNaN(d.getTime())) return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" });
-  }
-  return e.day_time || [e.day_of_week, e.time_of_day].filter(Boolean).join(" ");
-}
-
 const field: React.CSSProperties = { minHeight: 54, padding: "0 1rem", border: "2px solid var(--border)", borderRadius: 12, fontSize: "1.1rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", flex: "1 1 200px" };
 const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border: "none", borderRadius: 12, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" };
 const chipBase: React.CSSProperties = { display: "inline-block", padding: "0.5rem 1.1rem", borderRadius: 50, fontSize: "1rem", fontWeight: 800, textDecoration: "none", border: "2px solid var(--border)" };
 
-export default async function EventsPage({ searchParams }: { searchParams: Promise<{ near?: string; type?: string; sort?: string }> }) {
-  const { near, type, sort } = await searchParams;
+// "nearby" already reads as a phrase; a measured distance needs the trailing word.
+function distanceLabel(miles: number, precision: "address" | "postal" | "city" | null | undefined): string {
+  const d = formatDistance(miles, precision);
+  return d === "nearby" ? d : `${d} away`;
+}
+
+export default async function EventsPage({ searchParams }: { searchParams: Promise<{ near?: string; type?: string; sort?: string; radius?: string }> }) {
+  const { near, type, sort, radius } = await searchParams;
   const activeType = (type || "all").toLowerCase();
   const activeSort = (sort || "state").toLowerCase();
   const em = EMPTY_META[activeType] || EMPTY_META.all;
-  const supabase = createServerClient();
-  let { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly, confirmed_active_at, host").eq("status", "published").order("event_date", { ascending: true });
-  if (!data) {
-    const fallback = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly, host").eq("status", "published").order("event_date", { ascending: true });
-    data = (fallback.data || []).map((r) => ({ ...r, confirmed_active_at: null }));
-  }
+  const radiusMiles = RADIUS_OPTIONS.find((r) => String(r) === radius) ?? null;
+  const typeKeys = TYPE_SEARCH_KEYS[activeType];
 
-  let rows = (data || []).filter((e) => isUpcoming(e));
-  if (near && near.trim()) {
-    let n = near.trim().toLowerCase();
-    // ZIP search: resolve a 5-digit ZIP to its city so nearby events match.
-    if (/^\d{5}$/.test(near.trim())) {
-      try {
-        const r = await fetch(`https://api.zippopotam.us/us/${near.trim()}`, { cache: "force-cache" });
-        if (r.ok) {
-          const g = await r.json();
-          const place = (g.places || [])[0] || {};
-          const z = String(place["place name"] || "").toLowerCase();
-          if (z) n = z;
-        }
-      } catch { /* zip lookup failed: fall back to raw text match */ }
-    }
-    rows = rows.filter((e) => nearMatches(n, e.city, e.state));
-  }
-  const typeFilter = TYPE_GROUPS[activeType];
-  if (typeFilter) rows = rows.filter((e) => typeFilter(e.event_type));
+  // A radius is only honoured when the typed location actually resolves to coordinates.
+  // Falling back to text matching keeps a nonsense location from silently returning the
+  // whole country as if it were nearby.
+  const located = near && near.trim() && radiusMiles ? await resolveLocation(near) : null;
+
+  let rows = await searchEvents({
+    near: located ? null : near || null,
+    center: located ? located.coords : null,
+    radiusMiles: located ? radiusMiles : null,
+    types: typeKeys,
+  });
 
   const FRESH_MS = 90 * 24 * 60 * 60 * 1000;
   const isFresh = (at?: string | null) => !!at && Date.now() - new Date(at).getTime() < FRESH_MS;
@@ -146,6 +132,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
     if (near && near.trim()) qs.set("near", near.trim());
     if (k !== "all") qs.set("type", k);
     if (activeSort !== "state") qs.set("sort", activeSort);
+    if (radiusMiles) qs.set("radius", String(radiusMiles));
     const s = qs.toString();
     return `/events${s ? `?${s}` : ""}`;
   };
@@ -154,8 +141,18 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
     if (near && near.trim()) qs.set("near", near.trim());
     if (activeType !== "all") qs.set("type", activeType);
     if (k !== "state") qs.set("sort", k);
+    if (radiusMiles) qs.set("radius", String(radiusMiles));
     const s = qs.toString();
     return `/events${s ? `?${s}` : ""}`;
+  };
+  const radiusHref = (r: number | null) => {
+    const qs = new URLSearchParams();
+    if (near && near.trim()) qs.set("near", near.trim());
+    if (activeType !== "all") qs.set("type", activeType);
+    if (activeSort !== "state") qs.set("sort", activeSort);
+    if (r) qs.set("radius", String(r));
+    const s2 = qs.toString();
+    return `/events${s2 ? `?${s2}` : ""}`;
   };
   const SORTS: [string, string][] = [
     ["state", "By state"],
@@ -171,7 +168,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
         {e.event_type && <div style={{ display: "inline-block", textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.85rem", fontWeight: 800, color: "var(--pink-text)", marginBottom: "0.5rem" }}>{String(e.event_type).replace(/_/g, " ")}</div>}
         <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{e.event_name || "Mahjong"}</div>
         {whenLabel(e) && <div style={{ fontSize: "1.05rem", color: "var(--navy)", marginTop: "0.4rem" }}>{whenLabel(e)}</div>}
-        {(e.venue || e.city) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[e.venue, e.city, e.state].filter(Boolean).join(", ")}</div>}
+        {(e.venue || e.city) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[e.venue, e.city, e.state].filter(Boolean).join(", ")}{typeof e.distanceMiles === "number" ? ` (${distanceLabel(e.distanceMiles, e.geo_precision)})` : ""}</div>}
         {e.host && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.2rem" }}>Hosted by {e.host}</div>}
         {e.price && <div style={{ fontSize: "1rem", fontWeight: 800, color: e.price.toLowerCase() === "free" ? "#1a6e3a" : "var(--navy)", marginTop: "0.2rem" }}>{e.price}</div>}
         <div style={{ marginTop: "0.45rem", display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
@@ -214,12 +211,33 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
         <CityAutocomplete id="near" name="near" defaultValue={near || ""} placeholder="Your city, state, or ZIP" inputStyle={field} submitOnPick />
         {activeType !== "all" && <input type="hidden" name="type" value={activeType} />}
         {activeSort !== "state" && <input type="hidden" name="sort" value={activeSort} />}
+        {radiusMiles && <input type="hidden" name="radius" value={String(radiusMiles)} />}
         <button type="submit" style={goBtn}>Search</button>
       </form>
 
+      {near && near.trim() && (
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center", alignItems: "center", margin: "0 auto 1rem" }}>
+          <span style={{ fontSize: "0.9rem", color: "var(--muted)", fontWeight: 700 }}>Within:</span>
+          <Link href={radiusHref(null)} style={{ ...chipBase, padding: "0.35rem 0.9rem", fontSize: "0.9rem", background: !radiusMiles ? "var(--navy)" : "white", color: !radiusMiles ? "white" : "var(--navy)", borderColor: !radiusMiles ? "var(--navy)" : "var(--border)" }}>Any distance</Link>
+          {RADIUS_OPTIONS.map((r) => (
+            <Link key={r} href={radiusHref(r)} style={{ ...chipBase, padding: "0.35rem 0.9rem", fontSize: "0.9rem", background: radiusMiles === r ? "var(--navy)" : "white", color: radiusMiles === r ? "white" : "var(--navy)", borderColor: radiusMiles === r ? "var(--navy)" : "var(--border)" }}>{r} miles</Link>
+          ))}
+        </div>
+      )}
+      {located && (
+        <p style={{ fontSize: "0.95rem", color: "var(--muted)", textAlign: "center", margin: "0 auto 1.2rem" }}>
+          Showing games within {radiusMiles} miles of {located.label}. Distances are approximate, measured from the centre of each town.
+        </p>
+      )}
+      {near && near.trim() && radiusMiles && !located && (
+        <p style={{ fontSize: "0.95rem", color: "var(--muted)", textAlign: "center", margin: "0 auto 1.2rem" }}>
+          We could not place &ldquo;{near}&rdquo; on the map, so these are name matches rather than a distance search.
+        </p>
+      )}
+
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center", margin: "0 auto 1rem" }}>
         {CHIPS.map(([k, label]) => {
-          const active = activeType === k || (k === "all" && !TYPE_GROUPS[activeType]);
+          const active = activeType === k || (k === "all" && !TYPE_SEARCH_KEYS[activeType]);
           return (
             <Link key={k} href={chipHref(k)} style={{ ...chipBase, background: active ? "var(--navy)" : "white", color: active ? "white" : "var(--navy)", borderColor: active ? "var(--navy)" : "var(--border)" }}>{label}</Link>
           );

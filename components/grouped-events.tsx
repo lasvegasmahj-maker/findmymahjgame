@@ -1,4 +1,5 @@
 import { safeHttpUrl } from "@/lib/sanitize";
+import { whenLabel } from "@/lib/event-display";
 import { attendInfo } from "@/lib/event-level";
 import { STATES } from "@/lib/states-data";
 
@@ -24,20 +25,13 @@ export type GroupedRow = {
   price: string | null;
   beginner_friendly: string | null;
   confirmed_active_at: string | null;
+  day_of_week?: string[] | null;
+  time_of_day?: string | null;
 };
 
 const FRESH_MS = 90 * 24 * 60 * 60 * 1000;
 const isFresh = (at?: string | null) => !!at && Date.now() - new Date(at).getTime() < FRESH_MS;
 
-function whenLabel(e: GroupedRow): string {
-  if (e.day_time && !e.event_date) return e.day_time;
-  if (e.day_time && e.event_date && new Date(e.event_date).getTime() < Date.now()) return e.day_time;
-  if (e.event_date) {
-    const d = new Date(e.event_date);
-    if (!isNaN(d.getTime())) return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" });
-  }
-  return e.day_time || "";
-}
 
 const byDate = (a: GroupedRow, b: GroupedRow) => {
   const da = a.event_date ? new Date(a.event_date).getTime() : Infinity;

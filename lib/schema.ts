@@ -340,7 +340,7 @@ export function buildHowItWorksSchema() {
         name: "How do I find mahjong players near me?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Go to your state page by clicking your state on the homepage map or navigating directly to findmymahjgame.com/states/[your-state]. Then use the city dropdown or enter your zip code to filter results.",
+          text: "Go to your state page by clicking your state on the homepage map or navigating directly to findmymahjgame.com/states/[your-state]. To search by distance, use the Events page and enter your city or 5-digit ZIP, then choose 5, 10, 25, or 50 miles.",
         },
       },
       {
@@ -413,7 +413,7 @@ export function buildHowItWorksSchema() {
         "@type": "HowToStep",
         position: 2,
         name: "Search by city or zip code",
-        text: "Use the city dropdown or enter your zip code and select your distance range: 5, 10, 25, or 50 miles. Results update instantly.",
+        text: "On the Events page, enter your city or 5-digit ZIP and choose a distance: 5, 10, 25, or 50 miles. Distances are approximate, measured from the centre of each town.",
         url: `${SITE_URL}/how-it-works`,
       },
       {

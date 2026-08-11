@@ -59,7 +59,7 @@ export default function HowItWorksClient() {
             <h2 style={{ marginTop: 0 }}>Finding Your Game</h2>
             <div className="flex flex-col gap-6 my-6">
               <Step num={1} title="Go to your state page" desc="Click your state on the map or navigate directly e.g. findmymahjgame.com/florida. Every state has its own page with players, events and teachers." />
-              <Step num={2} title="Search by city or zip code" desc="Use the city dropdown or enter your zip code and select your distance range 5, 10, 25 or 50 miles. Results update instantly." />
+              <Step num={2} title="Search by city or zip code" desc="On the Events page, enter your city or 5-digit ZIP and choose a distance: 5, 10, 25, or 50 miles. Distances are approximate, measured from the centre of each town." />
               <Step num={3} title="Browse players, events and teachers" desc="Switch between the Players, Events and Teachers tabs to find exactly what you're looking for." />
               <Step num={4} title="Connect & play!" desc="Click Connect on a player card, RSVP to an event, or contact a teacher. It's always free for players." />
             </div>

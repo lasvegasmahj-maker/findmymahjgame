@@ -308,6 +308,18 @@ export function isUpcoming(
   },
   now: Date = new Date()
 ): boolean {
+  // A retreat or cruise happens once. Its day_time is a departure time, not a weekly cadence,
+  // so the usual recurrence signals must not resurrect a trip whose date has passed.
+  const oneTimeByNature = ["retreat", "cruise"].includes(
+    String(row.event_type || "").toLowerCase().replace(/[^a-z]/g, "")
+  );
+  if (oneTimeByNature && row.event_date) {
+    const when = new Date(row.event_date);
+    const startOfDay = new Date(now);
+    startOfDay.setHours(0, 0, 0, 0);
+    return !Number.isNaN(when.getTime()) && when >= startOfDay;
+  }
+
   let recurring =
     row.is_recurring === true ||
     (Array.isArray(row.day_of_week) && row.day_of_week.length > 0) ||

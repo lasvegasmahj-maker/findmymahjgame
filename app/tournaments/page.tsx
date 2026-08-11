@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import NotifyMe from "@/components/notify-me";
 import BrandedEmptyState from "@/components/branded-empty-state";
-import { createServerClient } from "@/lib/supabase-server";
+import { searchEvents } from "@/lib/search";
 import CityAutocomplete from "@/components/city-autocomplete";
-import { nearMatches } from "@/lib/near-match";
 import { safeHttpUrl } from "@/lib/sanitize";
-import GroupedEvents, { type GroupedRow } from "@/components/grouped-events";
+import GroupedEvents from "@/components/grouped-events";
 import { schemaScriptProps } from "@/lib/schema";
 
 export const metadata: Metadata = {
@@ -17,8 +16,6 @@ export const metadata: Metadata = {
 
 export const revalidate = 300;
 
-const norm = (t: string | null | undefined) => (t || "").toLowerCase().replace(/[^a-z]/g, "");
-
 const field: React.CSSProperties = { minHeight: 54, padding: "0 1rem", border: "2px solid var(--border)", borderRadius: 12, fontSize: "1.1rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", flex: "1 1 200px" };
 const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border: "none", borderRadius: 12, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" };
 
@@ -26,27 +23,14 @@ export default async function TournamentsPage({ searchParams }: { searchParams: 
   const { near, sort } = await searchParams;
   const activeSort = (sort || "state").toLowerCase();
   const groupBy: "state" | null = activeSort === "date" ? null : "state";
-  const supabase = createServerClient();
-  const todayISO = new Date().toISOString().slice(0, 10);
-  let { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, registration_url, price, day_time, frequency, beginner_friendly, confirmed_active_at, host").eq("status", "published").or(`event_date.gte.${todayISO},event_date.is.null,frequency.not.is.null`).order("event_date", { ascending: true });
-  if (!data) {
-    const fallback = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, registration_url, price, day_time, frequency, beginner_friendly, host").eq("status", "published").or(`event_date.gte.${todayISO},event_date.is.null,frequency.not.is.null`).order("event_date", { ascending: true });
-    data = (fallback.data || []).map((r) => ({ ...r, confirmed_active_at: null }));
-  }
+  const rows = await searchEvents({ types: ["tournament"], near: near || null });
 
   const _today = new Date(); _today.setHours(0, 0, 0, 0);
-  const isRecurring = (e: { event_date?: string | null; frequency?: string | null; day_time?: string | null }) => !e.event_date && (!!e.frequency || !!e.day_time);
   const isFutureDated = (e: { event_date?: string | null }) => {
     if (!e.event_date) return false;
     const d = new Date(e.event_date);
     return !isNaN(d.getTime()) && d >= _today;
   };
-
-  let rows = (data || []).filter((e) => norm(e.event_type) === "tournament").filter((e) => isFutureDated(e) || isRecurring(e));
-  if (near && near.trim()) {
-    const n = near.trim().toLowerCase();
-    rows = rows.filter((e) => nearMatches(n, e.city, e.state));
-  }
 
   const eventSchema = rows
     .filter((e) => isFutureDated(e))
@@ -92,7 +76,7 @@ export default async function TournamentsPage({ searchParams }: { searchParams: 
               <Link key={k} href={sortHref(k)} style={{ fontSize: "0.95rem", fontWeight: 700, textDecoration: "none", color: activeSort === k ? "var(--pink-text)" : "var(--muted)", borderBottom: activeSort === k ? "2px solid var(--pink)" : "2px solid transparent", paddingBottom: "0.1rem" }}>{label}</Link>
             ))}
           </div>
-          <GroupedEvents rows={rows as GroupedRow[]} typeLabel="Tournament" cta="Register" groupBy={groupBy} />
+          <GroupedEvents rows={rows} typeLabel="Tournament" cta="Register" groupBy={groupBy} />
         </>
       ) : (
         <BrandedEmptyState

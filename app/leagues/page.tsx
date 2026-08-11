@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import NotifyMe from "@/components/notify-me";
-import { createServerClient } from "@/lib/supabase-server";
+import { searchEvents } from "@/lib/search";
+import { whenLabel } from "@/lib/event-display";
 import CityAutocomplete from "@/components/city-autocomplete";
-import { nearMatches } from "@/lib/near-match";
 import { safeHttpUrl } from "@/lib/sanitize";
 import { attendInfo } from "@/lib/event-level";
 import { schemaScriptProps } from "@/lib/schema";
@@ -16,37 +16,13 @@ export const metadata: Metadata = {
 
 export const revalidate = 300;
 
-const norm = (t: string | null | undefined) => (t || "").toLowerCase().replace(/[^a-z]/g, "");
-const isLeague = (t: string | null | undefined) => norm(t) === "league";
-
-function whenLabel(e: { event_date?: string | null; day_time?: string | null; day_of_week?: string | null; time_of_day?: string | null }): string {
-  if (e.day_time && !e.event_date) return e.day_time;
-  if (e.day_time && e.event_date && new Date(e.event_date).getTime() < Date.now()) return e.day_time;
-  if (e.event_date) {
-    const d = new Date(e.event_date);
-    if (!isNaN(d.getTime())) return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" });
-  }
-  return e.day_time || [e.day_of_week, e.time_of_day].filter(Boolean).join(" ");
-}
 
 const field: React.CSSProperties = { minHeight: 54, padding: "0 1rem", border: "2px solid var(--border)", borderRadius: 12, fontSize: "1.1rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", flex: "1 1 200px" };
 const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border: "none", borderRadius: 12, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" };
 
 export default async function LeaguesPage({ searchParams }: { searchParams: Promise<{ near?: string }> }) {
   const { near } = await searchParams;
-  const supabase = createServerClient();
-  const todayISO = new Date().toISOString().slice(0, 10);
-  let { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly, confirmed_active_at, host").eq("status", "published").eq("event_type", "league").or(`event_date.is.null,event_date.gte.${todayISO}`).order("event_date", { ascending: true });
-  if (!data) {
-    const fallback = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly, host").eq("status", "published").eq("event_type", "league").or(`event_date.is.null,event_date.gte.${todayISO}`).order("event_date", { ascending: true });
-    data = (fallback.data || []).map((r) => ({ ...r, confirmed_active_at: null }));
-  }
-
-  let rows = (data || []).filter((e) => isLeague(e.event_type));
-  if (near && near.trim()) {
-    const n = near.trim().toLowerCase();
-    rows = rows.filter((e) => nearMatches(n, e.city, e.state));
-  }
+  let rows = await searchEvents({ types: ["league"], near: near || null });
 
   const FRESH_MS = 90 * 24 * 60 * 60 * 1000;
   const isFresh = (at?: string | null) => !!at && Date.now() - new Date(at).getTime() < FRESH_MS;
