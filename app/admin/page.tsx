@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { safeHttpUrl } from "@/lib/sanitize";
+import { parseSchedule } from "@/lib/schedule";
 
 type Tab = "inquiries" | "players" | "venues" | "events" | "ads" | "ambassadors";
 
@@ -40,6 +41,7 @@ interface VenueListing {
   contact_email: string;
   website: string | null;
   description: string | null;
+  source_url: string | null;
   created_at: string;
 }
 
@@ -55,6 +57,9 @@ interface EventListing {
   contact_email: string;
   registration_url: string | null;
   description: string | null;
+  source_url: string | null;
+  day_time: string | null;
+  frequency: string | null;
   created_at: string;
 }
 
@@ -188,6 +193,59 @@ function LoginGate({ onAuth }: { onAuth: () => void }) {
   );
 }
 
+const REVIEW_ORDER: Record<string, number> = { pending_review: 0, flagged: 1, published: 2 };
+
+export function sourceHost(url: string | null | undefined): string {
+  if (!url) return "";
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
+// Pending rows cluster by source, so verifying one publisher clears many rows at once
+// instead of forcing a context switch on every listing.
+function byReviewOrder<T extends { status: string; source_url: string | null; created_at: string }>(rows: T[]): T[] {
+  return rows.slice().sort((a, b) => {
+    const s = (REVIEW_ORDER[a.status] ?? 3) - (REVIEW_ORDER[b.status] ?? 3);
+    if (s !== 0) return s;
+    const h = sourceHost(a.source_url).localeCompare(sourceHost(b.source_url));
+    if (h !== 0) return h;
+    return (b.created_at || "").localeCompare(a.created_at || "");
+  });
+}
+
+function ParsedScheduleHint({ ev }: { ev: EventListing }) {
+  const p = parseSchedule({
+    dayTime: ev.day_time,
+    frequency: ev.frequency,
+    description: ev.description,
+    eventName: ev.event_name,
+    eventDate: ev.event_date,
+  });
+  if (p.confidence === "low" && p.days.length === 0 && !p.startTime) return null;
+  const tone =
+    p.confidence === "high" ? { bg: "rgba(45,160,90,0.13)", fg: "#1d6b3d" }
+    : p.confidence === "medium" ? { bg: "rgba(245,200,66,0.18)", fg: "#a07800" }
+    : { bg: "rgba(220,38,38,0.10)", fg: "#b3261e" };
+  const days = p.days.length ? p.days.map((d) => d.slice(0, 3)).join(", ") : "no day";
+  const time = p.startTime ? (p.endTime ? `${p.startTime}-${p.endTime}` : p.startTime) : "no time";
+  return (
+    <div style={{ fontSize: "0.72rem", marginTop: "0.25rem", display: "flex", gap: "0.4rem", alignItems: "center", flexWrap: "wrap" }}>
+      <span style={{ background: tone.bg, color: tone.fg, borderRadius: 4, padding: "0.1rem 0.4rem", fontWeight: 700 }}>
+        {p.confidence}
+      </span>
+      <span style={{ color: "var(--muted)" }}>
+        {days} · {time}{p.frequency ? ` · ${p.frequency}` : ""}
+      </span>
+      {p.ambiguities.length > 0 && (
+        <span style={{ color: "#b3261e" }}>{p.ambiguities[0]}</span>
+      )}
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [tab, setTab] = useState<Tab>("inquiries");
@@ -274,9 +332,9 @@ export default function AdminPage() {
       const order: Record<string, number> = { pending_review: 0, flagged: 1, published: 2 };
       setPlayers((items as PlayerListing[]).slice().sort((a, b) => (order[a.status] ?? 3) - (order[b.status] ?? 3)));
     } else if (tab === "venues") {
-      setVenues(items as VenueListing[]);
+      setVenues(byReviewOrder(items as VenueListing[]));
     } else if (tab === "events") {
-      setEvents(items as EventListing[]);
+      setEvents(byReviewOrder(items as EventListing[]));
     } else if (tab === "ads") {
       setAds(items as AdListing[]);
     } else if (tab === "ambassadors") {
@@ -648,6 +706,11 @@ export default function AdminPage() {
                         {safeHttpUrl(v.website) ? <a href={safeHttpUrl(v.website)} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink-text)" }}>{String(v.website).replace(/^https?:\/\//, "").slice(0, 40)}</a> : "no website"}
                         {v.description ? ` · ${String(v.description).slice(0, 80)}` : ""}
                       </div>
+                      {sourceHost(v.source_url) && (
+                        <div style={{ fontSize: "0.72rem", fontWeight: 400, color: "var(--muted)", marginTop: "0.2rem" }}>
+                          source: <a href={safeHttpUrl(v.source_url) || undefined} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink-text)" }}>{sourceHost(v.source_url)}</a>
+                        </div>
+                      )}
                     </td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{v.city}, {v.state}</td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{v.tier}</td>
@@ -696,6 +759,12 @@ export default function AdminPage() {
                         {safeHttpUrl(ev.registration_url) ? <a href={safeHttpUrl(ev.registration_url)} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink-text)" }}>{String(ev.registration_url).replace(/^https?:\/\//, "").slice(0, 40)}</a> : "no link"}
                         {ev.description ? ` · ${String(ev.description).slice(0, 80)}` : ""}
                       </div>
+                      <ParsedScheduleHint ev={ev} />
+                      {sourceHost(ev.source_url) && (
+                        <div style={{ fontSize: "0.72rem", fontWeight: 400, color: "var(--muted)", marginTop: "0.2rem" }}>
+                          source: <a href={safeHttpUrl(ev.source_url) || undefined} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink-text)" }}>{sourceHost(ev.source_url)}</a>
+                        </div>
+                      )}
                     </td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{ev.city}, {ev.state}</td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{ev.event_date ? formatDate(ev.event_date) : "-"}</td>
