@@ -235,6 +235,7 @@ export default function AdminPage() {
   const [ambassadors, setAmbassadors] = useState<Ambassador[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [sourceFilter, setSourceFilter] = useState("all");
   const [pendingCount, setPendingCount] = useState(0);
   const [newInquiryCount, setNewInquiryCount] = useState(0);
   const [newAmbassadorCount, setNewAmbassadorCount] = useState(0);
@@ -377,6 +378,55 @@ export default function AdminPage() {
     loadData();
   }
 
+  function sourceCounts(rows: { source_url: string | null; status: string }[]) {
+    const m = new Map<string, number>();
+    for (const r of rows) {
+      if (r.status !== "pending_review") continue;
+      const h = sourceHost(r.source_url) || "(no source)";
+      m.set(h, (m.get(h) || 0) + 1);
+    }
+    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+  }
+
+  function applySourceFilter<T extends { source_url: string | null }>(rows: T[]): T[] {
+    if (sourceFilter === "all") return rows;
+    return rows.filter((r) => (sourceHost(r.source_url) || "(no source)") === sourceFilter);
+  }
+
+  function renderSourcePicker(rows: { source_url: string | null; status: string }[]) {
+    const counts = sourceCounts(rows);
+    if (counts.length === 0) return null;
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap", marginBottom: "0.8rem" }}>
+        <label htmlFor="source-filter" style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--navy)" }}>
+          Review by source
+        </label>
+        <select
+          id="source-filter"
+          value={sourceFilter}
+          onChange={(e) => { setSourceFilter(e.target.value); setSelected(new Set()); }}
+          className="form-select"
+          style={{ maxWidth: 420 }}
+        >
+          <option value="all">All sources ({counts.reduce((a, [, n]) => a + n, 0)} pending)</option>
+          {counts.map(([h, n]) => (
+            <option key={h} value={h}>{h} ({n} pending)</option>
+          ))}
+        </select>
+        {sourceFilter !== "all" && (
+          <>
+            <a href={`https://${sourceFilter}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--pink-text)" }}>
+              Open source to verify
+            </a>
+            <span style={{ fontSize: "0.78rem", color: "var(--muted)" }}>
+              Select the rows you trust, then approve. Blanket approval is off while a source is selected.
+            </span>
+          </>
+        )}
+      </div>
+    );
+  }
+
   function renderBulkBar(table: string, rows: { id: string; status: string }[]) {
     // Flagged rows are quarantined (dead links, link-check holds): they stay
     // individually approvable but never ride select-all or Approve All.
@@ -405,9 +455,11 @@ export default function AdminPage() {
         <button onClick={() => bulkUpdate(table, chosen, "rejected")} disabled={!chosen.length} style={{ ...btn("#fee2e2", "#dc2626", "1px solid #fca5a5"), opacity: chosen.length ? 1 : 0.5 }}>
           Reject Selected ({chosen.length})
         </button>
-        <button onClick={() => bulkUpdate(table, pending.map((r) => r.id), "published")} style={btn("var(--navy)", "white")}>
-          Approve All Pending ({pending.length})
-        </button>
+        {sourceFilter === "all" && (
+          <button onClick={() => bulkUpdate(table, pending.map((r) => r.id), "published")} style={btn("var(--navy)", "white")}>
+            Approve All Pending ({pending.length})
+          </button>
+        )}
       </div>
     );
   }
@@ -657,7 +709,8 @@ export default function AdminPage() {
       {/* VENUES TAB */}
       {!loading && tab === "venues" && (
         <div>
-          {renderBulkBar("venue_listings", venues)}
+          {renderSourcePicker(venues)}
+          {renderBulkBar("venue_listings", applySourceFilter(venues))}
           {venues.length === 0 ? (
             <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "3rem", textAlign: "center" }}>
               <p style={{ color: "var(--muted)" }}>No venue listings yet. They&rsquo;ll appear here after payment is received.</p>
@@ -675,7 +728,7 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {venues.map((v) => (
+                {applySourceFilter(venues).map((v) => (
                   <tr key={v.id} style={{ borderBottom: "1px solid var(--border)" }}>
                     {rowCheckbox(v, v.business_name)}
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.9rem", fontWeight: 600, color: "var(--navy)" }}>
@@ -710,7 +763,8 @@ export default function AdminPage() {
       {/* EVENTS TAB */}
       {!loading && tab === "events" && (
         <div>
-          {renderBulkBar("event_listings", events)}
+          {renderSourcePicker(events)}
+          {renderBulkBar("event_listings", applySourceFilter(events))}
           {events.length === 0 ? (
             <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "3rem", textAlign: "center" }}>
               <p style={{ color: "var(--muted)" }}>No event listings yet. They&rsquo;ll appear here after payment is received.</p>
@@ -728,7 +782,7 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {events.map((ev) => (
+                {applySourceFilter(events).map((ev) => (
                   <tr key={ev.id} style={{ borderBottom: "1px solid var(--border)" }}>
                     {rowCheckbox(ev, ev.event_name)}
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.9rem", fontWeight: 600, color: "var(--navy)" }}>
