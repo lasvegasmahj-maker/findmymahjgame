@@ -1,0 +1,1753 @@
+{
+  "las vegas|NV": {
+    "lat": 36.1674263,
+    "lng": -115.1484131,
+    "label": "Las Vegas, Clark County, Nevada, United States"
+  },
+  "summerlin|NV": {
+    "lat": 36.1913186,
+    "lng": -115.3019248,
+    "label": "Summerlin, Las Vegas, Clark County, Nevada, United States"
+  },
+  "boca raton|FL": {
+    "lat": 26.3586885,
+    "lng": -80.0830984,
+    "label": "Boca Raton, Palm Beach County, Florida, United States"
+  },
+  "new york city|NY": {
+    "lat": 40.7127281,
+    "lng": -74.0060152,
+    "label": "New York, United States"
+  },
+  "phoenix|AZ": {
+    "lat": 33.4484367,
+    "lng": -112.074141,
+    "label": "Phoenix, Maricopa County, Arizona, United States"
+  },
+  "atlanta|GA": {
+    "lat": 33.7544657,
+    "lng": -84.3898151,
+    "label": "Atlanta, Fulton County, Georgia, United States"
+  },
+  "austin|TX": {
+    "lat": 30.2711286,
+    "lng": -97.7436995,
+    "label": "Austin, Travis County, Texas, United States"
+  },
+  "houston|TX": {
+    "lat": 29.7589382,
+    "lng": -95.3676974,
+    "label": "Houston, Harris County, Texas, United States"
+  },
+  "the woodlands|TX": {
+    "lat": 30.1734194,
+    "lng": -95.504686,
+    "label": "The Woodlands, Montgomery County, Texas, United States"
+  },
+  "dallas|TX": {
+    "lat": 32.7762719,
+    "lng": -96.7968559,
+    "label": "Dallas, Dallas County, Texas, United States"
+  },
+  "dallas/fort worth|TX": {
+    "lat": 32.8350573,
+    "lng": -97.2983175,
+    "label": "National Weather Service - Fort Worth/Dallas, TX, Fort Worth, Tarrant County, Texas, United States"
+  },
+  "nashville|TN": {
+    "lat": 36.1622767,
+    "lng": -86.7742984,
+    "label": "Nashville, Davidson County, Middle Tennessee, Tennessee, United States"
+  },
+  "arlington|VA": {
+    "lat": 38.8903961,
+    "lng": -77.0841585,
+    "label": "Arlington, Arlington County, Virginia, 22209, United States"
+  },
+  "mesa|AZ": {
+    "lat": 33.4151005,
+    "lng": -111.831455,
+    "label": "Mesa, Maricopa County, Arizona, United States"
+  },
+  "scottsdale|AZ": {
+    "lat": 33.4942189,
+    "lng": -111.926018,
+    "label": "Scottsdale, Maricopa County, Arizona, United States"
+  },
+  "richardson|TX": {
+    "lat": 32.9481789,
+    "lng": -96.7297206,
+    "label": "Richardson, Dallas County, Texas, United States"
+  },
+  "franklin|TN": {
+    "lat": 35.925206,
+    "lng": -86.8689419,
+    "label": "Franklin, Williamson County, Middle Tennessee, Tennessee, United States"
+  },
+  "fort worth|TX": {
+    "lat": 32.753177,
+    "lng": -97.3327459,
+    "label": "Fort Worth, Tarrant County, Texas, United States"
+  },
+  "frisco|CO": {
+    "lat": 39.5768577,
+    "lng": -106.092828,
+    "label": "Frisco, Summit County, Colorado, United States"
+  },
+  "mckinney|TX": {
+    "lat": 33.1976496,
+    "lng": -96.6154471,
+    "label": "McKinney, Collin County, Texas, United States"
+  },
+  "decatur|AL": {
+    "lat": 34.6060203,
+    "lng": -86.9838165,
+    "label": "Decatur, Morgan County, Alabama, United States"
+  },
+  "irvine|CA": {
+    "lat": 33.6856969,
+    "lng": -117.825981,
+    "label": "Irvine, Orange County, California, United States"
+  },
+  "birmingham|AL": {
+    "lat": 33.5206824,
+    "lng": -86.8024326,
+    "label": "Birmingham, Jefferson County, Alabama, United States"
+  },
+  "huntsville|AL": {
+    "lat": 34.729847,
+    "lng": -86.5859011,
+    "label": "Huntsville, Madison County, Alabama, United States"
+  },
+  "flagstaff|AZ": {
+    "lat": 35.1987522,
+    "lng": -111.651822,
+    "label": "Flagstaff, Coconino County, Arizona, United States"
+  },
+  "chicago|IL": {
+    "lat": 41.8755616,
+    "lng": -87.6244212,
+    "label": "Chicago, South Chicago Township, Cook County, Illinois, United States"
+  },
+  "baton rouge|LA": {
+    "lat": 30.4494155,
+    "lng": -91.1869659,
+    "label": "Baton Rouge, East Baton Rouge Parish, Louisiana, United States"
+  },
+  "mandeville|LA": {
+    "lat": 30.3582305,
+    "lng": -90.0657477,
+    "label": "Mandeville, St. Tammany Parish, Louisiana, United States"
+  },
+  "kansas city|MO": {
+    "lat": 39.100105,
+    "lng": -94.5781416,
+    "label": "Kansas City, Jackson County, Missouri, United States"
+  },
+  "grand rapids|MI": {
+    "lat": 42.9632425,
+    "lng": -85.6678639,
+    "label": "Grand Rapids, Kent County, Michigan, United States"
+  },
+  "new orleans|LA": {
+    "lat": 29.9561422,
+    "lng": -90.0733934,
+    "label": "New Orleans, Orleans Parish, Louisiana, United States"
+  },
+  "madison|MS": {
+    "lat": 32.4618086,
+    "lng": -90.1153638,
+    "label": "Madison, Madison County, Mississippi, United States"
+  },
+  "cincinnati|OH": {
+    "lat": 39.1012809,
+    "lng": -84.5127405,
+    "label": "Cincinnati, Hamilton County, Ohio, United States"
+  },
+  "new york|NY": {
+    "lat": 40.7127281,
+    "lng": -74.0060152,
+    "label": "New York, United States"
+  },
+  "tulsa|OK": {
+    "lat": 36.1563122,
+    "lng": -95.9927516,
+    "label": "Tulsa, Oklahoma, United States"
+  },
+  "murrells inlet|SC": {
+    "lat": 33.5499183,
+    "lng": -79.0430329,
+    "label": "Murrells Inlet, Georgetown County, South Carolina, United States"
+  },
+  "charleston|SC": {
+    "lat": 32.7884363,
+    "lng": -79.9399309,
+    "label": "Charleston, Charleston County, South Carolina, United States"
+  },
+  "memphis|TN": {
+    "lat": 35.146026,
+    "lng": -90.0517786,
+    "label": "Memphis, Shelby County, West Tennessee, Tennessee, United States"
+  },
+  "knoxville|TN": {
+    "lat": 35.9603948,
+    "lng": -83.9210261,
+    "label": "Knoxville, Knox County, East Tennessee, Tennessee, United States"
+  },
+  "tyler|TX": {
+    "lat": 32.3512601,
+    "lng": -95.3010624,
+    "label": "Tyler, Smith County, Texas, United States"
+  },
+  "lubbock|TX": {
+    "lat": 33.5855677,
+    "lng": -101.8470215,
+    "label": "Lubbock, Lubbock County, Texas, United States"
+  },
+  "washington|DC": {
+    "lat": 38.8950982,
+    "lng": -77.0363849,
+    "label": "Washington, District of Columbia, United States"
+  },
+  "pensacola|FL": {
+    "lat": 30.421309,
+    "lng": -87.2169149,
+    "label": "Pensacola, Escambia County, Florida, United States"
+  },
+  "miramar beach|FL": {
+    "lat": 30.377985,
+    "lng": -86.3616979,
+    "label": "Miramar Beach, Walton County, Florida, United States"
+  },
+  "columbia|SC": {
+    "lat": 34.000754,
+    "lng": -81.0352313,
+    "label": "Columbia, Richland County, South Carolina, United States"
+  },
+  "san diego|CA": {
+    "lat": 32.7174202,
+    "lng": -117.162772,
+    "label": "San Diego, San Diego County, California, United States"
+  },
+  "san francisco|CA": {
+    "lat": 37.7879363,
+    "lng": -122.4075201,
+    "label": "San Francisco, California, United States"
+  },
+  "denver|CO": {
+    "lat": 39.7392364,
+    "lng": -104.984862,
+    "label": "Denver, Colorado, United States"
+  },
+  "charlotte|NC": {
+    "lat": 35.2272086,
+    "lng": -80.8430827,
+    "label": "Charlotte, Mecklenburg County, North Carolina, United States"
+  },
+  "potomac|MD": {
+    "lat": 39.017936,
+    "lng": -77.2094542,
+    "label": "Potomac, Montgomery County, Maryland, 20854, United States"
+  },
+  "honolulu|HI": {
+    "lat": 21.304547,
+    "lng": -157.855676,
+    "label": "Honolulu, Honolulu County, Hawaii, United States"
+  },
+  "mansfield|TX": {
+    "lat": 32.563487,
+    "lng": -97.1420308,
+    "label": "Mansfield, Tarrant County, Texas, 76063, United States"
+  },
+  "mt pleasant|SC": {
+    "lat": 32.7927956,
+    "lng": -79.8678322,
+    "label": "Mount Pleasant, Charleston County, South Carolina, United States"
+  },
+  "avon|CO": {
+    "lat": 39.6342752,
+    "lng": -106.522243,
+    "label": "Avon, Eagle County, Colorado, 81620, United States"
+  },
+  "north kingstown|RI": {
+    "lat": 41.5514283,
+    "lng": -71.4693875,
+    "label": "North Kingstown, South County, Rhode Island, United States"
+  },
+  "manhattan|NY": {
+    "lat": 40.7579554,
+    "lng": -73.9855319,
+    "label": "Manhattan, New York County, New York, United States"
+  },
+  "orlando|FL": {
+    "lat": 28.5421218,
+    "lng": -81.379045,
+    "label": "Orlando, Orange County, Florida, United States"
+  },
+  "lexington|KY": {
+    "lat": 38.0464066,
+    "lng": -84.4970393,
+    "label": "Lexington, Fayette County, Kentucky, United States"
+  },
+  "wesley chapel|FL": {
+    "lat": 28.1866014,
+    "lng": -82.366121,
+    "label": "Wesley Chapel, Pasco County, Florida, United States"
+  },
+  "dothan|AL": {
+    "lat": 31.2237285,
+    "lng": -85.3934375,
+    "label": "Dothan, Houston County, Alabama, United States"
+  },
+  "mount kisco|NY": {
+    "lat": 41.2042616,
+    "lng": -73.7270761,
+    "label": "Village/Town of Mount Kisco, Westchester County, New York, 10549, United States"
+  },
+  "milwaukee|WI": {
+    "lat": 43.0386475,
+    "lng": -87.9090751,
+    "label": "Milwaukee, Milwaukee County, Wisconsin, United States"
+  },
+  "daytona beach|FL": {
+    "lat": 29.2108147,
+    "lng": -81.0228331,
+    "label": "Daytona Beach, Volusia County, Florida, United States"
+  },
+  "jacksonville|FL": {
+    "lat": 30.3262247,
+    "lng": -81.6579179,
+    "label": "Jacksonville, Duval County, Florida, United States"
+  },
+  "bluffton|SC": {
+    "lat": 32.2371465,
+    "lng": -80.8603868,
+    "label": "Bluffton, Beaufort County, South Carolina, 29910, United States"
+  },
+  "weeki wachee|FL": {
+    "lat": 28.5156479,
+    "lng": -82.5735662,
+    "label": "Weeki Wachee, Hernando County, Florida, United States"
+  },
+  "lake geneva|WI": {
+    "lat": 42.5918039,
+    "lng": -88.4345369,
+    "label": "Lake Geneva, Walworth County, Wisconsin, United States"
+  },
+  "gainesville|FL": {
+    "lat": 29.6519684,
+    "lng": -82.3249846,
+    "label": "Gainesville, Alachua County, Florida, United States"
+  },
+  "bardstown|KY": {
+    "lat": 37.8092463,
+    "lng": -85.4669015,
+    "label": "Bardstown, Nelson County, Kentucky, 40004, United States"
+  },
+  "pensacola beach|FL": {
+    "lat": 30.3342348,
+    "lng": -87.1350979,
+    "label": "Pensacola Beach, Escambia County, Florida, 32561, United States"
+  },
+  "nesbit|MS": {
+    "lat": 34.881763,
+    "lng": -90.0087022,
+    "label": "Nesbit, Hernando, DeSoto County, Mississippi, 38651, United States"
+  },
+  "laurel|MS": {
+    "lat": 31.6940509,
+    "lng": -89.1306124,
+    "label": "Laurel, Jones County, Mississippi, United States"
+  },
+  "wendell|NC": {
+    "lat": 35.780987,
+    "lng": -78.3697213,
+    "label": "Wendell, Wake County, North Carolina, 27591, United States"
+  },
+  "leawood|KS": {
+    "lat": 38.966673,
+    "lng": -94.6169012,
+    "label": "Leawood, Johnson County, Kansas, United States"
+  },
+  "dalton|GA": {
+    "lat": 34.7691867,
+    "lng": -84.9702475,
+    "label": "Dalton, Whitfield County, Georgia, United States"
+  },
+  "holly springs|NC": {
+    "lat": 35.6512655,
+    "lng": -78.8336218,
+    "label": "Holly Springs, Wake County, North Carolina, 27540, United States"
+  },
+  "wilmington|DE": {
+    "lat": 39.7459468,
+    "lng": -75.546589,
+    "label": "Wilmington, New Castle County, Delaware, United States"
+  },
+  "herriman|UT": {
+    "lat": 40.5139784,
+    "lng": -112.0329086,
+    "label": "Herriman, Salt Lake County, Utah, 84096, United States"
+  },
+  "college station|TX": {
+    "lat": 30.6183939,
+    "lng": -96.3455991,
+    "label": "College Station, Brazos County, Texas, United States"
+  },
+  "concord|NC": {
+    "lat": 35.4094178,
+    "lng": -80.5800049,
+    "label": "Concord, Cabarrus County, North Carolina, United States"
+  },
+  "zachary|LA": {
+    "lat": 30.6485191,
+    "lng": -91.1564961,
+    "label": "Zachary, East Baton Rouge Parish, Louisiana, United States"
+  },
+  "racine|WI": {
+    "lat": 42.7313756,
+    "lng": -87.7834769,
+    "label": "Racine, Racine County, Wisconsin, United States"
+  },
+  "st. louis|MO": {
+    "lat": 38.6254063,
+    "lng": -90.190009,
+    "label": "Saint Louis, Missouri, United States"
+  },
+  "mobile|AL": {
+    "lat": 30.6913462,
+    "lng": -88.0437509,
+    "label": "Mobile, Mobile County, Alabama, United States"
+  },
+  "duxbury|MA": {
+    "lat": 42.0417695,
+    "lng": -70.672259,
+    "label": "Duxbury, Plymouth County, Massachusetts, United States"
+  },
+  "lynchburg|VA": {
+    "lat": 37.4137536,
+    "lng": -79.1422464,
+    "label": "Lynchburg, Virginia, United States"
+  },
+  "canton|TX": {
+    "lat": 32.5386046,
+    "lng": -95.861812,
+    "label": "Canton, Van Zandt County, Texas, United States"
+  },
+  "springfield|MO": {
+    "lat": 37.2081729,
+    "lng": -93.2922715,
+    "label": "Springfield, Greene County, Missouri, United States"
+  },
+  "westfield|IN": {
+    "lat": 40.0428151,
+    "lng": -86.1274888,
+    "label": "Westfield, Hamilton County, Indiana, 46074, United States"
+  },
+  "spartanburg|SC": {
+    "lat": 34.9498007,
+    "lng": -81.9320157,
+    "label": "Spartanburg, Spartanburg County, South Carolina, United States"
+  },
+  "smithville|MO": {
+    "lat": 39.3868396,
+    "lng": -94.5815937,
+    "label": "Smithville, Clay County, Missouri, 64089, United States"
+  },
+  "warsaw|IN": {
+    "lat": 41.2381017,
+    "lng": -85.8530544,
+    "label": "Warsaw, Kosciusko County, Indiana, United States"
+  },
+  "north shore|MA": {
+    "lat": 40.4474127,
+    "lng": -80.0078641,
+    "label": "North Shore, Pittsburgh, Allegheny County, Pennsylvania, United States"
+  },
+  "florence|SC": {
+    "lat": 34.1984435,
+    "lng": -79.7671658,
+    "label": "Florence, Florence County, South Carolina, United States"
+  },
+  "starkville|MS": {
+    "lat": 33.4638745,
+    "lng": -88.8152074,
+    "label": "Starkville, Oktibbeha County, Mississippi, 39759, United States"
+  },
+  "ada|OK": {
+    "lat": 34.7743383,
+    "lng": -96.6783651,
+    "label": "Ada, Pontotoc County, Oklahoma, United States"
+  },
+  "marshalltown|IA": {
+    "lat": 42.048881,
+    "lng": -92.9122672,
+    "label": "Marshalltown, Marshall Township, Marshall County, Iowa, 50158, United States"
+  },
+  "tupelo|MS": {
+    "lat": 34.2576067,
+    "lng": -88.7033859,
+    "label": "Tupelo, Lee County, Mississippi, United States"
+  },
+  "madison|GA": {
+    "lat": 33.5956814,
+    "lng": -83.467944,
+    "label": "Madison, Morgan County, Georgia, 30650, United States"
+  },
+  "vero beach|FL": {
+    "lat": 27.6387163,
+    "lng": -80.3975399,
+    "label": "Vero Beach, Indian River County, Florida, United States"
+  },
+  "prairieville|LA": {
+    "lat": 30.3122527,
+    "lng": -90.9497329,
+    "label": "Prairieville, Ascension Parish, Louisiana, 70769, United States"
+  },
+  "brownsville|TX": {
+    "lat": 25.9024289,
+    "lng": -97.4981698,
+    "label": "Brownsville, Cameron County, Texas, United States"
+  },
+  "enterprise|AL": {
+    "lat": 31.3151708,
+    "lng": -85.8552161,
+    "label": "Enterprise, Coffee County, Alabama, United States"
+  },
+  "bellaire|TX": {
+    "lat": 29.7057858,
+    "lng": -95.4588299,
+    "label": "Bellaire, Harris County, Texas, United States"
+  },
+  "lehi|UT": {
+    "lat": 40.3881114,
+    "lng": -111.8486019,
+    "label": "Lehi, Utah County, Utah, United States"
+  },
+  "houma|LA": {
+    "lat": 29.5957696,
+    "lng": -90.7195348,
+    "label": "Houma, Terrebonne Parish, Louisiana, 70363, United States"
+  },
+  "orange|TX": {
+    "lat": 30.0929879,
+    "lng": -93.7365549,
+    "label": "Orange, Orange County, Texas, 77630, United States"
+  },
+  "san antonio|TX": {
+    "lat": 29.4246002,
+    "lng": -98.4951405,
+    "label": "San Antonio, Bexar County, Texas, United States"
+  },
+  "mt. pleasant|TX": {
+    "lat": 33.1570582,
+    "lng": -94.9694007,
+    "label": "Mount Pleasant, Titus County, Texas, 75455, United States"
+  },
+  "bald head island|NC": {
+    "lat": 33.8618933,
+    "lng": -77.995528,
+    "label": "Bald Head Island, Brunswick County, North Carolina, United States"
+  },
+  "darien|CT": {
+    "lat": 41.0787079,
+    "lng": -73.4692873,
+    "label": "Darien, Western Connecticut Planning Region, Connecticut, 06820, United States"
+  },
+  "miami|FL": {
+    "lat": 25.7741566,
+    "lng": -80.1935973,
+    "label": "Miami, Miami-Dade County, Florida, United States"
+  },
+  "fort wayne|IN": {
+    "lat": 41.0799898,
+    "lng": -85.1386015,
+    "label": "Fort Wayne, Allen County, Indiana, United States"
+  },
+  "agoura hills|CA": {
+    "lat": 34.1481692,
+    "lng": -118.7655456,
+    "label": "Agoura Hills, Los Angeles County, California, 91301, United States"
+  },
+  "rochester|MN": {
+    "lat": 44.0234387,
+    "lng": -92.4630182,
+    "label": "Rochester, Olmsted County, Minnesota, United States"
+  },
+  "erie|PA": {
+    "lat": 42.1294712,
+    "lng": -80.0852695,
+    "label": "Erie, Erie County, Pennsylvania, United States"
+  },
+  "rogers|AR": {
+    "lat": 36.334857,
+    "lng": -94.1193816,
+    "label": "Rogers, Benton County, Arkansas, United States"
+  },
+  "cornelius|NC": {
+    "lat": 35.481705,
+    "lng": -80.8590006,
+    "label": "Cornelius, Mecklenburg County, North Carolina, United States"
+  },
+  "greenwich|CT": {
+    "lat": 41.0264862,
+    "lng": -73.6284598,
+    "label": "Greenwich, Western Connecticut Planning Region, Connecticut, United States"
+  },
+  "hartsville|SC": {
+    "lat": 34.3740431,
+    "lng": -80.0734005,
+    "label": "Hartsville, Darlington County, South Carolina, 29550, United States"
+  },
+  "greenville|SC": {
+    "lat": 34.851354,
+    "lng": -82.3984882,
+    "label": "Greenville, Greenville County, South Carolina, United States"
+  },
+  "bentonville|AR": {
+    "lat": 36.3728608,
+    "lng": -94.208787,
+    "label": "Bentonville, Benton County, Arkansas, United States"
+  },
+  "little rock|AR": {
+    "lat": 34.7465071,
+    "lng": -92.2896267,
+    "label": "Little Rock, Big Rock Township, Pulaski County, Arkansas, United States"
+  },
+  "tarpon springs|FL": {
+    "lat": 28.1470965,
+    "lng": -82.756367,
+    "label": "Tarpon Springs, Pinellas County, Florida, 34689, United States"
+  },
+  "alexandria|VA": {
+    "lat": 38.8051095,
+    "lng": -77.0470229,
+    "label": "Alexandria, Virginia, United States"
+  },
+  "falls church|VA": {
+    "lat": 38.882334,
+    "lng": -77.1710914,
+    "label": "Falls Church, Virginia, 22046, United States"
+  },
+  "gettysburg|PA": {
+    "lat": 39.8308973,
+    "lng": -77.231012,
+    "label": "Gettysburg, Adams County, Pennsylvania, United States"
+  },
+  "chantilly|VA": {
+    "lat": 38.8941543,
+    "lng": -77.4311513,
+    "label": "Chantilly, Fairfax County, Virginia, 20153, United States"
+  },
+  "detroit (metro detroit)|MI": {
+    "lat": 42.3236169,
+    "lng": -83.1409471,
+    "label": "Detroit Metro Transportation, 4011, Detroit, Wayne County, Michigan, 48210, United States"
+  },
+  "edina|MN": {
+    "lat": 44.8897027,
+    "lng": -93.3501222,
+    "label": "Edina, Hennepin County, Minnesota, United States"
+  },
+  "maple grove|MN": {
+    "lat": 45.0984983,
+    "lng": -93.4419222,
+    "label": "Maple Grove, Hennepin County, Minnesota, United States"
+  },
+  "minnetonka|MN": {
+    "lat": 44.9405086,
+    "lng": -93.4638936,
+    "label": "Minnetonka, Hennepin County, Minnesota, United States"
+  },
+  "omaha|NE": {
+    "lat": 41.2587459,
+    "lng": -95.9383758,
+    "label": "Omaha, Douglas County, Nebraska, United States"
+  },
+  "chevy chase|MD": {
+    "lat": 38.9813699,
+    "lng": -77.0849245,
+    "label": "Chevy Chase, Montgomery County, Maryland, 20815, United States"
+  },
+  "corte madera|CA": {
+    "lat": 37.9254806,
+    "lng": -122.527475,
+    "label": "Corte Madera, Marin County, California, 94925, United States"
+  },
+  "berkeley|CA": {
+    "lat": 37.8708393,
+    "lng": -122.272863,
+    "label": "Berkeley, Alameda County, California, United States"
+  },
+  "encino|CA": {
+    "lat": 34.1591324,
+    "lng": -118.5016166,
+    "label": "Encino Neighborhood Council District, Los Angeles, Los Angeles County, California, United States"
+  },
+  "los angeles|CA": {
+    "lat": 34.0536909,
+    "lng": -118.242766,
+    "label": "Los Angeles, Los Angeles County, California, United States"
+  },
+  "portland|OR": {
+    "lat": 45.5202471,
+    "lng": -122.674194,
+    "label": "Portland, Multnomah County, Oregon, United States"
+  },
+  "cave creek|AZ": {
+    "lat": 33.8333333,
+    "lng": -111.950833,
+    "label": "Cave Creek, Maricopa County, Arizona, United States"
+  },
+  "albuquerque|NM": {
+    "lat": 35.0841034,
+    "lng": -106.650985,
+    "label": "Albuquerque, Bernalillo County, New Mexico, United States"
+  },
+  "irvington|VA": {
+    "lat": 37.6615287,
+    "lng": -76.4191161,
+    "label": "Irvington, Lancaster County, Virginia, 22480, United States"
+  },
+  "east greenwich|RI": {
+    "lat": 41.6603788,
+    "lng": -71.4558911,
+    "label": "East Greenwich, Kent County, Rhode Island, 02818, United States"
+  },
+  "boston|MA": {
+    "lat": 42.3588336,
+    "lng": -71.0578303,
+    "label": "Boston, Suffolk County, Massachusetts, United States"
+  },
+  "dunwoody|GA": {
+    "lat": 33.9463786,
+    "lng": -84.3342686,
+    "label": "Dunwoody, DeKalb County, Georgia, United States"
+  },
+  "tampa|FL": {
+    "lat": 27.9449854,
+    "lng": -82.4583107,
+    "label": "Tampa, Hillsborough County, Florida, United States"
+  },
+  "rockville|MD": {
+    "lat": 39.0817985,
+    "lng": -77.1516844,
+    "label": "Rockville, Montgomery County, Maryland, United States"
+  },
+  "richmond|VA": {
+    "lat": 37.5385087,
+    "lng": -77.43428,
+    "label": "Richmond, Virginia, United States"
+  },
+  "salt lake city|UT": {
+    "lat": 40.7596198,
+    "lng": -111.886797,
+    "label": "Salt Lake City, Salt Lake County, Utah, United States"
+  },
+  "mercer island|WA": {
+    "lat": 47.5766324,
+    "lng": -122.2276378,
+    "label": "Mercer Island, King County, Washington, 98040, United States"
+  },
+  "tucson|AZ": {
+    "lat": 32.2228765,
+    "lng": -110.974847,
+    "label": "Tucson, Pima County, Arizona, United States"
+  },
+  "miami beach|FL": {
+    "lat": 25.7929198,
+    "lng": -80.1353006,
+    "label": "Miami Beach, Miami-Dade County, Florida, United States"
+  },
+  "setauket|NY": {
+    "lat": 40.9416324,
+    "lng": -73.1059309,
+    "label": "Setauket, Town of Brookhaven, Suffolk County, New York, 11733, United States"
+  },
+  "parkland|FL": {
+    "lat": 26.3100794,
+    "lng": -80.23727,
+    "label": "Parkland, Broward County, Florida, United States"
+  },
+  "galveston|TX": {
+    "lat": 29.3056996,
+    "lng": -94.7933252,
+    "label": "Galveston, Galveston County, Texas, United States"
+  },
+  "tallulah|LA": {
+    "lat": 32.4084539,
+    "lng": -91.1869112,
+    "label": "Tallulah, Madison Parish, Louisiana, United States"
+  },
+  "the villages|FL": {
+    "lat": 28.9269978,
+    "lng": -82.0041758,
+    "label": "The Villages, Sumter County, Florida, United States"
+  },
+  "plano|TX": {
+    "lat": 33.0136764,
+    "lng": -96.6925096,
+    "label": "Plano, Collin County, Texas, United States"
+  },
+  "durham|NC": {
+    "lat": 35.996653,
+    "lng": -78.9018053,
+    "label": "Durham, Durham County, North Carolina, United States"
+  },
+  "marietta|GA": {
+    "lat": 33.9528472,
+    "lng": -84.5496148,
+    "label": "Marietta, Cobb County, Georgia, United States"
+  },
+  "red bank|NJ": {
+    "lat": 40.3470543,
+    "lng": -74.0643065,
+    "label": "Red Bank, Monmouth County, New Jersey, 07701, United States"
+  },
+  "wichita|KS": {
+    "lat": 37.6922361,
+    "lng": -97.3375448,
+    "label": "Wichita, Sedgwick County, Kansas, United States"
+  },
+  "batesville|MS": {
+    "lat": 34.316488,
+    "lng": -89.9527108,
+    "label": "Batesville, Panola County, Mississippi, 38606, United States"
+  },
+  "pinehurst|NC": {
+    "lat": 35.1951981,
+    "lng": -79.4692796,
+    "label": "Pinehurst, Moore County, North Carolina, 28374, United States"
+  },
+  "newberry|FL": {
+    "lat": 29.6463535,
+    "lng": -82.6065023,
+    "label": "Newberry, Alachua County, Florida, United States"
+  },
+  "lexington|NC": {
+    "lat": 35.8240265,
+    "lng": -80.2533838,
+    "label": "Lexington, Davidson County, North Carolina, 27792, United States"
+  },
+  "sarasota|FL": {
+    "lat": 27.3365805,
+    "lng": -82.5308545,
+    "label": "Sarasota, Sarasota County, Florida, United States"
+  },
+  "monroe|LA": {
+    "lat": 32.5025471,
+    "lng": -92.116219,
+    "label": "Monroe, Ouachita Parish, Louisiana, United States"
+  },
+  "fredericksburg|VA": {
+    "lat": 38.3001159,
+    "lng": -77.4571472,
+    "label": "Fredericksburg, Virginia, United States"
+  },
+  "downers grove|IL": {
+    "lat": 41.7936822,
+    "lng": -88.0102281,
+    "label": "Downers Grove, DuPage County, Illinois, United States"
+  },
+  "san angelo|TX": {
+    "lat": 31.4649685,
+    "lng": -100.4405094,
+    "label": "San Angelo, Tom Green County, Texas, United States"
+  },
+  "new braunfels|TX": {
+    "lat": 29.7028266,
+    "lng": -98.1257348,
+    "label": "New Braunfels, Comal County, Texas, United States"
+  },
+  "newport|RI": {
+    "lat": 41.4899827,
+    "lng": -71.3137707,
+    "label": "Newport, Newport County, Rhode Island, 02840, United States"
+  },
+  "harlingen|TX": {
+    "lat": 26.1907543,
+    "lng": -97.6960599,
+    "label": "Harlingen, Cameron County, Texas, 78550, United States"
+  },
+  "western springs|IL": {
+    "lat": 41.8096132,
+    "lng": -87.900671,
+    "label": "Western Springs, Lyons Township, Cook County, Illinois, 60558, United States"
+  },
+  "cleveland|OH": {
+    "lat": 41.4996574,
+    "lng": -81.6936772,
+    "label": "Cleveland, Cuyahoga County, Ohio, United States"
+  },
+  "vidalia|GA": {
+    "lat": 32.2176855,
+    "lng": -82.4134614,
+    "label": "Vidalia, Toombs County, Georgia, United States"
+  },
+  "douglasville|GA": {
+    "lat": 33.7514966,
+    "lng": -84.7477136,
+    "label": "Douglasville, Douglas County, Georgia, United States"
+  },
+  "fayetteville|GA": {
+    "lat": 33.4487257,
+    "lng": -84.4549262,
+    "label": "Fayetteville, Fayette County, Georgia, United States"
+  },
+  "lookout mountain|GA": {
+    "lat": 34.9775758,
+    "lng": -85.3577363,
+    "label": "Lookout Mountain, Walker County, Georgia, 30750, United States"
+  },
+  "union pier|MI": {
+    "lat": 41.8280974,
+    "lng": -86.6925251,
+    "label": "Union Pier, New Buffalo Township, Berrien County, Michigan, 49129, United States"
+  },
+  "clayton|NC": {
+    "lat": 35.650711,
+    "lng": -78.4563914,
+    "label": "Clayton, Johnston County, North Carolina, United States"
+  },
+  "wayzata|MN": {
+    "lat": 44.970759,
+    "lng": -93.511947,
+    "label": "Wayzata, Hennepin County, Minnesota, United States"
+  },
+  "tempe|AZ": {
+    "lat": 33.4255117,
+    "lng": -111.940016,
+    "label": "Tempe, Maricopa County, Arizona, United States"
+  },
+  "trophy club|TX": {
+    "lat": 32.9979014,
+    "lng": -97.1836246,
+    "label": "Trophy Club, Denton County, Texas, United States"
+  },
+  "argyle|TX": {
+    "lat": 33.110156,
+    "lng": -97.1797576,
+    "label": "Argyle, Denton County, Texas, United States"
+  },
+  "hinsdale|IL": {
+    "lat": 41.8024604,
+    "lng": -87.9299841,
+    "label": "Hinsdale, DuPage County, Illinois, 60521, United States"
+  },
+  "beaverton|OR": {
+    "lat": 45.4871723,
+    "lng": -122.80378,
+    "label": "Beaverton, Washington County, Oregon, United States"
+  },
+  "cashiers|NC": {
+    "lat": 35.1112023,
+    "lng": -83.0980592,
+    "label": "Cashiers, Jackson County, North Carolina, 28717, United States"
+  },
+  "covington|LA": {
+    "lat": 30.4753525,
+    "lng": -90.1010474,
+    "label": "Covington, St. Tammany Parish, Louisiana, United States"
+  },
+  "sedona|AZ": {
+    "lat": 34.8688613,
+    "lng": -111.7614394,
+    "label": "Sedona, Coconino County, Arizona, United States"
+  },
+  "carrollton|TX": {
+    "lat": 32.9515472,
+    "lng": -96.9034244,
+    "label": "Carrollton, Dallas County, Texas, United States"
+  },
+  "milford|MA": {
+    "lat": 42.1428913,
+    "lng": -71.5164618,
+    "label": "Milford, Worcester County, Massachusetts, 01757, United States"
+  },
+  "newton|MA": {
+    "lat": 42.3300435,
+    "lng": -71.194862,
+    "label": "Newton, Middlesex County, Massachusetts, United States"
+  },
+  "brookline|MA": {
+    "lat": 42.332918,
+    "lng": -71.1187829,
+    "label": "Brookline, Norfolk County, Massachusetts, United States"
+  },
+  "jaffrey|NH": {
+    "lat": 42.8149899,
+    "lng": -72.0235305,
+    "label": "Jaffrey, Cheshire County, New Hampshire, 03452, United States"
+  },
+  "wiscasset|ME": {
+    "lat": 44.0025414,
+    "lng": -69.6647263,
+    "label": "Wiscasset, Lincoln County, Maine, 04578, United States"
+  },
+  "bellevue|WA": {
+    "lat": 47.6144219,
+    "lng": -122.192337,
+    "label": "Bellevue, King County, Washington, United States"
+  },
+  "raleigh|NC": {
+    "lat": 35.7803977,
+    "lng": -78.6390989,
+    "label": "Raleigh, Wake County, North Carolina, United States"
+  },
+  "louisville|KY": {
+    "lat": 38.2542376,
+    "lng": -85.759407,
+    "label": "Louisville, Jefferson County, Kentucky, United States"
+  },
+  "windermere|FL": {
+    "lat": 28.4944695,
+    "lng": -81.5345547,
+    "label": "Windermere, Orange County, Florida, United States"
+  },
+  "bonita springs|FL": {
+    "lat": 26.339806,
+    "lng": -81.7786972,
+    "label": "Bonita Springs, Lee County, Florida, United States"
+  },
+  "clarks summit|PA": {
+    "lat": 41.4941161,
+    "lng": -75.703413,
+    "label": "Clarks Summit, Lackawanna County, Pennsylvania, 18411, United States"
+  },
+  "billings|MT": {
+    "lat": 45.7874957,
+    "lng": -108.49607,
+    "label": "Billings, Yellowstone County, Montana, United States"
+  },
+  "fishers|IN": {
+    "lat": 39.9555928,
+    "lng": -86.0138729,
+    "label": "Fishers, Hamilton County, Indiana, United States"
+  },
+  "geneva|IL": {
+    "lat": 41.8875281,
+    "lng": -88.3053525,
+    "label": "Geneva, Geneva Township, Kane County, Illinois, 60134, United States"
+  },
+  "colorado springs|CO": {
+    "lat": 38.8339578,
+    "lng": -104.825348,
+    "label": "Colorado Springs, El Paso County, Colorado, United States"
+  },
+  "louisville|CO": {
+    "lat": 39.977763,
+    "lng": -105.1319296,
+    "label": "Louisville, Boulder County, Colorado, 80027, United States"
+  },
+  "park city|UT": {
+    "lat": 40.6460921,
+    "lng": -111.4979963,
+    "label": "Park City, Summit County, Utah, United States"
+  },
+  "des moines|IA": {
+    "lat": 41.5868654,
+    "lng": -93.6249494,
+    "label": "Des Moines, Polk County, Iowa, United States"
+  },
+  "encinitas|CA": {
+    "lat": 33.0369867,
+    "lng": -117.2919818,
+    "label": "Encinitas, San Diego County, California, United States"
+  },
+  "palm desert|CA": {
+    "lat": 33.7288179,
+    "lng": -116.382571,
+    "label": "Palm Desert, Riverside County, California, United States"
+  },
+  "la jolla|CA": {
+    "lat": 32.8401623,
+    "lng": -117.2740777,
+    "label": "La Jolla, San Diego, San Diego County, California, 92037, United States"
+  },
+  "seattle|WA": {
+    "lat": 47.6038321,
+    "lng": -122.330062,
+    "label": "Seattle, King County, Washington, United States"
+  },
+  "gresham|OR": {
+    "lat": 45.4978623,
+    "lng": -122.4329883,
+    "label": "Gresham, Multnomah County, Oregon, United States"
+  },
+  "lake oswego|OR": {
+    "lat": 45.4206749,
+    "lng": -122.670649,
+    "label": "Lake Oswego, Clackamas County, Oregon, United States"
+  },
+  "denton|TX": {
+    "lat": 33.215038,
+    "lng": -97.1330431,
+    "label": "Denton, Denton County, Texas, United States"
+  },
+  "garland|TX": {
+    "lat": 32.912624,
+    "lng": -96.6388833,
+    "label": "Garland, Dallas County, Texas, United States"
+  },
+  "chatham|NJ": {
+    "lat": 40.7409242,
+    "lng": -74.3836711,
+    "label": "Chatham, Morris County, New Jersey, United States"
+  },
+  "hawthorne|NJ": {
+    "lat": 40.9492649,
+    "lng": -74.1537549,
+    "label": "Hawthorne, Passaic County, New Jersey, United States"
+  },
+  "west orange|NJ": {
+    "lat": 40.7987113,
+    "lng": -74.2390353,
+    "label": "West Orange, Essex County, New Jersey, 07052, United States"
+  },
+  "tenafly|NJ": {
+    "lat": 40.9253766,
+    "lng": -73.9629154,
+    "label": "Tenafly, Bergen County, New Jersey, 07670, United States"
+  },
+  "succasunna|NJ": {
+    "lat": 40.8684325,
+    "lng": -74.6404382,
+    "label": "Succasunna, Roxbury Township, Morris County, New Jersey, 07847, United States"
+  },
+  "madison|NJ": {
+    "lat": 40.7598227,
+    "lng": -74.417097,
+    "label": "Madison, Morris County, New Jersey, United States"
+  },
+  "raritan|NJ": {
+    "lat": 40.5671022,
+    "lng": -74.6347275,
+    "label": "Raritan, Somerset County, New Jersey, 08869, United States"
+  },
+  "montclair|NJ": {
+    "lat": 40.8164458,
+    "lng": -74.2210643,
+    "label": "Montclair, Essex County, New Jersey, United States"
+  },
+  "princeton|NJ": {
+    "lat": 40.3496953,
+    "lng": -74.6597376,
+    "label": "Princeton, Mercer County, New Jersey, United States"
+  },
+  "cherry hill|NJ": {
+    "lat": 39.9348351,
+    "lng": -75.0307264,
+    "label": "Cherry Hill Township, Camden County, New Jersey, United States"
+  },
+  "bradley beach|NJ": {
+    "lat": 40.2023355,
+    "lng": -74.0120814,
+    "label": "Bradley Beach, Monmouth County, New Jersey, 07720, United States"
+  },
+  "west long branch|NJ": {
+    "lat": 40.2904235,
+    "lng": -74.0172558,
+    "label": "West Long Branch, Monmouth County, New Jersey, 07764, United States"
+  },
+  "ocean township|NJ": {
+    "lat": 40.2520408,
+    "lng": -74.0461049,
+    "label": "Ocean Township, Monmouth County, New Jersey, 07755, United States"
+  },
+  "brick|NJ": {
+    "lat": 40.0707244,
+    "lng": -74.1280562,
+    "label": "Brick Township, Ocean County, New Jersey, United States"
+  },
+  "tinton falls|NJ": {
+    "lat": 40.2890734,
+    "lng": -74.0927967,
+    "label": "Tinton Falls, Monmouth County, New Jersey, United States"
+  },
+  "holmdel|NJ": {
+    "lat": 40.3451095,
+    "lng": -74.1840322,
+    "label": "Holmdel Township, Monmouth County, New Jersey, 07733, United States"
+  },
+  "sea girt|NJ": {
+    "lat": 40.1320592,
+    "lng": -74.0345813,
+    "label": "Sea Girt, Monmouth County, New Jersey, 08750, United States"
+  },
+  "long beach|CA": {
+    "lat": 33.7690164,
+    "lng": -118.191604,
+    "label": "Long Beach, Los Angeles County, California, United States"
+  },
+  "anaheim|CA": {
+    "lat": 33.8347516,
+    "lng": -117.911732,
+    "label": "Anaheim, Orange County, California, United States"
+  },
+  "newport beach|CA": {
+    "lat": 33.6170092,
+    "lng": -117.9294401,
+    "label": "Newport Beach, Orange County, California, United States"
+  },
+  "laguna beach|CA": {
+    "lat": 33.5426975,
+    "lng": -117.785366,
+    "label": "Laguna Beach, Orange County, California, United States"
+  },
+  "chandler|AZ": {
+    "lat": 33.3062031,
+    "lng": -111.841185,
+    "label": "Chandler, Maricopa County, Arizona, United States"
+  },
+  "palm beach gardens|FL": {
+    "lat": 26.8233946,
+    "lng": -80.1386547,
+    "label": "Palm Beach Gardens, Palm Beach County, Florida, United States"
+  },
+  "palm beach|FL": {
+    "lat": 26.7056172,
+    "lng": -80.0361517,
+    "label": "Palm Beach, Palm Beach County, Florida, 33480, United States"
+  },
+  "naples|FL": {
+    "lat": 26.1421976,
+    "lng": -81.7942944,
+    "label": "Naples, Collier County, Florida, United States"
+  },
+  "marco island|FL": {
+    "lat": 25.9372513,
+    "lng": -81.71573,
+    "label": "Marco Island, Collier County, Florida, 34145, United States"
+  },
+  "fort myers|FL": {
+    "lat": 26.640628,
+    "lng": -81.8723084,
+    "label": "Fort Myers, Lee County, Florida, United States"
+  },
+  "cape coral|FL": {
+    "lat": 26.5625742,
+    "lng": -81.9438802,
+    "label": "Cape Coral, Lee County, Florida, United States"
+  },
+  "north miami beach|FL": {
+    "lat": 25.9331488,
+    "lng": -80.1625463,
+    "label": "North Miami Beach, Miami-Dade County, Florida, 33162, United States"
+  },
+  "brentwood|TN": {
+    "lat": 36.0325687,
+    "lng": -86.7825235,
+    "label": "Brentwood, Williamson County, Middle Tennessee, Tennessee, United States"
+  },
+  "decatur|GA": {
+    "lat": 33.7737582,
+    "lng": -84.296069,
+    "label": "Decatur, DeKalb County, Georgia, 30030, United States"
+  },
+  "hapeville|GA": {
+    "lat": 33.660109,
+    "lng": -84.4102046,
+    "label": "Hapeville, Fulton County, Georgia, United States"
+  },
+  "smyrna|GA": {
+    "lat": 33.883887,
+    "lng": -84.5147454,
+    "label": "Smyrna, Cobb County, Georgia, United States"
+  },
+  "roswell|GA": {
+    "lat": 34.02332,
+    "lng": -84.360022,
+    "label": "Roswell, Fulton County, Georgia, United States"
+  },
+  "chamblee|GA": {
+    "lat": 33.892176,
+    "lng": -84.2988296,
+    "label": "Chamblee, DeKalb County, Georgia, 30341, United States"
+  },
+  "alpharetta|GA": {
+    "lat": 34.0755962,
+    "lng": -84.2945964,
+    "label": "Alpharetta, Fulton County, Georgia, United States"
+  },
+  "peachtree city|GA": {
+    "lat": 33.3975472,
+    "lng": -84.5898256,
+    "label": "Peachtree City, Fayette County, Georgia, 30269, United States"
+  },
+  "flowery branch|GA": {
+    "lat": 34.1851017,
+    "lng": -83.9251809,
+    "label": "Flowery Branch, Hall County, Georgia, United States"
+  },
+  "evanston|IL": {
+    "lat": 42.0470043,
+    "lng": -87.6846053,
+    "label": "Evanston, Evanston Township, Cook County, Illinois, United States"
+  },
+  "park ridge|IL": {
+    "lat": 42.0112329,
+    "lng": -87.8406031,
+    "label": "Park Ridge, Maine Township, Cook County, Illinois, 60068, United States"
+  },
+  "naperville|IL": {
+    "lat": 41.7728699,
+    "lng": -88.1479278,
+    "label": "Naperville, Naperville Township, DuPage County, Illinois, United States"
+  },
+  "st. charles|IL": {
+    "lat": 41.9139808,
+    "lng": -88.3128183,
+    "label": "St. Charles, St. Charles Township, Kane County, Illinois, 60174, United States"
+  },
+  "glen ellyn|IL": {
+    "lat": 41.8775293,
+    "lng": -88.0670118,
+    "label": "Glen Ellyn, DuPage County, Illinois, 60137, United States"
+  },
+  "wheaton|IL": {
+    "lat": 41.8646959,
+    "lng": -88.1101709,
+    "label": "Wheaton, DuPage County, Illinois, 60187, United States"
+  },
+  "philadelphia|PA": {
+    "lat": 39.9527237,
+    "lng": -75.1635262,
+    "label": "Philadelphia, Philadelphia County, Pennsylvania, United States"
+  },
+  "minneapolis|MN": {
+    "lat": 44.9772995,
+    "lng": -93.2654692,
+    "label": "Minneapolis, Hennepin County, Minnesota, United States"
+  },
+  "henderson|NV": {
+    "lat": 36.0319602,
+    "lng": -114.9822716,
+    "label": "Henderson, Clark County, Nevada, United States"
+  },
+  "key west|FL": {
+    "lat": 24.5548262,
+    "lng": -81.8020722,
+    "label": "Key West, Monroe County, Florida, United States"
+  },
+  "mountainside|NJ": {
+    "lat": 40.6723242,
+    "lng": -74.3573722,
+    "label": "Mountainside, Union County, New Jersey, 07092, United States"
+  },
+  "boulder|CO": {
+    "lat": 40.0149856,
+    "lng": -105.270545,
+    "label": "Boulder, Boulder County, Colorado, United States"
+  },
+  "mission viejo|CA": {
+    "lat": 33.5965685,
+    "lng": -117.659405,
+    "label": "Mission Viejo, Orange County, California, United States"
+  },
+  "northampton|MA": {
+    "lat": 42.3178989,
+    "lng": -72.6311006,
+    "label": "Northampton, Hampshire County, Massachusetts, United States"
+  },
+  "davis|CA": {
+    "lat": 38.5435526,
+    "lng": -121.739005,
+    "label": "Davis, Yolo County, California, United States"
+  },
+  "elmhurst|IL": {
+    "lat": 41.8994745,
+    "lng": -87.9403418,
+    "label": "Elmhurst, DuPage County, Illinois, 60126, United States"
+  },
+  "san anselmo|CA": {
+    "lat": 37.9744323,
+    "lng": -122.561503,
+    "label": "San Anselmo, Marin County, California, 94960, United States"
+  },
+  "sun city|AZ": {
+    "lat": 33.6290111,
+    "lng": -112.281933,
+    "label": "Sun City, Maricopa County, Arizona, 85351, United States"
+  },
+  "san rafael|CA": {
+    "lat": 37.9747795,
+    "lng": -122.5316686,
+    "label": "San Rafael, Marin County, California, United States"
+  },
+  "jersey city|NJ": {
+    "lat": 40.7215682,
+    "lng": -74.047455,
+    "label": "Jersey City, Hudson County, New Jersey, United States"
+  },
+  "old bridge|NJ": {
+    "lat": 40.3913195,
+    "lng": -74.3328038,
+    "label": "Old Bridge, Old Bridge Township, Middlesex County, New Jersey, 08857, United States"
+  },
+  "lavallette|NJ": {
+    "lat": 39.9703958,
+    "lng": -74.0687475,
+    "label": "Lavallette, Ocean County, New Jersey, United States"
+  },
+  "san clemente|CA": {
+    "lat": 33.4270275,
+    "lng": -117.6124179,
+    "label": "San Clemente, Orange County, California, United States"
+  },
+  "delray beach|FL": {
+    "lat": 26.4614625,
+    "lng": -80.0728201,
+    "label": "Delray Beach, Palm Beach County, Florida, United States"
+  },
+  "johns creek|GA": {
+    "lat": 34.0181557,
+    "lng": -84.190196,
+    "label": "Johns Creek, Fulton County, Georgia, United States"
+  },
+  "northfield|IL": {
+    "lat": 42.09975,
+    "lng": -87.7808967,
+    "label": "Northfield, Northfield Township, Cook County, Illinois, United States"
+  },
+  "st. petersburg|FL": {
+    "lat": 27.7712264,
+    "lng": -82.6340259,
+    "label": "Saint Petersburg, Pinellas County, Florida, United States"
+  },
+  "atlanta (brookhaven)|GA": {
+    "lat": 33.7544657,
+    "lng": -84.3898151,
+    "label": "Atlanta, Fulton County, Georgia, United States",
+    "matchedOn": "Atlanta",
+    "narrowed": true
+  },
+  "edmond/oklahoma city|OK": {
+    "lat": 35.6571367,
+    "lng": -97.4649038,
+    "label": "Edmond, Oklahoma County, Oklahoma, United States",
+    "matchedOn": "Edmond",
+    "narrowed": true
+  },
+  "midland/odessa|TX": {
+    "lat": 31.9973662,
+    "lng": -102.077948,
+    "label": "Midland, Midland County, Texas, United States",
+    "matchedOn": "Midland",
+    "narrowed": true
+  },
+  "los angeles / nashville|CA": {
+    "lat": 34.0536909,
+    "lng": -118.242766,
+    "label": "Los Angeles, Los Angeles County, California, United States",
+    "matchedOn": "Los Angeles",
+    "narrowed": true
+  },
+  "austin/dripping springs|TX": {
+    "lat": 30.2711286,
+    "lng": -97.7436995,
+    "label": "Austin, Travis County, Texas, United States",
+    "matchedOn": "Austin",
+    "narrowed": true
+  },
+  "chicago (north suburbs)|IL": {
+    "lat": 41.8755616,
+    "lng": -87.6244212,
+    "label": "Chicago, South Chicago Township, Cook County, Illinois, United States",
+    "matchedOn": "Chicago",
+    "narrowed": true
+  },
+  "chicago (lakeview)|IL": {
+    "lat": 41.8755616,
+    "lng": -87.6244212,
+    "label": "Chicago, South Chicago Township, Cook County, Illinois, United States",
+    "matchedOn": "Chicago",
+    "narrowed": true
+  },
+  "dripping springs (austin metro)|TX": {
+    "lat": 30.1902067,
+    "lng": -98.0866781,
+    "label": "Dripping Springs, Hays County, Texas, United States",
+    "matchedOn": "Dripping Springs",
+    "narrowed": true
+  },
+  "austin / dripping springs|TX": {
+    "lat": 30.2711286,
+    "lng": -97.7436995,
+    "label": "Austin, Travis County, Texas, United States",
+    "matchedOn": "Austin",
+    "narrowed": true
+  },
+  "venice (los angeles)|CA": {
+    "lat": 33.995044,
+    "lng": -118.4668875,
+    "label": "Venice, Los Angeles, Los Angeles County, California, 90291, United States",
+    "matchedOn": "Venice",
+    "narrowed": true
+  },
+  "torrance (la south bay)|CA": {
+    "lat": 33.8371392,
+    "lng": -118.3413606,
+    "label": "Torrance, Los Angeles County, California, United States",
+    "matchedOn": "Torrance",
+    "narrowed": true
+  },
+  "los angeles (cheviot hills)|CA": {
+    "lat": 34.0536909,
+    "lng": -118.242766,
+    "label": "Los Angeles, Los Angeles County, California, United States",
+    "matchedOn": "Los Angeles",
+    "narrowed": true
+  },
+  "la jolla (san diego)|CA": {
+    "lat": 32.8401623,
+    "lng": -117.2740777,
+    "label": "La Jolla, San Diego, San Diego County, California, 92037, United States",
+    "matchedOn": "La Jolla",
+    "narrowed": true
+  },
+  "san diego (4s ranch)|CA": {
+    "lat": 32.7174202,
+    "lng": -117.162772,
+    "label": "San Diego, San Diego County, California, United States",
+    "matchedOn": "San Diego",
+    "narrowed": true
+  },
+  "los angeles (sherman oaks)|CA": {
+    "lat": 34.0536909,
+    "lng": -118.242766,
+    "label": "Los Angeles, Los Angeles County, California, United States",
+    "matchedOn": "Los Angeles",
+    "narrowed": true
+  },
+  "brookhaven/atlanta|GA": {
+    "lat": 33.8584368,
+    "lng": -84.340203,
+    "label": "Brookhaven, DeKalb County, Georgia, United States",
+    "matchedOn": "Brookhaven",
+    "narrowed": true
+  },
+  "chicago (little italy)|IL": {
+    "lat": 41.8755616,
+    "lng": -87.6244212,
+    "label": "Chicago, South Chicago Township, Cook County, Illinois, United States",
+    "matchedOn": "Chicago",
+    "narrowed": true
+  },
+  "chicago (canaryville)|IL": {
+    "lat": 41.8755616,
+    "lng": -87.6244212,
+    "label": "Chicago, South Chicago Township, Cook County, Illinois, United States",
+    "matchedOn": "Chicago",
+    "narrowed": true
+  },
+  "chicago (northwest side)|IL": {
+    "lat": 41.8755616,
+    "lng": -87.6244212,
+    "label": "Chicago, South Chicago Township, Cook County, Illinois, United States",
+    "matchedOn": "Chicago",
+    "narrowed": true
+  },
+  "chicago (norwood park)|IL": {
+    "lat": 41.8755616,
+    "lng": -87.6244212,
+    "label": "Chicago, South Chicago Township, Cook County, Illinois, United States",
+    "matchedOn": "Chicago",
+    "narrowed": true
+  },
+  "chicago (lincoln square)|IL": {
+    "lat": 41.8755616,
+    "lng": -87.6244212,
+    "label": "Chicago, South Chicago Township, Cook County, Illinois, United States",
+    "matchedOn": "Chicago",
+    "narrowed": true
+  },
+  "chicago (clearing)|IL": {
+    "lat": 41.8755616,
+    "lng": -87.6244212,
+    "label": "Chicago, South Chicago Township, Cook County, Illinois, United States",
+    "matchedOn": "Chicago",
+    "narrowed": true
+  },
+  "lisle (naperville area)|IL": {
+    "lat": 41.801159,
+    "lng": -88.0747687,
+    "label": "Lisle, DuPage County, Illinois, 60532, United States",
+    "matchedOn": "Lisle",
+    "narrowed": true
+  },
+  "buffalo grove / glenview (north shore area)|IL": {
+    "lat": 42.1544205,
+    "lng": -87.9589621,
+    "label": "Buffalo Grove, Lake County, Illinois, United States",
+    "matchedOn": "Buffalo Grove",
+    "narrowed": true
+  },
+  "putnam valley (westchester/hudson valley)|NY": {
+    "lat": 41.3406164,
+    "lng": -73.8769558,
+    "label": "Town of Putnam Valley, Putnam County, New York, United States",
+    "matchedOn": "Putnam Valley",
+    "narrowed": true
+  },
+  "oceanside (long island)|NY": {
+    "lat": 40.6390936,
+    "lng": -73.6399765,
+    "label": "Oceanside, Town of Hempstead, Nassau County, New York, 11572, United States",
+    "matchedOn": "Oceanside",
+    "narrowed": true
+  },
+  "baldwin (long island)|NY": {
+    "lat": 40.6507766,
+    "lng": -73.6124106,
+    "label": "Baldwin, Town of Hempstead, Nassau County, New York, 11510, United States",
+    "matchedOn": "Baldwin",
+    "narrowed": true
+  },
+  "tarrytown (westchester)|NY": {
+    "lat": 41.0762077,
+    "lng": -73.8587461,
+    "label": "Village of Tarrytown, Town of Greenburgh, Westchester County, New York, 10591, United States",
+    "matchedOn": "Tarrytown",
+    "narrowed": true
+  },
+  "westmont (serves hinsdale/western suburbs)|IL": {
+    "lat": 41.7950525,
+    "lng": -87.9751964,
+    "label": "Westmont, DuPage County, Illinois, 60559, United States",
+    "matchedOn": "Westmont",
+    "narrowed": true
+  },
+  "wynnewood (philadelphia main line)|PA": {
+    "lat": 40.0028514,
+    "lng": -75.2707469,
+    "label": "Wynnewood, Ardmore, Lower Merion Township, Montgomery County, Pennsylvania, 19096, United States",
+    "matchedOn": "Wynnewood",
+    "narrowed": true
+  },
+  "boulder (denver metro)|CO": {
+    "lat": 40.0149856,
+    "lng": -105.270545,
+    "label": "Boulder, Boulder County, Colorado, United States",
+    "matchedOn": "Boulder",
+    "narrowed": true
+  },
+  "new brighton (minneapolis metro)|MN": {
+    "lat": 45.0628999,
+    "lng": -93.2060969,
+    "label": "New Brighton, Ramsey County, Minnesota, United States",
+    "matchedOn": "New Brighton",
+    "narrowed": true
+  },
+  "edina (minneapolis metro)|MN": {
+    "lat": 44.8897027,
+    "lng": -93.3501222,
+    "label": "Edina, Hennepin County, Minnesota, United States",
+    "matchedOn": "Edina",
+    "narrowed": true
+  },
+  "fair haven / long branch|NJ": {
+    "lat": 40.3606653,
+    "lng": -74.0381947,
+    "label": "Fair Haven, Monmouth County, New Jersey, 07704, United States",
+    "matchedOn": "Fair Haven",
+    "narrowed": true
+  },
+  "chicago (magnificent mile)|IL": {
+    "lat": 41.8755616,
+    "lng": -87.6244212,
+    "label": "Chicago, South Chicago Township, Cook County, Illinois, United States",
+    "matchedOn": "Chicago",
+    "narrowed": true
+  },
+  "los angeles (silver lake)|CA": {
+    "lat": 34.0536909,
+    "lng": -118.242766,
+    "label": "Los Angeles, Los Angeles County, California, United States",
+    "matchedOn": "Los Angeles",
+    "narrowed": true
+  },
+  "milton/alpharetta area|GA": {
+    "lat": 34.1134001,
+    "lng": -84.2693745,
+    "label": "Milton, Fulton County, Georgia, 30004, United States",
+    "matchedOn": "Milton",
+    "narrowed": true
+  },
+  "mercer island (seattle metro)|WA": {
+    "lat": 47.5766324,
+    "lng": -122.2276378,
+    "label": "Mercer Island, King County, Washington, 98040, United States",
+    "matchedOn": "Mercer Island",
+    "narrowed": true
+  },
+  "webster groves (st. louis metro)|MO": {
+    "lat": 38.592339,
+    "lng": -90.3564329,
+    "label": "Webster Groves, Saint Louis County, Missouri, 63119, United States",
+    "matchedOn": "Webster Groves",
+    "narrowed": true
+  },
+  "chicago (wrigleyville/lakeview)|IL": {
+    "lat": 41.8755616,
+    "lng": -87.6244212,
+    "label": "Chicago, South Chicago Township, Cook County, Illinois, United States",
+    "matchedOn": "Chicago",
+    "narrowed": true
+  },
+  "chicago (gold coast) / north shore|IL": {
+    "lat": 41.8755616,
+    "lng": -87.6244212,
+    "label": "Chicago, South Chicago Township, Cook County, Illinois, United States",
+    "matchedOn": "Chicago",
+    "narrowed": true
+  },
+  "milwaukee (whitefish bay)|WI": {
+    "lat": 43.0386475,
+    "lng": -87.9090751,
+    "label": "Milwaukee, Milwaukee County, Wisconsin, United States",
+    "matchedOn": "Milwaukee",
+    "narrowed": true
+  },
+  "west university place (houston)|TX": {
+    "lat": 29.7180075,
+    "lng": -95.4338292,
+    "label": "West University Place, Harris County, Texas, 77005, United States",
+    "matchedOn": "West University Place",
+    "narrowed": true
+  },
+  "maple shade / moorestown|NJ": {
+    "lat": 39.9526127,
+    "lng": -74.9923915,
+    "label": "Maple Shade Township, Burlington County, New Jersey, 08052, United States",
+    "matchedOn": "Maple Shade",
+    "narrowed": true
+  },
+  "chicago (garfield ridge)|IL": {
+    "lat": 41.8755616,
+    "lng": -87.6244212,
+    "label": "Chicago, South Chicago Township, Cook County, Illinois, United States",
+    "matchedOn": "Chicago",
+    "narrowed": true
+  },
+  "chicago (irving park)|IL": {
+    "lat": 41.8755616,
+    "lng": -87.6244212,
+    "label": "Chicago, South Chicago Township, Cook County, Illinois, United States",
+    "matchedOn": "Chicago",
+    "narrowed": true
+  },
+  "east islip (long island)|NY": {
+    "lat": 40.7320429,
+    "lng": -73.1856703,
+    "label": "East Islip, Town of Islip, Suffolk County, New York, 11730, United States",
+    "matchedOn": "East Islip",
+    "narrowed": true
+  },
+  "lakewood (denver metro)|CO": {
+    "lat": 39.7085736,
+    "lng": -105.0846694,
+    "label": "Lakewood, Jefferson County, Colorado, United States",
+    "matchedOn": "Lakewood",
+    "narrowed": true
+  }
+}

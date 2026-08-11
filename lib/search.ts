@@ -451,6 +451,40 @@ const RADIUS_LADDER = [5, 10, 25, 50];
 // asked for than keeping the hour but moving the day.
 // Day moves third, and event type last, because a tournament is not a substitute for a
 // casual open play and swapping it silently would misrepresent the result.
+function restoreConstraint(
+  target: EventSearchParams,
+  original: EventSearchParams,
+  constraint: RelaxationStep["constraint"]
+): void {
+  if (constraint === "radius") target.radiusMiles = original.radiusMiles;
+  if (constraint === "timeOfDay") target.timeOfDay = original.timeOfDay;
+  if (constraint === "dayOfWeek") target.daysOfWeek = original.daysOfWeek;
+  if (constraint === "type") target.types = original.types;
+}
+
+// The ladder relaxes in a fixed order, so by the time it finds results it has usually given up
+// more than it needed to. Reporting all of it tells someone their game is 50 miles away when it
+// is half a mile away, which is a false impression even though every individual step was real.
+// Each relaxation is put back, most recent first, and kept only if it is genuinely required.
+async function minimizeRelaxations(
+  original: EventSearchParams,
+  working: EventSearchParams,
+  relaxations: RelaxationStep[],
+  minResults: number
+): Promise<{ results: WithDistance<EventRow>[]; relaxations: RelaxationStep[] }> {
+  const kept: RelaxationStep[] = [...relaxations];
+  for (let i = kept.length - 1; i >= 0; i--) {
+    const trial: EventSearchParams = { ...working };
+    restoreConstraint(trial, original, kept[i].constraint);
+    const trialResults = await searchEvents(trial);
+    if (trialResults.length >= minResults) {
+      restoreConstraint(working, original, kept[i].constraint);
+      kept.splice(i, 1);
+    }
+  }
+  return { results: await searchEvents(working), relaxations: kept };
+}
+
 export async function searchEventsWithRelaxation(
   params: EventSearchParams,
   minResults = 1
@@ -470,12 +504,9 @@ export async function searchEventsWithRelaxation(
       working.radiusMiles = step;
       const results = await searchEvents(working);
       if (results.length >= minResults) {
-        relaxations.push({
-          constraint: "radius",
-          from: `${start} miles`,
-          to: `${step} miles`,
-        });
-        return { results, relaxations, exact: false };
+        relaxations.push({ constraint: "radius", from: `${start} miles`, to: `${step} miles` });
+        const min = await minimizeRelaxations(params, working, relaxations, minResults);
+        return { results: min.results, relaxations: min.relaxations, exact: false };
       }
     }
     working.radiusMiles = RADIUS_LADDER[RADIUS_LADDER.length - 1];
@@ -491,7 +522,10 @@ export async function searchEventsWithRelaxation(
     working.timeOfDay = null;
     const results = await searchEvents(working);
     relaxations.push({ constraint: "timeOfDay", from, to: "any time of day" });
-    if (results.length >= minResults) return { results, relaxations, exact: false };
+    if (results.length >= minResults) {
+      const min = await minimizeRelaxations(params, working, relaxations, minResults);
+      return { results: min.results, relaxations: min.relaxations, exact: false };
+    }
   }
 
   if (working.daysOfWeek && working.daysOfWeek.length > 0) {
@@ -499,7 +533,10 @@ export async function searchEventsWithRelaxation(
     working.daysOfWeek = null;
     const results = await searchEvents(working);
     relaxations.push({ constraint: "dayOfWeek", from, to: "any day" });
-    if (results.length >= minResults) return { results, relaxations, exact: false };
+    if (results.length >= minResults) {
+      const min = await minimizeRelaxations(params, working, relaxations, minResults);
+      return { results: min.results, relaxations: min.relaxations, exact: false };
+    }
   }
 
   if (working.types && working.types.length > 0) {
@@ -507,7 +544,10 @@ export async function searchEventsWithRelaxation(
     working.types = null;
     const results = await searchEvents(working);
     relaxations.push({ constraint: "type", from, to: "any kind of play" });
-    if (results.length >= minResults) return { results, relaxations, exact: false };
+    if (results.length >= minResults) {
+      const min = await minimizeRelaxations(params, working, relaxations, minResults);
+      return { results: min.results, relaxations: min.relaxations, exact: false };
+    }
   }
 
   return { results: await searchEvents(working), relaxations, exact: false };

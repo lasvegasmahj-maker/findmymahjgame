@@ -49,7 +49,26 @@ function validCoords(lat, lng) {
   );
 }
 
-async function geocodeCity(city, state) {
+// The research import wrote values like "Atlanta (Brookhaven), GA" and "Austin / Dripping
+// Springs, TX". Those are real places written imprecisely, not bad data, so the raw string is
+// tried first and these narrowing rewrites only run if it misses. Order matters: the
+// parenthetical is usually the neighbourhood and the leading name is usually the city.
+function cityVariants(city) {
+  const raw = String(city || "").trim();
+  const out = [raw];
+  const noParens = raw.replace(/\s*\([^)]*\)\s*/g, " ").trim();
+  if (noParens && noParens !== raw) out.push(noParens);
+  const inParens = raw.match(/\(([^)]+)\)/);
+  const firstSlash = noParens.split(/\s*[/,]\s*/)[0].trim();
+  if (firstSlash && !out.includes(firstSlash)) out.push(firstSlash);
+  if (inParens) {
+    const p = inParens[1].trim();
+    if (p && !/metro|area|suburbs|county/i.test(p) && !out.includes(p)) out.push(p);
+  }
+  return out.filter(Boolean);
+}
+
+async function lookup(city, state) {
   const url =
     "https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=us" +
     `&city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}`;
@@ -62,6 +81,16 @@ async function geocodeCity(city, state) {
   const lng = Number(hit.lon);
   if (!validCoords(lat, lng)) return null;
   return { lat, lng, label: hit.display_name };
+}
+
+async function geocodeCity(city, state) {
+  const variants = cityVariants(city);
+  for (let i = 0; i < variants.length; i++) {
+    const hit = await lookup(variants[i], state);
+    if (hit) return { ...hit, matchedOn: variants[i], narrowed: i > 0 };
+    if (i < variants.length - 1) await sleep(1100);
+  }
+  return null;
 }
 
 const TABLES = [
