@@ -74,12 +74,13 @@ export default function GetListedClient({ defaultType = "" }: { defaultType?: st
     if (code === "FINDMYMAHJGAME") { setPromoStatus("valid"); return; }
     setPromoStatus("checking");
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/promo_codes?code=eq.${encodeURIComponent(code)}&active=eq.true&select=code`,
-        { headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}` } }
-      );
+      const res = await fetch("/api/validate-promo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
       const data = await res.json();
-      setPromoStatus(Array.isArray(data) && data.length > 0 ? "valid" : "invalid");
+      setPromoStatus(data?.valid ? "valid" : "invalid");
     } catch {
       setPromoStatus("invalid");
     }
