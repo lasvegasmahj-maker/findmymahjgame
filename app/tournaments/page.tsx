@@ -7,6 +7,7 @@ import CityAutocomplete from "@/components/city-autocomplete";
 import { nearMatches } from "@/lib/near-match";
 import { safeHttpUrl } from "@/lib/sanitize";
 import GroupedEvents, { type GroupedRow } from "@/components/grouped-events";
+import { schemaScriptProps } from "@/lib/schema";
 
 export const metadata: Metadata = {
   title: "Mahjong Tournaments Near You",
@@ -72,7 +73,7 @@ export default async function TournamentsPage({ searchParams }: { searchParams: 
 
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
-      {eventSchema.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(eventSchema) }} />}
+      {eventSchema.length > 0 && <script {...schemaScriptProps(eventSchema)} />}
       <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", textAlign: "center", margin: "0 0 0.4rem" }}>Mahjong tournaments by state</h1>
       <p style={{ fontSize: "1.2rem", color: "var(--muted)", textAlign: "center", lineHeight: 1.5, margin: "0 0 1.8rem" }}>Upcoming and recurring American Mahjong tournaments, grouped by state. Search your city or browse below.</p>
 

@@ -4,6 +4,7 @@ import { createServerClient } from "@/lib/supabase-server";
 import { safeHttpUrl } from "@/lib/sanitize";
 import NotifyMe from "@/components/notify-me";
 import GroupedEvents, { type GroupedRow } from "@/components/grouped-events";
+import { schemaScriptProps } from "@/lib/schema";
 
 export const metadata: Metadata = {
   title: "Traveling Mahjong Experiences: Cruises & Retreats",
@@ -100,8 +101,8 @@ export default async function TravelPage({ searchParams }: { searchParams: Promi
 
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumb, collectionPage]) }} />
-      {eventSchema.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(eventSchema) }} />}
+      <script {...schemaScriptProps([breadcrumb, collectionPage])} />
+      {eventSchema.length > 0 && <script {...schemaScriptProps(eventSchema)} />}
 
       <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", textAlign: "center", margin: "0 0 0.4rem" }}>Traveling Mahjong Experiences</h1>
       <p style={{ fontSize: "1.2rem", color: "var(--muted)", textAlign: "center", lineHeight: 1.5, margin: "0 auto 1rem", maxWidth: 660 }}>Anything you travel to, in one place. Browse mahjong cruises and retreats you can sign up for, and find a game in the cities you visit.</p>

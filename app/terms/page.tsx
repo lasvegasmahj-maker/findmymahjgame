@@ -69,7 +69,7 @@ export default function TermsPage() {
 
         <h2>In-Person Meetings &amp; Your Safety</h2>
         <p>
-          Find My Mahj Game is a directory platform only. We connect players online &mdash; what
+          Find My Mahj Game is a directory platform only. We connect players online, and what
           happens after that is entirely between the individuals involved.{" "}
           <strong>
             We are not responsible for any interactions, incidents, injuries, losses, or disputes
@@ -98,7 +98,7 @@ export default function TermsPage() {
             between users
           </li>
           <li>
-            Any disputes between players are solely between those individuals &mdash; Find My Mahj
+            Any disputes between players are solely between those individuals. Find My Mahj
             Game has no obligation to intervene or mediate
           </li>
         </ul>
@@ -110,7 +110,7 @@ export default function TermsPage() {
           </p>
         </div>
 
-        <h2>Meeting Other Players &mdash; Safety &amp; Disclaimer</h2>
+        <h2>Meeting Other Players: Safety &amp; Disclaimer</h2>
         <p>
           Find My Mahj Game is a <strong>directory and connection platform only</strong>. We are not
           responsible for any in-person interactions, meetings, events or experiences that result
@@ -151,7 +151,7 @@ export default function TermsPage() {
         </ul>
         <div className="highlight-box">
           <p>
-            <strong>Think of us like a bulletin board at a community center</strong> &mdash; we
+            <strong>Think of us like a bulletin board at a community center</strong>, we
             provide a space for players to find each other, but we are not present at or responsible
             for what happens when people meet. Play safe, play smart, and enjoy the game!
           </p>

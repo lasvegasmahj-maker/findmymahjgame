@@ -9,6 +9,7 @@ import { safeHttpUrl } from "@/lib/sanitize";
 import { attendInfo } from "@/lib/event-level";
 import { isUpcoming } from "@/lib/schedule";
 import { STATES } from "@/lib/states-data";
+import { schemaScriptProps } from "@/lib/schema";
 
 export const metadata: Metadata = {
   title: "Mahjong Events and Open Plays Near You",
@@ -204,7 +205,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
 
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
-      {eventSchema.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(eventSchema) }} />}
+      {eventSchema.length > 0 && <script {...schemaScriptProps(eventSchema)} />}
       <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", textAlign: "center", margin: "0 0 0.4rem" }}>Where can I play this week?</h1>
       <p style={{ fontSize: "1.2rem", color: "var(--muted)", textAlign: "center", lineHeight: 1.5, margin: "0 0 1.8rem" }}>American Mahjong open plays, leagues, tournaments, and events near you.</p>
 

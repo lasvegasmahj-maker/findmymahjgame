@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createServerClient } from "@/lib/supabase-server";
 import { safeHttpUrl } from "@/lib/sanitize";
+import { schemaScriptProps } from "@/lib/schema";
 
 export const revalidate = 600;
 export const dynamicParams = true;
@@ -96,7 +97,7 @@ export default async function TeacherProfilePage({ params }: { params: Promise<{
 
   return (
     <main style={{ maxWidth: 760, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumb, profile]) }} />
+      <script {...schemaScriptProps([breadcrumb, profile])} />
 
       <nav style={{ fontSize: "0.95rem", color: "var(--muted)", marginBottom: "0.8rem" }}>
         <Link href="/teachers" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Teachers</Link> &rsaquo; {name}

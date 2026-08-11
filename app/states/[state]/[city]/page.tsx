@@ -6,6 +6,7 @@ import { createServerClient } from "@/lib/supabase-server";
 import { STATES, type StateData } from "@/lib/states-data";
 import { safeHttpUrl } from "@/lib/sanitize";
 import { attendInfo } from "@/lib/event-level";
+import { schemaScriptProps } from "@/lib/schema";
 
 export const revalidate = 600;
 export const dynamicParams = true;
@@ -107,7 +108,7 @@ export default async function CityPage({ params }: { params: Promise<{ state: st
 
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumb, collectionPage]) }} />
+      <script {...schemaScriptProps([breadcrumb, collectionPage])} />
       <nav style={{ fontSize: "0.95rem", color: "var(--muted)", marginBottom: "0.8rem" }}>
         <Link href={`/states/${st.slug}`} style={{ color: "var(--pink-text)", fontWeight: 700 }}>{st.name}</Link> &rsaquo; {cityName}
       </nav>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createServerClient } from "@/lib/supabase-server";
 import CruiseBoard from "./cruise-board";
 import NotifyMe from "@/components/notify-me";
+import { schemaScriptProps } from "@/lib/schema";
 
 export const metadata: Metadata = {
   title: "Find Mahjong Players on Your Cruise",
@@ -56,7 +57,7 @@ export default async function CruisePage() {
 
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumb, collectionPage]) }} />
+      <script {...schemaScriptProps([breadcrumb, collectionPage])} />
 
       <p style={{ textAlign: "center", margin: "0 0 0.8rem" }}><Link href="/travel" style={{ color: "var(--pink-text)", fontWeight: 700, fontSize: "1rem" }}>&lsaquo; Travel</Link></p>
       <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", textAlign: "center", margin: "0 0 0.4rem" }}>Find mahjong players on your cruise</h1>
