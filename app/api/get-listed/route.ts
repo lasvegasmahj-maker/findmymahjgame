@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { clampText, isValidEmail, safeHttpUrl } from "@/lib/sanitize";
+import { toStateAbbr } from "@/lib/near-match";
 import { rateLimit } from "@/lib/rate-limit";
 import { sendEmail } from "@/lib/email";
 
-// Business/event signups land in the inquiries table (the listing itself is
-// created on approval). The promo is evaluated server-side so founding-member
-// status can never be self-granted from the browser. On success we email the
-// submitter a confirmation and notify the admin, matching the player flow.
+// Business/event signups become a real listing held at pending_review, so the founder
+// approves an existing row rather than retyping it. Status is always set explicitly,
+// because both listing tables default to published and an omitted status would go live
+// unreviewed. The promo is evaluated server-side so founding-member status can never be
+// self-granted from the browser.
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -71,18 +73,87 @@ export async function POST(req: NextRequest) {
     clampText(b.message, 800) ? `Message: ${clampText(b.message, 800)}` : "",
   ].filter(Boolean).join("\n");
 
-  const { error } = await supabase.from("inquiries").insert({
-    name,
-    email,
-    company,
-    inquiry_type: "get_listed",
-    interest: businessType || null,
-    message: details,
-    status: "new",
-  });
-  if (error) {
-    console.error("get-listed insert failed:", error.message);
-    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+  // Previously this wrote an inquiry and stopped, so the confirmation email below promised a
+  // listing that no code path could ever publish. The submission now becomes a real listing
+  // held at pending_review, which lands in the admin tabs that already have approve buttons.
+  const stateAbbr = toStateAbbr(state);
+  const EVENT_TYPE_BY_FORM: Record<string, string> = {
+    "Open Play": "open_play",
+    Tournament: "tournament",
+    Retreat: "retreat",
+    League: "league",
+  };
+  const FREQUENCY_BY_FORM: Record<string, string> = {
+    Weekly: "weekly",
+    "Every other week": "biweekly",
+    Monthly: "monthly",
+  };
+
+  const provenance = [
+    `Submitted through /get-listed by ${name} (${email}).`,
+    promoLine,
+    clampText(b.instagram, 120) ? `Instagram: ${clampText(b.instagram, 120)}` : "",
+    b.beginner_friendly === true ? "Beginner-friendly: yes" : "",
+  ].filter(Boolean).join(" ");
+
+  let listingError: string | null = null;
+  if (!company || !stateAbbr || !city) {
+    listingError = "missing business name, city or state";
+  } else if (businessType === "Mahjong Instructor") {
+    const { error: vErr } = await supabase.from("venue_listings").insert({
+      business_name: company,
+      venue_type: "Mahjong Instructor",
+      city,
+      state: stateAbbr,
+      description: clampText(b.message, 800) || null,
+      website: safeHttpUrl(b.website),
+      instagram: clampText(b.instagram, 120) || null,
+      contact_name: name,
+      contact_email: email,
+      tier: "free",
+      reviewer_notes: provenance,
+      status: "pending_review",
+    });
+    listingError = vErr ? vErr.message : null;
+  } else {
+    const { error: eErr } = await supabase.from("event_listings").insert({
+      event_name: company,
+      event_type: EVENT_TYPE_BY_FORM[businessType] || "social",
+      city,
+      state: stateAbbr,
+      venue: clampText(b.venue, 200) || null,
+      host: clampText(b.host, 120) || null,
+      description: clampText(b.message, 800) || null,
+      day_time: clampText(b.event_date, 160) || null,
+      frequency: FREQUENCY_BY_FORM[clampText(b.frequency, 40) || ""] || null,
+      registration_url: safeHttpUrl(b.signup_url),
+      beginner_friendly: b.beginner_friendly === true ? "yes" : null,
+      contact_name: name,
+      contact_email: email,
+      tier: "free",
+      reviewer_notes: provenance,
+      status: "pending_review",
+    });
+    listingError = eErr ? eErr.message : null;
+  }
+
+  // A submission must never be lost. If the structured write fails for any reason, fall back
+  // to the inquiry row so the founder still has the lead and can create the listing by hand.
+  if (listingError) {
+    console.error("get-listed listing insert failed, falling back to inquiry:", listingError);
+    const { error } = await supabase.from("inquiries").insert({
+      name,
+      email,
+      company,
+      inquiry_type: "get_listed",
+      interest: businessType || null,
+      message: `LISTING INSERT FAILED (${listingError}). Create this listing by hand.\n${details}`,
+      status: "new",
+    });
+    if (error) {
+      console.error("get-listed insert failed:", error.message);
+      return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+    }
   }
 
   const adminHtml =
