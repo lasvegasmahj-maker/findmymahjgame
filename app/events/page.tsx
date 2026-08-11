@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import NotifyMe from "@/components/notify-me";
 import BrandedEmptyState from "@/components/branded-empty-state";
-import { searchEvents } from "@/lib/search";
+import { searchEventsWithMeta } from "@/lib/search";
 import { resolveLocation } from "@/lib/resolve-location";
 import { RADIUS_OPTIONS, formatDistance } from "@/lib/geo";
 import { whenLabel } from "@/lib/event-display";
@@ -71,17 +71,19 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
   const radiusMiles = RADIUS_OPTIONS.find((r) => String(r) === radius) ?? null;
   const typeKeys = TYPE_SEARCH_KEYS[activeType];
 
-  // A radius is only honoured when the typed location actually resolves to coordinates.
+  // A radius is only applied when the typed location actually resolves to coordinates.
   // Falling back to text matching keeps a nonsense location from silently returning the
   // whole country as if it were nearby.
   const located = near && near.trim() && radiusMiles ? await resolveLocation(near) : null;
 
-  let rows = await searchEvents({
+  const found = await searchEventsWithMeta({
     near: located ? null : near || null,
     center: located ? located.coords : null,
     radiusMiles: located ? radiusMiles : null,
     types: typeKeys,
   });
+  let rows = found.rows;
+  const radiusApplied = found.radiusApplied;
 
   const FRESH_MS = 90 * 24 * 60 * 60 * 1000;
   const isFresh = (at?: string | null) => !!at && Date.now() - new Date(at).getTime() < FRESH_MS;
@@ -90,7 +92,10 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
     const db = b.event_date ? new Date(b.event_date).getTime() : Infinity;
     return da - db;
   };
-  if (activeSort === "date") {
+  const keepDistanceOrder = radiusApplied && !sort;
+  if (keepDistanceOrder) {
+    // already sorted nearest first by the search layer
+  } else if (activeSort === "date") {
     rows = [...rows].sort(byDate);
   } else if (activeSort === "state") {
     rows = [...rows].sort((a, b) => (a.state || "").localeCompare(b.state || "") || byDate(a, b));
@@ -224,14 +229,14 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
           ))}
         </div>
       )}
-      {located && (
+      {located && radiusApplied && (
         <p style={{ fontSize: "0.95rem", color: "var(--muted)", textAlign: "center", margin: "0 auto 1.2rem" }}>
-          Showing games within {radiusMiles} miles of {located.label}. Distances are approximate, measured from the centre of each town.
+          Showing games within {radiusMiles} miles of {located.label}. Distances are approximate, measured from the center of each town.
         </p>
       )}
-      {near && near.trim() && radiusMiles && !located && (
+      {near && near.trim() && radiusMiles && !(located && radiusApplied) && (
         <p style={{ fontSize: "0.95rem", color: "var(--muted)", textAlign: "center", margin: "0 auto 1.2rem" }}>
-          We could not place &ldquo;{near}&rdquo; on the map, so these are name matches rather than a distance search.
+          We could not run a distance search for &ldquo;{near}&rdquo;, so these are name matches instead.
         </p>
       )}
 

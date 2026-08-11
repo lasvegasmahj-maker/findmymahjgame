@@ -10,9 +10,14 @@ export type ResolvedLocation = {
 // Turns what a person typed into coordinates so radius search can run. The directory itself is
 // tried before any external call, because 331 of its city and state pairs are already geocoded
 // and a local hit is both faster and consistent with what the listings say.
+const MAX_QUERY = 64;
+const PLACE_NAME = /^[A-Za-z0-9 .,'-]+$/;
+
 export async function resolveLocation(input: string): Promise<ResolvedLocation | null> {
   const q = String(input || "").trim();
-  if (!q) return null;
+  // A place name has a small, predictable shape. Anything else is not worth a lookup and
+  // should never reach a third party or a LIKE pattern.
+  if (!q || q.length > MAX_QUERY || !PLACE_NAME.test(q)) return null;
 
   if (/^\d{5}$/.test(q)) {
     const viaZip = await fromZip(q);
@@ -29,7 +34,10 @@ export async function resolveLocation(input: string): Promise<ResolvedLocation |
 // name and throw the coordinates away, which is why ZIP search could never do distance.
 async function fromZip(zip: string): Promise<ResolvedLocation | null> {
   try {
-    const res = await fetch(`https://api.zippopotam.us/us/${zip}`, { cache: "force-cache" });
+    const res = await fetch(`https://api.zippopotam.us/us/${zip}`, {
+      cache: "force-cache",
+      signal: AbortSignal.timeout(8000),
+    });
     if (!res.ok) return null;
     const body = await res.json();
     const place = (body.places || [])[0];
@@ -61,10 +69,12 @@ async function fromDirectory(q: string): Promise<ResolvedLocation | null> {
   const supabase = createServerClient();
 
   for (const table of ["venue_listings", "event_listings"]) {
+    const pattern = city.replace(/[\\%_]/g, (m) => `\\${m}`);
     let query = supabase
       .from(table)
       .select("city, state, latitude, longitude")
-      .ilike("city", city)
+      .eq("status", "published")
+      .ilike("city", pattern)
       .not("latitude", "is", null)
       .limit(1);
     if (state) query = query.eq("state", state);
@@ -89,8 +99,9 @@ async function fromGeocoder(q: string): Promise<ResolvedLocation | null> {
       `&city=${encodeURIComponent(city)}` +
       (state ? `&state=${encodeURIComponent(state)}` : "");
     const res = await fetch(url, {
-      headers: { "User-Agent": "FindMyMahjGame/1.0 (https://findmymahjgame.com)" },
+      headers: { "User-Agent": "FindMyMahjGame/1.0 (hello@findmymahjgame.com)" },
       cache: "force-cache",
+      signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) return null;
     const body = await res.json();
@@ -99,7 +110,10 @@ async function fromGeocoder(q: string): Promise<ResolvedLocation | null> {
     const lat = Number(hit.lat);
     const lng = Number(hit.lon);
     if (!isValidCoords(lat, lng)) return null;
-    return { coords: { lat, lng }, label: q, source: "geocoder" };
+    const label = state
+      ? `${city.replace(/\b\w/g, (c) => c.toUpperCase())}, ${state}`
+      : city.replace(/\b\w/g, (c) => c.toUpperCase());
+    return { coords: { lat, lng }, label, source: "geocoder" };
   } catch {
     return null;
   }

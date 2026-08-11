@@ -188,6 +188,7 @@ function freshnessOf(row: {
 type QueryShape = {
   select: (s: string) => QueryShape;
   eq: (c: string, v: unknown) => QueryShape;
+  or: (f: string) => QueryShape;
   in: (c: string, v: unknown[]) => QueryShape;
   gte: (c: string, v: unknown) => QueryShape;
   lte: (c: string, v: unknown) => QueryShape;
@@ -218,6 +219,20 @@ async function runEventQuery(
   if (params.state) query = query.eq("state", params.state.toUpperCase());
   if (params.dateFrom) query = query.gte("event_date", params.dateFrom);
   if (params.dateTo) query = query.lte("event_date", params.dateTo);
+  if (params.types && params.types.length > 0) {
+    const expanded = params.types.flatMap((t) => TYPE_ALIASES[t] || [t]);
+    query = query.in("event_type", Array.from(new Set(expanded)));
+  }
+  // Ordering is oldest first, so a hard row cap would drop exactly the upcoming rows. This
+  // over-selects deliberately (isUpcoming still decides) but keeps past one-offs out of the cap.
+  if (!params.includePast) {
+    const today = new Date().toISOString().slice(0, 10);
+    // is_recurring only exists once the truth layer migration has run, so the legacy attempt
+    // must not name it or the fallback would fail alongside the primary query.
+    const clauses = [`event_date.is.null`, `event_date.gte.${today}`, `day_time.not.is.null`];
+    if (useGeo) clauses.push("is_recurring.is.true");
+    query = query.or(clauses.join(","));
+  }
   if (useGeo && params.center && params.radiusMiles) {
     query = applyGeoBox(query, params.center, params.radiusMiles);
   }
@@ -286,9 +301,20 @@ function matchesTimeOfDay(row: EventRow, tod: TimeOfDay): boolean {
   return row.time_of_day === tod;
 }
 
+export type EventSearchResult = {
+  rows: WithDistance<EventRow>[];
+  radiusApplied: boolean;
+};
+
 export async function searchEvents(
   params: EventSearchParams = {}
 ): Promise<WithDistance<EventRow>[]> {
+  return (await searchEventsWithMeta(params)).rows;
+}
+
+export async function searchEventsWithMeta(
+  params: EventSearchParams = {}
+): Promise<EventSearchResult> {
   const { rows, geoAvailable } = await fetchEvents(params);
   let out = rows;
 
@@ -328,7 +354,8 @@ export async function searchEvents(
     final.sort((a, b) => (a.distanceMiles as number) - (b.distanceMiles as number));
   }
 
-  return params.limit ? final.slice(0, params.limit) : final;
+  const radiusApplied = Boolean(params.center && params.radiusMiles && geoAvailable);
+  return { rows: params.limit ? final.slice(0, params.limit) : final, radiusApplied };
 }
 
 async function runVenueQuery(fields: string[], params: VenueSearchParams, useGeo: boolean) {

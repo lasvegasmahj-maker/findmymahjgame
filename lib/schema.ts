@@ -413,7 +413,7 @@ export function buildHowItWorksSchema() {
         "@type": "HowToStep",
         position: 2,
         name: "Search by city or zip code",
-        text: "On the Events page, enter your city or 5-digit ZIP and choose a distance: 5, 10, 25, or 50 miles. Distances are approximate, measured from the centre of each town.",
+        text: "On the Events page, enter your city or 5-digit ZIP and choose a distance: 5, 10, 25, or 50 miles. Distances are approximate, measured from the center of each town.",
         url: `${SITE_URL}/how-it-works`,
       },
       {

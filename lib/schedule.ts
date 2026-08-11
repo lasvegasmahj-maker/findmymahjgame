@@ -308,9 +308,9 @@ export function isUpcoming(
   },
   now: Date = new Date()
 ): boolean {
-  // A retreat or cruise happens once. Its day_time is a departure time, not a weekly cadence,
+  // A retreat, cruise or tournament happens once. Its day_time is a start time, not a cadence,
   // so the usual recurrence signals must not resurrect a trip whose date has passed.
-  const oneTimeByNature = ["retreat", "cruise"].includes(
+  const oneTimeByNature = ["retreat", "cruise", "tournament"].includes(
     String(row.event_type || "").toLowerCase().replace(/[^a-z]/g, "")
   );
   if (oneTimeByNature && row.event_date) {

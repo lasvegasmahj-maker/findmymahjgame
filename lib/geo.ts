@@ -71,7 +71,7 @@ export function formatDistance(
   precision: GeoPrecision | null | undefined
 ): string {
   if (precision === "city") {
-    // Both points are town centres, so anything this close is the same town. Printing
+    // Both points are town centers, so anything this close is the same town. Printing
     // "about 0 mi" reads as a bug and claims a precision these coordinates do not have.
     if (miles < 2) return "nearby";
     return `about ${Math.round(miles)} mi`;
