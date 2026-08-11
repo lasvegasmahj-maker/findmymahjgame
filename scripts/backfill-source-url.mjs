@@ -32,6 +32,16 @@ function cleanUrl(raw) {
   }
 }
 
+// source_url predates the truth-layer migration but source_type ships with it. Probing lets
+// the URL recovery run now and pick up source_type automatically once the migration lands.
+const probe = await supabase.from("venue_listings").select("source_type").limit(1);
+const HAS_SOURCE_TYPE = !probe.error;
+console.log(
+  HAS_SOURCE_TYPE
+    ? "source_type column present: writing both source_url and source_type"
+    : "source_type column missing: writing source_url only (re-run after the migration to fill source_type)"
+);
+
 let totalPlanned = 0;
 let totalSkipped = 0;
 const unparsed = [];
@@ -102,9 +112,12 @@ for (const { table, nameCol } of TABLES) {
     let ok = 0;
     let failed = 0;
     for (const p of planned) {
+      const payload = HAS_SOURCE_TYPE
+        ? { source_url: p.url, source_type: p.source_type }
+        : { source_url: p.url };
       const { error: upErr } = await supabase
         .from(table)
-        .update({ source_url: p.url, source_type: p.source_type })
+        .update(payload)
         .eq("id", p.id)
         .is("source_url", null);
       if (upErr) {

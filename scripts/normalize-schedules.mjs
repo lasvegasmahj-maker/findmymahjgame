@@ -7,6 +7,9 @@ import { createClient } from "@supabase/supabase-js";
 import { parseSchedule } from "../lib/schedule.ts";
 
 const APPLY = process.argv.includes("--apply");
+// Without this guard a second run would overwrite a schedule an admin had corrected by hand.
+// schedule_parsed_at is only ever set by this script, so it marks rows it already owns.
+const FORCE = process.argv.includes("--force");
 const showArg = process.argv.find((a) => a.startsWith("--show="));
 const SHOW = showArg ? Number(showArg.split("=")[1]) : 8;
 
@@ -88,7 +91,7 @@ let ok = 0;
 let failed = 0;
 for (const b of [...buckets.high, ...buckets.medium]) {
   const p = b.parsed;
-  const { error: upErr } = await supabase
+  let write = supabase
     .from("event_listings")
     .update({
       day_of_week: p.days.length ? p.days : null,
@@ -101,6 +104,8 @@ for (const b of [...buckets.high, ...buckets.medium]) {
       schedule_parsed_at: new Date().toISOString(),
     })
     .eq("id", b.row.id);
+  if (!FORCE) write = write.is("schedule_parsed_at", null);
+  const { error: upErr } = await write;
   if (upErr) {
     failed++;
     if (failed <= 3) console.error(`  ${b.row.id}: ${upErr.message}`);
@@ -109,10 +114,12 @@ for (const b of [...buckets.high, ...buckets.medium]) {
 
 let flagged = 0;
 for (const b of buckets.low) {
-  const { error: flagErr } = await supabase
+  let flagWrite = supabase
     .from("event_listings")
     .update({ review_flag: "schedule_needs_review", schedule_parsed_at: new Date().toISOString() })
     .eq("id", b.row.id);
+  if (!FORCE) flagWrite = flagWrite.is("schedule_parsed_at", null);
+  const { error: flagErr } = await flagWrite;
   if (!flagErr) flagged++;
 }
 
