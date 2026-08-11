@@ -7,6 +7,7 @@ import CityAutocomplete from "@/components/city-autocomplete";
 import { nearMatches } from "@/lib/near-match";
 import { safeHttpUrl } from "@/lib/sanitize";
 import { attendInfo } from "@/lib/event-level";
+import { isUpcoming } from "@/lib/schedule";
 import { STATES } from "@/lib/states-data";
 
 export const metadata: Metadata = {
@@ -69,14 +70,13 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
   const activeSort = (sort || "state").toLowerCase();
   const em = EMPTY_META[activeType] || EMPTY_META.all;
   const supabase = createServerClient();
-  const todayISO = new Date().toISOString().slice(0, 10);
-  let { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly, confirmed_active_at, host").eq("status", "published").or(`event_date.is.null,event_date.gte.${todayISO},event_type.in.(open_play,openplay,recurring)`).order("event_date", { ascending: true });
+  let { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly, confirmed_active_at, host").eq("status", "published").order("event_date", { ascending: true });
   if (!data) {
-    const fallback = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly, host").eq("status", "published").or(`event_date.is.null,event_date.gte.${todayISO},event_type.in.(open_play,openplay,recurring)`).order("event_date", { ascending: true });
+    const fallback = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly, host").eq("status", "published").order("event_date", { ascending: true });
     data = (fallback.data || []).map((r) => ({ ...r, confirmed_active_at: null }));
   }
 
-  let rows = data || [];
+  let rows = (data || []).filter((e) => isUpcoming(e));
   if (near && near.trim()) {
     let n = near.trim().toLowerCase();
     // ZIP search: resolve a 5-digit ZIP to its city so nearby events match.
