@@ -21,7 +21,9 @@ export async function POST(req: NextRequest) {
   if (!email || !isValidEmail(email)) {
     return NextResponse.json({ error: "Please enter a valid email." }, { status: 400 });
   }
-  const name = clampText(b.name, 80) || null;
+  // The form calls this field optional but play_requests.name is NOT NULL, so a player who
+  // skips it used to get a 500 on the main empty-state form. Verified against production.
+  const name = clampText(b.name, 80) || "Not given";
   const city = clampText(b.city, 80) || null;
   const state = clampText(b.state, 60) || null;
 

@@ -473,16 +473,47 @@ async function minimizeRelaxations(
   minResults: number
 ): Promise<{ results: WithDistance<EventRow>[]; relaxations: RelaxationStep[] }> {
   const kept: RelaxationStep[] = [...relaxations];
+  let latest: WithDistance<EventRow>[] | null = null;
+
   for (let i = kept.length - 1; i >= 0; i--) {
+    const step = kept[i];
+
+    // Radius is a ladder, not a switch. Walking back down finds the smallest rung that still
+    // works, so a result 6 miles away is never reported as a 50 mile search.
+    if (step.constraint === "radius" && original.radiusMiles) {
+      let best: number | null = null;
+      for (const rung of RADIUS_LADDER) {
+        if (rung >= (working.radiusMiles as number)) break;
+        if (rung < original.radiusMiles) continue;
+        const trial: EventSearchParams = { ...working, radiusMiles: rung };
+        const r = await searchEvents(trial);
+        if (r.length >= minResults) {
+          best = rung;
+          latest = r;
+          break;
+        }
+      }
+      if (best === original.radiusMiles) {
+        working.radiusMiles = best;
+        kept.splice(i, 1);
+      } else if (best !== null) {
+        working.radiusMiles = best;
+        step.to = `${best} miles`;
+      }
+      continue;
+    }
+
     const trial: EventSearchParams = { ...working };
-    restoreConstraint(trial, original, kept[i].constraint);
+    restoreConstraint(trial, original, step.constraint);
     const trialResults = await searchEvents(trial);
     if (trialResults.length >= minResults) {
-      restoreConstraint(working, original, kept[i].constraint);
+      restoreConstraint(working, original, step.constraint);
       kept.splice(i, 1);
+      latest = trialResults;
     }
   }
-  return { results: await searchEvents(working), relaxations: kept };
+
+  return { results: latest ?? (await searchEvents(working)), relaxations: kept };
 }
 
 export async function searchEventsWithRelaxation(
