@@ -11,6 +11,7 @@ import { safeHttpUrl } from "@/lib/sanitize";
 import { attendInfo } from "@/lib/event-level";
 import { STATES } from "@/lib/states-data";
 import { schemaScriptProps } from "@/lib/schema";
+import FavoriteButton from "@/components/favorite-button";
 
 export const metadata: Metadata = {
   title: "Mahjong Events and Open Plays Near You",
@@ -191,11 +192,18 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
         {external && <div style={{ marginTop: "0.9rem", color: "var(--pink-text)", fontWeight: 800, fontSize: "1.15rem" }}>Sign up &rarr;</div>}
       </>
     );
-    const cardStyle = { display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", textDecoration: "none" } as const;
-    return external ? (
-      <a key={e.id} href={safeUrl} target="_blank" rel="noopener noreferrer" style={cardStyle}>{card}</a>
-    ) : (
-      <div key={e.id} style={cardStyle}>{card}</div>
+    const cardStyle = { display: "block", height: "100%", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", paddingRight: "3rem", textDecoration: "none" } as const;
+    return (
+      <div key={e.id} style={{ position: "relative" }}>
+        {external ? (
+          <a href={safeUrl} target="_blank" rel="noopener noreferrer" style={cardStyle}>{card}</a>
+        ) : (
+          <div style={cardStyle}>{card}</div>
+        )}
+        <div style={{ position: "absolute", top: "0.9rem", right: "0.9rem" }}>
+          <FavoriteButton id={e.id} kind="event" name={e.event_name || "Mahjong"} />
+        </div>
+      </div>
     );
   };
 
@@ -257,6 +265,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
         {SORTS.map(([k, label]) => (
           <Link key={k} href={sortHref(k)} style={{ fontSize: "0.95rem", fontWeight: 700, textDecoration: "none", color: activeSort === k ? "var(--pink-text)" : "var(--muted)", borderBottom: activeSort === k ? "2px solid var(--pink)" : "2px solid transparent", paddingBottom: "0.1rem" }}>{label}</Link>
         ))}
+        <Link href="/favorites" style={{ fontSize: "0.95rem", fontWeight: 800, textDecoration: "none", color: "var(--navy)", borderBottom: "2px solid transparent", paddingBottom: "0.1rem" }}>My favorites</Link>
       </div>
 
       {rows.length > 0 ? (

@@ -47,7 +47,27 @@ function Check({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function JoinPage() {
+import { lazyServerClient } from "@/lib/supabase-server";
+
+// Invitation attribution: an outreach invite link lands here; the first visit stamps
+// clicked_at so the prospect funnel can measure invite -> visit -> signup. Unknown or
+// missing tokens change nothing and the page renders normally either way.
+async function recordInviteClick(invite: string | undefined) {
+  if (!invite || !/^inv_[A-Za-z0-9_-]{8,40}$/.test(invite)) return;
+  try {
+    const supabase = lazyServerClient();
+    await supabase
+      .from("invite_tokens")
+      .update({ clicked_at: new Date().toISOString(), conversion_stage: "clicked" })
+      .eq("token", invite)
+      .is("clicked_at", null);
+  } catch { /* attribution must never break the page */ }
+}
+
+export default async function JoinPage({ searchParams }: { searchParams: Promise<{ invite?: string }> }) {
+  const { invite } = await searchParams;
+  await recordInviteClick(invite);
+
   return (
     <main>
       <section className="page-hero">

@@ -40,10 +40,20 @@ export default async function GrowthAgentsPage() {
 
   let counts: Record<string, number> | null = null;
   const settings: Record<string, string> = {};
+  type PhoneRow = { id: string; name: string; city: string | null; state: string | null; phone: string | null; note: string };
+  let phoneQueue: PhoneRow[] = [];
+  let drafts: Array<{ id: string; subject: string | null; prospect: string; created: string }> = [];
+  let recentProspects: Array<{ name: string; city: string | null; state: string | null; type: string; score: number | null; status: string }> = [];
+  let objectives: Array<{ reason: string | null; created: string }> = [];
   try {
-    const [{ data: rows, error }, { data: st }] = await Promise.all([
+    const [{ data: rows, error }, { data: st }, { data: pv }, { data: pe }, { data: dr }, { data: rp }, { data: ob }] = await Promise.all([
       supabase.from("prospects").select("status"),
       supabase.from("app_settings").select("key, value").like("key", "growth_%"),
+      supabase.from("venue_listings").select("id,business_name,city,state,phone,reviewer_notes").eq("review_flag", "phone_verify").limit(200),
+      supabase.from("event_listings").select("id,event_name,city,state,reviewer_notes").eq("review_flag", "phone_verify").limit(50),
+      supabase.from("outreach_messages").select("id,generated_subject,created_at,prospect_id,prospects(name)").eq("send_status", "draft").eq("approved_by_human", false).order("created_at", { ascending: false }).limit(40),
+      supabase.from("prospects").select("name,city,state,prospect_type,qualification_score,status").order("discovered_at", { ascending: false }).limit(15),
+      supabase.from("outreach_events").select("reason,created_at").eq("agent", "growth-allocation-l0").order("created_at", { ascending: false }).limit(12),
     ]);
     if (!error && rows) {
       counts = {};
@@ -51,6 +61,17 @@ export default async function GrowthAgentsPage() {
       for (const r of rows as { status: string }[]) counts[r.status] = (counts[r.status] || 0) + 1;
     }
     for (const s of (st || []) as { key: string; value: string }[]) settings[s.key] = s.value;
+    type VRow = { id: string; business_name: string; city: string | null; state: string | null; phone: string | null; reviewer_notes: string | null };
+    type ERow = { id: string; event_name: string; city: string | null; state: string | null; reviewer_notes: string | null };
+    phoneQueue = [
+      ...((pv || []) as VRow[]).map((r) => ({ id: r.id, name: r.business_name, city: r.city, state: r.state, phone: r.phone, note: (r.reviewer_notes || "").split("PHONE QUEUE:").pop()?.slice(0, 90) || "" })),
+      ...((pe || []) as ERow[]).map((r) => ({ id: r.id, name: r.event_name, city: r.city, state: r.state, phone: null, note: (r.reviewer_notes || "").split("PHONE QUEUE:").pop()?.slice(0, 90) || "" })),
+    ];
+    type DRow = { id: string; generated_subject: string | null; created_at: string; prospect_id: string; prospects: { name: string } | null };
+    drafts = ((dr || []) as unknown as DRow[]).map((d) => ({ id: d.id, subject: d.generated_subject, prospect: d.prospects?.name || d.prospect_id, created: String(d.created_at).slice(0, 10) }));
+    type PRow = { name: string; city: string | null; state: string | null; prospect_type: string; qualification_score: number | null; status: string };
+    recentProspects = ((rp || []) as PRow[]).map((r) => ({ name: r.name, city: r.city, state: r.state, type: r.prospect_type, score: r.qualification_score, status: r.status }));
+    objectives = ((ob || []) as Array<{ reason: string | null; created_at: string }>).map((o) => ({ reason: o.reason, created: String(o.created_at).slice(0, 10) }));
   } catch {
     counts = null;
   }
@@ -94,6 +115,52 @@ export default async function GrowthAgentsPage() {
           ))}
         </div>
       )}
+
+
+      <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Outreach drafts awaiting your approval ({drafts.length})</h2>
+      {drafts.length === 0 ? <p style={{ color: "var(--muted)" }}>No drafts. Run the draft generator after qualifying prospects.</p> : (
+        <div style={{ display: "grid", gap: "0.5rem" }}>
+          {drafts.map((d) => (
+            <div key={d.id} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 8, padding: "0.6rem 0.9rem", fontSize: "0.9rem", color: "var(--navy)" }}>
+              <strong>{d.prospect}</strong>: {d.subject} <span style={{ color: "var(--muted)" }}>({d.created}; nothing sends until approved and autonomy allows)</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Phone verification queue ({phoneQueue.length})</h2>
+      {phoneQueue.length === 0 ? <p style={{ color: "var(--muted)" }}>Nothing waiting on a call.</p> : (
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+            <thead><tr>{["Listing", "Where", "Phone", "Why"].map((h) => <th key={h} style={{ textAlign: "left", padding: "0.5rem 0.7rem", background: "var(--bg)", color: "var(--navy)", fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</th>)}</tr></thead>
+            <tbody>
+              {phoneQueue.slice(0, 60).map((r) => (
+                <tr key={r.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                  <td style={{ padding: "0.5rem 0.7rem", fontWeight: 600, color: "var(--navy)" }}>{r.name}</td>
+                  <td style={{ padding: "0.5rem 0.7rem", color: "var(--muted)" }}>{[r.city, r.state].filter(Boolean).join(", ")}</td>
+                  <td style={{ padding: "0.5rem 0.7rem" }}>{r.phone ? <a href={"tel:" + r.phone.replace(/[^0-9+]/g, "")} style={{ color: "var(--pink-text)", fontWeight: 700 }}>{r.phone}</a> : "see note"}</td>
+                  <td style={{ padding: "0.5rem 0.7rem", color: "var(--muted)" }}>{r.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {phoneQueue.length > 60 && <p style={{ color: "var(--muted)", fontSize: "0.8rem" }}>Showing 60 of {phoneQueue.length}.</p>}
+        </div>
+      )}
+
+      <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Newest prospects</h2>
+      <div style={{ display: "grid", gap: "0.4rem" }}>
+        {recentProspects.map((r, i) => (
+          <div key={i} style={{ fontSize: "0.88rem", color: "var(--navy)" }}>
+            <strong>{r.name}</strong> <span style={{ color: "var(--muted)" }}>{r.type}, {[r.city, r.state].filter(Boolean).join(", ")}, score {r.score ?? "-"}, {r.status}</span>
+          </div>
+        ))}
+      </div>
+
+      <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Ranked growth objectives</h2>
+      <ol style={{ paddingLeft: "1.2rem", color: "var(--navy)", fontSize: "0.9rem", display: "grid", gap: "0.3rem" }}>
+        {objectives.map((o, i) => <li key={i}>{o.reason} <span style={{ color: "var(--muted)" }}>({o.created})</span></li>)}
+      </ol>
 
       <p style={{ marginTop: "2rem", fontSize: "0.85rem", color: "var(--muted)" }}>
         Safety: sending is governed by deterministic guards (lib/growth-guards.ts) that fail
