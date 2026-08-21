@@ -29,7 +29,7 @@ export function verifyGameToken(token: string): { tableId: string; answer: "yes"
 // Generalized one-click action tokens: one namespace for every email action
 // so claim, match-approve, still-running, and future actions share one
 // verified pattern instead of growing parallel token files.
-const ACTIONS = ["match-approve", "match-skip", "claim", "still-running", "ended"] as const;
+const ACTIONS = ["match-approve", "match-skip", "claim", "still-running", "ended", "unsub"] as const;
 export type ActionKind = (typeof ACTIONS)[number];
 
 export function signActionToken(action: ActionKind, subjectId: string, ttlDays = 30): string {

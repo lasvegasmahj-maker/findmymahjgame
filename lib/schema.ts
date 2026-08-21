@@ -504,7 +504,10 @@ export function buildHowItWorksSchema() {
     ],
   };
 
-  return [faqPage, howToPlayers, howToListPlayer, howToAdvertise];
+  // The FAQPage markup lives on /faq, the page whose visible content actually contains the
+  // questions and answers. Emitting it here too made two URLs claim the same FAQ entity.
+  void faqPage;
+  return [howToPlayers, howToListPlayer, howToAdvertise];
 }
 
 /* ── SIMPLE PAGE SCHEMAS ────────────────────────────────────────────────────── */
