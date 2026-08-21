@@ -12,6 +12,8 @@ test.describe("inbound forms", () => {
 
   test("contact page shows a message field", async ({ page }) => {
     await page.goto("/contact");
-    await expect(page.locator("textarea, input").first()).toBeVisible();
+    // The form's first input is a hidden Formspree redirect field, so "first input or
+    // textarea" can never be visible. The message field is the textarea.
+    await expect(page.locator("textarea").first()).toBeVisible();
   });
 });
