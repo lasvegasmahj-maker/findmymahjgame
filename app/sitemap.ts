@@ -27,70 +27,113 @@ const LAUNCH_CITY_KEYS = [
   "nevada/las-vegas", "arizona/scottsdale", "florida/boca-raton", "florida/naples",
 ];
 
+type ListingRow = { city: string | null; state: string | null; updated_at?: string | null; created_at?: string | null };
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
-
-  const staticPages: MetadataRoute.Sitemap = [
-    { url: BASE, lastModified: now, changeFrequency: "weekly", priority: 1.0 },
-    { url: `${BASE}/events`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
-    { url: `${BASE}/teachers`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
-    { url: `${BASE}/tournaments`, lastModified: now, changeFrequency: "daily", priority: 0.85 },
-    { url: `${BASE}/leagues`, lastModified: now, changeFrequency: "daily", priority: 0.85 },
-    { url: `${BASE}/travel`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${BASE}/cruise`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
-    { url: `${BASE}/list-my-game`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
-    { url: `${BASE}/join`, lastModified: now, changeFrequency: "monthly", priority: 0.85 },
-    { url: `${BASE}/founding-advisors`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${BASE}/states`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
-    { url: `${BASE}/play`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${BASE}/start`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${BASE}/newsletter`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
-    { url: `${BASE}/how-it-works`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${BASE}/get-listed`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${BASE}/faq`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${BASE}/about`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${BASE}/contact`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
-  ];
-
-  const statePages: MetadataRoute.Sitemap = ALL_STATE_SLUGS.map((slug) => ({
-    url: `${BASE}/states/${slug}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.9,
-  }));
-
-  // Inventory-gated city pages: every city with a real published listing earns
-  // a sitemap entry (suburbs fold into their metro hub). Falls back to the
-  // launch metros if the query fails.
+  // Real listing timestamps drive lastmod. A sitemap that stamps every URL
+  // with the request time teaches crawlers to distrust our lastmod entirely,
+  // so entries without a known data timestamp simply omit it.
   const cityKeys = new Set<string>(LAUNCH_CITY_KEYS);
+  const cityLastmod = new Map<string, string>();
+  const stateLastmod = new Map<string, string>();
+  const teacherPages: MetadataRoute.Sitemap = [];
+
   try {
     const supabase = createServerClient();
     const [ev, ve, pl] = await Promise.all([
-      supabase.from("event_listings").select("city, state").eq("status", "published"),
-      supabase.from("venue_listings").select("id, city, state, venue_type, description").eq("status", "published"),
-      supabase.from("player_listings").select("city, state").eq("status", "published"),
+      supabase.from("event_listings").select("city, state, updated_at, created_at").eq("status", "published"),
+      supabase.from("venue_listings").select("id, city, state, venue_type, description, updated_at, created_at").eq("status", "published"),
+      supabase.from("player_listings").select("city, state, updated_at, created_at").eq("status", "published"),
     ]);
-    for (const r of [...(ev.data || []), ...(ve.data || []), ...(pl.data || [])]) {
+    const bump = (map: Map<string, string>, key: string, ts: string | null | undefined) => {
+      if (!ts) return;
+      const cur = map.get(key);
+      if (!cur || ts > cur) map.set(key, ts);
+    };
+
+    const rows: ListingRow[] = [...(ev.data || []), ...(ve.data || []), ...(pl.data || [])];
+    for (const r of rows) {
       if (!r.city || !r.state) continue;
       const stateSlug = ABBR_TO_SLUG[r.state];
       if (!stateSlug) continue;
+      const ts = r.updated_at || r.created_at;
+      bump(stateLastmod, stateSlug, ts);
       const c = String(r.city).trim().toLowerCase();
-      cityKeys.add(`${stateSlug}/${SUBURB_TO_HUB[c] || slugify(c)}`);
+      // A city page only matches listings whose raw city value equals the slug
+      // with hyphens read as spaces (see app/states/[state]/[city]/page.tsx),
+      // so punctuated values like "Chicago (Clearing)" or "Los Angeles /
+      // Nashville" can never populate the page their slug points to. Skip them
+      // here instead of publishing an empty page; those listings still appear
+      // on their state page.
+      const citySlug = SUBURB_TO_HUB[c] || (slugify(c).replace(/-/g, " ") === c ? slugify(c) : null);
+      if (!citySlug) continue;
+      const key = `${stateSlug}/${citySlug}`;
+      cityKeys.add(key);
+      bump(cityLastmod, key, ts);
     }
-  } catch { /* keep the launch metros */ }
 
-  const TEACHER_TYPE = /instructor|teacher|lesson|studio|school|class/i;
-  const teacherPages: MetadataRoute.Sitemap = [];
-  try {
-    const supabase2 = createServerClient();
-    const { data: tv } = await supabase2.from("venue_listings").select("id, state, venue_type, description").eq("status", "published");
-    for (const t of tv || []) {
+    // Teacher profiles mirror the gating in app/teachers/[id]/page.tsx:
+    // published venue rows that read as instruction, outside Nevada (Nevada
+    // lessons route to Las Vegas Mahjong).
+    const TEACHER_TYPE = /instructor|teacher|lesson|studio|school|class/i;
+    for (const t of ve.data || []) {
       if (t.state === "NV") continue;
       if (!TEACHER_TYPE.test(`${t.venue_type || ""} ${t.description || ""}`)) continue;
-      teacherPages.push({ url: `${BASE}/teachers/${t.id}`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.6 });
+      const ts = t.updated_at || t.created_at;
+      teacherPages.push({
+        url: `${BASE}/teachers/${t.id}`,
+        ...(ts ? { lastModified: new Date(ts) } : {}),
+        changeFrequency: "weekly" as const,
+        priority: 0.6,
+      });
     }
-  } catch { /* skip teacher profiles if unavailable */ }
+  } catch { /* keep the launch metros; skip teacher profiles */ }
 
-  const cityPages: MetadataRoute.Sitemap = [...cityKeys].map((k) => ({
-    url: `${BASE}/states/${k}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.85,
-  }));
+  // Listing-driven hub pages share the newest listing timestamp; brochure
+  // pages omit lastmod rather than fake one.
+  const latestListing = [...stateLastmod.values()].sort().pop();
+  const listingHub = latestListing ? { lastModified: new Date(latestListing) } : {};
+
+  const staticPages: MetadataRoute.Sitemap = [
+    { url: BASE, ...listingHub, changeFrequency: "weekly", priority: 1.0 },
+    { url: `${BASE}/events`, ...listingHub, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE}/teachers`, ...listingHub, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE}/tournaments`, ...listingHub, changeFrequency: "daily", priority: 0.85 },
+    { url: `${BASE}/leagues`, ...listingHub, changeFrequency: "daily", priority: 0.85 },
+    { url: `${BASE}/travel`, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE}/cruise`, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${BASE}/list-my-game`, changeFrequency: "monthly", priority: 0.9 },
+    { url: `${BASE}/join`, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${BASE}/founding-advisors`, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${BASE}/states`, ...listingHub, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${BASE}/play`, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE}/start`, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${BASE}/newsletter`, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${BASE}/how-it-works`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${BASE}/get-listed`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${BASE}/faq`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE}/about`, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${BASE}/contact`, changeFrequency: "monthly", priority: 0.4 },
+  ];
+
+  // States with published inventory update as listings land; empty states are
+  // stable navigation shells, so they carry a lower priority and no lastmod.
+  const statePages: MetadataRoute.Sitemap = ALL_STATE_SLUGS.map((slug) => {
+    const ts = stateLastmod.get(slug);
+    return ts
+      ? { url: `${BASE}/states/${slug}`, lastModified: new Date(ts), changeFrequency: "weekly" as const, priority: 0.9 }
+      : { url: `${BASE}/states/${slug}`, changeFrequency: "monthly" as const, priority: 0.5 };
+  });
+
+  const cityPages: MetadataRoute.Sitemap = [...cityKeys].map((k) => {
+    const ts = cityLastmod.get(k);
+    return {
+      url: `${BASE}/states/${k}`,
+      ...(ts ? { lastModified: new Date(ts) } : {}),
+      changeFrequency: "weekly" as const,
+      priority: 0.85,
+    };
+  });
 
   return [...staticPages, ...statePages, ...cityPages, ...teacherPages];
 }

@@ -249,7 +249,21 @@ export default function AdminPage() {
       .then((j) => setPendingEditCount(((j.items || []) as { status: string }[]).filter((e) => e.status === "pending").length))
       .catch(() => {});
   }, [authed]);
-  const [matchMsg, setMatchMsg] = useState<{ text: string; ok: boolean } | null>(null);
+  // The ?match=... outcome from the approve/skip redirect is read once with a lazy
+  // initializer, which keeps setState out of the mount effect.
+  const [matchMsg] = useState<{ text: string; ok: boolean } | null>(() => {
+    if (typeof window === "undefined") return null;
+    const m = new URLSearchParams(window.location.search).get("match");
+    if (!m) return null;
+    const map: Record<string, { text: string; ok: boolean }> = {
+      approved: { text: "Match approved. Each player was emailed a claim link.", ok: true },
+      skipped: { text: "Match skipped. Those players are back in the pool.", ok: true },
+      "already-decided": { text: "That match was already decided. No change made.", ok: true },
+      "approved-but-emails-failed": { text: "Match approved, but the invite emails did not send. Players were put back in the pool. Try again.", ok: false },
+      error: { text: "Something went wrong creating the table. Nothing was sent. Please try again.", ok: false },
+    };
+    return map[m] || null;
+  });
 
   // Probe the session once on mount. The data route returns 401 without a valid cookie.
   useEffect(() => {
@@ -259,17 +273,9 @@ export default function AdminPage() {
   // The match approve/skip confirm flow redirects back here with ?match=...;
   // surface the outcome so the founder sees their one-click decision landed.
   useEffect(() => {
-    const m = new URLSearchParams(window.location.search).get("match");
-    if (!m) return;
-    const map: Record<string, { text: string; ok: boolean }> = {
-      approved: { text: "Match approved. Each player was emailed a claim link.", ok: true },
-      skipped: { text: "Match skipped. Those players are back in the pool.", ok: true },
-      "already-decided": { text: "That match was already decided. No change made.", ok: true },
-      "approved-but-emails-failed": { text: "Match approved, but the invite emails did not send. Players were put back in the pool. Try again.", ok: false },
-      error: { text: "Something went wrong creating the table. Nothing was sent. Please try again.", ok: false },
-    };
-    setMatchMsg(map[m] || null);
-    window.history.replaceState(null, "", window.location.pathname);
+    if (new URLSearchParams(window.location.search).get("match")) {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
   }, []);
 
   useEffect(() => {

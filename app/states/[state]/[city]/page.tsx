@@ -47,11 +47,35 @@ export async function generateMetadata({ params }: { params: Promise<{ state: st
   const st = resolveState(state);
   const cityName = titleize(city);
   if (!st) return { title: "Mahjong Near You", robots: { index: false } };
-  return {
+
+  const meta: Metadata = {
     title: { absolute: `Mahjong in ${cityName}, ${st.abbr} | Find My Mahj Game` },
     description: `Find American Mahjong open plays, games, teachers, venues and events in ${cityName}, ${st.name}. Free for players.`,
     alternates: { canonical: `https://findmymahjgame.com/states/${st.slug}/${city}` },
   };
+
+  // Inventory-gated indexation: dynamicParams renders this route for ANY city
+  // slug, so a misspelled or junk URL would otherwise be an indexable empty
+  // shell. Pages with no published inventory are noindex (follow stays on),
+  // except the 8 prebuilt launch metros, which stay indexable by design. On a
+  // query error we default to indexable.
+  const isLaunchMetro = generateStaticParams().some((p) => p.state === st.slug && p.city === city);
+  if (!isLaunchMetro) {
+    try {
+      const aliases = METRO[city] || [cityName.toLowerCase()];
+      const inCity = (c: string | null | undefined) => !!c && aliases.includes(String(c).trim().toLowerCase());
+      const supabase = createServerClient();
+      const [ev, ve] = await Promise.all([
+        supabase.from("event_listings").select("city").eq("state", st.abbr).eq("status", "published"),
+        supabase.from("venue_listings").select("city").eq("state", st.abbr).eq("status", "published"),
+      ]);
+      if (!ev.error && !ve.error) {
+        const hasInventory = [...(ev.data || []), ...(ve.data || [])].some((r) => inCity(r.city));
+        if (!hasInventory) meta.robots = { index: false, follow: true };
+      }
+    } catch { /* default to indexable */ }
+  }
+  return meta;
 }
 
 const cardWrap: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))", gap: "1rem" };

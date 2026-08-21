@@ -7,6 +7,7 @@ export default function Header() {
         <img src="/find-my-mahj-game-logo.png" alt="Find My Mahj Game" />
       </Link>
       <div className="nav-right">
+        <Link href="/ask" className="nav-advertise">Ask</Link>
         <Link href="/events" className="nav-advertise">Events</Link>
         <Link href="/teachers" className="nav-advertise">Teachers</Link>
         <Link href="/tournaments" className="nav-advertise">Tournaments</Link>

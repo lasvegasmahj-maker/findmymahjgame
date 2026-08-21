@@ -39,7 +39,7 @@ export default async function GrowthAgentsPage() {
   }
 
   let counts: Record<string, number> | null = null;
-  let settings: Record<string, string> = {};
+  const settings: Record<string, string> = {};
   try {
     const [{ data: rows, error }, { data: st }] = await Promise.all([
       supabase.from("prospects").select("status"),
