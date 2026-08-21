@@ -2,11 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
+import { lazyServerClient } from "@/lib/supabase-server";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 const ACCEPTED: Record<string, string> = {
   "image/jpeg": "jpg",

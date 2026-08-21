@@ -92,6 +92,7 @@ body {
   text-decoration: none;
 }
 .site-logo span { color: var(--pink); }
+.site-logo img { height: 44px; width: auto; display: block; }
 .nav-right { display: flex; gap: 0.8rem; align-items: center; }
 .nav-advertise {
   font-size: 0.82rem;
@@ -112,6 +113,18 @@ body {
   transition: opacity 0.2s;
 }
 .btn-login:hover { opacity: 0.9; }
+.nav-cta {
+  background: var(--pink);
+  color: white;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: none;
+  padding: 0.5rem 1.1rem;
+  border-radius: 8px;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+.nav-cta:hover { opacity: 0.9; }
 
 /* ═══════════ NAVY BAR ═══════════ */
 
@@ -355,6 +368,12 @@ body {
   margin-top: 1rem;
 }
 .inline-search-inner { max-width: 700px; margin: 0 auto; }
+/* On narrow phones, stack the search input over the button so the primary
+   "Find a Game" action never wraps below the fold. */
+@media (max-width: 520px) {
+  .home-search-row { flex-direction: column; }
+  .home-search-row > * { width: 100%; }
+}
 .inline-search-label {
   font-size: 0.8rem;
   font-weight: 700;
@@ -631,13 +650,18 @@ body {
   padding-bottom: 2rem;
   border-bottom: 1px solid rgba(255,255,255,0.1);
 }
-.footer-logo {
-  font-family: var(--font-playfair), "Playfair Display", serif;
-  font-size: 1.1rem;
-  color: white;
+.footer-logo-link {
+  display: inline-block;
+  background: white;
+  border-radius: 12px;
+  padding: 0.7rem 0.9rem;
+  line-height: 0;
 }
-.footer-logo span { color: var(--pink); }
-.footer-tagline { font-size: 0.82rem; color: rgba(255, 255, 255, 0.7); max-width: 220px; margin-top: 0.5rem; }
+.footer-logo-img { height: 40px; width: auto; display: block; }
+@keyframes brandPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.06); opacity: 0.85; } }
+.brand-pulse { animation: brandPulse 1.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .brand-pulse { animation: none; } }
+.footer-tagline { font-size: 0.82rem; color: rgba(255, 255, 255, 0.7); max-width: 300px; margin-top: 0.8rem; }
 .footer-cols { display: flex; gap: 3rem; }
 .footer-cols h4 {
   font-size: 0.68rem; font-weight: 700; letter-spacing: 0.15em;
@@ -724,8 +748,10 @@ body {
   /* Mobile header: logo centered on top, one compact senior-readable nav row below. */
   .site-nav { flex-direction: column; align-items: center; gap: 0.45rem; padding: 0.7rem 0.6rem 0.55rem; }
   .site-logo { font-size: 1.2rem; }
+  .site-logo img { height: 38px; }
   .nav-right { gap: 0.2rem 0.9rem; flex-wrap: wrap; justify-content: center; width: 100%; }
   .nav-advertise { font-size: 1rem; padding: 0.6rem 0.3rem; display: inline-flex; align-items: center; min-height: 44px; }
+  .nav-cta { font-size: 0.95rem; padding: 0.55rem 1.1rem; min-height: 44px; display: inline-flex; align-items: center; }
   .footer-cols a { font-size: 0.95rem; }
   .footer-cols h4 { font-size: 0.8rem; }
   .hero { padding: 1.1rem 1.1rem 1.8rem; }

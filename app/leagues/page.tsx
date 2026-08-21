@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import NotifyMe from "@/components/notify-me";
-import { createServerClient } from "@/lib/supabase-server";
-import { nearMatches } from "@/lib/near-match";
+import { searchEvents } from "@/lib/search";
+import { whenLabel } from "@/lib/event-display";
+import CityAutocomplete from "@/components/city-autocomplete";
 import { safeHttpUrl } from "@/lib/sanitize";
+import { attendInfo } from "@/lib/event-level";
+import { schemaScriptProps } from "@/lib/schema";
 
 export const metadata: Metadata = {
   title: "Mahjong Leagues Near You",
@@ -13,37 +16,13 @@ export const metadata: Metadata = {
 
 export const revalidate = 300;
 
-const norm = (t: string | null | undefined) => (t || "").toLowerCase().replace(/[^a-z]/g, "");
-const isLeague = (t: string | null | undefined) => norm(t) === "league";
-
-function whenLabel(e: { event_date?: string | null; day_time?: string | null; day_of_week?: string | null; time_of_day?: string | null }): string {
-  if (e.day_time && !e.event_date) return e.day_time;
-  if (e.day_time && e.event_date && new Date(e.event_date).getTime() < Date.now()) return e.day_time;
-  if (e.event_date) {
-    const d = new Date(e.event_date);
-    if (!isNaN(d.getTime())) return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" });
-  }
-  return e.day_time || [e.day_of_week, e.time_of_day].filter(Boolean).join(" ");
-}
 
 const field: React.CSSProperties = { minHeight: 54, padding: "0 1rem", border: "2px solid var(--border)", borderRadius: 12, fontSize: "1.1rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", flex: "1 1 200px" };
 const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border: "none", borderRadius: 12, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" };
 
 export default async function LeaguesPage({ searchParams }: { searchParams: Promise<{ near?: string }> }) {
   const { near } = await searchParams;
-  const supabase = createServerClient();
-  const todayISO = new Date().toISOString().slice(0, 10);
-  let { data } = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly, confirmed_active_at").eq("status", "published").eq("event_type", "league").or(`event_date.is.null,event_date.gte.${todayISO}`).order("event_date", { ascending: true });
-  if (!data) {
-    const fallback = await supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, event_date, end_date, price, registration_url, tier, created_at, day_time, frequency, beginner_friendly").eq("status", "published").eq("event_type", "league").or(`event_date.is.null,event_date.gte.${todayISO}`).order("event_date", { ascending: true });
-    data = (fallback.data || []).map((r) => ({ ...r, confirmed_active_at: null }));
-  }
-
-  let rows = (data || []).filter((e) => isLeague(e.event_type));
-  if (near && near.trim()) {
-    const n = near.trim().toLowerCase();
-    rows = rows.filter((e) => nearMatches(n, e.city, e.state));
-  }
+  let rows = await searchEvents({ types: ["league"], near: near || null });
 
   const FRESH_MS = 90 * 24 * 60 * 60 * 1000;
   const isFresh = (at?: string | null) => !!at && Date.now() - new Date(at).getTime() < FRESH_MS;
@@ -70,13 +49,13 @@ export default async function LeaguesPage({ searchParams }: { searchParams: Prom
 
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
-      {eventSchema.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(eventSchema) }} />}
+      {eventSchema.length > 0 && <script {...schemaScriptProps(eventSchema)} />}
       <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", textAlign: "center", margin: "0 0 0.4rem" }}>Mahjong leagues near you</h1>
       <p style={{ fontSize: "1.2rem", color: "var(--muted)", textAlign: "center", lineHeight: 1.5, margin: "0 0 1.8rem" }}>American Mahjong leagues with recurring play and seasonal standings. Join a group near you.</p>
 
       <form method="get" style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center", maxWidth: 520, margin: "0 auto 2.2rem" }}>
         <label htmlFor="near" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>Your city or area</label>
-        <input id="near" name="near" defaultValue={near || ""} placeholder="Your city or state" style={field} />
+        <CityAutocomplete id="near" name="near" defaultValue={near || ""} placeholder="Your city or state" inputStyle={field} submitOnPick />
         <button type="submit" style={goBtn}>Search</button>
       </form>
 
@@ -91,10 +70,9 @@ export default async function LeaguesPage({ searchParams }: { searchParams: Prom
                 <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{e.event_name || "Mahjong League"}</div>
                 {whenLabel(e) && <div style={{ fontSize: "1.05rem", color: "var(--navy)", marginTop: "0.4rem" }}>{whenLabel(e)}</div>}
                 {(e.venue || e.city) && <div style={{ fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[e.venue, e.city, e.state].filter(Boolean).join(", ")}</div>}
+                {e.host && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.2rem" }}>Hosted by {e.host}</div>}
                 <div style={{ marginTop: "0.45rem", display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
-                  {e.beginner_friendly === true && (
-                    <span style={{ display: "inline-block", fontSize: "0.85rem", fontWeight: 800, color: "#1a6e3a", background: "rgba(46,201,92,0.14)", borderRadius: 50, padding: "0.2rem 0.7rem" }}>Beginners welcome</span>
-                  )}
+                  {(() => { const a = attendInfo(e.event_type, e.beginner_friendly); return <span style={{ display: "inline-block", fontSize: "0.85rem", fontWeight: 800, color: a.color, background: a.bg, borderRadius: 50, padding: "0.2rem 0.7rem" }}>{a.label}</span>; })()}
                   {isFresh(e.confirmed_active_at) && (
                     <span style={{ display: "inline-block", fontSize: "0.85rem", fontWeight: 800, color: "var(--green-dark, #1a6e3a)", background: "rgba(46,201,92,0.12)", borderRadius: 50, padding: "0.2rem 0.7rem" }}>
                       Confirmed active {new Date(e.confirmed_active_at!).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })}
@@ -102,7 +80,7 @@ export default async function LeaguesPage({ searchParams }: { searchParams: Prom
                   )}
                 </div>
                 {e.description && !external && <div style={{ fontSize: "0.98rem", color: "var(--muted)", marginTop: "0.4rem", lineHeight: 1.5 }}>{String(e.description).slice(0, 140)}</div>}
-                {external && <div style={{ marginTop: "0.9rem", color: "var(--pink-text)", fontWeight: 800, fontSize: "1.15rem" }}>View details &rarr;</div>}
+                {external && <div style={{ marginTop: "0.9rem", color: "var(--pink-text)", fontWeight: 800, fontSize: "1.15rem" }}>Sign up &rarr;</div>}
               </>
             );
             const cardStyle = { display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", textDecoration: "none" } as const;
@@ -118,7 +96,7 @@ export default async function LeaguesPage({ searchParams }: { searchParams: Prom
           <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.6rem" }}>No leagues listed{near ? ` in ${near}` : ""} yet.</div>
           <p style={{ fontSize: "1.1rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "1.6rem" }}>Be the first. You can list a league, start your own, or browse every kind of game and event near you.</p>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", maxWidth: 320, margin: "0 auto" }}>
-            <Link href="/get-listed" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>List a league free</Link>
+            <Link href="/get-listed" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>List your league</Link>
             <Link href="/start" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "var(--navy)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Start a table</Link>
             <Link href="/events" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "white", color: "var(--navy)", border: "2px solid var(--navy)", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Browse all games and events</Link>
           </div>
@@ -128,7 +106,7 @@ export default async function LeaguesPage({ searchParams }: { searchParams: Prom
 
       {rows.length > 0 && (
         <div style={{ textAlign: "center", marginTop: "2.5rem" }}>
-          <Link href="/get-listed" style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.1rem" }}>Run a league? List it free &rarr;</Link>
+          <Link href="/get-listed" style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.1rem" }}>Run a league? List it here &rarr;</Link>
         </div>
       )}
     </main>

@@ -2,11 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { verifyAdminSessionToken, ADMIN_COOKIE } from "@/lib/admin-auth";
 import { clampText } from "@/lib/sanitize";
+import { lazyServerClient } from "@/lib/supabase-server";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 const CATEGORIES = ["outreach", "follow-up", "approval", "decision", "relationship", "ops"];
 const PRIORITIES = ["high", "normal", "low"];

@@ -6,6 +6,7 @@ import ShareSheet from "@/components/share-sheet";
 import SeatDots from "@/components/seat-dots";
 import AddToCalendar from "@/components/add-to-calendar";
 import ClaimClient from "./claim-client";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 export const dynamic = "force-dynamic";
 
@@ -15,10 +16,7 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 export default async function TablePage({
   params,

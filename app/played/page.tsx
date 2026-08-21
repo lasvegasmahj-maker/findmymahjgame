@@ -7,7 +7,7 @@ export default async function PlayedPage({ searchParams }: { searchParams: Promi
   const { result, token } = await searchParams;
   const msg =
     result === "yes" ? { title: "Wonderful!", body: "So glad your table became a real game. Want to keep it going? Set up next week's table with the same day, time, and place in one tap." }
-    : result === "recurring" ? { title: "Your standing game is set!", body: "We marked this as a weekly game. When a seat opens, we'll help you fill it. It is free, and money never crosses the table." }
+    : result === "recurring" ? { title: "Your standing game is set!", body: "We marked this as a weekly game. When a seat opens, we'll help you fill it. It is always free for players." }
     : result === "no" ? { title: "Thanks for telling us", body: "No worries. When you're ready, start a new table and we'll help you fill it." }
     : { title: "Thanks", body: "That link wasn't valid or has expired, but thank you for letting us know." };
 
@@ -23,7 +23,7 @@ export default async function PlayedPage({ searchParams }: { searchParams: Promi
             Set up next week&rsquo;s game
           </button>
           <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.7rem", lineHeight: 1.5 }}>
-            Same day, time, and place. You get a fresh link to invite your players. It is free, and money never crosses the table.
+            Same day, time, and place. You get a fresh link to invite your players. It is always free for players.
           </div>
         </form>
       )}

@@ -4,14 +4,12 @@ import { verifyActionToken } from "@/lib/game-token";
 import { clampText, isValidEmail, safeHttpUrl, escapeHtml } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
 import { sendEmail } from "@/lib/email";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 // Claims MVP. The token subject is "<table>|<id>" signed server-side when the
 // founder (or a future drip) sends a claim invite. Submitting edits never
 // touches the listing: changes land in pending_edits for founder approval.
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 const TABLES = ["venue_listings", "event_listings"] as const;
 const EDITABLE: Record<string, string[]> = {

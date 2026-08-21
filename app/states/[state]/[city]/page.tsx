@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import { createServerClient } from "@/lib/supabase-server";
 import { STATES, type StateData } from "@/lib/states-data";
 import { safeHttpUrl } from "@/lib/sanitize";
+import { attendInfo } from "@/lib/event-level";
+import { schemaScriptProps } from "@/lib/schema";
 
 export const revalidate = 600;
 export const dynamicParams = true;
@@ -47,7 +49,7 @@ export async function generateMetadata({ params }: { params: Promise<{ state: st
   if (!st) return { title: "Mahjong Near You", robots: { index: false } };
   return {
     title: { absolute: `Mahjong in ${cityName}, ${st.abbr} | Find My Mahj Game` },
-    description: `Find American Mahjong open plays, games, teachers, venues and events in ${cityName}, ${st.name}. Free for players, and money never crosses the table.`,
+    description: `Find American Mahjong open plays, games, teachers, venues and events in ${cityName}, ${st.name}. Free for players.`,
     alternates: { canonical: `https://findmymahjgame.com/states/${st.slug}/${city}` },
   };
 }
@@ -59,8 +61,8 @@ const sectionH2: React.CSSProperties = { fontFamily: "var(--font-playfair), 'Pla
 function EmptyCta({ what }: { what: string }) {
   return (
     <div style={{ background: "var(--bg)", borderRadius: 14, padding: "1.4rem", textAlign: "center" }}>
-      <p style={{ fontSize: "1.05rem", color: "var(--navy)", lineHeight: 1.5, margin: "0 0 0.9rem" }}>Be one of the first to list {what} here. It is free.</p>
-      <Link href="/get-listed" style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.05rem" }}>List it free &rarr;</Link>
+      <p style={{ fontSize: "1.05rem", color: "var(--navy)", lineHeight: 1.5, margin: "0 0 0.9rem" }}>Be one of the first to list {what} here.</p>
+      <Link href="/get-listed" style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.05rem" }}>List it here &rarr;</Link>
     </div>
   );
 }
@@ -76,7 +78,7 @@ export default async function CityPage({ params }: { params: Promise<{ state: st
 
   const supabase = createServerClient();
   const [eventsRes, venuesRes] = await Promise.all([
-    supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, registration_url, day_time, event_date, beginner_friendly").eq("state", st.abbr).eq("status", "published"),
+    supabase.from("event_listings").select("id, event_name, event_type, city, state, venue, description, registration_url, day_time, event_date, beginner_friendly, host").eq("state", st.abbr).eq("status", "published"),
     supabase.from("venue_listings").select("id, business_name, venue_type, city, state, description, website, instagram, display_email").eq("state", st.abbr).eq("status", "published"),
   ]);
   const events = (eventsRes.data || []).filter((e) => inCity(e.city));
@@ -106,12 +108,12 @@ export default async function CityPage({ params }: { params: Promise<{ state: st
 
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumb, collectionPage]) }} />
+      <script {...schemaScriptProps([breadcrumb, collectionPage])} />
       <nav style={{ fontSize: "0.95rem", color: "var(--muted)", marginBottom: "0.8rem" }}>
         <Link href={`/states/${st.slug}`} style={{ color: "var(--pink-text)", fontWeight: 700 }}>{st.name}</Link> &rsaquo; {cityName}
       </nav>
       <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", margin: "0 0 0.4rem" }}>Mahjong in {cityName}, {st.abbr}</h1>
-      <p style={{ fontSize: "1.2rem", color: "var(--muted)", lineHeight: 1.5, margin: "0 0 1rem" }}>Open plays, teachers, venues, and events near {cityName}. Free for players, and money never crosses the table.</p>
+      <p style={{ fontSize: "1.2rem", color: "var(--muted)", lineHeight: 1.5, margin: "0 0 1rem" }}>Open plays, teachers, venues, and events near {cityName}. Free for players.</p>
 
       <h2 style={sectionH2}>Open play and events</h2>
       {events.length > 0 ? (
@@ -123,7 +125,9 @@ export default async function CityPage({ params }: { params: Promise<{ state: st
                 {e.event_type && <div style={{ textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.8rem", fontWeight: 800, color: "var(--pink-text)", marginBottom: "0.4rem" }}>{String(e.event_type).replace(/_/g, " ")}</div>}
                 <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--navy)" }}>{e.event_name || "Mahjong"}</div>
                 {(e.day_time || e.venue) && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.3rem" }}>{[e.day_time, e.venue].filter(Boolean).join(" - ")}</div>}
-                {e.beginner_friendly === true && <div style={{ display: "inline-block", marginTop: "0.5rem", fontSize: "0.8rem", fontWeight: 800, color: "#1a6e3a", background: "rgba(46,201,92,0.14)", borderRadius: 50, padding: "0.2rem 0.7rem" }}>Beginners welcome</div>}
+                {e.host && <div style={{ fontSize: "0.95rem", color: "var(--muted)", marginTop: "0.2rem" }}>Hosted by {e.host}</div>}
+                {(() => { const a = attendInfo(e.event_type, e.beginner_friendly); return <div style={{ display: "inline-block", marginTop: "0.5rem", fontSize: "0.8rem", fontWeight: 800, color: a.color, background: a.bg, borderRadius: 50, padding: "0.2rem 0.7rem" }}>{a.label}</div>; })()}
+                {url && <div style={{ marginTop: "0.5rem", color: "var(--pink-text)", fontWeight: 800 }}>Sign up &rarr;</div>}
               </>
             );
             return url ? <a key={e.id} href={url} target="_blank" rel="noopener noreferrer" style={{ ...card, textDecoration: "none", display: "block" }}>{inner}</a> : <div key={e.id} style={card}>{inner}</div>;

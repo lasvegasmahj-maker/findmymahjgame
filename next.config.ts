@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: https:",
-      "connect-src 'self' https://prvsqhtxubjhljrrbkcj.supabase.co https://api.bigdatacloud.net https://cdn.jsdelivr.net",
+      "connect-src 'self' https://prvsqhtxubjhljrrbkcj.supabase.co https://cdn.jsdelivr.net https://photon.komoot.io",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self' https://formspree.io",
@@ -28,6 +28,19 @@ const nextConfig: NextConfig = {
         { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
       ],
     }];
+  },
+  async redirects() {
+    return [
+      // "Venues" category is paused; send the orphaned route home so it drops
+      // out of search. Remove this to bring venues back. See project memory.
+      { source: "/venues", destination: "/", permanent: true },
+      // Ambassador program dropped in favor of the Community Leader model.
+      // Preserve inbound links and let search reindex to /join.
+      { source: "/ambassadors", destination: "/join", permanent: true },
+      // Retreats folded into the Getaways umbrella at /travel (cruises +
+      // retreats together). Preserve inbound links and let search reindex.
+      { source: "/retreats", destination: "/travel", permanent: true },
+    ];
   },
   images: {
     // Allow next/image to optimize images from Supabase storage and sponsor logos

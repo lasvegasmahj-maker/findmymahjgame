@@ -17,11 +17,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function GetListedPage() {
+export default async function GetListedPage({ searchParams }: { searchParams: Promise<{ type?: string }> }) {
+  const { type } = await searchParams;
   return (
     <>
       <script {...schemaScriptProps(buildGetListedPageSchema())} />
-      <GetListedClient />
+      <GetListedClient defaultType={type || ""} />
     </>
   );
 }

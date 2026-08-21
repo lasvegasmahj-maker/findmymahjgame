@@ -25,8 +25,8 @@ export default function HowItWorksClient() {
       <div className="page-hero">
         <div className="eyebrow">How It Works</div>
         <h1>Everything You Need to Know</h1>
-        <p>Whether you&rsquo;re a player looking for a game or a business wanting to reach mahjong
-          players, we make it simple.
+        <p>Whether you&rsquo;re a player looking for a game or a teacher or organizer growing your
+          local mahjong community, we make it simple.
         </p>
       </div>
 
@@ -49,7 +49,7 @@ export default function HowItWorksClient() {
                 : "text-muted border-transparent"
             }`}
             onClick={() => setActiveTab("advertisers")}
-          >For Advertisers &amp; Venues
+          >For Teachers &amp; Organizers
           </button>
         </div>
 
@@ -58,10 +58,10 @@ export default function HowItWorksClient() {
           <div>
             <h2 style={{ marginTop: 0 }}>Finding Your Game</h2>
             <div className="flex flex-col gap-6 my-6">
-              <Step num={1} title="Go to your state page" desc="Click your state on the map or navigate directly e.g. findmymahjgame.com/florida. Every state has its own page with players, events and venues." />
-              <Step num={2} title="Search by city or zip code" desc="Use the city dropdown or enter your zip code and select your distance range 5, 10, 25 or 50 miles. Results update instantly." />
-              <Step num={3} title="Browse players, events and venues" desc="Switch between the Players, Events and Where to Play tabs to find exactly what you're looking for." />
-              <Step num={4} title="Connect & play!" desc="Click Connect on a player card, RSVP to an event, or visit a venue. It's always free for players." />
+              <Step num={1} title="Go to your state page" desc="Click your state on the map or navigate directly e.g. findmymahjgame.com/florida. Every state has its own page with players, events and teachers." />
+              <Step num={2} title="Search by city or zip code" desc="On the Events page, enter your city or 5-digit ZIP and choose a distance: 5, 10, 25, or 50 miles. Distances are approximate, measured from the center of each town." />
+              <Step num={3} title="Browse players, events and teachers" desc="Switch between the Players, Events and Teachers tabs to find exactly what you're looking for." />
+              <Step num={4} title="Connect & play!" desc="Click Connect on a player card, RSVP to an event, or contact a teacher. It's always free for players." />
             </div>
 
             <h2>List Yourself as a Player</h2>
@@ -82,42 +82,37 @@ export default function HowItWorksClient() {
         {/* Advertisers Tab */}
         {activeTab === "advertisers" && (
           <div>
-            <h2 style={{ marginTop: 0 }}>Advertising &amp; Listings</h2>
+            <h2 style={{ marginTop: 0 }}>Joining the Directory</h2>
             <div className="flex flex-col gap-6 my-6">
-              <Step num={1} title="Submit your inquiry" desc="Fill out the form on our Advertise page or email hello@findmymahjgame.com. Takes less than 2 minutes." />
-              <Step num={2} title="We review & approve" desc="All listings are reviewed within 1-2 business days. We maintain quality standards for all advertisers." />
-              <Step num={3} title="Receive your invoice" desc="Once approved you'll receive a payment link. Choose monthly or annual your call." />
-              <Step num={4} title="Go live!" desc="Your listing or ad goes live within 24-48 hours of payment. Start reaching players right away." />
+              <Step num={1} title="Submit your profile" desc="Create your profile on the Join page or email hello@findmymahjgame.com. Takes less than 2 minutes." />
+              <Step num={2} title="We review & approve" desc="All listings are reviewed within 1-2 business days. We maintain quality standards for everyone listed." />
+              <Step num={3} title="Choose your plan" desc="Stay on the free Community Listing, or join the Directory Membership for a verified badge and more visibility." />
+              <Step num={4} title="Go live!" desc="Your listing goes live within 24-48 hours. Players start finding you right away." />
             </div>
 
-            <h2>Where to Play Venue Tiers</h2>
-            <div className="grid grid-cols-3 gap-4 my-6 max-sm:grid-cols-1">
+            <h2>Membership Tiers for Teachers &amp; Organizers</h2>
+            <p>Being listed is free forever. Premium tiers add visibility, a verified badge, and promotion. Players never pay.</p>
+            <div className="grid grid-cols-2 gap-4 my-6 max-sm:grid-cols-1">
               <div className="bg-bg border border-border rounded-xl p-5">
-                <h3 className="text-[0.9rem] font-bold text-navy mb-1">Starter Listing</h3>
-                <div className="font-heading text-[1.4rem] text-pink font-black mb-1">$19/mo</div>
-                <p className="text-[0.78rem] text-muted !mb-0">Name, city, hours, description, website link
+                <h3 className="text-[0.9rem] font-bold text-navy mb-1">Community Listing</h3>
+                <div className="font-heading text-[1.4rem] text-pink font-black mb-1">Free</div>
+                <p className="text-[0.78rem] text-muted !mb-0">Your basic profile, appearing in search so players can find you. Free to be listed, always.
                 </p>
               </div>
               <div className="bg-bg border border-pink rounded-xl p-5">
-                <h3 className="text-[0.9rem] font-bold text-navy mb-1">Featured Spot  Most Popular
+                <h3 className="text-[0.9rem] font-bold text-navy mb-1">Directory Membership
                 </h3>
-                <div className="font-heading text-[1.4rem] text-pink font-black mb-1">$39/mo</div>
-                <p className="text-[0.78rem] text-muted !mb-0">Top placement + highlighted listing + photo
-                </p>
-              </div>
-              <div className="bg-bg border border-border rounded-xl p-5">
-                <h3 className="text-[0.9rem] font-bold text-navy mb-1">Official Mahj Spot</h3>
-                <div className="font-heading text-[1.4rem] text-pink font-black mb-1">$79/mo</div>
-                <p className="text-[0.78rem] text-muted !mb-0">Featured + homepage + badge you can display
+                <div className="font-heading text-[1.4rem] text-pink font-black mb-1">$89/year</div>
+                <p className="text-[0.78rem] text-muted !mb-0">Verified badge, priority placement, featured on state pages, more photos, and featured events. First 6 months free with code FINDMYMAHJGAME.
                 </p>
               </div>
             </div>
 
             <p className="text-center mt-4">
               <Link
-                href="/advertise"
+                href="/join"
                 className="bg-pink text-white py-3 px-8 rounded-md font-bold no-underline inline-block"
-              >See All Advertising Options &rarr;
+              >Join the Directory &rarr;
               </Link>
             </p>
           </div>

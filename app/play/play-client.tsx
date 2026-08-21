@@ -30,10 +30,17 @@ export default function PlayClient() {
   const [geoMsg, setGeoMsg] = useState("");
   const [captureWhy, setCaptureWhy] = useState<"none" | "notify">("none");
 
-  async function runFind(town: string) {
+  async function runFind(input: string) {
     setSearching(true); setGeoMsg("");
     try {
-      const res = await fetch(`/api/tables/find?city=${encodeURIComponent(town.trim())}`);
+      let town = input.trim();
+      if (/^\d{5}$/.test(town)) {
+        const zr = await fetch(`/api/geocode?zip=${town}`);
+        const zg = await zr.json().catch(() => ({}));
+        if (zg.city) { town = zg.city; if (zg.state) setStateGuess(zg.state); setCity(town); }
+        else { setSearching(false); setGeoMsg("We couldn't find that ZIP code. Please type your town instead."); return; }
+      }
+      const res = await fetch(`/api/tables/find?city=${encodeURIComponent(town)}`);
       const d = await res.json().catch(() => ({ tables: [] }));
       setSearching(false);
       if (res.status === 429) { setGeoMsg("So many searches! Please wait a moment and try again."); return; }
@@ -61,10 +68,10 @@ export default function PlayClient() {
       async (pos) => {
         try {
           const { latitude, longitude } = pos.coords;
-          const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
-          const g = await r.json();
-          const town = g.city || g.locality || g.principalSubdivision || "";
-          if (g.principalSubdivisionCode) setStateGuess(String(g.principalSubdivisionCode).split("-").pop() || "");
+          const r = await fetch(`/api/geocode?lat=${latitude}&lng=${longitude}`);
+          const g = await r.json().catch(() => ({}));
+          const town = g.city || "";
+          if (g.state) setStateGuess(g.state);
           if (!town) { setSearching(false); setGeoMsg("We couldn't find your town. Please type it below."); return; }
           setCity(town);
           runFind(town);
@@ -73,7 +80,7 @@ export default function PlayClient() {
           setGeoMsg("Something went wrong. Please type your town below.");
         }
       },
-      () => { setSearching(false); setGeoMsg("We couldn't get your location. Please type your town below."); },
+      (error) => { setSearching(false); setGeoMsg(error && error.code === 1 ? "Location is turned off for this site. Please type your town below, or allow location access and try again." : "We couldn't get your location. Please type your town below."); },
       { timeout: 10000 }
     );
   }
@@ -110,10 +117,10 @@ export default function PlayClient() {
         <button type="button" onClick={useMyLocation} disabled={searching} style={{ width: "100%", minHeight: 68, marginTop: "1.4rem", borderRadius: 16, border: "none", background: "var(--navy)", color: "white", fontSize: "1.3rem", fontWeight: 800, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
           {searching ? "Looking..." : "Use My Location"}
         </button>
-        <div style={{ textAlign: "center", color: "var(--muted)", fontSize: "1.05rem", margin: "1rem 0 0.2rem" }}>or type your town</div>
+        <div style={{ textAlign: "center", color: "var(--muted)", fontSize: "1.05rem", margin: "1rem 0 0.2rem" }}>or type your city or ZIP code</div>
         {geoMsg && <p role="alert" style={{ color: "#dc2626", fontSize: "1.05rem", textAlign: "center", marginTop: 0 }}>{geoMsg}</p>}
         <form onSubmit={findGames}>
-          <input style={fieldStyle} aria-label="Town or city" placeholder="Town or city" value={city} onChange={(e) => setCity(e.target.value)} />
+          <input style={fieldStyle} inputMode="text" aria-label="City or ZIP code" placeholder="City or ZIP code" value={city} onChange={(e) => setCity(e.target.value)} />
           <button type="submit" disabled={!city.trim() || searching} style={bigBtn(!!city.trim())}>{searching ? "Looking..." : "Find a Game"}</button>
         </form>
       </>
@@ -168,10 +175,12 @@ export default function PlayClient() {
         {captureWhy === "notify" ? `Want to know when another game opens in ${city}?` : `No public games in ${city} right now`}
       </h1>
       <p style={{ fontSize: "1.15rem", color: "var(--muted)", lineHeight: 1.5 }}>
-        {captureWhy === "notify" ? "Leave your name and we will tell you the moment a new table opens." : "Some tables fill by invitation, so check back soon. We'll reach out the moment a game opens near you, or "}
-        {captureWhy !== "notify" && <Link href="/start" style={{ color: "var(--pink-text)", fontWeight: 700 }}>start your own</Link>}
-        {captureWhy !== "notify" && "."}
+        {captureWhy === "notify" ? "Leave your name and we will tell you the moment a new table opens." : "Some tables fill by invitation, so check back soon. The fastest way to play is to start your own table and invite a few people, or we can tell you when a game opens near you."}
       </p>
+      {captureWhy === "none" && (
+        <Link href="/start" style={{ display: "flex", minHeight: 64, alignItems: "center", justifyContent: "center", marginTop: "1.3rem", borderRadius: 16, background: "var(--navy)", color: "white", fontWeight: 800, fontSize: "1.3rem", textDecoration: "none" }}>Start your own table &rarr;</Link>
+      )}
+      {captureWhy === "none" && <div style={{ textAlign: "center", color: "var(--muted)", fontSize: "1.1rem", margin: "1.4rem 0 0" }}>Or get notified when a game opens:</div>}
       <form onSubmit={submitCapture}>
         <div style={labelStyle}>Your name</div>
         <input style={fieldStyle} aria-label="Your first name" placeholder="First name" value={name} onChange={(e) => setName(e.target.value)} />

@@ -48,19 +48,11 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
             </a>
           </div>
           <div className="bg-bg border border-border rounded-2xl p-6">
-            <h3 className="font-heading text-[1.1rem] text-navy mb-2">Advertising &amp; Partnerships
+            <h3 className="font-heading text-[1.1rem] text-navy mb-2">List Your Class or Event
             </h3>
-            <p className="text-[0.88rem] text-muted mb-3">Interested in advertising, venue listings, or event promotions?
+            <p className="text-[0.88rem] text-muted mb-3">Want to get your classes, game, or event listed on Find My Mahj Game?
             </p>
-            <Link href="/advertise" className="text-pink font-bold no-underline">See Advertise page &rarr;
-            </Link>
-          </div>
-          <div className="bg-bg border border-border rounded-2xl p-6">
-            <h3 className="font-heading text-[1.1rem] text-navy mb-2">List Your Game or Venue
-            </h3>
-            <p className="text-[0.88rem] text-muted mb-3">Want to get your game, venue or event listed on Find My Mahj Game?
-            </p>
-            <Link href="/advertise" className="text-pink font-bold no-underline">See listing options &rarr;
+            <Link href="/get-listed" className="text-pink font-bold no-underline">Get listed &rarr;
             </Link>
           </div>
           <div className="bg-bg border border-border rounded-2xl p-6">
@@ -82,7 +74,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
             <input type="hidden" name="_next" value="https://findmymahjgame.com/contact?sent=1#sent" />
             <div className="grid grid-cols-2 gap-4 mb-5 max-sm:grid-cols-1">
               <div>
-                <label className="block text-[0.82rem] font-bold text-navy mb-1">Your Name</label>
+                <label className="block text-[0.95rem] font-bold text-navy mb-1">Your Name</label>
                 <input
                   type="text"
                   name="name"
@@ -92,7 +84,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
                 />
               </div>
               <div>
-                <label className="block text-[0.82rem] font-bold text-navy mb-1">Email Address
+                <label className="block text-[0.95rem] font-bold text-navy mb-1">Email Address
                 </label>
                 <input
                   type="email"
@@ -104,7 +96,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
               </div>
             </div>
             <div className="mb-5">
-              <label className="block text-[0.82rem] font-bold text-navy mb-1">What is this about?
+              <label className="block text-[0.95rem] font-bold text-navy mb-1">What is this about?
               </label>
               <select
                 name="topic"
@@ -114,7 +106,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
                 <option value="">Select a topic...</option>
                 <option>Player listing question</option>
                 <option>Advertising inquiry</option>
-                <option>Venue listing</option>
+                <option>Class or event listing</option>
                 <option>Event listing</option>
                 <option>Partnership opportunity</option>
                 <option>Bug or website issue</option>
@@ -122,7 +114,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
               </select>
             </div>
             <div className="mb-5">
-              <label className="block text-[0.82rem] font-bold text-navy mb-1">Message</label>
+              <label className="block text-[0.95rem] font-bold text-navy mb-1">Message</label>
               <textarea
                 name="message"
                 placeholder="Tell us what you need..."

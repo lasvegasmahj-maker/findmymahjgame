@@ -26,37 +26,6 @@ export default function SubmitClient() {
     set(key, v ? "@" + v : "");
   }
 
-  const [logoUploading, setLogoUploading] = useState(false);
-  const [logoError, setLogoError] = useState("");
-
-  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setLogoError("");
-    const accepted = ["image/jpeg", "image/png", "image/webp"];
-    if (!accepted.includes(file.type)) {
-      setLogoError("Please upload a JPEG, PNG, or WebP image.");
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      setLogoError("That image is over 5 MB. Please upload a smaller file.");
-      return;
-    }
-    setLogoUploading(true);
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/upload-logo", { method: "POST", body: fd });
-      if (!res.ok) throw new Error("upload failed");
-      const { url } = await res.json();
-      set("logoUrl", url);
-    } catch {
-      setLogoError("Upload failed. Please try again, or email it to us.");
-    } finally {
-      setLogoUploading(false);
-    }
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("submitting");
@@ -178,23 +147,6 @@ export default function SubmitClient() {
                     onChange={e => setHandle("facebook", e.target.value)} className="form-input" />
                 </div>
               </div>
-              <div className="form-group" style={{ marginTop: "1rem" }}>
-                <label className="form-label">Logo or Image <span className="form-optional">(optional)</span></label>
-                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                  {form.logoUrl && (
-                    <img src={form.logoUrl} alt="Logo preview" style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover", border: "1px solid var(--border)" }} />
-                  )}
-                  <label className="form-input" style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", width: "auto", padding: "0.6rem 1.1rem", margin: 0 }}>
-                    {logoUploading ? "Uploading..." : form.logoUrl ? "Change image" : "Upload image"}
-                    <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleLogoUpload} style={{ display: "none" }} disabled={logoUploading} />
-                  </label>
-                </div>
-                {logoError && (
-                  <p style={{ fontSize: "0.78rem", color: "#dc2626", marginTop: "0.35rem" }}>{logoError}</p>
-                )}
-                <p style={{ fontSize: "0.78rem", color: "var(--muted)", marginTop: "0.35rem" }}>JPEG, PNG, or WebP, up to 5 MB.
-                </p>
-              </div>
               <div className="form-group">
                 <label className="form-label">Anything else we should know? <span className="form-optional">(optional)</span></label>
                 <textarea placeholder="Special requests, notes, or questions..." value={form.notes || ""}
@@ -313,6 +265,11 @@ function EventFields({ form, set }: { form: Record<string, string>; set: (k: str
         <input type="text" required placeholder="Spring Mahjong Tournament" value={form.displayName || ""}
           onChange={e => set("displayName", e.target.value)} className="form-input" />
       </div>
+      <div className="form-group">
+        <label className="form-label">Hosted by / Organizer</label>
+        <input type="text" required placeholder="Las Vegas Mahjong Club (or your name)" value={form.host || ""}
+          onChange={e => set("host", e.target.value)} className="form-input" />
+      </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
         <div className="form-group" style={{ marginBottom: 0 }}>
           <label className="form-label">Event Type</label>
@@ -327,8 +284,8 @@ function EventFields({ form, set }: { form: Record<string, string>; set: (k: str
           </select>
         </div>
         <div className="form-group" style={{ marginBottom: 0 }}>
-          <label className="form-label">Date(s)</label>
-          <input type="text" required placeholder="June 14, 2026" value={form.eventDate || ""}
+          <label className="form-label">Date &amp; time</label>
+          <input type="text" required placeholder="June 14, 2026, 1-4pm (or Tuesdays 6:30pm)" value={form.eventDate || ""}
             onChange={e => set("eventDate", e.target.value)} className="form-input" />
         </div>
       </div>
@@ -355,8 +312,8 @@ function EventFields({ form, set }: { form: Record<string, string>; set: (k: str
           onChange={e => set("price", e.target.value)} className="form-input" />
       </div>
       <div className="form-group">
-        <label className="form-label">Registration / Ticket Link <span className="form-optional">(optional)</span></label>
-        <input type="url" placeholder="https://eventbrite.com/..." value={form.registrationUrl || ""}
+        <label className="form-label">Sign-up / invite link <span className="form-optional">(optional)</span></label>
+        <input type="url" placeholder="Where people sign up: your page, a form, Eventbrite, or a link to your invite" value={form.registrationUrl || ""}
           onChange={e => set("registrationUrl", e.target.value)} className="form-input" />
       </div>
       <div className="form-group">

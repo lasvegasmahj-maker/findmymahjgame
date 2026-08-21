@@ -55,10 +55,6 @@ export default async function HomeV2() {
             <Link href="/start" style={btn("var(--pink)", "white")}>Start a Table</Link>
             <div style={sub}>Invite players to join</div>
           </div>
-          <div>
-            <Link href="/help" style={btn("white", "var(--navy)", "2px solid var(--navy)")}>I Need Help</Link>
-            <div style={sub}>Talk to a real person</div>
-          </div>
         </div>
         <div style={{ marginTop: "1.6rem", textAlign: "center" }}>
           <Link href="/how-it-works" style={{ fontSize: "1.1rem", color: "var(--pink-text)", fontWeight: 700 }}>New to mahjong? Learn how</Link>

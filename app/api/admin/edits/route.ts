@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { verifyAdminSessionToken, ADMIN_COOKIE } from "@/lib/admin-auth";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 // Founder review of claimer-proposed edits. Approving applies the allowlisted
 // changes to the listing; the pending_edits row keeps both versions as the
 // audit trail, never deleted.
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const TABLES = ["venue_listings", "event_listings"];

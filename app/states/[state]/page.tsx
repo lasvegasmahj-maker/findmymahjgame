@@ -3,6 +3,8 @@ import { createServerClient } from "@/lib/supabase-server";
 import { notFound } from "next/navigation";
 import StatePageClient from "./client";
 import { buildStatePageSchema, schemaScriptProps } from "@/lib/schema";
+import { LAS_VEGAS_MAHJONG } from "@/lib/featured-listings";
+import { isUpcoming } from "@/lib/schedule";
 
 export const revalidate = 3600; // revalidate every hour
 
@@ -14,7 +16,7 @@ const STATE_META: Record<string, { title: string; description: string }> = {
   california: {
     title: "Mahjong Players and Groups in California",
     description:
-      "Find mahjong players, open plays, venues and events in California. Search Los Angeles, San Francisco, San Diego, Palm Springs and more. Free for players.",
+      "Find mahjong players, open plays, teachers and events in California. Search Los Angeles, San Francisco, San Diego, Palm Springs and more. Free for players.",
   },
   florida: {
     title: "Mahjong Players and Groups in Florida",
@@ -29,7 +31,7 @@ const STATE_META: Record<string, { title: string; description: string }> = {
   texas: {
     title: "Mahjong Players and Groups in Texas",
     description:
-      "Find mahjong players, open plays, venues and events in Texas. Search Houston, Dallas, Austin, San Antonio and more. Free for players statewide.",
+      "Find mahjong players, open plays, teachers and events in Texas. Search Houston, Dallas, Austin, San Antonio and more. Free for players statewide.",
   },
   nevada: {
     title: "Mahjong Players, Lessons and Events in Nevada",
@@ -58,18 +60,19 @@ export async function generateMetadata({ params }: { params: Promise<{ state: st
   const cityList = data.cities.slice(0, 4).join(", ");
   return {
     title: `Mahjong Players and Groups in ${data.name}`,
-    description: `Find mahjong players, open plays, venues and events in ${data.name}. Search ${cityList} and more. Free directory for players.`,
+    description: `Find mahjong players, open plays, teachers and events in ${data.name}. Search ${cityList} and more. Free directory for players.`,
     alternates: { canonical: `https://findmymahjgame.com/states/${state}` },
     openGraph: {
       title: `Mahjong Players and Groups in ${data.name} | Find My Mahj Game`,
-      description: `Find mahjong players, open plays, venues and events in ${data.name}. Search ${cityList} and more. Free directory for players.`,
+      description: `Find mahjong players, open plays, teachers and events in ${data.name}. Search ${cityList} and more. Free directory for players.`,
       url: `https://findmymahjgame.com/states/${state}`,
     },
   };
 }
 
-export default async function StatePage({ params }: { params: Promise<{ state: string }> }) {
+export default async function StatePage({ params, searchParams }: { params: Promise<{ state: string }>; searchParams: Promise<{ city?: string; tab?: string }> }) {
   const { state } = await params;
+  const { city: initialCity, tab: initialTab } = await searchParams;
   const data = STATES[state];
   if (!data) notFound();
 
@@ -87,10 +90,9 @@ export default async function StatePage({ params }: { params: Promise<{ state: s
       .order("created_at", { ascending: false }),
     supabase
       .from("event_listings")
-      .select("id, event_name, event_type, city, state, venue, address, description, event_date, end_date, price, registration_url, tier, created_at")
+      .select("id, event_name, event_type, city, state, venue, address, description, event_date, end_date, price, host, registration_url, tier, created_at, day_time, frequency")
       .eq("state", data.abbr)
       .eq("status", "published")
-      .or(`event_date.is.null,event_date.gte.${new Date().toISOString().slice(0, 10)},event_type.in.(open_play,openplay,recurring)`)
       .order("event_date", { ascending: true }),
     supabase
       .from("venue_listings")
@@ -101,8 +103,11 @@ export default async function StatePage({ params }: { params: Promise<{ state: s
   ]);
 
   const players = playersRes.data || [];
-  const events = eventsRes.data || [];
-  const venues = venuesRes.data || [];
+  const events = (eventsRes.data || []).filter((e) => isUpcoming(e));
+  let venues = venuesRes.data || [];
+  // Always feature Las Vegas Mahjong (the founder's own business) on Nevada,
+  // so it appears in the Nevada Teachers tab alongside the Sponsored block.
+  if (data.abbr === "NV") venues = [LAS_VEGAS_MAHJONG, ...venues] as unknown as typeof venues;
 
   const STATE_CITIES: Record<string, [string, string][]> = {
     texas: [["dallas", "Dallas"], ["houston", "Houston"], ["austin", "Austin"], ["san-antonio", "San Antonio"]],
@@ -127,6 +132,8 @@ export default async function StatePage({ params }: { params: Promise<{ state: s
         players={players}
         events={events}
         venues={venues}
+        initialCity={initialCity}
+        initialTab={initialTab}
       />
       {STATE_CITIES[data.slug] && (
         <section style={{ maxWidth: 900, margin: "0 auto", padding: "0.5rem 1.2rem 3rem" }}>

@@ -4,12 +4,10 @@ import { sendEmail } from "@/lib/email";
 import crypto from "crypto";
 import { escapeHtml } from "@/lib/sanitize";
 import { getHmacSecret } from "@/lib/hmac";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 export function verifyToken(token: string): { submissionId: string; action: string } | null {
   try {

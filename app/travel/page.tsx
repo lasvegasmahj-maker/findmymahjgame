@@ -1,15 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { searchEvents } from "@/lib/search";
+import { safeHttpUrl } from "@/lib/sanitize";
+import NotifyMe from "@/components/notify-me";
+import GroupedEvents, { type GroupedRow } from "@/components/grouped-events";
+import { schemaScriptProps } from "@/lib/schema";
 
 export const metadata: Metadata = {
-  title: "Travel Mahjong: Find a Game Anywhere",
-  description: "Traveling? Check before you go. Find American Mahjong open plays, games, and events in the cities you visit. Free for players, and money never crosses the table.",
+  title: "Traveling Mahjong Experiences: Cruises & Retreats",
+  description: "Mahjong getaways you can travel to: organized cruises, retreats, and destination events. Plus find a game in the places you visit. Free for players.",
   alternates: { canonical: "https://findmymahjgame.com/travel" },
 };
 
-export const revalidate = 86400;
+export const revalidate = 3600;
 
-const CITIES: { label: string; href: string }[] = [
+const norm = (t: string | null | undefined) => (t || "").toLowerCase().replace(/[^a-z]/g, "");
+
+const CITIES = [
   { label: "Dallas, TX", href: "/states/texas/dallas" },
   { label: "Houston, TX", href: "/states/texas/houston" },
   { label: "Austin, TX", href: "/states/texas/austin" },
@@ -19,46 +26,106 @@ const CITIES: { label: string; href: string }[] = [
   { label: "Boca Raton, FL", href: "/states/florida/boca-raton" },
   { label: "Naples, FL", href: "/states/florida/naples" },
 ];
-
-const SNOWBIRD: { label: string; href: string }[] = [
+const SNOWBIRD = [
   { label: "Florida", href: "/states/florida" },
   { label: "Arizona", href: "/states/arizona" },
   { label: "Nevada", href: "/states/nevada" },
 ];
 
 const card: React.CSSProperties = { display: "block", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", textDecoration: "none" };
-const sectionH2: React.CSSProperties = { fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.6rem", color: "var(--navy)", margin: "2.6rem 0 1rem" };
+const sectionH2: React.CSSProperties = { fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.6rem", color: "var(--navy)", margin: "2.6rem 0 1rem", scrollMarginTop: "90px" };
+const cardGrid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 240px), 1fr))", gap: "1rem" };
 
-export default function TravelPage() {
+export default async function TravelPage({ searchParams }: { searchParams: Promise<{ sort?: string }> }) {
+  const { sort } = await searchParams;
+  const activeSort = (sort || "state").toLowerCase();
+  const groupBy: "state" | null = activeSort === "date" ? null : "state";
+
+  let rows: GroupedRow[] = [];
+  try {
+    rows = await searchEvents({ types: ["retreat"] });
+  } catch { /* table not ready: fall through to the empty state */ }
+
+  const _today = new Date(); _today.setHours(0, 0, 0, 0);
+  const eventSchema = rows
+    .filter((e) => {
+      if (!e.event_date) return false;
+      const d = new Date(e.event_date);
+      return !isNaN(d.getTime()) && d >= _today;
+    })
+    .slice(0, 50)
+    .map((e) => ({
+      "@context": "https://schema.org",
+      "@type": "Event",
+      name: e.event_name || "Mahjong Getaway",
+      startDate: e.event_date,
+      eventStatus: "https://schema.org/EventScheduled",
+      eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+      location: { "@type": "Place", name: e.venue || [e.city, e.state].filter(Boolean).join(", ") || "See listing", address: [e.city, e.state].filter(Boolean).join(", ") || "United States" },
+      ...(safeHttpUrl(e.registration_url) ? { url: safeHttpUrl(e.registration_url)! } : {}),
+    }));
+
   const breadcrumb = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: "https://findmymahjgame.com" },
-      { "@type": "ListItem", position: 2, name: "Travel", item: "https://findmymahjgame.com/travel" },
+      { "@type": "ListItem", position: 2, name: "Getaways", item: "https://findmymahjgame.com/travel" },
     ],
   };
-
   const collectionPage = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "Travel Mahjong: Find a Game Anywhere",
-    description: "Find American Mahjong open plays, games, and events in the cities you visit.",
+    name: "Traveling Mahjong Experiences",
+    description: "Mahjong getaways you can travel to: organized cruises, retreats, and destination events, plus a game in the places you visit.",
     url: "https://findmymahjgame.com/travel",
     about: { "@type": "Thing", name: "American Mahjong" },
     isPartOf: { "@type": "WebSite", name: "Find My Mahj Game", url: "https://findmymahjgame.com" },
   };
 
+  const sortHref = (k: string) => `/travel${k !== "state" ? `?sort=${k}` : ""}`;
+  const SORTS: [string, string][] = [["state", "By state"], ["date", "By date"]];
+  const typeLabelFor = (e: GroupedRow) => (norm(e.event_type) === "cruise" ? "Cruise" : "Retreat");
+
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumb, collectionPage]) }} />
+      <script {...schemaScriptProps([breadcrumb, collectionPage])} />
+      {eventSchema.length > 0 && <script {...schemaScriptProps(eventSchema)} />}
 
-      <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", textAlign: "center", margin: "0 0 0.4rem" }}>Travel Mahjong: find a game anywhere</h1>
-      <p style={{ fontSize: "1.2rem", color: "var(--muted)", textAlign: "center", lineHeight: 1.5, margin: "0 auto 1rem", maxWidth: 640 }}>Check before you travel. Wherever you go, see who is playing American Mahjong and where the games are before you pack the card.</p>
-      <p style={{ fontSize: "1.1rem", color: "var(--navy)", textAlign: "center", lineHeight: 1.6, margin: "0 auto 2rem", maxWidth: 640 }}>Find My Mahj Game helps you find a game wherever you go. It is free for players, and money never crosses the table.</p>
+      <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", textAlign: "center", margin: "0 0 0.4rem" }}>Traveling Mahjong Experiences</h1>
+      <p style={{ fontSize: "1.2rem", color: "var(--muted)", textAlign: "center", lineHeight: 1.5, margin: "0 auto 1rem", maxWidth: 660 }}>Anything you travel to, in one place. Browse mahjong cruises and retreats you can sign up for, and find a game in the cities you visit.</p>
+      <p style={{ fontSize: "1.1rem", color: "var(--navy)", textAlign: "center", lineHeight: 1.6, margin: "0 auto 1.6rem", maxWidth: 660 }}>Free for players.</p>
+
+      <h2 style={sectionH2}>Cruising? Find your game</h2>
+      <div style={{ background: "var(--bg)", border: "2px solid var(--border)", borderRadius: 16, padding: "1.5rem 1.6rem", maxWidth: 680 }}>
+        <p style={{ fontSize: "1.1rem", color: "var(--navy)", lineHeight: 1.6, margin: "0 0 1.1rem" }}>On a regular cruise and want a game on board? Post your ship and sailing dates and connect with other American Mahjong players on the same trip. Free for players, no organized event needed.</p>
+        <Link href="/cruise" style={{ display: "inline-flex", minHeight: 54, alignItems: "center", padding: "0 1.5rem", borderRadius: 14, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.05rem", textDecoration: "none" }}>Post your cruise &amp; find players &rarr;</Link>
+      </div>
+
+      <h2 id="getaways" style={sectionH2}>Mahjong cruises &amp; retreats</h2>
+      <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.6, margin: "0 0 1.2rem", maxWidth: 660 }}>Organized mahjong cruises and retreats you can travel to, run by hosts. (Looking to find players on a regular cruise instead? That is free, just above.)</p>
+      {rows.length > 0 ? (
+        <>
+          <div style={{ display: "flex", gap: "0.9rem", flexWrap: "wrap", alignItems: "center", margin: "0 0 1.6rem" }}>
+            <span style={{ fontSize: "0.9rem", color: "var(--muted)", fontWeight: 700 }}>Sort:</span>
+            {SORTS.map(([k, label]) => (
+              <Link key={k} href={sortHref(k)} style={{ fontSize: "0.95rem", fontWeight: 700, textDecoration: "none", color: activeSort === k ? "var(--pink-text)" : "var(--muted)", borderBottom: activeSort === k ? "2px solid var(--pink)" : "2px solid transparent", paddingBottom: "0.1rem" }}>{label}</Link>
+            ))}
+          </div>
+          <GroupedEvents rows={rows} typeLabel={typeLabelFor} cta="Sign up" groupBy={groupBy} />
+        </>
+      ) : (
+        <div style={{ maxWidth: 560, margin: "0 auto" }}>
+          <p style={{ fontSize: "1.1rem", color: "var(--muted)", lineHeight: 1.6, textAlign: "center", margin: "0 0 1.2rem" }}>No Mahjong cruises or retreats are listed yet. Tell us where you want to play and we will let you know the moment one is added.</p>
+          <NotifyMe heading="Notify me about Mahjong cruises and retreats" />
+          <div style={{ textAlign: "center", marginTop: "1rem" }}>
+            <Link href="/get-listed" style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.05rem" }}>Run a Mahjong cruise or retreat? List it here &rarr;</Link>
+          </div>
+        </div>
+      )}
 
       <h2 style={sectionH2}>Popular destinations</h2>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 240px), 1fr))", gap: "1rem" }}>
+      <div style={cardGrid}>
         {CITIES.map((c) => (
           <Link key={c.href} href={c.href} style={card}>
             <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--navy)" }}>{c.label}</div>
@@ -69,7 +136,7 @@ export default function TravelPage() {
 
       <h2 style={sectionH2}>Snowbird states</h2>
       <p style={{ fontSize: "1.1rem", color: "var(--muted)", lineHeight: 1.6, margin: "0 0 1rem", maxWidth: 640 }}>Heading south for the season? Find your people before you settle in.</p>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 240px), 1fr))", gap: "1rem" }}>
+      <div style={cardGrid}>
         {SNOWBIRD.map((s) => (
           <Link key={s.href} href={s.href} style={card}>
             <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--navy)" }}>{s.label}</div>

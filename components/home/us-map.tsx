@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, Suspense } from "react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { STATES } from "@/lib/states-data";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
@@ -87,8 +87,8 @@ function MapSkeleton() {
 type StateCounts = Record<string, { players: number; events: number; venues: number }>;
 
 export default function USMap({ stateCounts = {} }: { stateCounts?: StateCounts }) {
+  const router = useRouter();
   const [hovered, setHovered] = useState<string | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -97,20 +97,19 @@ export default function USMap({ stateCounts = {} }: { stateCounts?: StateCounts 
   }, []);
 
   const handleClick = useCallback((abbr: string) => {
-    setSelected(prev => prev === abbr ? null : abbr);
-  }, []);
+    const href = STATE_SLUGS[abbr];
+    if (href) router.push(href);
+  }, [router]);
 
   const isActiveState = useCallback(
     (abbr: string) => {
       const c = stateCounts[abbr];
-      return !!c && c.players + c.events + c.venues > 0;
+      return !!c && c.players + c.events > 0;
     },
     [stateCounts]
   );
 
-  const selectedName = selected ? ABBR_TO_NAME[selected] : null;
   const hoveredName = hovered ? ABBR_TO_NAME[hovered] : null;
-  const stateLink = selected ? STATE_SLUGS[selected] : null;
 
   return (
     <Suspense fallback={<MapSkeleton />}>
@@ -126,13 +125,11 @@ export default function USMap({ stateCounts = {} }: { stateCounts?: StateCounts 
             {({ geographies }: { geographies: any[] }) =>geographies.map((geo) => {
                 const fips = geo.id;
                 const abbr = FIPS_TO_ABBR[fips] || "";
-                const isSelected = selected === abbr;
                 const isHovered = hovered === abbr;
                 const isActive = isActiveState(abbr);
 
                 let fill = "#dce8fc";
-                if (isSelected) fill = "#e91e8c";
-                else if (isHovered && isActive) fill = "#b3ccf5";
+                if (isHovered && isActive) fill = "#b3ccf5";
                 else if (isHovered) fill = "#c5d5f5";
                 else if (isActive) fill = "#c5d8fc";
 
@@ -147,16 +144,16 @@ export default function USMap({ stateCounts = {} }: { stateCounts?: StateCounts 
                     style={{
                       default: {
                         fill,
-                        stroke: isSelected ? "#c4168a" : "white",
-                        strokeWidth: isSelected ? 1.8 : 0.8,
+                        stroke: "white",
+                        strokeWidth: 0.8,
                         outline: "none",
                         transition: "fill 0.2s ease, stroke 0.2s ease",
                         cursor: "pointer",
                       },
                       hover: {
-                        fill: isSelected ? "#e91e8c" : isActive ? "#a8c2f0" : "#baceee",
-                        stroke: isSelected ? "#c4168a" : "rgba(26,31,94,0.35)",
-                        strokeWidth: isSelected ? 1.8 : 1.2,
+                        fill: isActive ? "#a8c2f0" : "#baceee",
+                        stroke: "rgba(26,31,94,0.35)",
+                        strokeWidth: 1.2,
                         outline: "none",
                         cursor: "pointer",
                       },
@@ -179,7 +176,7 @@ export default function USMap({ stateCounts = {} }: { stateCounts?: StateCounts 
               <text
                 textAnchor="middle" dominantBaseline="middle" style={{
                   fontSize: ["TX","CA","MT","AK"].includes(abbr) ? 14 : ["HI","RI","CT","DE","NH","VT","MA","NJ","MD"].includes(abbr) ? 8 : 10,
-                  fill: selected === abbr ? "white" : "rgba(26,31,94,0.55)",
+                  fill: "rgba(26,31,94,0.55)",
                   fontFamily: "'DM Sans', sans-serif",
                   fontWeight: 600,
                   pointerEvents: "none",
@@ -192,7 +189,7 @@ export default function USMap({ stateCounts = {} }: { stateCounts?: StateCounts 
           ))}
         </ComposableMap>
 
-        {hovered && !selected && hoveredName && (
+        {hovered && hoveredName && (
           <div className="map-tooltip" style={{ left: mousePos.x, top: mousePos.y - 52 }}>
             {hoveredName}
             {isActiveState(hovered) && (
@@ -201,40 +198,6 @@ export default function USMap({ stateCounts = {} }: { stateCounts?: StateCounts 
           </div>
         )}
 
-        {selected && selectedName && (
-          <div className="state-popup">
-            <div className="state-popup-header">
-              <div>
-                <h3>{selectedName}</h3>
-                <p>Players, events &amp; venues</p>
-              </div>
-              <button className="state-popup-close" tabIndex={-1} onClick={() => setSelected(null)}>&times;</button>
-            </div>
-            <div className="state-popup-body">
-              <div className="state-popup-stats">
-                <div><strong>{stateCounts[selected]?.players ?? 0}</strong><span>Players</span></div>
-                <div><strong>{stateCounts[selected]?.events ?? 0}</strong><span>Events</span></div>
-                <div><strong>{stateCounts[selected]?.venues ?? 0}</strong><span>Venues</span></div>
-              </div>
-              <p className="state-popup-desc">
-                {isActiveState(selected)
-                  ? `Explore mahjong players, events, and venues in ${selectedName}. Click below to see the full state page.`
-                  : `Be the first to list yourself in ${selectedName}! Create a free player listing and connect with mahjong players near you.`}
-              </p>
-              <div className="state-popup-actions">
-                {stateLink ? (
-                  <Link href={stateLink} className="rt-btn" tabIndex={-1} style={{ marginRight: 8 }}>View {selectedName} &rarr;
-                  </Link>
-                ) : (
-                  <Link href="/#map" className="rt-btn" tabIndex={-1} style={{ marginRight: 8 }}>View {selectedName} &rarr;
-                  </Link>
-                )}
-                <Link href="/list-my-game" className="rt-btn" tabIndex={-1} style={{ background: "var(--navy)" }}>Create Listing
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </Suspense>
   );

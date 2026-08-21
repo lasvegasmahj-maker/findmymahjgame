@@ -5,14 +5,12 @@ import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 import { escapeHtml, isValidEmail, clampText, safeHttpUrl } from "@/lib/sanitize";
 import { getHmacSecret } from "@/lib/hmac";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 const LISTING_TYPES = ["venue", "instructor", "event", "brand"];
 
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 function signToken(submissionId: string, action: string): string {
   const expires = Date.now() + 7 * 24 * 60 * 60 * 1000;
@@ -46,6 +44,7 @@ function buildApprovalEmail(data: Record<string, string>, submissionId: string):
     ["Type", typeLabels[data.listingType] ?? d.listingType],
     ["Name", d.displayName ?? ""],
   ];
+  if (data.host) allRows.push(["Host", d.host]);
   if (data.address) allRows.push(["Address", `${d.address}, ${d.city}, ${d.stateName}`]);
   else if (data.city) allRows.push(["Location", `${d.city ?? ""}${data.stateName ? `, ${d.stateName}` : ""}`]);
   if (data.hours) allRows.push(["Mahjong Hours", d.hours]);
@@ -139,7 +138,7 @@ export async function POST(req: NextRequest) {
       listingType, contactName, contactEmail, displayName,
       city, stateName, address, hours, phone,
       description, website, instagram, facebook, logoUrl,
-      eventDate, eventType, eventLocation, registrationUrl, price,
+      eventDate, eventType, eventLocation, registrationUrl, price, host,
       bio, whatOffered, photoUrl, targetStates, notes,
     } = body;
 
@@ -173,6 +172,7 @@ export async function POST(req: NextRequest) {
       eventLocation: clampText(eventLocation, 200),
       registrationUrl: clampText(registrationUrl, 500),
       price: clampText(price, 80),
+      host: clampText(host, 120),
       bio: clampText(bio, 3000),
       whatOffered: clampText(whatOffered, 3000),
       photoUrl: clampText(photoUrl, 500),
@@ -201,6 +201,7 @@ export async function POST(req: NextRequest) {
         event_date: clean.eventDate || null,
         event_type: clean.eventType || null,
         event_location: clean.eventLocation || null,
+        host: clean.host || null,
         registration_url: safeHttpUrl(clean.registrationUrl) || null,
         price: clean.price || null,
         bio: clean.bio || null,

@@ -1,14 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
 import type { NextRequest } from "next/server";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 // Serverless-appropriate rate limiting using Supabase as the shared store
 // (in-memory counters do not work across Vercel instances). Fails OPEN on any
 // error (including the table not existing yet) so a transient DB issue never
 // blocks a real user; run supabase/rate-limit.sql to activate enforcement.
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 function ipOf(req: NextRequest): string {
   const fwd = req.headers.get("x-forwarded-for") || "";

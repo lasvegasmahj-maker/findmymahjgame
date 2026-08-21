@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { safeHttpUrl } from "@/lib/sanitize";
+import { parseSchedule } from "@/lib/schedule";
+import { sourceHost, byReviewOrder } from "@/lib/review-queue";
 
 type Tab = "inquiries" | "players" | "venues" | "events" | "ads" | "ambassadors";
 
@@ -40,6 +42,7 @@ interface VenueListing {
   contact_email: string;
   website: string | null;
   description: string | null;
+  source_url: string | null;
   created_at: string;
 }
 
@@ -55,6 +58,9 @@ interface EventListing {
   contact_email: string;
   registration_url: string | null;
   description: string | null;
+  source_url: string | null;
+  day_time: string | null;
+  frequency: string | null;
   created_at: string;
 }
 
@@ -188,6 +194,36 @@ function LoginGate({ onAuth }: { onAuth: () => void }) {
   );
 }
 
+function ParsedScheduleHint({ ev }: { ev: EventListing }) {
+  const p = parseSchedule({
+    dayTime: ev.day_time,
+    frequency: ev.frequency,
+    description: ev.description,
+    eventName: ev.event_name,
+    eventDate: ev.event_date,
+  });
+  if (p.confidence === "low" && p.days.length === 0 && !p.startTime) return null;
+  const tone =
+    p.confidence === "high" ? { bg: "rgba(45,160,90,0.13)", fg: "#1d6b3d" }
+    : p.confidence === "medium" ? { bg: "rgba(245,200,66,0.18)", fg: "#a07800" }
+    : { bg: "rgba(220,38,38,0.10)", fg: "#b3261e" };
+  const days = p.days.length ? p.days.map((d) => d.slice(0, 3)).join(", ") : "no day";
+  const time = p.startTime ? (p.endTime ? `${p.startTime}-${p.endTime}` : p.startTime) : "no time";
+  return (
+    <div style={{ fontSize: "0.72rem", marginTop: "0.25rem", display: "flex", gap: "0.4rem", alignItems: "center", flexWrap: "wrap" }}>
+      <span style={{ background: tone.bg, color: tone.fg, borderRadius: 4, padding: "0.1rem 0.4rem", fontWeight: 700 }}>
+        {p.confidence}
+      </span>
+      <span style={{ color: "var(--muted)" }}>
+        {days} · {time}{p.frequency ? ` · ${p.frequency}` : ""}
+      </span>
+      {p.ambiguities.length > 0 && (
+        <span style={{ color: "#b3261e" }}>{p.ambiguities[0]}</span>
+      )}
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [tab, setTab] = useState<Tab>("inquiries");
@@ -199,6 +235,7 @@ export default function AdminPage() {
   const [ambassadors, setAmbassadors] = useState<Ambassador[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [sourceFilter, setSourceFilter] = useState("all");
   const [pendingCount, setPendingCount] = useState(0);
   const [newInquiryCount, setNewInquiryCount] = useState(0);
   const [newAmbassadorCount, setNewAmbassadorCount] = useState(0);
@@ -274,9 +311,9 @@ export default function AdminPage() {
       const order: Record<string, number> = { pending_review: 0, flagged: 1, published: 2 };
       setPlayers((items as PlayerListing[]).slice().sort((a, b) => (order[a.status] ?? 3) - (order[b.status] ?? 3)));
     } else if (tab === "venues") {
-      setVenues(items as VenueListing[]);
+      setVenues(byReviewOrder(items as VenueListing[]));
     } else if (tab === "events") {
-      setEvents(items as EventListing[]);
+      setEvents(byReviewOrder(items as EventListing[]));
     } else if (tab === "ads") {
       setAds(items as AdListing[]);
     } else if (tab === "ambassadors") {
@@ -341,6 +378,55 @@ export default function AdminPage() {
     loadData();
   }
 
+  function sourceCounts(rows: { source_url: string | null; status: string }[]) {
+    const m = new Map<string, number>();
+    for (const r of rows) {
+      if (r.status !== "pending_review") continue;
+      const h = sourceHost(r.source_url) || "(no source)";
+      m.set(h, (m.get(h) || 0) + 1);
+    }
+    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+  }
+
+  function applySourceFilter<T extends { source_url: string | null }>(rows: T[]): T[] {
+    if (sourceFilter === "all") return rows;
+    return rows.filter((r) => (sourceHost(r.source_url) || "(no source)") === sourceFilter);
+  }
+
+  function renderSourcePicker(rows: { source_url: string | null; status: string }[]) {
+    const counts = sourceCounts(rows);
+    if (counts.length === 0) return null;
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap", marginBottom: "0.8rem" }}>
+        <label htmlFor="source-filter" style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--navy)" }}>
+          Review by source
+        </label>
+        <select
+          id="source-filter"
+          value={sourceFilter}
+          onChange={(e) => { setSourceFilter(e.target.value); setSelected(new Set()); }}
+          className="form-select"
+          style={{ maxWidth: 420 }}
+        >
+          <option value="all">All sources ({counts.reduce((a, [, n]) => a + n, 0)} pending)</option>
+          {counts.map(([h, n]) => (
+            <option key={h} value={h}>{h} ({n} pending)</option>
+          ))}
+        </select>
+        {sourceFilter !== "all" && (
+          <>
+            <a href={`https://${sourceFilter}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--pink-text)" }}>
+              Open source to verify
+            </a>
+            <span style={{ fontSize: "0.78rem", color: "var(--muted)" }}>
+              Select the rows you trust, then approve. Blanket approval is off while a source is selected.
+            </span>
+          </>
+        )}
+      </div>
+    );
+  }
+
   function renderBulkBar(table: string, rows: { id: string; status: string }[]) {
     // Flagged rows are quarantined (dead links, link-check holds): they stay
     // individually approvable but never ride select-all or Approve All.
@@ -369,9 +455,11 @@ export default function AdminPage() {
         <button onClick={() => bulkUpdate(table, chosen, "rejected")} disabled={!chosen.length} style={{ ...btn("#fee2e2", "#dc2626", "1px solid #fca5a5"), opacity: chosen.length ? 1 : 0.5 }}>
           Reject Selected ({chosen.length})
         </button>
-        <button onClick={() => bulkUpdate(table, pending.map((r) => r.id), "published")} style={btn("var(--navy)", "white")}>
-          Approve All Pending ({pending.length})
-        </button>
+        {sourceFilter === "all" && (
+          <button onClick={() => bulkUpdate(table, pending.map((r) => r.id), "published")} style={btn("var(--navy)", "white")}>
+            Approve All Pending ({pending.length})
+          </button>
+        )}
       </div>
     );
   }
@@ -621,7 +709,8 @@ export default function AdminPage() {
       {/* VENUES TAB */}
       {!loading && tab === "venues" && (
         <div>
-          {renderBulkBar("venue_listings", venues)}
+          {renderSourcePicker(venues)}
+          {renderBulkBar("venue_listings", applySourceFilter(venues))}
           {venues.length === 0 ? (
             <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "3rem", textAlign: "center" }}>
               <p style={{ color: "var(--muted)" }}>No venue listings yet. They&rsquo;ll appear here after payment is received.</p>
@@ -639,7 +728,7 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {venues.map((v) => (
+                {applySourceFilter(venues).map((v) => (
                   <tr key={v.id} style={{ borderBottom: "1px solid var(--border)" }}>
                     {rowCheckbox(v, v.business_name)}
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.9rem", fontWeight: 600, color: "var(--navy)" }}>
@@ -648,6 +737,11 @@ export default function AdminPage() {
                         {safeHttpUrl(v.website) ? <a href={safeHttpUrl(v.website)} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink-text)" }}>{String(v.website).replace(/^https?:\/\//, "").slice(0, 40)}</a> : "no website"}
                         {v.description ? ` · ${String(v.description).slice(0, 80)}` : ""}
                       </div>
+                      {sourceHost(v.source_url) && (
+                        <div style={{ fontSize: "0.72rem", fontWeight: 400, color: "var(--muted)", marginTop: "0.2rem" }}>
+                          source: <a href={safeHttpUrl(v.source_url) || undefined} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink-text)" }}>{sourceHost(v.source_url)}</a>
+                        </div>
+                      )}
                     </td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{v.city}, {v.state}</td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{v.tier}</td>
@@ -669,7 +763,8 @@ export default function AdminPage() {
       {/* EVENTS TAB */}
       {!loading && tab === "events" && (
         <div>
-          {renderBulkBar("event_listings", events)}
+          {renderSourcePicker(events)}
+          {renderBulkBar("event_listings", applySourceFilter(events))}
           {events.length === 0 ? (
             <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "3rem", textAlign: "center" }}>
               <p style={{ color: "var(--muted)" }}>No event listings yet. They&rsquo;ll appear here after payment is received.</p>
@@ -687,7 +782,7 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {events.map((ev) => (
+                {applySourceFilter(events).map((ev) => (
                   <tr key={ev.id} style={{ borderBottom: "1px solid var(--border)" }}>
                     {rowCheckbox(ev, ev.event_name)}
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.9rem", fontWeight: 600, color: "var(--navy)" }}>
@@ -696,6 +791,12 @@ export default function AdminPage() {
                         {safeHttpUrl(ev.registration_url) ? <a href={safeHttpUrl(ev.registration_url)} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink-text)" }}>{String(ev.registration_url).replace(/^https?:\/\//, "").slice(0, 40)}</a> : "no link"}
                         {ev.description ? ` · ${String(ev.description).slice(0, 80)}` : ""}
                       </div>
+                      <ParsedScheduleHint ev={ev} />
+                      {sourceHost(ev.source_url) && (
+                        <div style={{ fontSize: "0.72rem", fontWeight: 400, color: "var(--muted)", marginTop: "0.2rem" }}>
+                          source: <a href={safeHttpUrl(ev.source_url) || undefined} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink-text)" }}>{sourceHost(ev.source_url)}</a>
+                        </div>
+                      )}
                     </td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{ev.city}, {ev.state}</td>
                     <td style={{ padding: "0.8rem 1rem", fontSize: "0.85rem", color: "var(--muted)" }}>{ev.event_date ? formatDate(ev.event_date) : "-"}</td>

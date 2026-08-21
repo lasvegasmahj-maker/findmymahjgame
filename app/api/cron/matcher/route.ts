@@ -4,15 +4,13 @@ import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "@/lib/email";
 import { signActionToken } from "@/lib/game-token";
 import { escapeHtml } from "@/lib/sanitize";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 // The Bench matcher, MVP. Ships DARK: app_settings.matcher_enabled must be
 // 'true' AND every match still requires the founder's one-click approval
 // before anyone is emailed an invite. Dallas-first per the pilot ruling:
 // only the allowlisted metro pools. Daily cadence (Vercel Hobby allows daily).
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 const PILOT_CITIES = ["dallas", "plano", "frisco", "richardson", "addison", "fort worth", "mckinney", "allen", "irving", "garland", "carrollton"];
 const norm = (s: string | null) => (s || "").toLowerCase().replace(/[^a-z0-9 ]/g, "").trim();

@@ -16,7 +16,7 @@ const MOCK_PLAYER = {
 
 const SHARE_URL = `https://findmymahjgame.com/states/${MOCK_PLAYER.state_slug}`;
 
-const SHARE_TEXT = `I just listed myself on Find My Mahj Game — the free directory connecting mahjong players across all 50 states! Looking for a game in ${MOCK_PLAYER.city}, ${MOCK_PLAYER.state}? Find me there. 🀄`;
+const SHARE_TEXT = `I just listed myself on Find My Mahj Game, the free directory connecting mahjong players across all 50 states! Looking for a game in ${MOCK_PLAYER.city}, ${MOCK_PLAYER.state}? Find me there. 🀄`;
 
 export default function SharePreviewPage() {
   const [copied, setCopied] = useState(false);

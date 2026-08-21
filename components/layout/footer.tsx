@@ -4,9 +4,11 @@ export default function Footer() {
   return (
     <footer className="site-footer">
       <div className="footer-inner">
-        <div>
-          <div className="footer-logo">Find My <span>Mahj Game</span></div>
-          <p className="footer-tagline">Connecting mahjong players across all 50 states.</p>
+        <div className="footer-brand">
+          <Link href="/" aria-label="Find My Mahj Game home" className="footer-logo-link">
+            <img src="/find-my-mahj-game-logo.png" alt="Find My Mahj Game" className="footer-logo-img" />
+          </Link>
+          <p className="footer-tagline">Find local mahjong games, players, teachers, tournaments, and retreats.</p>
         </div>
         <div className="footer-cols">
           <div>
@@ -15,7 +17,6 @@ export default function Footer() {
             <Link href="/teachers">Teachers</Link>
             <Link href="/states">Browse States</Link>
             <Link href="/newsletter">Newsletter</Link>
-            <Link href="/help">Help</Link>
           </div>
           <div>
             <h4>Explore</h4>
@@ -23,7 +24,8 @@ export default function Footer() {
             <Link href="/about">About</Link>
             <Link href="/how-it-works">How It Works</Link>
             <Link href="/faq">FAQ</Link>
-            <Link href="/ambassadors">Become an Ambassador</Link>
+            <Link href="/join">For Teachers &amp; Organizers</Link>
+            <Link href="/founding-advisors">Founding Advisors</Link>
             <Link href="/contact">Contact</Link>
           </div>
           <div>
@@ -36,10 +38,9 @@ export default function Footer() {
             <Link href="/states/nevada">Nevada</Link>
           </div>
           <div>
-            <h4>Businesses</h4>
-            <Link href="/get-listed">Get Listed</Link>
-            <Link href="/advertise">Advertise</Link>
-            <Link href="/advertiser-terms">Advertiser Terms</Link>
+            <h4>Teachers &amp; Organizers</h4>
+            <Link href="/join">Join the Directory</Link>
+            <Link href="/get-listed">Submit a Profile</Link>
           </div>
           <div>
             <h4>Legal</h4>

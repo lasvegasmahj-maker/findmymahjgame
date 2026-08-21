@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createServerClient } from "@/lib/supabase-server";
 import { safeHttpUrl } from "@/lib/sanitize";
+import { schemaScriptProps } from "@/lib/schema";
 
 export const revalidate = 600;
 export const dynamicParams = true;
@@ -60,7 +61,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const title = `${name}: Mahjong Lessons in ${city}`.slice(0, 70);
   return {
     title,
-    description: `${name} teaches American Mahjong${t.city ? ` in ${t.city}${t.state ? `, ${t.state}` : ""}` : ""}. Book on their own site, and money never crosses the table.`,
+    description: `${name} teaches American Mahjong${t.city ? ` in ${t.city}${t.state ? `, ${t.state}` : ""}` : ""}. Book on their own site.`,
     alternates: { canonical: `https://findmymahjgame.com/teachers/${id}` },
   };
 }
@@ -96,7 +97,7 @@ export default async function TeacherProfilePage({ params }: { params: Promise<{
 
   return (
     <main style={{ maxWidth: 760, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumb, profile]) }} />
+      <script {...schemaScriptProps([breadcrumb, profile])} />
 
       <nav style={{ fontSize: "0.95rem", color: "var(--muted)", marginBottom: "0.8rem" }}>
         <Link href="/teachers" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Teachers</Link> &rsaquo; {name}
@@ -132,7 +133,7 @@ export default async function TeacherProfilePage({ params }: { params: Promise<{
       )}
 
       <div style={{ background: "var(--bg)", borderRadius: 16, padding: "1.3rem 1.5rem", marginBottom: "2.2rem" }}>
-        <p style={{ fontSize: "1.05rem", color: "var(--navy)", lineHeight: 1.6, margin: 0 }}>You book on their own site, and money never crosses the table. Find My Mahj Game never stands between you and your teacher.</p>
+        <p style={{ fontSize: "1.05rem", color: "var(--navy)", lineHeight: 1.6, margin: 0 }}>You book on their own site. Find My Mahj Game never stands between you and your teacher.</p>
       </div>
 
       <div style={{ textAlign: "center" }}>

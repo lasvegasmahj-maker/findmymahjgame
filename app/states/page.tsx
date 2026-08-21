@@ -58,7 +58,7 @@ export default async function StatesIndexPage() {
         <h1>Browse Mahjong Players by State</h1>
         <p>
           Find players, open play groups, instructors and events across all 50 states.
-          Free to search, free to list.
+          Free to search, free for players.
         </p>
       </div>
 

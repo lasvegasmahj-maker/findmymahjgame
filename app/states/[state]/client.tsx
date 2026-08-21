@@ -3,6 +3,8 @@
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import type { StateData } from "@/lib/states-data";
+import TeacherCard from "@/components/teacher-card";
+import FindGameFallback from "@/components/find-game-fallback";
 
 interface Player {
   id: string;
@@ -25,6 +27,7 @@ interface Event {
   description: string | null;
   event_date: string | null;
   price: string | null;
+  host: string | null;
   registration_url: string | null;
   tier: string;
 }
@@ -48,6 +51,8 @@ interface Props {
   players: Player[];
   events: Event[];
   venues: Venue[];
+  initialCity?: string;
+  initialTab?: string;
 }
 
 function SponsorLogo({ src, name }: { src: string | null; name: string }) {
@@ -111,15 +116,33 @@ interface ConnectForm {
   submitting: boolean;
 }
 
-export default function StatePageClient({ stateData, players, events, venues }: Props) {
-  const [activeTab, setActiveTab] = useState<"players" | "events" | "venues">("players");
-  const [selectedCity, setSelectedCity] = useState(`All of ${stateData.name}`);
-  const allCities = [`All of ${stateData.name}`, ...stateData.cities];
+export default function StatePageClient({ stateData, players, events, venues, initialCity, initialTab }: Props) {
+  const [activeTab, setActiveTab] = useState<"players" | "events" | "teachers">(initialTab === "events" || initialTab === "teachers" ? initialTab : "players");
+  const [selectedCities, setSelectedCities] = useState<string[]>(initialCity ? [initialCity] : []);
+  const [cityMenuOpen, setCityMenuOpen] = useState(false);
+  const cityMenuRef = useRef<HTMLDivElement | null>(null);
+  const [eventSort, setEventSort] = useState<"date" | "city">("date");
+  // Empty selection means "all of the state"; otherwise filter to the chosen cities.
+  const cityMatch = (c: string | null | undefined) =>
+    selectedCities.length === 0 || selectedCities.some((sc) => sc.toLowerCase() === String(c || "").trim().toLowerCase());
+  const toggleCity = (city: string) =>
+    setSelectedCities((prev) => (prev.some((c) => c.toLowerCase() === city.toLowerCase()) ? prev.filter((c) => c.toLowerCase() !== city.toLowerCase()) : [...prev, city]));
+  const cityLabel = selectedCities.length === 0
+    ? `All of ${stateData.name}`
+    : selectedCities.length === 1 ? selectedCities[0] : `${selectedCities.length} areas selected`;
   const [connectForm, setConnectForm] = useState<ConnectForm | null>(null);
   const connectDialogRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (connectForm) connectDialogRef.current?.querySelector<HTMLInputElement>("input")?.focus();
   }, [connectForm?.player.id]);
+  useEffect(() => {
+    if (!cityMenuOpen) return;
+    const onDoc = (e: MouseEvent) => {
+      if (cityMenuRef.current && !cityMenuRef.current.contains(e.target as Node)) setCityMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [cityMenuOpen]);
 
   useEffect(() => {
     if (!connectForm) return;
@@ -133,36 +156,18 @@ export default function StatePageClient({ stateData, players, events, venues }: 
     if (!connectForm) return;
     setConnectForm({ ...connectForm, submitting: true });
     try {
-  
-      const inqRes = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/inquiries`, {
-        method: "POST",
-        headers: {
-          "apikey": process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-          "Content-Type": "application/json",
-          "Prefer": "return=minimal",
-        },
-        body: JSON.stringify({
-          name: connectForm.name,
-          email: connectForm.email,
-          inquiry_type: "player_connect",
-          interest: `Connect with ${connectForm.player.name} in ${connectForm.player.city}, ${connectForm.player.state}`,
-          message: connectForm.message,
-          status: "new",
-        }),
-      });
-      if (!inqRes.ok) throw new Error("insert failed");
-
-      await fetch("/api/notify", {
+      const res = await fetch("/api/connect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: "connect",
-          subject: `New Connect Request: ${connectForm.name} wants to play with ${connectForm.player.name}`,
-          body: `From: ${connectForm.name} (${connectForm.email})\nPlayer: ${connectForm.player.name} (${connectForm.player.city}, ${connectForm.player.state})\nSkill Level: ${connectForm.player.skill_level}\n\nMessage:\n${connectForm.message || "(no message)"}`,
+          player_id: connectForm.player.id,
+          name: connectForm.name,
+          email: connectForm.email,
+          message: connectForm.message,
         }),
       });
-  
+      if (!res.ok) throw new Error("send failed");
+
       setConnectForm({ ...connectForm, submitting: false, submitted: true });
     } catch {
       window.alert("We could not send your request. Please check your connection and try again.");
@@ -170,18 +175,66 @@ export default function StatePageClient({ stateData, players, events, venues }: 
     }
   }
 
-  // Filter by city if selected
-  const filteredPlayers = selectedCity === `All of ${stateData.name}`
-    ? players
-    : players.filter(p => p.city.toLowerCase() === selectedCity.toLowerCase());
+  // Filter by the selected cities (empty selection = all of the state).
+  const filteredPlayers = players.filter(p => cityMatch(p.city));
+  const filteredEvents = events.filter(e => cityMatch(e.city));
 
-  const filteredEvents = selectedCity === `All of ${stateData.name}`
-    ? events
-    : events.filter(e => e.city.toLowerCase() === selectedCity.toLowerCase());
+  const byEventDate = (a: typeof events[number], b: typeof events[number]) => {
+    const da = a.event_date ? new Date(a.event_date).getTime() : Infinity;
+    const db = b.event_date ? new Date(b.event_date).getTime() : Infinity;
+    return da - db;
+  };
+  const eventsByDate = [...filteredEvents].sort(byEventDate);
+  const eventsByCity = Object.entries(
+    filteredEvents.reduce<Record<string, typeof filteredEvents>>((acc, e) => {
+      const c = (e.city || "").trim() || "Other";
+      (acc[c] ||= []).push(e);
+      return acc;
+    }, {})
+  )
+    .map(([city, evs]) => [city, [...evs].sort(byEventDate)] as [string, typeof filteredEvents])
+    .sort((a, b) => a[0].localeCompare(b[0]));
 
-  const filteredVenues = selectedCity === `All of ${stateData.name}`
-    ? venues
-    : venues.filter(v => v.city.toLowerCase() === selectedCity.toLowerCase());
+  const renderEventCard = (event: typeof events[number]) => (
+    <div key={event.id} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.5rem 2rem" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
+        <div>
+          <EventTypeBadge type={event.event_type} />
+          <h3 style={{ fontWeight: 700, fontSize: "1.05rem", color: "var(--navy)", margin: "0.3rem 0" }}>{event.event_name}</h3>
+          <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
+            {formatEventDate(event.event_date)}
+            {event.venue && <> &nbsp;&middot;&nbsp;{event.venue}, {event.city}</>}
+          </div>
+          {event.host && <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginTop: "0.3rem" }}>Hosted by {event.host}</div>}
+          {event.description && <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginTop: "0.4rem", lineHeight: 1.5 }}>{event.description}</div>}
+        </div>
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
+          {event.price && <div style={{ fontSize: "0.88rem", fontWeight: 700, color: event.price.toLowerCase() === "free" ? "var(--green)" : "var(--navy)", marginBottom: "0.5rem" }}>{event.price}</div>}
+          {event.registration_url ? (
+            <a href={event.registration_url} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", background: "var(--navy)", color: "white", padding: "0.5rem 1.2rem", borderRadius: 6, fontSize: "0.78rem", fontWeight: 700, textDecoration: "none" }}>Register &rarr;</a>
+          ) : (
+            <Link href="/contact" style={{ display: "inline-block", background: "var(--navy)", color: "white", padding: "0.5rem 1.2rem", borderRadius: 6, fontSize: "0.78rem", fontWeight: 700, textDecoration: "none" }}>Details &rarr;</Link>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Instructors/teachers are stored in venue_listings; surface them on the Teachers tab.
+  const TEACHER_TYPE = /instructor|teacher|lesson|studio|school|class/i;
+  const teacherVenues = venues.filter(v => TEACHER_TYPE.test(`${v.venue_type || ""} ${v.description || ""}`));
+  const filteredTeachers = teacherVenues.filter(v => cityMatch(v.city));
+
+  // City filter options: curated state cities plus any city that actually has a
+  // listing, plus a city carried in from search, deduped case-insensitively.
+  const cityOptions: string[] = (() => {
+    const seen = new Set<string>(); const out: string[] = [];
+    for (const c of [...stateData.cities, ...players.map(p => p.city), ...events.map(e => e.city), ...teacherVenues.map(v => v.city), ...(initialCity ? [initialCity] : [])]) {
+      const t = (c || "").trim(); if (!t) continue;
+      const k = t.toLowerCase(); if (seen.has(k)) continue; seen.add(k); out.push(t);
+    }
+    return out.sort((a, b) => a.localeCompare(b));
+  })();
 
   return (
     <>
@@ -196,12 +249,12 @@ export default function StatePageClient({ stateData, players, events, venues }: 
         <h1 style={{ fontSize: "clamp(2.2rem, 5vw, 3.5rem)", marginBottom: "0.8rem" }}>Mahjong in <span style={{ color: "var(--pink-text)" }}>{stateData.name}</span>
         </h1>
         <p style={{ maxWidth: 520 }}>{stateData.desc}</p>
-        {players.length + events.length + venues.length > 0 ? (
+        {players.length + events.length + teacherVenues.length > 0 ? (
           <div style={{ display: "flex", gap: "3rem", justifyContent: "center", marginTop: "2.5rem", flexWrap: "wrap" }}>
             {[
               { num: players.length, label: "Players Listed" },
               { num: events.length, label: "Events" },
-              { num: venues.length, label: "Venues" },
+              { num: teacherVenues.length, label: "Teachers" },
             ].map((s) => (
               <div key={s.label} style={{ textAlign: "center" }}>
                 <div style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2rem", color: "white", fontWeight: 900 }}>{s.num}</div>
@@ -211,8 +264,13 @@ export default function StatePageClient({ stateData, players, events, venues }: 
           </div>
         ) : (
           <div style={{ marginTop: "2.5rem" }}>
-            <p style={{ color: "rgba(255,255,255,0.75)", maxWidth: 480, margin: "0 auto 1.5rem" }}>Be one of the first players listed in {stateData.name}. It is free to join, and we will help you find a game.</p>
-            <Link href="/list-my-game" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>Create My Free Listing &rarr;</Link>
+            <p style={{ color: "white", fontWeight: 800, fontSize: "1.2rem", margin: "0 auto 0.5rem" }}>Help build mahjong in {stateData.name}</p>
+            <p style={{ color: "rgba(255,255,255,0.75)", maxWidth: 520, margin: "0 auto 1.5rem" }}>We don&rsquo;t have any listings here yet. Are you a teacher, organizer, or player in {stateData.name}? Be one of the first to join the directory.</p>
+            <div style={{ display: "flex", gap: "0.8rem", justifyContent: "center", flexWrap: "wrap", marginBottom: "1rem" }}>
+              <Link href="/get-listed" className="btn-cta-primary" style={{ padding: "0.9rem 2.2rem" }}>Submit a Listing &rarr;</Link>
+              <Link href="/list-my-game" style={{ display: "inline-flex", alignItems: "center", padding: "0.9rem 2.2rem", borderRadius: 10, background: "transparent", color: "white", border: "2px solid rgba(255,255,255,0.5)", fontWeight: 700, textDecoration: "none" }}>Create a free player listing</Link>
+            </div>
+            <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.9rem", margin: 0 }}>Know someone who teaches or hosts mahjong in {stateData.name}? <a href={`mailto:?subject=${encodeURIComponent("Join the Find My Mahj Game directory")}&body=${encodeURIComponent(`I found this national mahjong directory and thought you should list your classes and events: https://findmymahjgame.com/get-listed`)}`} style={{ color: "white", fontWeight: 700 }}>Invite them &rarr;</a></p>
           </div>
         )}
       </section>
@@ -222,12 +280,33 @@ export default function StatePageClient({ stateData, players, events, venues }: 
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "flex-end", gap: "1.5rem", flexWrap: "wrap", justifyContent: "center" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
             <div style={{ fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)" }}>City / Town</div>
-            <select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)} style={{ background: "white", border: "none", borderRadius: 6, padding: "0.7rem 1.2rem", fontFamily: "'DM Sans', sans-serif", fontSize: "0.9rem", color: "var(--navy)", outline: "none", cursor: "pointer", minWidth: 200 }}>
-              {allCities.map((city) => (<option key={city} value={city}>{city}</option>))}
-            </select>
+            <div ref={cityMenuRef} style={{ position: "relative", minWidth: 220 }}>
+              <button type="button" onClick={() => setCityMenuOpen((o) => !o)} aria-haspopup="true" aria-expanded={cityMenuOpen ? "true" : "false"} style={{ width: "100%", background: "white", border: "none", borderRadius: 6, padding: "0.7rem 1.2rem", fontFamily: "'DM Sans', sans-serif", fontSize: "0.9rem", color: "var(--navy)", outline: "none", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.6rem" }}>
+                <span>{cityLabel}</span>
+                <span aria-hidden="true" style={{ color: "var(--muted)" }}>&#9662;</span>
+              </button>
+              {cityMenuOpen && (
+                <div role="group" aria-label={`Filter by city in ${stateData.name}`} style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, zIndex: 70, background: "white", border: "1px solid var(--border)", borderRadius: 10, boxShadow: "0 12px 32px rgba(26,31,94,0.18)", padding: "0.4rem", maxHeight: 280, overflowY: "auto" }}>
+                  <button type="button" onClick={() => setSelectedCities([])} style={{ display: "flex", alignItems: "center", gap: "0.6rem", width: "100%", textAlign: "left", padding: "0.55rem 0.7rem", border: "none", borderRadius: 8, background: "transparent", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: "0.9rem", color: "var(--navy)", fontWeight: selectedCities.length === 0 ? 800 : 500 }}>
+                    <span style={{ width: 18, height: 18, borderRadius: 4, border: "2px solid var(--border)", background: selectedCities.length === 0 ? "var(--pink)" : "white", borderColor: selectedCities.length === 0 ? "var(--pink)" : "var(--border)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "0.7rem", flexShrink: 0 }}>{selectedCities.length === 0 ? "✓" : ""}</span>
+                    All of {stateData.name}
+                  </button>
+                  {cityOptions.map((city) => {
+                    const checked = selectedCities.some((s) => s.toLowerCase() === city.toLowerCase());
+                    return (
+                      <label key={city} style={{ display: "flex", alignItems: "center", gap: "0.6rem", width: "100%", padding: "0.55rem 0.7rem", borderRadius: 8, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: "0.9rem", color: "var(--navy)" }}>
+                        <input type="checkbox" checked={checked} onChange={() => toggleCity(city)} style={{ position: "absolute", opacity: 0, width: 1, height: 1 }} />
+                        <span style={{ width: 18, height: 18, borderRadius: 4, border: "2px solid", borderColor: checked ? "var(--pink)" : "var(--border)", background: checked ? "var(--pink)" : "white", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "0.7rem", flexShrink: 0 }}>{checked ? "✓" : ""}</span>
+                        {city}
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-        <p style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.82rem", color: "rgba(255,255,255,0.55)" }}>Showing all players, events &amp; venues across <strong style={{ color: "white" }}>{stateData.name}</strong>
+        <p style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.82rem", color: "rgba(255,255,255,0.55)" }}>{selectedCities.length === 0 ? (<>Showing players, events &amp; teachers across <strong style={{ color: "white" }}>{stateData.name}</strong></>) : (<>Showing players, events &amp; teachers in <strong style={{ color: "white" }}>{selectedCities.join(", ")}</strong></>)}
         </p>
       </div>
 
@@ -238,7 +317,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
           {([
             { id: "players" as const, label: "Players", count: filteredPlayers.length },
             { id: "events" as const, label: "Events", count: filteredEvents.length },
-            { id: "venues" as const, label: "Venues", count: filteredVenues.length },
+            { id: "teachers" as const, label: "Teachers", count: filteredTeachers.length },
           ]).map((tab) => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)} aria-pressed={activeTab === tab.id ? "true" : "false"} style={{ padding: "1rem 1.4rem", flexShrink: 0, whiteSpace: "nowrap", fontSize: "1.05rem", fontWeight: activeTab === tab.id ? 800 : 600, cursor: "pointer", background: "transparent", border: "none", borderBottom: "3px solid", borderBottomColor: activeTab === tab.id ? "var(--pink)" : "transparent", marginBottom: -2, color: activeTab === tab.id ? "var(--navy)" : "var(--muted)", fontFamily: "'DM Sans', sans-serif", transition: "all 0.2s", display: "flex", alignItems: "center", gap: "0.4rem" }}>
               {tab.label}
@@ -254,7 +333,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             <h2 className="section-title" style={{ marginBottom: "0.5rem" }}>Players in {stateData.name}</h2>
             <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "0.6rem", lineHeight: 1.7 }}>Connect with mahjong players across {stateData.name} looking for their perfect weekly game.
             </p>
-            <p style={{ fontSize: "0.9rem", color: "var(--muted)", marginBottom: "2rem", lineHeight: 1.7 }}>Always free for players. Money never crosses the table. We pass your message along privately, and your email is never shown publicly or sold.
+            <p style={{ fontSize: "0.9rem", color: "var(--muted)", marginBottom: "2rem", lineHeight: 1.7 }}>Always free for players. We pass your message along privately, and your email is never shown publicly or sold.
             </p>
 
             {filteredPlayers.length > 0 ? (
@@ -290,6 +369,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                 </p>
                 <Link href="/list-my-game" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>Create My Free Listing &rarr;
                 </Link>
+                <FindGameFallback city={selectedCities[0] || ""} state={stateData.name} />
               </div>
             )}
 
@@ -313,9 +393,9 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             )}
 
             <div style={{ background: "var(--navy)", borderRadius: 16, padding: "2.5rem", textAlign: "center" }}>
-              <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.3rem", color: "white", marginBottom: "0.5rem" }}>Want to be listed here? It&rsquo;s free!
+              <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.3rem", color: "white", marginBottom: "0.5rem" }}>Can&rsquo;t find a game in {stateData.name}?
               </h3>
-              <p style={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.55)", marginBottom: "1.5rem" }}>Add your free listing and let local players in {stateData.name} find you.
+              <p style={{ fontSize: "0.9rem", color: "rgba(255,255,255,0.55)", marginBottom: "1.5rem" }}>Add your free listing and let local players find you. It&rsquo;s always free.
               </p>
               <Link href="/list-my-game" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>Create My Free Listing &rarr;
               </Link>
@@ -332,101 +412,71 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             </p>
 
             {filteredEvents.length > 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "2rem" }}>
-                {filteredEvents.map((event) => (
-                  <div key={event.id} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "1.5rem 2rem" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
-                      <div>
-                        <EventTypeBadge type={event.event_type} />
-                        <h3 style={{ fontWeight: 700, fontSize: "1.05rem", color: "var(--navy)", margin: "0.3rem 0" }}>{event.event_name}</h3>
-                        <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
-                           {formatEventDate(event.event_date)}
-                          {event.venue && <> &nbsp;&middot;&nbsp;{event.venue}, {event.city}</>}
-                        </div>
-                        {event.description && <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginTop: "0.4rem", lineHeight: 1.5 }}>{event.description}</div>}
-                      </div>
-                      <div style={{ textAlign: "right", flexShrink: 0 }}>
-                        <div style={{ fontSize: "0.88rem", fontWeight: 700, color: event.price === "Free" ? "var(--green)" : "var(--navy)", marginBottom: "0.5rem" }}>{event.price || "Free"}</div>
-                        {event.registration_url ? (
-                          <a href={event.registration_url} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", background: "var(--navy)", color: "white", padding: "0.5rem 1.2rem", borderRadius: 6, fontSize: "0.78rem", fontWeight: 700, textDecoration: "none" }}>Register &rarr;</a>
-                        ) : (
-                          <Link href="/contact" style={{ display: "inline-block", background: "var(--navy)", color: "white", padding: "0.5rem 1.2rem", borderRadius: 6, fontSize: "0.78rem", fontWeight: 700, textDecoration: "none" }}>Details &rarr;</Link>
-                        )}
-                      </div>
-                    </div>
+              <>
+                {eventsByCity.length > 1 && (
+                  <div style={{ display: "flex", gap: "0.9rem", alignItems: "center", marginBottom: "1.4rem" }}>
+                    <span style={{ fontSize: "0.9rem", color: "var(--muted)", fontWeight: 700 }}>Sort:</span>
+                    {(["date", "city"] as const).map((k) => (
+                      <button key={k} type="button" onClick={() => setEventSort(k)} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: "0.95rem", fontWeight: 700, color: eventSort === k ? "var(--pink-text)" : "var(--muted)", borderBottom: eventSort === k ? "2px solid var(--pink)" : "2px solid transparent", paddingBottom: "0.1rem" }}>{k === "date" ? "By date" : "By city"}</button>
+                    ))}
                   </div>
-                ))}
-              </div>
+                )}
+                {eventSort === "city" && eventsByCity.length > 1 ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "1.8rem", marginBottom: "2rem" }}>
+                    {eventsByCity.map(([city, evs]) => (
+                      <div key={city}>
+                        <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.15rem", color: "var(--navy)", margin: "0 0 0.8rem", paddingBottom: "0.4rem", borderBottom: "2px solid var(--border)" }}>{city}</h3>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                          {evs.map(renderEventCard)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "2rem" }}>
+                    {eventsByDate.map(renderEventCard)}
+                  </div>
+                )}
+              </>
             ) : (
               <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center", marginBottom: "2rem" }}>
                 <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>No events listed yet</h3>
-                <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Host an open play, tournament, or mahjong night? List it free and reach players searching for games.
+                <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Host an open play, tournament, or mahjong night? List it and reach players searching for games.
                 </p>
-                <Link href="/advertise" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>List Your Event &rarr;</Link>
+                <Link href="/get-listed" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>List Your Event &rarr;</Link>
+                <FindGameFallback city={selectedCities[0] || ""} state={stateData.name} />
               </div>
             )}
 
           </div>
         )}
 
-        {/* ══════════ VENUES TAB ══════════ */}
-        {activeTab === "venues" && (
+        {/* ══════════ TEACHERS TAB ══════════ */}
+        {activeTab === "teachers" && (
           <div>
-            <p className="section-label">Where to Play</p>
-            <h2 className="section-title" style={{ marginBottom: "0.5rem" }}>Venues in {stateData.name}</h2>
-            <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", lineHeight: 1.7 }}>Restaurants, studios, and community spaces in {stateData.name} that welcome mahjong players.
+            <p className="section-label">Learn to Play</p>
+            <h2 className="section-title" style={{ marginBottom: "0.5rem" }}>Teachers in {stateData.name}</h2>
+            <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", lineHeight: 1.7 }}>American Mahjong instructors offering lessons in {stateData.name}. You contact them directly.
             </p>
 
-            {filteredVenues.length > 0 ? (
-              <div className="dir-grid" style={{ marginBottom: "2rem" }}>
-                {filteredVenues.map((venue) => (
-                  <div key={venue.id} className="venue-card">
-                    {venue.logo_url
-                      ? (
-                        <div style={{ position: "relative", width: "100%", height: 80 }}>
-                          <img
-                            src={venue.logo_url}
-                            alt={venue.business_name}
-                            loading="lazy"
-                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                          />
-                        </div>
-                      )
-                      : <div className="venue-stripe" style={{ background: "var(--pink)" }} />
-                    }
-                    <div className="venue-body">
-                      <div className="venue-type" style={{ color: "var(--pink-text)" }}>{venue.venue_type} &middot; {venue.city}</div>
-                      <h3 className="venue-name">{venue.business_name}</h3>
-                      <p className="venue-meta">{venue.city}, {venue.state}</p>
-                      {venue.description && <p className="venue-desc">{venue.description}</p>}
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem", alignItems: "center", marginBottom: "0.9rem" }}>
-                        {venue.display_email && (
-                          <a href={`mailto:${venue.display_email}`} style={{ fontSize: "0.78rem", color: "var(--pink-text)", textDecoration: "none", fontWeight: 600 }}>{venue.display_email}</a>
-                        )}
-                        {venue.instagram && (
-                          <a href={`https://instagram.com/${venue.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.78rem", color: "var(--pink-text)", textDecoration: "none", fontWeight: 600 }}>{venue.instagram.startsWith("@") ? venue.instagram : `@${venue.instagram}`}</a>
-                        )}
-                      </div>
-                      {venue.website ? (
-                        <a href={venue.website} target="_blank" rel="noopener noreferrer" className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Visit Website &rarr;</a>
-                      ) : venue.instagram ? (
-                        <a href={`https://instagram.com/${venue.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer" className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Visit Instagram &rarr;</a>
-                      ) : (
-                        <Link href={`/contact`} className="venue-btn" style={{ background: "var(--pink)", color: "white" }}>Get Info &rarr;</Link>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+            {filteredTeachers.length > 0 ? (
+              <>
+                <div className="dir-grid" style={{ marginBottom: "2rem" }}>
+                  {filteredTeachers.map((venue) => <TeacherCard key={venue.id} t={venue} />)}
+                </div>
+                <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
+                  <p style={{ fontSize: "0.95rem", color: "var(--muted)", marginBottom: "0.8rem" }}>Teach mahjong in {stateData.name}?</p>
+                  <Link href="/get-listed?type=Mahjong%20Instructor" style={{ display: "inline-flex", minHeight: 52, alignItems: "center", justifyContent: "center", padding: "0 1.6rem", borderRadius: 14, background: "var(--navy)", color: "white", fontWeight: 800, fontSize: "1.05rem", textDecoration: "none" }}>Want to add your lessons? &rarr;</Link>
+                </div>
+              </>
             ) : (
               <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 20, padding: "4rem 2rem", textAlign: "center", marginBottom: "2rem" }}>
-                <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>No venues listed yet</h3>
-                <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Own a mahjong-friendly venue? Get discovered by players searching for places to play.
+                <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.8rem" }}>No teachers listed yet</h3>
+                <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Teach American Mahjong in {stateData.name}? Get in front of players looking to learn.
                 </p>
-                <Link href="/advertise" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>List Your Venue &rarr;</Link>
+                <Link href="/get-listed?type=Mahjong%20Instructor" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>List your lessons &rarr;</Link>
               </div>
             )}
-
           </div>
         )}
 
@@ -460,7 +510,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
             {connectForm.submitted ? (
               <div style={{ textAlign: "center", padding: "1rem 0" }}>
                 <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", marginBottom: "0.5rem" }}>Request Sent!</h3>
-                <p style={{ color: "var(--muted)", fontSize: "0.95rem", lineHeight: 1.7 }}>Your connection request to <strong>{connectForm.player.name}</strong> has been received. We&rsquo;ll pass your message along and you&rsquo;ll hear back via email.
+                <p style={{ color: "var(--muted)", fontSize: "0.95rem", lineHeight: 1.7 }}>Your request was sent straight to <strong>{connectForm.player.name}</strong>. If it&rsquo;s a good match, they&rsquo;ll reply right to your email.
                 </p>
                 <button onClick={() => setConnectForm(null)} style={{ marginTop: "1.5rem", background: "var(--pink)", color: "white", border: "none", borderRadius: 8, padding: "0.8rem 2rem", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>Done</button>
               </div>
@@ -510,7 +560,7 @@ export default function StatePageClient({ stateData, players, events, venues }: 
                   >
                     {connectForm.submitting ? "Sending..." : "Send Connection Request →"}
                   </button>
-                  <p style={{ fontSize: "0.75rem", color: "var(--muted)", textAlign: "center", marginTop: "0.8rem" }}>Free for players. Your email is never shown publicly or sold. We&rsquo;ll pass your request along to {connectForm.player.name.split(" ")[0]}.
+                  <p style={{ fontSize: "0.75rem", color: "var(--muted)", textAlign: "center", marginTop: "0.8rem" }}>Free for players. Your email is never shown publicly or sold. Your request goes straight to {connectForm.player.name.split(" ")[0]}, who can reply to you directly.
                   </p>
                 </form>
               </>

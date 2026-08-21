@@ -13,22 +13,27 @@ export const metadata: Metadata = {
   },
 };
 
-const FAQ_ITEMS = [
+type FaqItem = { q: string; a: string; links?: { href: string; label: string }[] };
+
+const FAQ_ITEMS: FaqItem[] = [
   {
     q: "Is Find My Mahj Game free to use?",
-    a: "Yes. Searching for mahjong players, groups, and events is completely free, and so is creating a player listing. Money never crosses the table between players. We make money only from optional business and venue advertising packages, never from you.",
+    a: "Yes. Searching for mahjong players, groups, and events is completely free, and so is creating a player listing. Players never pay to find a game.",
+    links: [{ href: "/list-my-game", label: "Create a free listing" }],
   },
   {
     q: "What kind of mahjong is played here?",
-    a: "The directory supports American mahjong (NMJL rules), Chinese mahjong, Japanese riichi, and any other style. Players indicate their preferred format in their listings so you can find the right match.",
+    a: "Right now Find My Mahj Game is focused on American mahjong, the most popular version in the United States, played with the National Mah Jongg League (NMJL) card. That is the game our community plays, so every player, teacher, and event you find here is American mahjong.",
   },
   {
     q: "How do I find players near me?",
-    a: "Click your state on the map on the homepage, or use the city search box. You can also go directly to /states and browse by region. Every state has a dedicated page listing players, groups, and events.",
+    a: "Click your state on the map on the homepage, or use the city and ZIP search box. Every state has a dedicated page listing players, groups, and events near you.",
+    links: [{ href: "/states", label: "Browse all 50 states" }],
   },
   {
     q: "How do I create a free player listing?",
-    a: "Go to /list-my-game and fill out the short form. We review and approve listings within 1-2 business days. You can include your city, skill level, availability, and a short bio.",
+    a: "Fill out the short form with your city, skill level, availability, and a brief bio. We review and approve listings within 1-2 business days.",
+    links: [{ href: "/list-my-game", label: "Create my free listing" }],
   },
   {
     q: "Is my information private and safe?",
@@ -36,47 +41,65 @@ const FAQ_ITEMS = [
   },
   {
     q: "Can I list my mahjong group or club?",
-    a: "Yes. Groups and open play hosts can create a free listing at /list-my-game. Add your city and describe your group and how to join in the bio, or email hello@findmymahjgame.com and we will set it up for you.",
+    a: "Yes. Groups and open play hosts can create a free listing. Add your city and describe your group and how to join, or email us and we will set it up for you.",
+    links: [
+      { href: "/list-my-game", label: "List your group" },
+      { href: "mailto:hello@findmymahjgame.com", label: "Email us" },
+    ],
   },
   {
     q: "How do I list a mahjong event or tournament?",
-    a: "Events and tournaments are listed through the advertise page at /advertise, or by contacting us at hello@findmymahjgame.com. Event listings are included in our paid advertising packages.",
+    a: "Submit your event or tournament through our listing form, or email us and we will add it for you. It shows on your state page and on the events page so players can find it.",
+    links: [{ href: "/get-listed", label: "Submit an event" }],
   },
   {
     q: "I am a mahjong instructor. Can I get listed?",
-    a: "Yes. Instructors can create a free player listing at /list-my-game and indicate that they offer lessons. Paid instructor spotlight placements are available through /advertise.",
+    a: "Yes. Create your teacher listing, and you can join the directory for a verified badge and more visibility. Players can request lessons from you directly.",
+    links: [
+      { href: "/get-listed", label: "Get listed" },
+      { href: "/join", label: "Join the directory" },
+    ],
   },
   {
     q: "How do I update or remove my listing?",
-    a: "Email hello@findmymahjgame.com with your name and the listing you'd like to update or remove. We handle all changes manually right now.",
+    a: "Email us with your name and the listing you would like to update or remove. We handle all changes manually right now.",
+    links: [{ href: "mailto:hello@findmymahjgame.com", label: "Email us" }],
   },
   {
     q: "Who runs Find My Mahj Game?",
     a: "Find My Mahj Game is an independent national platform for helping players find games, teachers, and community. Our founder also owns Las Vegas Mahjong, a teaching business in Las Vegas. We are open about that. In Nevada we focus on games, open plays, and community rather than competing teacher listings; everywhere else in the country we welcome and promote every teacher equally. Our goal is simple: help more people find a seat at a table near them.",
+    links: [{ href: "/about", label: "More about us" }],
   },
   {
     q: "Why is my state page empty?",
-    a: "We are building the directory from scratch. If your state has no listings yet, you can be the first! Create a free listing at /list-my-game and invite your local group to do the same.",
+    a: "We are building the directory from scratch. If your state has no listings yet, you can be the first. Create a free listing and invite your local group to do the same.",
+    links: [{ href: "/list-my-game", label: "Be the first to list" }],
   },
   {
     q: "I play on cruises. Can I find fellow passengers?",
-    a: "Yes. Create a listing at /list-my-game and mention your upcoming cruise, ship, and dates in your description. Other players browsing listings can reach out before you sail.",
+    a: "Yes. Post your cruise, ship, and sailing dates and connect with other American mahjong players on the same trip. You can also browse organized mahjong cruises and retreats you can travel to.",
+    links: [
+      { href: "/cruise", label: "Post your cruise" },
+      { href: "/travel", label: "Traveling mahjong experiences" },
+    ],
   },
   {
     q: "Do you cover all 50 states?",
-    a: "Yes. Every state has a dedicated page. Browse them all at /states. Coverage grows as players create free listings.",
-  },
-  {
-    q: "How do I advertise my business to mahjong players?",
-    a: "Visit /advertise for sponsorship and advertising options. We offer banner placements, sponsored state pages, and event listings reaching mahjong players nationwide.",
+    a: "Yes. Every state has a dedicated page, and coverage grows as players create free listings.",
+    links: [{ href: "/states", label: "Browse all 50 states" }],
   },
   {
     q: "Is this connected to the Las Vegas Mahjong site?",
-    a: "Find My Mahj Game is a national directory. It is a sister site to Las Vegas Mahjong (lasvegasmahj.com), which focuses specifically on mahjong in the Las Vegas area.",
+    a: "Find My Mahj Game is a national directory. It is a sister site to Las Vegas Mahjong, which focuses specifically on mahjong in the Las Vegas area.",
+    links: [{ href: "https://lasvegasmahj.com", label: "Visit Las Vegas Mahjong" }],
   },
   {
     q: "How do I contact you?",
-    a: "Email us at hello@findmymahjgame.com or visit /contact. We read every message.",
+    a: "Email us at hello@findmymahjgame.com or use our contact form. We read every message.",
+    links: [
+      { href: "/contact", label: "Contact us" },
+      { href: "mailto:hello@findmymahjgame.com", label: "Email us" },
+    ],
   },
 ];
 
@@ -89,6 +112,8 @@ const faqSchema = {
     acceptedAnswer: { "@type": "Answer", text: a },
   })),
 };
+
+const linkStyle: React.CSSProperties = { color: "var(--pink-text)", fontWeight: 700, fontSize: "0.9rem", textDecoration: "none" };
 
 export default function FAQPage() {
   return (
@@ -106,7 +131,7 @@ export default function FAQPage() {
 
       <div className="page-body" style={{ maxWidth: 740 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-          {FAQ_ITEMS.map(({ q, a }, i) => (
+          {FAQ_ITEMS.map(({ q, a, links }, i) => (
             <div
               key={i}
               style={{
@@ -128,6 +153,22 @@ export default function FAQPage() {
                 {q}
               </h2>
               <p style={{ color: "var(--muted)", lineHeight: 1.65, fontSize: "0.93rem", margin: 0 }}>{a}</p>
+              {links && links.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem 1.2rem", marginTop: "0.9rem" }}>
+                  {links.map((l) =>
+                    l.href.startsWith("/") ? (
+                      <Link key={l.href} href={l.href} style={linkStyle}>{l.label} &rarr;</Link>
+                    ) : (
+                      <a
+                        key={l.href}
+                        href={l.href}
+                        style={linkStyle}
+                        {...(l.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                      >{l.label} &rarr;</a>
+                    )
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>

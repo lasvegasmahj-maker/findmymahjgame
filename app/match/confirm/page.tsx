@@ -2,14 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import { verifyActionToken } from "@/lib/game-token";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 export const metadata: Metadata = { title: "Confirm match", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 // Mail scanners prefetch GET links, so the emailed approve/skip links land
 // here and the decision happens only on the founder's form POST below.

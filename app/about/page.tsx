@@ -57,6 +57,17 @@ export default function AboutPage() {
           ))}
         </div>
 
+        <div className="bg-bg border border-border rounded-2xl p-6 my-8">
+          <h3 className="font-heading text-[1.2rem] text-navy mb-3">Why you can trust Find My Mahj Game</h3>
+          <ul className="text-muted leading-relaxed pl-5 list-disc !mb-0">
+            <li>Run by Shauna, a certified Oh My Mahjong instructor and the founder of{" "}
+              <a href="https://lasvegasmahj.com" target="_blank" rel="noopener noreferrer">Las Vegas Mahjong</a>, a real teaching business.</li>
+            <li>Free for players, always. We never charge you to find a game or to list yourself.</li>
+            <li>Your email is never shown publicly or sold. Connection requests are passed along privately, so you decide who to reply to.</li>
+            <li>Every listing is reviewed by a real person before it goes live.</li>
+          </ul>
+        </div>
+
         <h2>Our Story</h2>
         <p>
           Find My Mahj Game was created by Shauna, a certified Oh My Mahjong (OMM) instructor and
@@ -83,7 +94,7 @@ export default function AboutPage() {
         <p>
           Find My Mahj Game was built to solve both problems. It is the first and only platform
           built exclusively for the American mahjong community connecting players with local games,
-          groups, events, venues, retreats and tournaments across all 50 states. Whether you just
+          groups, events, teachers, retreats and tournaments across all 50 states. Whether you just
           learned to play or you just moved to a new city, you should never have to wonder where
           your next game is.
         </p>
@@ -96,7 +107,7 @@ export default function AboutPage() {
           <Link href="/list-my-game">Create your free player listing</Link> and let players in your
           area find you.
         </p>
-        <h3>Venues &amp; Studios</h3>
+        <h3>Studios &amp; Hosts</h3>
         <p>
           Get discovered by players actively searching for places to play. Our &ldquo;Where to
           Play&rdquo; directory puts your restaurant, studio, JCC or community space in front of the
@@ -109,16 +120,10 @@ export default function AboutPage() {
           listing. <Link href="/get-listed">List your event</Link> and we&rsquo;ll promote it on
           your state page.
         </p>
-        <h3>Brands &amp; Retailers</h3>
-        <p>
-          Advertise directly to an engaged niche of mahjong enthusiasts actively spending on sets,
-          accessories and experiences.
-        </p>
-
         <div className="highlight-box">
           <p>
-            Want to advertise or partner with us? See our{" "}
-            <Link href="/advertise">Advertise page</Link> or{" "}
+            Want to list your venue, event, or business? See{" "}
+            <Link href="/get-listed">how to get listed</Link> or{" "}
             <Link href="/how-it-works">learn how it works</Link>. Questions? Email{" "}
             <a href="mailto:hello@findmymahjgame.com">hello@findmymahjgame.com</a>.
           </p>

@@ -83,9 +83,9 @@ export default async function VenuesPage({ searchParams }: { searchParams: Promi
       ) : (
         <div style={{ background: "var(--bg)", borderRadius: 18, padding: "2.4rem 1.6rem", textAlign: "center", maxWidth: 560, margin: "0 auto" }}>
           <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.6rem" }}>No mahjong-friendly places listed{near ? ` in ${near}` : ""} yet.</div>
-          <p style={{ fontSize: "1.1rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "1.6rem" }}>Know a place where mahjong is played, or run one? List it free, or get the weekly note as places are added.</p>
+          <p style={{ fontSize: "1.1rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "1.6rem" }}>Know a place where mahjong is played, or run one? List it here, or get the weekly note as places are added.</p>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", maxWidth: 320, margin: "0 auto" }}>
-            <Link href="/get-listed" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>List a venue free</Link>
+            <Link href="/get-listed" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>List your venue</Link>
             <Link href="/newsletter" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "white", color: "var(--navy)", border: "2px solid var(--navy)", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Get the weekly list</Link>
           </div>
           <div style={{ marginTop: "1.6rem" }}><NotifyMe defaultCity={near || ""} /></div>
@@ -94,7 +94,7 @@ export default async function VenuesPage({ searchParams }: { searchParams: Promi
 
       {rows.length > 0 && (
         <div style={{ textAlign: "center", marginTop: "2.5rem" }}>
-          <Link href="/get-listed" style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.1rem" }}>Mahjong-friendly business? List it free &rarr;</Link>
+          <Link href="/get-listed" style={{ color: "var(--pink-text)", fontWeight: 800, fontSize: "1.1rem" }}>Mahjong-friendly business? List it here &rarr;</Link>
         </div>
       )}
     </main>
