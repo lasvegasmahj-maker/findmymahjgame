@@ -48,13 +48,22 @@ export async function POST(req: NextRequest) {
   if (priorClaim && priorClaim.claimer_email !== email.toLowerCase()) {
     return NextResponse.json({ error: "This listing is already claimed. If that is you under a different email, or something looks wrong, email hello@findmymahjgame.com and a real person will sort it out." }, { status: 409 });
   }
+  // Plain insert, not upsert: two simultaneous claims both passed the prior-claim read, and
+  // upsert let the second silently overwrite the first claimer. The unique index makes the
+  // database the referee; the loser gets the same 409 a serialized request would have seen.
   const { error: claimErr } = await supabase
     .from("listing_claims")
-    .upsert({ listing_table: table, listing_id: id, claimer_email: email.toLowerCase(), status: "claimed" }, { onConflict: "listing_table,listing_id" });
+    .insert({ listing_table: table, listing_id: id, claimer_email: email.toLowerCase(), status: "claimed" });
   if (claimErr) {
-    if (claimErr.code === "42P01" || claimErr.code === "PGRST205") return NextResponse.json({ error: "Claims open soon. We saved nothing; please try again in a day." }, { status: 503 });
-    console.error("claim upsert failed:", claimErr.message);
-    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+    if (claimErr.code === "23505") {
+      const mine = priorClaim?.claimer_email === email.toLowerCase();
+      if (!mine) return NextResponse.json({ error: "This listing is already claimed. If that is you under a different email, or something looks wrong, email hello@findmymahjgame.com and a real person will sort it out." }, { status: 409 });
+    } else if (claimErr.code === "42P01" || claimErr.code === "PGRST205") {
+      return NextResponse.json({ error: "Claims open soon. We saved nothing; please try again in a day." }, { status: 503 });
+    } else {
+      console.error("claim insert failed:", claimErr.message);
+      return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+    }
   }
 
   // A claim alone also confirms the listing is alive.
