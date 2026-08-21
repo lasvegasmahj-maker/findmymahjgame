@@ -32,7 +32,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Too many questions at once. Give it a minute and ask again." }, { status: 429 });
   }
   const body = await req.json().catch(() => ({}));
-  const question = String(body.q || "").slice(0, 200);
+  const question = typeof body?.q === "string" ? body.q.slice(0, 200) : "";
+  try {
   const { intent, via } = await extractIntent(question);
 
   if (!intent.recognized) {
@@ -79,11 +80,11 @@ export async function POST(req: NextRequest) {
     }));
     const where = placeLabel ? ` near ${placeLabel}` : "";
     const answer = cards.length
-      ? `Found ${cards.length} verified mahjong teacher${cards.length === 1 ? "" : "s"}${where}.`
-      : `No teachers are listed${where} yet. Every listing here is verified, so we would rather show you none than guess.`;
+      ? `Found ${cards.length} mahjong teacher${cards.length === 1 ? "" : "s"}${where}, every listing reviewed by a real person.`
+      : `No teachers are listed${where} yet. We would rather show you none than guess.`;
     if (!cards.length) {
       suggestions.push({ label: "Browse all teachers", href: "/teachers" });
-      if (intent.location) suggestions.push({ label: "Get notified when one is added", href: "/teachers" });
+      if (intent.location) suggestions.push({ label: "Get notified when one is added", href: `/teachers?near=${encodeURIComponent(intent.location)}` });
     }
     return NextResponse.json({ ok: true, answer, results: cards, suggestions, intent, via });
   }
@@ -126,15 +127,16 @@ export async function POST(req: NextRequest) {
   let answer: string;
   if (cards.length === 0) {
     answer = askedTournaments
-      ? `No verified tournaments are listed${where} yet. We only show tournaments we can verify, and we never relabel casual games as tournaments.`
+      ? `No tournaments are listed${where} yet, and we never relabel casual games as tournaments to fill the page.`
       : `Nothing verified matches${where}${dayPart}${todPart} yet.`;
     suggestions.push({ label: "Browse all events", href: `/events${intent.location ? `?near=${encodeURIComponent(intent.location)}` : ""}` });
     if (located) suggestions.push({ label: "Widen to 50 miles", href: `/events?near=${encodeURIComponent(intent.location!)}&radius=50` });
-    suggestions.push({ label: "Get notified when something is added", href: "/events" });
+    if (intent.location) suggestions.push({ label: "Get notified when something is added", href: `/events?near=${encodeURIComponent(intent.location)}` });
   } else {
     const relaxNote = out.exact ? "" : ` ${describeRelaxations(out.relaxations) || ""}`;
-    answer = `Found ${cards.length} verified listing${cards.length === 1 ? "" : "s"}${where}${dayPart}${todPart}.${relaxNote}`.trim();
-    suggestions.push({ label: "See these on the Events page", href: `/events?${browseQs.toString()}` });
+    answer = `Found ${cards.length} listing${cards.length === 1 ? "" : "s"}${where}${dayPart}${todPart}, every one reviewed before publishing.${relaxNote}`.trim();
+    const bq = browseQs.toString();
+    suggestions.push({ label: bq ? "See these on the Events page" : "Browse the Events page", href: `/events${bq ? `?${bq}` : ""}` });
   }
 
   return NextResponse.json({
@@ -146,4 +148,8 @@ export async function POST(req: NextRequest) {
     intent,
     via,
   });
+  } catch (e) {
+    console.error("ask failed:", e instanceof Error ? e.message : e);
+    return NextResponse.json({ ok: false, error: "Search is having trouble right now. The Events page still works.", results: [], suggestions: [{ label: "Browse all events", href: "/events" }] }, { status: 500 });
+  }
 }

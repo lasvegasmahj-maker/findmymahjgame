@@ -45,7 +45,8 @@ export default function AskClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ q: query }),
       });
-      setResp(await r.json());
+      const j = await r.json();
+      setResp({ ok: !!j.ok, answer: j.answer || "", results: j.results ?? [], suggestions: j.suggestions ?? [], error: j.error });
     } catch {
       setResp({ ok: false, answer: "", results: [], error: "Something went wrong. The Events page search still works." });
     }

@@ -28,8 +28,8 @@ const [ev, vn, demand] = await Promise.all([
 
 const objectives = [];
 for (const [name, c] of Object.entries(METROS)) {
-  const events = ev.data.filter((r) => r.latitude != null && mi(c, [r.latitude, r.longitude]) <= 25);
-  const venues = vn.data.filter((r) => r.latitude != null && mi(c, [r.latitude, r.longitude]) <= 25);
+  const events = ev.data.filter((r) => r.latitude != null && r.longitude != null && mi(c, [r.latitude, r.longitude]) <= 25);
+  const venues = vn.data.filter((r) => r.latitude != null && r.longitude != null && mi(c, [r.latitude, r.longitude]) <= 25);
   const teachers = venues.filter((r) => /instructor|teacher|lesson|studio|school|class/i.test(r.venue_type || ""));
   const days = new Set(events.flatMap((r) => r.day_of_week || []));
   const dem = demand.data.filter((r) => (r.city || "").toLowerCase().includes(name.split(" ")[0].toLowerCase())).length;

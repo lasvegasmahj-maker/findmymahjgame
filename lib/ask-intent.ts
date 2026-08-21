@@ -120,13 +120,14 @@ export function validateIntent(x: unknown): AskIntent | null {
   const types = Array.isArray(o.types)
     ? o.types.map(String).filter((t) => ALLOWED_TYPES.includes(t))
     : null;
+  const finalTypes = types && types.length ? types : null;
   return {
     kind,
-    types: types && types.length ? types : null,
+    types: finalTypes,
     location: loc,
     radiusMiles: radius,
     days,
     timeOfDay: tod,
-    recognized: true,
+    recognized: Boolean(loc || days.length || tod || finalTypes || kind === "teachers"),
   };
 }

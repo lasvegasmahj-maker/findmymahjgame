@@ -56,7 +56,8 @@ export async function POST(req: NextRequest) {
     .insert({ listing_table: table, listing_id: id, claimer_email: email.toLowerCase(), status: "claimed" });
   if (claimErr) {
     if (claimErr.code === "23505") {
-      const mine = priorClaim?.claimer_email === email.toLowerCase();
+      const { data: winner } = await supabase.from("listing_claims").select("claimer_email").eq("listing_table", table).eq("listing_id", id).maybeSingle();
+      const mine = winner?.claimer_email === email.toLowerCase();
       if (!mine) return NextResponse.json({ error: "This listing is already claimed. If that is you under a different email, or something looks wrong, email hello@findmymahjgame.com and a real person will sort it out." }, { status: 409 });
     } else if (claimErr.code === "42P01" || claimErr.code === "PGRST205") {
       return NextResponse.json({ error: "Claims open soon. We saved nothing; please try again in a day." }, { status: 503 });

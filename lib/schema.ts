@@ -364,7 +364,7 @@ export function buildHowItWorksSchema() {
         name: "How do businesses get listed?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Create your profile on the Join page at findmymahjgame.com/join or email hello@findmymahjgame.com. Listings are reviewed within 1-2 business days. Stay on the free Community Listing, or join the Directory Membership for a verified badge and more visibility.",
+          text: "Create your profile on the Join page at findmymahjgame.com/join or email hello@findmymahjgame.com. Listings are reviewed within 1-2 business days. Create your free listing through the Get Listed page, or join the Directory Membership for a verified badge and more visibility.",
         },
       },
       {
@@ -491,7 +491,7 @@ export function buildHowItWorksSchema() {
         "@type": "HowToStep",
         position: 3,
         name: "Choose your plan",
-        text: "Stay on the free Community Listing, or join the Directory Membership for a verified badge and more visibility.",
+        text: "Create your free listing through the Get Listed page, or join the Directory Membership for a verified badge and more visibility.",
         url: `${SITE_URL}/join`,
       },
       {
