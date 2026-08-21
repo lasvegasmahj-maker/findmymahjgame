@@ -76,7 +76,7 @@ export function buildHomepageSchema() {
         "@type": "SearchAction",
         target: {
           "@type": "EntryPoint",
-          urlTemplate: `${SITE_URL}/states/{search_term_string}`,
+          urlTemplate: `${SITE_URL}/events?near={search_term_string}&radius=25`,
         },
         "query-input": "required name=search_term_string",
       },
@@ -364,7 +364,7 @@ export function buildHowItWorksSchema() {
         name: "How do businesses get listed?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Fill out the form on the Advertise page or email hello@findmymahjgame.com. Listings are reviewed within 1-2 business days. Once approved and paid, your listing goes live within 24-48 hours.",
+          text: "Create your profile on the Join page at findmymahjgame.com/join or email hello@findmymahjgame.com. Listings are reviewed within 1-2 business days. Stay on the free Community Listing, or join the Directory Membership for a verified badge and more visibility.",
         },
       },
       {
@@ -372,7 +372,7 @@ export function buildHowItWorksSchema() {
         name: "How much does it cost to get listed?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Players never pay to find a game. Teachers and organizers join the directory for $89 a year, with the first 6 months free during launch using code FINDMYMAHJGAME. Membership covers your profile, your classes, and your events across every role you play.",
+          text: "Players never pay to find a game. A basic Community Listing for teachers and organizers is free. The Directory Membership is $89 a year, with the first 6 months free during launch using code FINDMYMAHJGAME, and covers your profile, your classes, and your events.",
         },
       },
       {
@@ -380,7 +380,7 @@ export function buildHowItWorksSchema() {
         name: "How long does it take for my listing to go live?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "All listings are reviewed within 1-2 business days. Once approved and payment is received, your listing goes live within 24-48 hours.",
+          text: "All listings are reviewed within 1-2 business days. Once approved, your listing goes live within 24-48 hours.",
         },
       },
       {
@@ -476,30 +476,30 @@ export function buildHowItWorksSchema() {
       {
         "@type": "HowToStep",
         position: 1,
-        name: "Submit your inquiry",
-        text: "Fill out the form on the Advertise page or email hello@findmymahjgame.com. Takes less than 2 minutes.",
-        url: `${SITE_URL}/advertise`,
+        name: "Submit your profile",
+        text: "Create your profile on the Join page or email hello@findmymahjgame.com. Takes less than 2 minutes.",
+        url: `${SITE_URL}/join`,
       },
       {
         "@type": "HowToStep",
         position: 2,
         name: "We review and approve",
-        text: "All listings are reviewed within 1-2 business days. We maintain quality standards for all advertisers.",
-        url: `${SITE_URL}/advertise`,
+        text: "All listings are reviewed within 1-2 business days. We maintain quality standards for everyone listed.",
+        url: `${SITE_URL}/join`,
       },
       {
         "@type": "HowToStep",
         position: 3,
-        name: "Receive your invoice",
-        text: "Once approved, you will receive a payment link. Choose monthly or annual billing.",
-        url: `${SITE_URL}/advertise`,
+        name: "Choose your plan",
+        text: "Stay on the free Community Listing, or join the Directory Membership for a verified badge and more visibility.",
+        url: `${SITE_URL}/join`,
       },
       {
         "@type": "HowToStep",
         position: 4,
         name: "Go live",
-        text: "Your listing or ad goes live within 24-48 hours of payment. Start reaching players right away.",
-        url: `${SITE_URL}/advertise`,
+        text: "Your listing goes live within 24-48 hours. Players start finding you right away.",
+        url: `${SITE_URL}/join`,
       },
     ],
   };
@@ -601,54 +601,6 @@ export function buildAdvertisePageSchema() {
       areaServed: {
         "@type": "Country",
         name: "United States",
-      },
-      hasOfferCatalog: {
-        "@type": "OfferCatalog",
-        name: "Advertising Tiers",
-        itemListElement: [
-          {
-            "@type": "Offer",
-            name: "Starter Listing",
-            description: "Name, city, hours, description, website link",
-            price: "19.00",
-            priceCurrency: "USD",
-            priceSpecification: {
-              "@type": "RecurringCharge",
-              price: "19.00",
-              priceCurrency: "USD",
-              billingIncrement: 1,
-              unitText: "MONTH",
-            },
-          },
-          {
-            "@type": "Offer",
-            name: "Featured Spot",
-            description: "Top placement, highlighted listing, and photo",
-            price: "39.00",
-            priceCurrency: "USD",
-            priceSpecification: {
-              "@type": "RecurringCharge",
-              price: "39.00",
-              priceCurrency: "USD",
-              billingIncrement: 1,
-              unitText: "MONTH",
-            },
-          },
-          {
-            "@type": "Offer",
-            name: "Official Mahj Spot",
-            description: "Featured placement, homepage feature, and badge",
-            price: "79.00",
-            priceCurrency: "USD",
-            priceSpecification: {
-              "@type": "RecurringCharge",
-              price: "79.00",
-              priceCurrency: "USD",
-              billingIncrement: 1,
-              unitText: "MONTH",
-            },
-          },
-        ],
       },
     },
   ];

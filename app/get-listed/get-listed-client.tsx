@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { STATES } from "@/lib/states-data";
 
 const STATE_OPTIONS = Object.values(STATES).sort((a, b) => a.name.localeCompare(b.name));
@@ -162,8 +163,8 @@ export default function GetListedClient({ defaultType = "" }: { defaultType?: st
           </p>
         )}
         <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", alignItems: "center" }}>
-          <a href="/states" style={{ display: "inline-block", padding: "0.75rem 1.8rem", background: "var(--navy)", color: "white", borderRadius: 10, fontWeight: 700, textDecoration: "none", fontSize: "0.95rem" }}>Browse the directory &rarr;</a>
-          <a href="/" style={{ color: "var(--muted)", fontSize: "0.85rem", textDecoration: "none" }}>Back to home</a>
+          <Link href="/states" style={{ display: "inline-block", padding: "0.75rem 1.8rem", background: "var(--navy)", color: "white", borderRadius: 10, fontWeight: 700, textDecoration: "none", fontSize: "0.95rem" }}>Browse the directory &rarr;</Link>
+          <Link href="/" style={{ color: "var(--muted)", fontSize: "0.85rem", textDecoration: "none" }}>Back to home</Link>
         </div>
       </div>
     );

@@ -51,9 +51,9 @@ export default function SubmitClient() {
         <div style={{ fontSize: "3rem", marginBottom: "1rem" }}></div>
         <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.8rem", color: "var(--navy)", marginBottom: "0.75rem" }}>Listing submitted!
         </h1>
-        <p style={{ color: "var(--muted)", lineHeight: 1.7, marginBottom: "0.5rem" }}>We'll review your details and send you an approval confirmation within 24 hours. Once approved, you'll be live.
+        <p style={{ color: "var(--muted)", lineHeight: 1.7, marginBottom: "0.5rem" }}>We&rsquo;ll review your details and send you an approval confirmation within 24 hours. Once approved, you&rsquo;ll be live.
         </p>
-        <p style={{ color: "var(--muted)", fontSize: "0.88rem", marginBottom: "0.5rem" }}>No logo yet? Email it to <a href={`mailto:${AD_EMAIL}`}>{AD_EMAIL}</a> anytime and we'll add it for you.
+        <p style={{ color: "var(--muted)", fontSize: "0.88rem", marginBottom: "0.5rem" }}>No logo yet? Email it to <a href={`mailto:${AD_EMAIL}`}>{AD_EMAIL}</a> anytime and we&rsquo;ll add it for you.
         </p>
         <p style={{ color: "var(--muted)", fontSize: "0.88rem" }}>Questions? <a href={`mailto:${AD_EMAIL}`}>{AD_EMAIL}</a>
         </p>
@@ -165,7 +165,7 @@ export default function SubmitClient() {
                 style={{ background: "var(--pink)", color: "white", border: "none", borderRadius: 8, padding: "1rem 2.5rem", fontSize: "1rem", fontWeight: 700, cursor: "pointer", width: "100%", opacity: status === "submitting" ? 0.7 : 1 }}>
                 {status === "submitting" ? "Submitting..." : "Submit My Listing for Review →"}
               </button>
-              <p style={{ fontSize: "0.78rem", color: "var(--muted)", textAlign: "center", marginTop: "0.75rem" }}>We'll review and send you an approval within 24 hours.
+              <p style={{ fontSize: "0.78rem", color: "var(--muted)", textAlign: "center", marginTop: "0.75rem" }}>We&rsquo;ll review and send you an approval within 24 hours.
               </p>
             </>
           )}

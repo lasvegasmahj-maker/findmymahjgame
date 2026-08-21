@@ -21,11 +21,14 @@ const field: React.CSSProperties = { minHeight: 54, padding: "0 1rem", border: "
 const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border: "none", borderRadius: 12, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" };
 
 export default async function LeaguesPage({ searchParams }: { searchParams: Promise<{ near?: string }> }) {
+  // Server component: capture the request time once so freshness math is stable within a render.
+  // eslint-disable-next-line react-hooks/purity -- async server component renders once per request; a request-time clock read is intentional
+  const now = Date.now();
   const { near } = await searchParams;
   let rows = await searchEvents({ types: ["league"], near: near || null });
 
   const FRESH_MS = 90 * 24 * 60 * 60 * 1000;
-  const isFresh = (at?: string | null) => !!at && Date.now() - new Date(at).getTime() < FRESH_MS;
+  const isFresh = (at?: string | null) => !!at && now - new Date(at).getTime() < FRESH_MS;
   rows = [...rows].sort((a, b) => (isFresh(b.confirmed_active_at) ? 1 : 0) - (isFresh(a.confirmed_active_at) ? 1 : 0));
 
   const _today = new Date(); _today.setHours(0, 0, 0, 0);

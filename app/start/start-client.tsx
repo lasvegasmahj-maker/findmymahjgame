@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import Link from "next/link";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const TIMES = ["Morning", "Afternoon", "Evening"];
@@ -29,16 +30,17 @@ export default function StartClient() {
   const [hostEmail, setHostEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
   const [err, setErr] = useState("");
-  const [ref, setRef] = useState("");
-
   // Capture a community leader referral code from the link (e.g. /start?ref=FMM-LV-RUTH)
   // so the table they start is credited to them. Uses the existing referred_by field.
-  useEffect(() => {
+  // Lazy initializer reads the URL once on the client; no effect or setState needed.
+  const [ref] = useState(() => {
+    if (typeof window === "undefined") return "";
     try {
-      const r = new URLSearchParams(window.location.search).get("ref");
-      if (r) setRef(r.slice(0, 40));
-    } catch { /* ignore */ }
-  }, []);
+      return (new URLSearchParams(window.location.search).get("ref") || "").slice(0, 40);
+    } catch {
+      return "";
+    }
+  });
 
   const ready = day && time && area.trim() && hostName.trim() && (hostPhone.trim() || hostEmail.trim());
 
@@ -66,7 +68,7 @@ export default function StartClient() {
 
   return (
     <main style={{ maxWidth: 560, margin: "0 auto", padding: "1.5rem 1.2rem 4rem" }}>
-      <a href="/" style={{ fontSize: "1.05rem", color: "var(--pink-text)", fontWeight: 700, textDecoration: "none" }}>&larr; Back</a>
+      <Link href="/" style={{ fontSize: "1.05rem", color: "var(--pink-text)", fontWeight: 700, textDecoration: "none" }}>&larr; Back</Link>
       <h1 style={{ fontSize: "2rem", color: "var(--navy)", margin: "0.8rem 0 0.3rem", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>Start a Table</h1>
       <p style={{ fontSize: "1.15rem", color: "var(--muted)", lineHeight: 1.5 }}>Pick a day and time, and your area. We will help you find players nearby. It is always free for players.</p>
 

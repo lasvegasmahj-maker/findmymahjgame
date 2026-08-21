@@ -64,6 +64,9 @@ function distanceLabel(miles: number, precision: "address" | "postal" | "city" |
 }
 
 export default async function EventsPage({ searchParams }: { searchParams: Promise<{ near?: string; type?: string; sort?: string; radius?: string }> }) {
+  // Server component: capture the request time once so freshness math is stable within a render.
+  // eslint-disable-next-line react-hooks/purity -- async server component renders once per request; a request-time clock read is intentional
+  const now = Date.now();
   const { near, type, sort, radius } = await searchParams;
   const activeType = (type || "all").toLowerCase();
   const activeSort = (sort || "state").toLowerCase();
@@ -86,7 +89,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
   const radiusApplied = found.radiusApplied;
 
   const FRESH_MS = 90 * 24 * 60 * 60 * 1000;
-  const isFresh = (at?: string | null) => !!at && Date.now() - new Date(at).getTime() < FRESH_MS;
+  const isFresh = (at?: string | null) => !!at && now - new Date(at).getTime() < FRESH_MS;
   const byDate = (a: { event_date?: string | null }, b: { event_date?: string | null }) => {
     const da = a.event_date ? new Date(a.event_date).getTime() : Infinity;
     const db = b.event_date ? new Date(b.event_date).getTime() : Infinity;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { STATES } from "@/lib/states-data";
 
 const STATE_OPTIONS = Object.values(STATES).sort((a, b) => a.name.localeCompare(b.name));
@@ -116,16 +117,16 @@ export default function ListMyGameClient() {
             style={{ display: "inline-block", padding: "0.75rem 1.8rem", background: "white", color: "var(--navy)", border: "2px solid var(--navy)", borderRadius: 10, fontWeight: 700, textDecoration: "none", fontSize: "0.95rem" }}
           >See events happening near you &rarr;
           </a>
-          <a
+          <Link
             href="/states"
             style={{ color: "var(--pink-text)", fontWeight: 600, textDecoration: "none", fontSize: "0.9rem" }}
           >Browse all 50 states &rarr;
-          </a>
-          <a
+          </Link>
+          <Link
             href="/"
             style={{ color: "var(--muted)", fontSize: "0.85rem", textDecoration: "none" }}
           >Back to home
-          </a>
+          </Link>
         </div>
       </div>
     );

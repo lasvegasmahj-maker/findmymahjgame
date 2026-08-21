@@ -87,14 +87,14 @@ export default function AdvertiseClient() {
         {/* Inquiry Form */}
         <div style={{ background: "white", border: "1.5px solid var(--border)", borderRadius: 16, padding: "2.5rem", marginBottom: "2rem" }} id="inquire">
           <h2 style={{ border: "none", marginTop: 0, marginBottom: "0.4rem" }}>Get Pricing</h2>
-          <p style={{ color: "var(--muted)", fontSize: "0.9rem", marginBottom: "1.8rem" }}>Fill this out and we'll email your options within 1-2 business days.
+          <p style={{ color: "var(--muted)", fontSize: "0.9rem", marginBottom: "1.8rem" }}>Fill this out and we&rsquo;ll email your options within 1-2 business days.
           </p>
 
           {status === "success" ? (
             <div style={{ textAlign: "center", padding: "2rem 0" }}>
               <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}></div>
               <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.3rem", color: "var(--navy)", marginBottom: "0.5rem" }}>Pricing on its way!</h3>
-              <p style={{ color: "var(--muted)", fontSize: "0.95rem", marginBottom: "1.5rem" }}>Check your inbox. Once you've reviewed options and are ready, click the link in the email to fill out your full listing details.
+              <p style={{ color: "var(--muted)", fontSize: "0.95rem", marginBottom: "1.5rem" }}>Check your inbox. Once you&rsquo;ve reviewed options and are ready, click the link in the email to fill out your full listing details.
               </p>
               <a href="/advertise/submit" style={{ display: "inline-block", background: "var(--pink)", color: "white", padding: "0.8rem 2rem", borderRadius: 8, fontWeight: 700, textDecoration: "none", fontSize: "0.95rem" }}>Ready now? Submit Your Listing &rarr;
               </a>
