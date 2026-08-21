@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { verifyGameToken } from "@/lib/game-token";
+import { lazyServerClient } from "@/lib/supabase-server";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 // GET never mutates: mail scanners prefetch GET links from emails, so the
 // emailed link lands on a confirmation page and only a human's form POST

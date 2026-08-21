@@ -2,16 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import { verifyActionToken } from "@/lib/game-token";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 export const metadata: Metadata = { title: "Confirm a listing", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 const TABLES = ["venue_listings", "event_listings"];
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 export default async function ListingConfirmPage({ searchParams }: { searchParams: Promise<{ token?: string; done?: string }> }) {
   const { token, done } = await searchParams;

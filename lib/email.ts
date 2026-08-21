@@ -1,16 +1,18 @@
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 // The send choke point. New product emails go through here (legacy routes
 // migrate as they are touched) so
 // suppression, the voice charter (no emoji in subjects), and send logging
 // hold everywhere at once. Suppression and logging activate when their
 // tables exist (one founder SQL paste); until then sends still work.
-const resend = new Resend(process.env.RESEND_API_KEY);
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+let resendCached: Resend | null = null;
+function getResend(): Resend {
+  if (!resendCached) resendCached = new Resend(process.env.RESEND_API_KEY);
+  return resendCached;
+}
+const supabase = lazyServerClient();
 
 const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu;
 
@@ -60,7 +62,7 @@ export async function sendEmail({ to, bcc, subject, html, replyTo, kind, raw }: 
 
   const cleanSubject = subject.replace(EMOJI, "").replace(/\s{2,}/g, " ").trim();
 
-  const result = await resend.emails.send({
+  const result = await getResend().emails.send({
     from: "Find My Mahj Game <hello@findmymahjgame.com>",
     to: allowedTo.length ? allowedTo : allowedBcc,
     ...(allowedTo.length && allowedBcc.length ? { bcc: allowedBcc } : {}),

@@ -4,16 +4,14 @@ import { clampText, isValidEmail, safeHttpUrl } from "@/lib/sanitize";
 import { toStateAbbr } from "@/lib/near-match";
 import { rateLimit } from "@/lib/rate-limit";
 import { sendEmail } from "@/lib/email";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 // Business/event signups become a real listing held at pending_review, so the founder
 // approves an existing row rather than retyping it. Status is always set explicitly,
 // because both listing tables default to published and an omitted status would go live
 // unreviewed. The promo is evaluated server-side so founding-member status can never be
 // self-granted from the browser.
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 const esc = (s: string) => String(s || "").replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c] as string));
 

@@ -3,14 +3,12 @@ import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "@/lib/email";
 import { clampText, isValidEmail, escapeHtml } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 // A passenger posts their sailing to find other players aboard. Posts auto-publish
 // because the public card shows structured fields only (line, ship, dates, skill,
 // first name); the email stays private and connections relay server-side.
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 const SKILLS = ["beginner", "intermediate", "advanced", "any"];
 const isDate = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(new Date(s).getTime());

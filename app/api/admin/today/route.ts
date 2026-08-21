@@ -2,16 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { verifyAdminSessionToken, ADMIN_COOKIE } from "@/lib/admin-auth";
 import { signActionToken } from "@/lib/game-token";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 // One read-only roll-up of everything waiting on the founder: listings to
 // approve, new inquiries and ambassador applications, claimer-proposed edits,
 // and match drafts. Match drafts have no other admin surface today (they only
 // went out by email), so this page is their only safety net. Mutations stay on
 // the existing audited routes; this endpoint never writes.
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 // A table the migration has not created yet must not blank the whole page.
 function missingTable(error: { code?: string } | null) {

@@ -5,14 +5,12 @@ import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 import { escapeHtml, isValidEmail, clampText, safeHttpUrl } from "@/lib/sanitize";
 import { getHmacSecret } from "@/lib/hmac";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 const LISTING_TYPES = ["venue", "instructor", "event", "brand"];
 
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 function signToken(submissionId: string, action: string): string {
   const expires = Date.now() + 7 * 24 * 60 * 60 * 1000;

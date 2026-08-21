@@ -3,14 +3,12 @@ import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "@/lib/email";
 import { clampText, isValidEmail, escapeHtml } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 // Demand capture: when a discovery page has no inventory, players leave their
 // email + area so we know where to recruit and can tell them when games appear.
 // Stored as a play_request (the demand signal) tagged day_pref="area-notify".
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 export async function POST(req: NextRequest) {
   if (!(await rateLimit(req, "notify-area", 5, 60))) {

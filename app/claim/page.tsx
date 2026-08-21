@@ -3,14 +3,12 @@ import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import { verifyActionToken } from "@/lib/game-token";
 import ClaimForm from "./claim-form";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 export const metadata: Metadata = { title: "Claim your listing", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 const FIELDS: Record<string, { key: string; label: string; long?: boolean }[]> = {
   venue_listings: [

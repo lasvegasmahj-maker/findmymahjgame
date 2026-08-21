@@ -3,11 +3,9 @@ import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 import { verifyGameToken } from "@/lib/game-token";
 import { rateLimit } from "@/lib/rate-limit";
+import { lazyServerClient } from "@/lib/supabase-server";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 // "Run it back": a host who confirmed "yes, we played" turns this week's game
 // into next week's table. The original becomes a recurring series, and we clone

@@ -1,11 +1,9 @@
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
+import { lazyServerClient } from "@/lib/supabase-server";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 export async function submitInquiry(formData: FormData) {
   const name = formData.get("name") as string;

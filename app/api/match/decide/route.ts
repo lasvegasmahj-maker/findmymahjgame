@@ -3,15 +3,13 @@ import { createClient } from "@supabase/supabase-js";
 import { verifyActionToken } from "@/lib/game-token";
 import { sendEmail } from "@/lib/email";
 import { escapeHtml } from "@/lib/sanitize";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 // Founder one-click decision on a match draft. Approve creates the forming
 // table (host fields stay null: the first claimer becomes coordinator, per
 // the never-name-a-host-without-consent ruling) and emails each pooled
 // player the claim link. Skip releases the players back to the pool.
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 function shareCode() {
   return Array.from(crypto.getRandomValues(new Uint8Array(6)), (b) => "abcdefghjkmnpqrstuvwxyz23456789"[b % 31]).join("");

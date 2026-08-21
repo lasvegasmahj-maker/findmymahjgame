@@ -4,11 +4,9 @@ import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "@/lib/email";
 import { signGameToken } from "@/lib/game-token";
 import { escapeHtml } from "@/lib/sanitize";
+import { lazyServerClient } from "@/lib/supabase-server";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 // Daily (Vercel Cron). Asks full tables that have had time to play "did your
 // game happen?" with one-click Yes/No. Protected by CRON_SECRET (Vercel sends

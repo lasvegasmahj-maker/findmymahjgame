@@ -3,16 +3,14 @@ import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "@/lib/email";
 import { clampText, isValidEmail, escapeHtml } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 // A connection request to a listed player or a cruise poster. The target's email
 // is looked up server-side and NEVER sent to the browser. We relay the request
 // straight to them (reply-to is the requester, so they reply directly), bcc the
 // founder inbox for the record, and store the inquiry. If a listing has no email
 // on file, it falls back to the founder inbox to be forwarded by hand.
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 export async function POST(req: NextRequest) {
   if (!(await rateLimit(req, "connect", 8, 60))) {

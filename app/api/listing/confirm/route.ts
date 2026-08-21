@@ -4,14 +4,12 @@ import { verifyActionToken } from "@/lib/game-token";
 import { rateLimit } from "@/lib/rate-limit";
 import { sendEmail } from "@/lib/email";
 import { escapeHtml } from "@/lib/sanitize";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 // Freshness confirmations. GET never mutates (scanner safety); the confirm
 // page POSTs here. "still-running" stamps confirmed_active_at; "ended"
 // increments ended_reports and alerts the founder at the first report.
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 const TABLES = ["venue_listings", "event_listings"];
 
 export async function GET(req: NextRequest) {

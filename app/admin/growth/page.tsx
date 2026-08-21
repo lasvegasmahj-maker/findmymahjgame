@@ -2,13 +2,11 @@ import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 import { verifyAdminSessionToken, ADMIN_COOKIE } from "@/lib/admin-auth";
 import { PROSPECT_STATES } from "@/lib/prospect-state";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 export const dynamic = "force-dynamic";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 const FUNNEL: Array<[string, string]> = [
   ["DISCOVERED", "Discovered"],

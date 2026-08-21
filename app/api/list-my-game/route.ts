@@ -3,15 +3,13 @@ import { createClient } from "@supabase/supabase-js";
 import { clampText, isValidEmail } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
 import { sendEmail } from "@/lib/email";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 // Player listings are created here server-side (service role) and always land
 // as pending_review. The browser no longer writes player_listings directly: a
 // restrictive RLS policy blocks anon inserts so nobody can self-publish a
 // listing without review.
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = lazyServerClient();
 
 const SKILLS = ["beginner", "intermediate", "advanced", "any"];
 
