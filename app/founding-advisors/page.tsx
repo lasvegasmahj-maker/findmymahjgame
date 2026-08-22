@@ -6,7 +6,9 @@ import StatusBadge from "@/components/status-badge";
 import { LAS_VEGAS_MAHJONG } from "@/lib/featured-listings";
 
 export const metadata: Metadata = {
-  title: "Founding Advisors | Find My Mahj Game",
+  // Absolute: the title already carries the brand, so the root layout template
+  // would render the brand twice.
+  title: { absolute: "Founding Advisors | Find My Mahj Game" },
   description:
     "Founding Advisors are a small group of respected teachers, organizers, and community leaders, invited by Find My Mahj Game, who help establish the directory during launch.",
   alternates: { canonical: "https://findmymahjgame.com/founding-advisors" },

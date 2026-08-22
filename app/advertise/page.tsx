@@ -4,7 +4,9 @@ import { buildAdvertisePageSchema, schemaScriptProps } from "@/lib/schema";
 import AdvertiseContact from "./advertise-contact";
 
 export const metadata: Metadata = {
-  title: "Advertise on Find My Mahj Game | Reach Mahjong Players Nationwide",
+  // Absolute: the title already carries the brand, so the root layout template
+  // would double it ("... | Find My Mahj Game") and push the title past 70 chars.
+  title: { absolute: "Advertise on Find My Mahj Game | Reach Mahjong Players Nationwide" },
   description:
     "Reach the American Mahjong community nationwide. Sponsor the weekly newsletter, a state, or a category. Audience demographics, network stats, and sponsorship options.",
   alternates: { canonical: "https://findmymahjgame.com/advertise" },

@@ -51,7 +51,10 @@ export async function generateMetadata({ params }: { params: Promise<{ state: st
   const meta: Metadata = {
     title: { absolute: `Mahjong in ${cityName}, ${st.abbr} | Find My Mahj Game` },
     description: `Find American Mahjong open plays, games, teachers, venues and events in ${cityName}, ${st.name}. Free for players.`,
-    alternates: { canonical: `https://findmymahjgame.com/states/${st.slug}/${city}` },
+    // City slugs are always lowercase (see app/sitemap.ts slugify). dynamicParams renders
+    // any casing, so the canonical lowercases the segment or /states/texas/Dallas would
+    // claim itself canonical and duplicate the real page.
+    alternates: { canonical: `https://findmymahjgame.com/states/${st.slug}/${city.toLowerCase()}` },
   };
 
   // Inventory-gated indexation: dynamicParams renders this route for ANY city
