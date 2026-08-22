@@ -112,11 +112,11 @@ export default function TodayPage() {
           </p>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))", gap: "0.9rem", marginBottom: "2.2rem" }}>
-            <Card label="Player listings to approve" count={c!.pendingPlayers} href="/admin" cta="Review" />
-            <Card label="Venue listings to approve" count={c!.pendingVenues} href="/admin" cta="Review" />
-            <Card label="Event listings to approve" count={c!.pendingEvents} href="/admin" cta="Review" />
-            <Card label="New inquiries" count={c!.newInquiries} href="/admin" cta="Open" />
-            <Card label="New ambassador applications" count={c!.newAmbassadors} href="/admin" cta="Open" />
+            <Card label="Player listings to approve" count={c!.pendingPlayers} href="/admin/review" cta="Review" />
+            <Card label="Venue listings to approve" count={c!.pendingVenues} href="/admin/review" cta="Review" />
+            <Card label="Event listings to approve" count={c!.pendingEvents} href="/admin/review" cta="Review" />
+            <Card label="New inquiries" count={c!.newInquiries} href="/admin/review" cta="Open" />
+            <Card label="New ambassador applications" count={c!.newAmbassadors} href="/admin/review" cta="Open" />
             <Card label="Listing edits to approve" count={c!.pendingEdits} href="/admin/edits" cta="Review" />
           </div>
 

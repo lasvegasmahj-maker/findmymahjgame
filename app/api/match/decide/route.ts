@@ -50,12 +50,12 @@ export async function POST(req: NextRequest) {
     .select("*")
     .single();
   if (!claimed) {
-    return NextResponse.redirect(`${siteUrl}/admin?match=already-decided`, 303);
+    return NextResponse.redirect(`${siteUrl}/admin/review?match=already-decided`, 303);
   }
   const draft = claimed;
 
   if (v.action === "match-skip") {
-    return NextResponse.redirect(`${siteUrl}/admin?match=skipped`, 303);
+    return NextResponse.redirect(`${siteUrl}/admin/review?match=skipped`, 303);
   }
 
   const code = shareCode();
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
   if (tableErr || !table) {
     console.error("match approve: table create failed", tableErr?.message);
     await supabase.from("match_drafts").update({ status: "draft", decided_at: null }).eq("id", draft.id);
-    return NextResponse.redirect(`${siteUrl}/admin?match=error`, 303);
+    return NextResponse.redirect(`${siteUrl}/admin/review?match=error`, 303);
   }
 
   await supabase.from("match_drafts").update({ table_id: table.id }).eq("id", draft.id);
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
     // the founder instead of leaving them stranded as invited.
     console.error("match approve: every invite email failed");
     await supabase.from("play_requests").update({ status: "new" }).in("id", draft.request_ids);
-    return NextResponse.redirect(`${siteUrl}/admin?match=approved-but-emails-failed`, 303);
+    return NextResponse.redirect(`${siteUrl}/admin/review?match=approved-but-emails-failed`, 303);
   }
-  return NextResponse.redirect(`${siteUrl}/admin?match=approved`, 303);
+  return NextResponse.redirect(`${siteUrl}/admin/review?match=approved`, 303);
 }

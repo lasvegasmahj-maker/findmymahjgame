@@ -25,17 +25,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Invalid tab" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
-    .from(table)
-    .select("*")
-    .order("created_at", { ascending: false });
+  let query = supabase.from(table).select("*").order("created_at", { ascending: false });
+  // Seed, test, and internal player rows are classified data, not queue work. Keeping them
+  // out of the tab means bulk approve can never republish a demo person as a real one.
+  if (table === "player_listings") query = query.eq("record_class", "real_external");
+  const { data, error } = await query;
 
   if (error) {
     { console.error("data failed:", error.message); return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 }); }
   }
 
   const [{ count: pendP }, { count: pendV }, { count: pendE }, { count: newInq }, { count: newAmb }] = await Promise.all([
-    supabase.from("player_listings").select("id", { count: "exact", head: true }).eq("status", "pending_review"),
+    supabase.from("player_listings").select("id", { count: "exact", head: true }).eq("status", "pending_review").eq("record_class", "real_external"),
     supabase.from("venue_listings").select("id", { count: "exact", head: true }).eq("status", "pending_review"),
     supabase.from("event_listings").select("id", { count: "exact", head: true }).eq("status", "pending_review"),
     supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("status", "new"),
