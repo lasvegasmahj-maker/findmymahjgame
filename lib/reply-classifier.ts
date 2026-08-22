@@ -53,12 +53,12 @@ const WRONG_PERSON_RE =
 const OOO_RE =
   /\b(out of (the )?office|on vacation|away (from email|until)|automatic reply|auto[- ]?reply|autoreply|currently traveling|limited access to email|will (respond|reply) (when|upon my return)|maternity leave)\b/i;
 const NOT_INTERESTED_RE =
-  /\b(not interested|no interest|no thank(s| you)|we('| a)re good|not for (us|me)|(don't|do not|no longer) (run|host|teach|offer|play|do)\b.{0,30}(anymore|any longer)?|pass on this|not at this time|not looking)\b/i;
+  /\b(not (very |that |really )?interest(ed|ing)|no interest|no thank(s| you)|we('| a)re good|not for (us|me)|(don't|do not|no longer|stopped|quit) (run|host|teach|offer|play|do)\w*\b.{0,30}(anymore|any longer)?|pass on this|not at this time|not looking)\b/i;
 const NEEDS_INFO_RE =
   /\b(what (does|do|is|are|would)|how (much|does|do|long|many)|cost|price|pricing|fee|is (it|this) free|more (info|information|details)|can you (explain|tell me)|before (i|we) (decide|commit)|who (runs|is behind))\b/i;
 const INTERESTED_RE =
   /\b(interested|interesting|sounds (good|great|fun|wonderful)|yes,? please|sign (me|us) up|add (us|me|my|our)|would love|love to|happy to( be)? (list|join|includ)|let's do it|count (me|us) in|go ahead|please (list|include|add))\b/i;
-const ENDED_RE = /\b((don't|do not|no longer|stopped|quit)\b.{0,40}\b(run|host|teach|offer|meet|play)|(closed|disbanded|ended)( down)?( the (group|club|game))?|group (is )?(no more|done|inactive))\b/i;
+const ENDED_RE = /\b((don't|do not|no longer|stopped|quit)\b.{0,40}\b(run|host|teach|offer|meet|play)\w*|(closed|disbanded|ended)( down)?( the (group|club|game))?|group (is )?(no more|done|inactive))\b/i;
 
 export function classifyReply(raw: string): ReplyClassification {
   const stripped = stripQuotedText(raw);

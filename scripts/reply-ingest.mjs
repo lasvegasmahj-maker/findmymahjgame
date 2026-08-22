@@ -7,6 +7,7 @@ import { createClient } from "@supabase/supabase-js";
 import crypto from "node:crypto";
 import { classifyReply } from "../lib/reply-classifier.ts";
 import { replyActions } from "../lib/reply-policy.ts";
+import { canTransition } from "../lib/prospect-state.ts";
 
 const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 const EMAIL = "dryrun-studio@example.invalid";
@@ -28,12 +29,21 @@ for (const text of FIXTURES) {
 
   const c = classifyReply(text);
   const actions = replyActions(c);
+  let prevState = null, newState = null;
   console.log(`"${text.slice(0, 44)}" -> ${c.classification} (${c.confidence}) actions=[${actions.join(",")}]`);
 
   for (const a of actions) {
     if (a === "suppress") await sb.from("email_suppressions").upsert({ email: EMAIL, reason: "reply: " + c.classification.toLowerCase(), source: "reply-agent dry run", manual: false });
     if (a === "cancel_followups") await sb.from("outreach_messages").update({ send_status: "cancelled" }).eq("prospect_id", p.id).in("send_status", ["draft", "scheduled", "scheduled_dry_run"]);
-    if (a === "set_state_unsubscribed") await sb.from("prospects").update({ status: "UNSUBSCRIBED", do_not_contact: true, suppression_reason: "reply unsubscribe" }).eq("id", p.id);
+    if (a === "set_state_unsubscribed") {
+      const { data: cur } = await sb.from("prospects").select("status").eq("id", p.id).single();
+      if (cur && canTransition(cur.status, "UNSUBSCRIBED")) {
+        await sb.from("prospects").update({ status: "UNSUBSCRIBED", do_not_contact: true, suppression_reason: "reply unsubscribe" }).eq("id", p.id).eq("status", cur.status);
+        newState = "UNSUBSCRIBED"; prevState = cur.status;
+      } else {
+        console.log(`  transition ${cur?.status} -> UNSUBSCRIBED not legal, suppression still applies`);
+      }
+    }
   }
   // The reply itself and the reasoning are preserved verbatim for audit.
   await sb.from("outreach_events").insert({
@@ -42,6 +52,8 @@ for (const text of FIXTURES) {
     action: "reply_classified_" + c.classification.toLowerCase(),
     reason: c.rationale,
     evidence: `${key} | original: ${text.slice(0, 300)}`,
+    previous_state: prevState,
+    new_state: newState,
     deterministic: true,
   });
 }

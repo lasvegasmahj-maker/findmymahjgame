@@ -30,7 +30,8 @@ async function probe(u) {
 // Cadence: rows verified more recently than the configured interval are skipped entirely,
 // so the scan is cheap and safe to run on a schedule without rework.
 const { data: cfg } = await sb.from("app_settings").select("value").eq("key", "growth_freshness_interval_days").maybeSingle();
-const INTERVAL_DAYS = Number(cfg?.value ?? 14);
+const parsedInterval = Number(cfg?.value);
+const INTERVAL_DAYS = Number.isFinite(parsedInterval) ? parsedInterval : 14;
 
 const findings = [];
 for (const r of rows) {

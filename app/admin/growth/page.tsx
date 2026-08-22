@@ -76,9 +76,10 @@ export default async function GrowthAgentsPage() {
     counts = null;
   }
 
-  // Level 2 readiness. The last four rows read live configuration; the TESTED rows are
-  // point-in-time engineering assessments from the 2026-08-22 Phase 4 gate, backed by the
-  // automated suites in tests/. Business decisions are labelled as such so engineering-done
+  // Level 2 readiness. Send cap, webhook secret, and production sending read live
+  // configuration; the TESTED rows are
+  // point-in-time
+  // engineering assessments from the 2026-08-22 Phase 4 gate, backed by tests/. Business decisions are labelled as such so engineering-done
   // is not mistaken for permission to send.
   const sendCap = Number(settings["growth_daily_send_limit"] ?? "0");
   const outreachOn = settings["growth_outreach_enabled"] === "true";
@@ -94,8 +95,8 @@ export default async function GrowthAgentsPage() {
     ["Bounce handling", "TESTED", "webhook suppresses and cancels; fails closed"],
     ["Complaint handling", "TESTED", "same webhook path as bounces"],
     ["Invite attribution", "TESTED", "join page stamps clicks; tokens tracked to conversion"],
-    ["Reply classification", "TESTED", "deterministic classifier plus policy layer; 34 automated tests"],
-    ["Ambiguous replies to human review", "TESTED", "policy layer cannot act on low confidence"],
+    ["Reply classification", "TESTED", "deterministic classifier plus policy layer; 36 automated tests"],
+    ["Ambiguous replies to human review", "TESTED", "low confidence never changes state; follow-ups pause and a person decides"],
     ["Freshness monitoring", "TESTED", "severity-scored, idempotent, cadence configurable"],
     ["Send-rate enforcement", "READY", `guards fail closed; cap currently ${sendCap}`],
     ["Sender domain configuration", "HUMAN DECISION REQUIRED", "dedicated subdomain on Resend not yet chosen"],
@@ -150,7 +151,7 @@ export default async function GrowthAgentsPage() {
         {READINESS.map(([item, status, note]) => (
           <div key={item} style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem 0.7rem", alignItems: "baseline", fontSize: "0.88rem" }}>
             <span style={{ minWidth: "min(190px, 45vw)", fontWeight: 700, color: "var(--navy)" }}>{item}</span>
-            <span style={{ fontWeight: 800, color: status === "TESTED" || status === "READY" ? "#1a6e3a" : status === "NOT CONFIGURED" || status === "BLOCKED" ? "#b3261e" : "#a07800" }}>{status}</span>
+            <span style={{ fontWeight: 800, color: status === "TESTED" || status === "READY" ? "var(--green-dark)" : status === "NOT CONFIGURED" || status === "BLOCKED" ? "#b3261e" : "#a07800" }}>{status}</span>
             <span style={{ color: "var(--muted)", wordBreak: "break-word" }}>{note}</span>
           </div>
         ))}

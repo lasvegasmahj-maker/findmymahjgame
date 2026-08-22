@@ -3,6 +3,7 @@
 // Run: node --env-file=.env.local scripts/deep-verify-apply.mjs <findings.json>
 import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "node:fs";
+import crypto from "node:crypto";
 import { canTransition } from "../lib/prospect-state.ts";
 
 const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -10,8 +11,9 @@ const findings = JSON.parse(readFileSync(process.argv[2], "utf8"));
 const counts = {};
 
 for (const f of findings) {
-  const { data: prior } = await sb.from("outreach_events").select("id").eq("prospect_id", f.id).eq("agent", "deep-verify-agent").limit(1);
-  if (prior && prior.length) { console.log(`SKIP (already applied): ${f.name}`); continue; }
+  const findingKey = "deepverify:" + crypto.createHash("sha256").update(f.id + "|" + f.disposition + "|" + (f.evidence || "")).digest("hex").slice(0, 24);
+  const { data: prior } = await sb.from("outreach_events").select("id").eq("prospect_id", f.id).eq("agent", "deep-verify-agent").like("evidence", findingKey + "%").limit(1);
+  if (prior && prior.length) { console.log(`SKIP (this finding already applied): ${f.name}`); continue; }
 
   const { data: p, error: perr } = await sb.from("prospects").select("id,name,status,city,public_email,public_phone,website_url,metro,state").eq("id", f.id).single();
   if (perr || !p) { console.error(`missing prospect ${f.name}: ${perr?.message}`); continue; }
@@ -37,7 +39,7 @@ for (const f of findings) {
     if (!CONTACT_FIELDS.has(k)) { console.log(`  refusing to write non-contact field ${k}`); continue; }
     if (k === "public_email") {
       if (p.public_email) continue;
-      const { data: clash } = await sb.from("prospects").select("id").ilike("public_email", v).limit(1);
+      const { data: clash } = await sb.from("prospects").select("id").ilike("public_email", String(v).replace(/[%_]/g, "\\$&")).limit(1);
       if (clash && clash.length) { console.log(`  email ${v} already on another prospect, not copying`); continue; }
       update.public_email = v;
     } else if (!p[k]) update[k] = v;
@@ -52,7 +54,7 @@ for (const f of findings) {
     agent: "deep-verify-agent",
     action: "deep_verify_" + f.disposition.toLowerCase(),
     reason: (f.evidence || "").slice(0, 400) + (f.duplicate_of ? ` | duplicate_of: ${f.duplicate_of}` : ""),
-    evidence: (f.source_urls || []).join(" "),
+    evidence: findingKey + " | " + (f.source_urls || []).join(" "),
     previous_state: p.status,
     new_state: target || p.status,
     deterministic: false,

@@ -11,6 +11,8 @@ const FIXTURES: Array<[string, string, string]> = [
   ["Not interested right now, maybe next year.", "NOT_INTERESTED", "soft decline stays a decline"],
   ["No thanks, we're good.", "NOT_INTERESTED", "casual decline"],
   ["I don't run events anymore.", "NOT_INTERESTED", "activity ended"],
+  ["We stopped hosting the weekly game.", "NOT_INTERESTED", "gerund activity ended"],
+  ["This is not interesting to us", "NOT_INTERESTED", "negated interest"],
   ["Jane handles this now.", "WRONG_PERSON", "handoff"],
   ["I'm no longer with the JCC, please contact programs@ instead", "WRONG_PERSON", "left org"],
   ["What does it cost?", "NEEDS_INFO", "price question"],
@@ -120,8 +122,9 @@ test.describe("reply policy safety", () => {
   });
 
   test("activity-ended decline raises a freshness signal", () => {
-    const acts = replyActions(classifyReply("I don't run events anymore."));
-    expect(acts).toContain("freshness_review_listing");
+    for (const text of ["I don't run events anymore.", "We stopped hosting the weekly game."]) {
+      expect(replyActions(classifyReply(text))).toContain("freshness_review_listing");
+    }
   });
 
   test("out of office changes nothing", () => {
