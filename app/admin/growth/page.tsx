@@ -3,6 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 import { verifyAdminSessionToken, ADMIN_COOKIE } from "@/lib/admin-auth";
 import { PROSPECT_STATES } from "@/lib/prospect-state";
 import { lazyServerClient } from "@/lib/supabase-server";
+import { summarizeMetro, metroOf, METRO_CITIES, type CoverageRow, type MetroCoverage } from "@/lib/market-coverage";
+import { buildDigest, isoWeekAgo, representativeSample, prioritizePhoneQueue, type Digest, type PhonePriority } from "@/lib/growth-digest";
 
 export const dynamic = "force-dynamic";
 
@@ -45,16 +47,41 @@ export default async function GrowthAgentsPage() {
   let drafts: Array<{ id: string; subject: string | null; prospect: string; created: string }> = [];
   let recentProspects: Array<{ name: string; city: string | null; state: string | null; type: string; score: number | null; status: string }> = [];
   let objectives: Array<{ reason: string | null; created: string }> = [];
+  let coverage: MetroCoverage[] = [];
+  let coverageTotals = { published: 0, outsideMetros: 0 };
+  let digest: Digest | null = null;
+  let draftSample: Array<{ id: string; subject: string | null; prospect: string; metro: string | null; type: string | null }> = [];
+  let phonePriority: PhonePriority[] = [];
+  let freshnessRuns: Array<{ action: string; reason: string | null; created: string }> = [];
+  const week = isoWeekAgo();
   try {
     const [{ data: rows, error }, { data: st }, { data: pv }, { data: pe }, { data: dr }, { data: rp }, { data: ob }] = await Promise.all([
       supabase.from("prospects").select("status"),
       supabase.from("app_settings").select("key, value").like("key", "growth_%"),
       supabase.from("venue_listings").select("id,business_name,city,state,phone,reviewer_notes").eq("review_flag", "phone_verify").limit(200),
       supabase.from("event_listings").select("id,event_name,city,state,reviewer_notes").eq("review_flag", "phone_verify").limit(50),
-      supabase.from("outreach_messages").select("id,generated_subject,created_at,prospect_id,prospects(name)").eq("send_status", "draft").eq("approved_by_human", false).order("created_at", { ascending: false }).limit(40),
+      supabase.from("outreach_messages").select("id,generated_subject,created_at,prospect_id,prospects(name,metro,prospect_type)").eq("send_status", "draft").eq("approved_by_human", false).order("created_at", { ascending: false }).limit(40),
       supabase.from("prospects").select("name,city,state,prospect_type,qualification_score,status").order("discovered_at", { ascending: false }).limit(15),
       supabase.from("outreach_events").select("reason,created_at").eq("agent", "growth-allocation-l0").order("created_at", { ascending: false }).limit(12),
     ]);
+    const [{ data: cv }, { data: ce }, { data: newP }, { data: wkEvents }, { data: pubL }, { count: draftCount }, { count: approvedCount }, { count: sentCount }, { count: suppCount }, { data: phoneProspects }] = await Promise.all([
+      supabase.from("venue_listings").select("city,state,venue_type,source_url,confirmed_active_at,review_flag").eq("status", "published"),
+      supabase.from("event_listings").select("city,state,event_type,is_recurring,schedule_confidence,day_of_week,day_time,event_date,source_url,confirmed_active_at,review_flag").eq("status", "published"),
+      supabase.from("prospects").select("status,metro").gte("discovered_at", week.since),
+      supabase.from("outreach_events").select("agent,action").gte("created_at", week.since),
+      supabase.from("outreach_events").select("created_at").eq("action", "listing_published").gte("created_at", week.since),
+      supabase.from("outreach_messages").select("id", { count: "exact", head: true }).eq("send_status", "draft"),
+      supabase.from("outreach_messages").select("id", { count: "exact", head: true }).eq("approved_by_human", true),
+      supabase.from("outreach_messages").select("id", { count: "exact", head: true }).eq("send_status", "sent"),
+      supabase.from("email_suppressions").select("id", { count: "exact", head: true }),
+      supabase.from("prospects").select("id,name,city,state,metro,prospect_type,public_phone,public_email,status,qualification_score").not("public_phone", "is", null).limit(400),
+    ]);
+    const { data: fr } = await supabase.from("outreach_events")
+      .select("action,reason,created_at").eq("agent", "freshness-agent-scheduled")
+      .in("action", ["scheduled_run_completed", "scheduled_run_failed"])
+      .order("created_at", { ascending: false }).limit(5);
+    freshnessRuns = ((fr || []) as Array<{ action: string; reason: string | null; created_at: string }>)
+      .map((r) => ({ action: r.action, reason: r.reason, created: String(r.created_at).slice(0, 16).replace("T", " ") }));
     if (!error && rows) {
       counts = {};
       for (const s of PROSPECT_STATES) counts[s] = 0;
@@ -72,6 +99,36 @@ export default async function GrowthAgentsPage() {
     type PRow = { name: string; city: string | null; state: string | null; prospect_type: string; qualification_score: number | null; status: string };
     recentProspects = ((rp || []) as PRow[]).map((r) => ({ name: r.name, city: r.city, state: r.state, type: r.prospect_type, score: r.qualification_score, status: r.status }));
     objectives = ((ob || []) as Array<{ reason: string | null; created_at: string }>).map((o) => ({ reason: o.reason, created: String(o.created_at).slice(0, 10) }));
+
+    type CVRow = { city: string | null; state: string | null; venue_type: string | null; source_url: string | null; confirmed_active_at: string | null; review_flag: string | null };
+    type CERow = CVRow & { event_type: string | null; is_recurring: boolean | null; schedule_confidence: string | null; day_of_week: string[] | null; day_time: string | null; event_date: string | null };
+    const coverageRows: CoverageRow[] = [
+      ...((cv || []) as CVRow[]).map((r) => ({ kind: "venue" as const, city: r.city, state: r.state, type: r.venue_type, source_url: r.source_url, confirmed_active_at: r.confirmed_active_at, review_flag: r.review_flag })),
+      ...((ce || []) as unknown as CERow[]).map((r) => ({ kind: "event" as const, city: r.city, state: r.state, type: r.event_type, is_recurring: r.is_recurring, schedule_confidence: r.schedule_confidence, day_of_week: r.day_of_week, day_time: r.day_time, event_date: r.event_date, source_url: r.source_url, confirmed_active_at: r.confirmed_active_at, review_flag: r.review_flag })),
+    ];
+    coverage = Object.keys(METRO_CITIES)
+      .map((m) => summarizeMetro(m, coverageRows.filter((r) => metroOf(r.city) === m)))
+      .sort((a, b) => b.total - a.total);
+    coverageTotals = { published: coverageRows.length, outsideMetros: coverageRows.filter((r) => !metroOf(r.city)).length };
+
+    digest = buildDigest({
+      prospectsCreated: ((newP || []) as Array<{ status: string; metro: string | null }>),
+      eventsInWindow: ((wkEvents || []) as Array<{ agent: string; action: string }>),
+      listingsPublished: ((pubL || []) as Array<{ created_at: string }>).map(() => ({})),
+      drafts: { total: draftCount ?? 0, approved: approvedCount ?? 0 },
+      sends: sentCount ?? 0,
+      suppressions: suppCount ?? 0,
+      reviewFlags: coverageRows.map((r) => ({ review_flag: r.review_flag ?? null })),
+    }, week);
+
+    const weak = new Set(coverage.filter((c) => c.readiness !== "USEFUL").map((c) => c.metro));
+    phonePriority = prioritizePhoneQueue(((phoneProspects || []) as PhonePriority[]), weak);
+
+    const sampleSource = ((dr || []) as unknown as Array<{ id: string; generated_subject: string | null; prospect_id: string; prospects: { name: string; metro: string | null; prospect_type: string | null } | null }>).map((d) => ({
+      id: d.id, subject: d.generated_subject, prospect: d.prospects?.name || d.prospect_id,
+      metro: d.prospects?.metro ?? null, prospect_type: d.prospects?.prospect_type ?? null,
+    }));
+    draftSample = representativeSample(sampleSource).map((d) => ({ id: d.id, subject: d.subject, prospect: d.prospect, metro: d.metro ?? null, type: d.prospect_type ?? null }));
   } catch {
     counts = null;
   }
@@ -144,6 +201,123 @@ export default async function GrowthAgentsPage() {
       )}
 
 
+
+      {digest && (
+        <>
+          <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>This week</h2>
+          <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>Counted over the 7 days ending {digest.window.until.slice(0, 10)}. Same window, same numbers.</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 210px), 1fr))", gap: "0.5rem" }}>
+            {digest.changed.map(([label, n]) => (
+              <div key={label} style={{ border: "1px solid var(--border, #e5e7eb)", borderRadius: 10, padding: "0.6rem 0.8rem", display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "0.6rem" }}>
+                <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>{label}</span>
+                <strong style={{ fontSize: "1.15rem", color: label === "Emails sent" && n > 0 ? "#b3261e" : "var(--navy)", fontVariantNumeric: "tabular-nums" }}>{n}</strong>
+              </div>
+            ))}
+          </div>
+          {digest.needsShauna.length > 0 && (
+            <>
+              <h3 style={{ fontSize: "1rem", color: "var(--navy)", margin: "1.2rem 0 0.4rem" }}>What needs you</h3>
+              <ul style={{ margin: 0, paddingLeft: "1.1rem", color: "var(--navy)", fontSize: "0.9rem" }}>
+                {digest.needsShauna.map((t) => <li key={t} style={{ marginBottom: "0.25rem" }}>{t}</li>)}
+              </ul>
+            </>
+          )}
+          <h3 style={{ fontSize: "1rem", color: "var(--navy)", margin: "1.2rem 0 0.4rem" }}>What the agents will work on next</h3>
+          <ol style={{ margin: 0, paddingLeft: "1.2rem", color: "var(--muted)", fontSize: "0.88rem" }}>
+            {digest.agentQueue.map((t) => <li key={t} style={{ marginBottom: "0.2rem" }}>{t}</li>)}
+          </ol>
+          <p style={{ color: "var(--muted)", fontSize: "0.8rem", marginTop: "0.5rem" }}>This queue reports planned work at the current autonomy level. It does not authorize anything.</p>
+        </>
+      )}
+
+      <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Market coverage</h2>
+      <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>
+        If a player in this city opened the site today, could they find somewhere to play or learn? Every factor behind the label is shown.
+        {coverageTotals.published > 0 && ` Of ${coverageTotals.published} published listings, ${coverageTotals.outsideMetros} sit in cities outside these metros and are not counted below.`}
+      </p>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "0.86rem" }}>
+          <thead>
+            <tr style={{ textAlign: "left", color: "var(--muted)" }}>
+              {["Metro", "Status", "Listings", "Teachers", "Games", "Clubs", "Tournaments", "Actionable", "Current", "Flagged"].map((h) => (
+                <th key={h} style={{ padding: "0.35rem 0.5rem", borderBottom: "1px solid var(--border, #e5e7eb)", whiteSpace: "nowrap" }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody style={{ fontVariantNumeric: "tabular-nums" }}>
+            {coverage.map((c) => (
+              <tr key={c.metro}>
+                <td style={{ padding: "0.35rem 0.5rem", fontWeight: 700, color: "var(--navy)", whiteSpace: "nowrap" }}>{c.metro}</td>
+                <td style={{ padding: "0.35rem 0.5rem", fontWeight: 800, color: c.readiness === "USEFUL" ? "var(--green-dark)" : c.readiness === "THIN" ? "#a07800" : "#b3261e" }}>{c.readiness}</td>
+                <td style={{ padding: "0.35rem 0.5rem" }}>{c.total}</td>
+                <td style={{ padding: "0.35rem 0.5rem" }}>{c.instructors}</td>
+                <td style={{ padding: "0.35rem 0.5rem" }}>{c.recurringGames}</td>
+                <td style={{ padding: "0.35rem 0.5rem" }}>{c.clubsAndPrograms}</td>
+                <td style={{ padding: "0.35rem 0.5rem" }}>{c.tournaments}</td>
+                <td style={{ padding: "0.35rem 0.5rem" }}>{c.strongSchedules}</td>
+                <td style={{ padding: "0.35rem 0.5rem" }}>{c.currentEvidence}</td>
+                <td style={{ padding: "0.35rem 0.5rem" }}>{c.needsReview}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div style={{ display: "grid", gap: "0.3rem", marginTop: "0.6rem" }}>
+        {coverage.filter((c) => c.limitingFactors.length > 0).map((c) => (
+          <div key={c.metro} style={{ fontSize: "0.84rem", color: "var(--muted)" }}>
+            <strong style={{ color: "var(--navy)" }}>{c.metro}:</strong> {c.limitingFactors.join("; ")}.
+          </div>
+        ))}
+      </div>
+
+      <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Draft review sample ({draftSample.length})</h2>
+      <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>A spread across metro and category so you can judge the writing without reading all {drafts.length}. Viewing this changes nothing; drafts stay unapproved until you approve one.</p>
+      {draftSample.length === 0 ? <p style={{ color: "var(--muted)" }}>No drafts to sample.</p> : (
+        <div style={{ display: "grid", gap: "0.4rem" }}>
+          {draftSample.map((d) => (
+            <div key={d.id} style={{ border: "1px solid var(--border, #e5e7eb)", borderRadius: 10, padding: "0.6rem 0.8rem" }}>
+              <div style={{ fontWeight: 700, color: "var(--navy)" }}>{d.prospect}</div>
+              <div style={{ color: "var(--muted)", fontSize: "0.85rem" }}>{[d.metro, d.type].filter(Boolean).join(" | ")}</div>
+              <div style={{ fontSize: "0.85rem", marginTop: "0.2rem" }}>{d.subject}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Calls worth making first ({phonePriority.length})</h2>
+      <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>Ranked by how many named reasons apply, not by a score. Opening this list changes no record.</p>
+      {phonePriority.length === 0 ? <p style={{ color: "var(--muted)" }}>No prioritized calls right now.</p> : (
+        <div style={{ display: "grid", gap: "0.4rem" }}>
+          {phonePriority.map((c) => (
+            <div key={c.id} style={{ border: "1px solid var(--border, #e5e7eb)", borderRadius: 10, padding: "0.6rem 0.8rem" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", alignItems: "baseline" }}>
+                <strong style={{ color: "var(--navy)" }}>{c.name}</strong>
+                <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>{[c.city, c.state].filter(Boolean).join(", ")}</span>
+                <a href={`tel:${String(c.public_phone).replace(/[^\d+]/g, "")}`} style={{ color: "var(--pink-text)", fontWeight: 700, fontSize: "0.9rem" }}>{c.public_phone}</a>
+              </div>
+              <ul style={{ margin: "0.3rem 0 0", paddingLeft: "1.1rem", color: "var(--muted)", fontSize: "0.84rem" }}>
+                {c.reasons.map((r) => <li key={r}>{r}</li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Freshness scans</h2>
+      <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>Runs every Monday. It proposes reverification and flags listings; it never publishes or unpublishes anything.</p>
+      {freshnessRuns.length === 0 ? (
+        <p style={{ color: "var(--muted)" }}>No scheduled run has reported yet. The first one runs on the next Monday after deployment.</p>
+      ) : (
+        <div style={{ display: "grid", gap: "0.3rem" }}>
+          {freshnessRuns.map((r) => (
+            <div key={r.created} style={{ fontSize: "0.86rem", display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+              <span style={{ color: "var(--muted)", minWidth: "min(120px, 40vw)", fontVariantNumeric: "tabular-nums" }}>{r.created}</span>
+              <strong style={{ color: r.action === "scheduled_run_failed" ? "#b3261e" : "var(--green-dark)" }}>{r.action === "scheduled_run_failed" ? "FAILED" : "ran"}</strong>
+              <span style={{ color: "var(--muted)", wordBreak: "break-word" }}>{r.reason}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Level 2 readiness</h2>
       <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>Level 2 (guarded automatic sending) is NOT enabled. This shows what is engineering-ready versus what waits on your decision.</p>

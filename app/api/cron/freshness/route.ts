@@ -1,0 +1,135 @@
+import crypto from "crypto";
+import { NextRequest, NextResponse } from "next/server";
+import { lazyServerClient } from "@/lib/supabase-server";
+
+// Scheduled freshness scan. Proposes reverification work and never changes what a player
+// sees: it writes a review flag and an audit row, and nothing here can publish, unpublish,
+// or edit listing content. The scan is the same logic the manual script runs, kept in one
+// place so the schedule cannot drift from what was tested.
+//
+// Failures are made visible rather than swallowed: a failed run returns a non-200 so the
+// platform records it, and every run writes an audit row that the growth console reads.
+const supabase = lazyServerClient();
+
+const DAY = 86400000;
+const FRESHNESS_AGENT = "freshness-agent-scheduled";
+
+type Row = {
+  id: string;
+  kind: "venue" | "event";
+  name: string;
+  city: string | null;
+  state: string | null;
+  event_date?: string | null;
+  is_recurring?: boolean | null;
+  ended_reports?: number | null;
+  confirmed_active_at?: string | null;
+  schedule_parsed_at?: string | null;
+  updated_at?: string | null;
+  review_flag?: string | null;
+};
+
+function severityFor(priority: number, sourceGone: boolean): string {
+  if (sourceGone) return "SOURCE_GONE";
+  if (priority >= 5) return "REVIEW_REQUIRED";
+  if (priority >= 3) return "REVIEW_SOON";
+  return "CHANGED";
+}
+
+export async function GET(req: NextRequest) {
+  const secret = process.env.CRON_SECRET;
+  const presented = req.headers.get("authorization") || "";
+  const expected = `Bearer ${secret}`;
+  const ok =
+    !!secret &&
+    presented.length === expected.length &&
+    crypto.timingSafeEqual(Buffer.from(presented), Buffer.from(expected));
+  if (!ok) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const now = Date.now();
+  try {
+    const { data: cfg } = await supabase
+      .from("app_settings").select("value").eq("key", "growth_freshness_interval_days").maybeSingle();
+    const parsed = Number(cfg?.value);
+    const intervalDays = Number.isFinite(parsed) ? parsed : 14;
+
+    const [v, e] = await Promise.all([
+      supabase.from("venue_listings")
+        .select("id,business_name,city,state,confirmed_active_at,updated_at,ended_reports,review_flag")
+        .eq("status", "published"),
+      supabase.from("event_listings")
+        .select("id,event_name,city,state,confirmed_active_at,updated_at,event_date,is_recurring,ended_reports,schedule_parsed_at,review_flag")
+        .eq("status", "published"),
+    ]);
+    if (v.error || e.error) {
+      console.error("freshness cron: listing query failed", v.error?.message || e.error?.message);
+      return NextResponse.json({ error: "listing query failed" }, { status: 500 });
+    }
+
+    const rows: Row[] = [
+      ...(v.data || []).map((r) => ({ ...r, kind: "venue" as const, name: r.business_name })),
+      ...(e.data || []).map((r) => ({ ...r, kind: "event" as const, name: r.event_name })),
+    ];
+
+    const findings: Array<{ row: Row; severity: string; reasons: string[] }> = [];
+    for (const r of rows) {
+      const verifiedAt = r.confirmed_active_at || r.schedule_parsed_at || r.updated_at;
+      const ageDays = verifiedAt ? (now - new Date(verifiedAt).getTime()) / DAY : Infinity;
+      const datePassed = Boolean(r.kind === "event" && !r.is_recurring && r.event_date && new Date(r.event_date).getTime() < now);
+      const urgent = (r.ended_reports ?? 0) > 0 || datePassed;
+      if (Number.isFinite(ageDays) && ageDays < intervalDays && !urgent) continue;
+
+      const reasons: string[] = [];
+      let priority = 0;
+      if (datePassed) { priority += 3; reasons.push("one-off event date has passed"); }
+      if ((r.ended_reports ?? 0) > 0) { priority += 3; reasons.push(`${r.ended_reports} player report(s) that it ended`); }
+      if (r.kind === "event" && r.is_recurring && ageDays > 45) { priority += 2; reasons.push("recurring game unverified for over 45 days"); }
+      if (!verifiedAt || ageDays > 90) { priority += 1; reasons.push("no verification in 90 days"); }
+      if (!reasons.length) continue;
+      findings.push({ row: r, severity: severityFor(priority, false), reasons });
+    }
+
+    let filed = 0;
+    let skippedDuplicate = 0;
+    let skippedHumanFlag = 0;
+    for (const f of findings) {
+      const table = f.row.kind === "event" ? "event_listings" : "venue_listings";
+      const newFlag = `freshness_${f.severity.toLowerCase()}`;
+      if (f.row.review_flag === newFlag) { skippedDuplicate++; continue; }
+      // A flag a person is working through outranks anything this job wants to say.
+      if (f.row.review_flag && !f.row.review_flag.startsWith("freshness_")) { skippedHumanFlag++; continue; }
+
+      const { error: upErr } = await supabase.from(table).update({ review_flag: newFlag }).eq("id", f.row.id);
+      if (upErr) { console.error(`freshness cron: flag failed for ${table}/${f.row.id}: ${upErr.message}`); continue; }
+      await supabase.from("outreach_events").insert({
+        agent: FRESHNESS_AGENT,
+        action: "reverification_proposed",
+        reason: f.reasons.join("; ").slice(0, 500),
+        evidence: `listing ${table}/${f.row.id} severity=${f.severity}`,
+        deterministic: true,
+      });
+      filed++;
+    }
+
+    const summary = { scanned: rows.length, findings: findings.length, filed, skippedDuplicate, skippedHumanFlag, intervalDays };
+    await supabase.from("outreach_events").insert({
+      agent: FRESHNESS_AGENT,
+      action: "scheduled_run_completed",
+      reason: `scanned ${summary.scanned}, findings ${summary.findings}, filed ${filed}, duplicates skipped ${skippedDuplicate}, human flags respected ${skippedHumanFlag}`,
+      evidence: `interval_days=${intervalDays}`,
+      deterministic: true,
+    });
+    return NextResponse.json(summary);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "unknown error";
+    console.error("freshness cron failed:", message);
+    // Recorded so a silent scheduler failure still shows up in the console history.
+    await supabase.from("outreach_events").insert({
+      agent: FRESHNESS_AGENT,
+      action: "scheduled_run_failed",
+      reason: message.slice(0, 400),
+      deterministic: true,
+    }).then(() => undefined, () => undefined);
+    return NextResponse.json({ error: "freshness scan failed" }, { status: 500 });
+  }
+}

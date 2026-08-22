@@ -1,0 +1,224 @@
+import { test, expect } from "@playwright/test";
+import { detectPrivateLocation, redactStreetDetail, safePublicVenue, isUrgentPrivacyExposure, LOCATION_ON_REQUEST_TEXT } from "../lib/private-location";
+import { summarizeMetro, metroOf, type CoverageRow } from "../lib/market-coverage";
+import { buildDigest, isoWeekAgo, representativeSample, prioritizePhoneQueue } from "../lib/growth-digest";
+import { admissionVerdict, type KnownEntities } from "../lib/prospect-guards";
+import { canTransition } from "../lib/prospect-state";
+
+// Phase 5 protects two things: a player's trust in what a listing claims, and a host's home
+// address. Pure logic, no browser, no network.
+
+test.describe("private location protections", () => {
+  test("a private residence is detected wherever the text lives", () => {
+    expect(detectPrivateLocation({ venue: "Private residence in Naples" }).isPrivateResidence).toBe(true);
+    expect(detectPrivateLocation({ description: "Most of our events take place at members' homes" }).isPrivateResidence).toBe(true);
+    expect(detectPrivateLocation({ venue: "Hosted at the organizer's home" }).isPrivateResidence).toBe(true);
+    expect(detectPrivateLocation({ venue: "Boston Public Library, Roslindale Branch" }).isPrivateResidence).toBe(false);
+  });
+
+  test("street level detail on a home is caught, both house numbers and cross streets", () => {
+    expect(detectPrivateLocation({ venue: "Private residence near 16th St & Glendale Ave" }).hasStreetDetail).toBe(true);
+    expect(detectPrivateLocation({ venue: "Private residence at 1428 Elm Street" }).hasStreetDetail).toBe(true);
+  });
+
+  test("redaction removes the block but keeps the game", () => {
+    const out = redactStreetDetail("Private residence in North Central Phoenix (near 16th St & Glendale Ave; address shared via Meetup)");
+    expect(out).toContain("Private residence in North Central Phoenix");
+    expect(out).toContain("address shared via Meetup");
+    expect(out).not.toMatch(/16th/);
+    expect(out).not.toMatch(/Glendale/);
+  });
+
+  test("a live listing with a home and street detail is the urgent case", () => {
+    expect(isUrgentPrivacyExposure({ status: "published", venue: "Private residence at 1428 Elm Street" })).toBe(true);
+    expect(isUrgentPrivacyExposure({ status: "pending_review", venue: "Private residence at 1428 Elm Street" })).toBe(false);
+    expect(isUrgentPrivacyExposure({ status: "published", venue: "Aeronaut Brewing, 14 Tyler Street" })).toBe(false);
+  });
+
+  test("the safe public form never narrows below a city", () => {
+    const v = safePublicVenue("Henderson", "NV");
+    expect(v).toContain("Henderson");
+    expect(v).toContain(LOCATION_ON_REQUEST_TEXT.toLowerCase());
+    expect(v).not.toMatch(/\d{2,}/);
+  });
+});
+
+test.describe("qualification does not imply publication", () => {
+  // The Phase 5 finding in one assertion: a prospect worth contacting is not automatically a
+  // listing. The admission guard governs contact; publication needs its own verdict.
+  test("a clean prospect is admissible for contact yet carries no publish verdict", () => {
+    const known: KnownEntities = {
+      suppressedEmails: new Set(), prospectEmails: new Set(), prospectNames: new Set(),
+      listingEmails: new Set(), listingNameCityKeys: new Set(),
+    };
+    const v = admissionVerdict({ name: "Some Riichi Club", city: "Boston", state: "MA", source_url: "https://x.org" }, known);
+    expect(v.admit).toBe(true);
+    // Nothing about admission grants a listing: publication state lives on listing rows and
+    // is only ever set by the publish script from an explicit PUBLISHABLE verdict.
+    expect(Object.keys(v)).not.toContain("publish");
+  });
+
+  test("QUALIFIED never transitions straight to CONVERTED", () => {
+    expect(canTransition("QUALIFIED", "CONVERTED")).toBe(false);
+    expect(canTransition("LISTING_SUBMITTED", "CONVERTED")).toBe(true);
+  });
+});
+
+test.describe("market coverage", () => {
+  const row = (over: Partial<CoverageRow> = {}): CoverageRow => ({
+    kind: "event", city: "Boston", state: "MA", type: "open_play", is_recurring: true,
+    schedule_confidence: "high", confirmed_active_at: new Date().toISOString(), ...over,
+  });
+
+  test("a metro with games, teachers, and actionable schedules reads USEFUL", () => {
+    const rows = [
+      row(), row({ city: "Cambridge" }), row({ city: "Somerville" }),
+      row({ kind: "venue", type: "Mahjong Instructor", is_recurring: null, schedule_confidence: null }),
+      row({ kind: "venue", type: "Instructor and event host", is_recurring: null, schedule_confidence: null }),
+    ];
+    const c = summarizeMetro("Boston", rows);
+    expect(c.readiness).toBe("USEFUL");
+    expect(c.recurringGames).toBe(3);
+    expect(c.instructors).toBe(2);
+    expect(c.limitingFactors).toHaveLength(0);
+  });
+
+  test("an empty metro is a GAP and says why", () => {
+    const c = summarizeMetro("Tampa", []);
+    expect(c.readiness).toBe("GAP");
+    expect(c.limitingFactors.join(" ")).toContain("recurring games");
+  });
+
+  test("stale evidence and one-city concentration surface as named factors", () => {
+    const old = new Date(Date.now() - 400 * 86400000).toISOString();
+    const rows = [row({ confirmed_active_at: old }), row({ confirmed_active_at: old }), row({ confirmed_active_at: old }), row({ confirmed_active_at: old })];
+    const c = summarizeMetro("Houston", rows);
+    expect(c.limitingFactors.join(" ")).toContain("last 6 months");
+    expect(c.limitingFactors.join(" ")).toContain("one city");
+    expect(c.currentEvidence).toBe(0);
+  });
+
+  test("counts are reproducible for the same input", () => {
+    const rows = [row(), row({ city: "Newton" })];
+    expect(summarizeMetro("Boston", rows)).toEqual(summarizeMetro("Boston", rows));
+  });
+
+  test("metro lookup maps suburbs to their metro and leaves strangers alone", () => {
+    expect(metroOf("Somerville")).toBe("Boston");
+    expect(metroOf("Henderson")).toBe("Las Vegas");
+    expect(metroOf("Chesterfield")).toBe("St. Louis");
+    expect(metroOf("Fargo")).toBeNull();
+  });
+});
+
+test.describe("weekly digest", () => {
+  const input = {
+    prospectsCreated: [{ status: "QUALIFIED" }, { status: "NEEDS_REVIEW" }],
+    eventsInWindow: [{ agent: "a", action: "deep_verify_rejected" }, { agent: "a", action: "reverification_proposed" }],
+    listingsPublished: [{}, {}],
+    drafts: { total: 35, approved: 0 },
+    sends: 0,
+    suppressions: 1,
+    reviewFlags: [{ review_flag: "private_location_hold" }, { review_flag: null }],
+  };
+
+  test("the same window produces the same numbers", () => {
+    const w = isoWeekAgo(1_700_000_000_000);
+    expect(buildDigest(input, w)).toEqual(buildDigest(input, w));
+  });
+
+  test("sends are reported and stay zero during a no-send phase", () => {
+    const d = buildDigest(input, isoWeekAgo(1_700_000_000_000));
+    expect(d.sends).toBe(0);
+    expect(d.changed.find(([label]) => label === "Emails sent")?.[1]).toBe(0);
+  });
+
+  test("unreviewed drafts and privacy holds reach the human list", () => {
+    const d = buildDigest(input, isoWeekAgo(1_700_000_000_000));
+    expect(d.needsShauna.join(" ")).toContain("35 outreach drafts");
+    expect(d.needsShauna.join(" ")).toContain("private home");
+  });
+
+  test("the agent queue never proposes sending", () => {
+    const d = buildDigest(input, isoWeekAgo(1_700_000_000_000));
+    for (const item of d.agentQueue) expect(item.toLowerCase()).not.toMatch(/send|email|outreach to|contact them/);
+  });
+});
+
+test.describe("operator queues are read only", () => {
+  const drafts = [
+    { id: "1", metro: "Boston", prospect_type: "instructor" },
+    { id: "2", metro: "Boston", prospect_type: "instructor" },
+    { id: "3", metro: "Boston", prospect_type: "library" },
+    { id: "4", metro: "Las Vegas", prospect_type: "club" },
+    { id: "5", metro: "Las Vegas", prospect_type: "club" },
+    { id: "6", metro: "Houston", prospect_type: "instructor" },
+  ];
+
+  test("the sample spreads across metro and category instead of taking the first N", () => {
+    const s = representativeSample(drafts, 3);
+    expect(new Set(s.map((d) => d.metro)).size).toBe(3);
+  });
+
+  test("sampling returns the same draft objects and invents no approval field", () => {
+    const s = representativeSample(drafts, 4);
+    for (const d of s) {
+      expect(drafts).toContain(d);
+      expect(Object.keys(d)).not.toContain("approved_by_human");
+    }
+  });
+
+  test("sampling never returns more than exist", () => {
+    expect(representativeSample(drafts, 50)).toHaveLength(drafts.length);
+  });
+
+  test("phone priority explains every entry and mutates nothing", () => {
+    const candidates = [
+      { id: "a", name: "Community Center", metro: "Tampa", prospect_type: "community_center", public_phone: "555-0100", public_email: null, qualification_score: 95, status: "QUALIFIED" },
+      { id: "b", name: "Has Email Already", metro: "Boston", prospect_type: "instructor", public_phone: "555-0101", public_email: "x@y.com", qualification_score: 60, status: "QUALIFIED" },
+      { id: "c", name: "No Phone", metro: "Tampa", prospect_type: "club", public_phone: null, public_email: null, qualification_score: 90, status: "QUALIFIED" },
+    ];
+    const frozen = JSON.stringify(candidates);
+    const out = prioritizePhoneQueue(candidates, new Set(["Tampa"]));
+    expect(JSON.stringify(candidates)).toBe(frozen);
+    expect(out.map((c) => c.id)).not.toContain("c");
+    expect(out[0].id).toBe("a");
+    for (const c of out) expect(c.reasons.length).toBeGreaterThan(0);
+    for (const c of out) expect(Object.keys(c)).not.toContain("status_change");
+  });
+
+  test("the priority list is capped so it stays workable", () => {
+    const many = Array.from({ length: 60 }, (_, i) => ({
+      id: String(i), name: `Org ${i}`, metro: "Tampa", prospect_type: "club",
+      public_phone: "555-0100", public_email: null, qualification_score: 95, status: "QUALIFIED",
+    }));
+    expect(prioritizePhoneQueue(many, new Set(["Tampa"])).length).toBeLessThanOrEqual(12);
+  });
+});
+
+test.describe("safety rails survive Phase 5", () => {
+  test("Las Vegas Mahjong still cannot become a prospect", () => {
+    const known: KnownEntities = {
+      suppressedEmails: new Set(), prospectEmails: new Set(), prospectNames: new Set(),
+      listingEmails: new Set(), listingNameCityKeys: new Set(),
+    };
+    for (const name of ["Las Vegas Mahjong", "Las Vegas Mahjong Studio"]) {
+      expect(admissionVerdict({ name, city: "Las Vegas", state: "NV", source_url: "https://x.org" }, known).admit).toBe(false);
+    }
+    expect(admissionVerdict({ name: "Anything", city: "Las Vegas", state: "NV", source_url: "https://x.org", website_url: "https://lasvegasmahj.com/x" }, known).admit).toBe(false);
+  });
+
+  test("suppressed contacts still cannot be rediscovered", () => {
+    const known: KnownEntities = {
+      suppressedEmails: new Set(["out@example.com"]), prospectEmails: new Set(), prospectNames: new Set(),
+      listingEmails: new Set(), listingNameCityKeys: new Set(),
+    };
+    expect(admissionVerdict({ name: "Org", city: "Boston", state: "MA", source_url: "https://x.org", public_email: "Out@example.com" }, known).admit).toBe(false);
+  });
+
+  test("unsubscribed prospects never re-enter outreach", () => {
+    for (const to of ["READY_FOR_OUTREACH", "OUTREACH_ACTIVE", "QUALIFIED"] as const) {
+      expect(canTransition("UNSUBSCRIBED", to)).toBe(false);
+    }
+  });
+});
