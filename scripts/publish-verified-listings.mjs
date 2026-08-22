@@ -12,7 +12,7 @@ import { detectPrivateLocation, redactStreetDetail } from "../lib/private-locati
 import { fetchAllRows } from "../lib/fetch-all.ts";
 // The routing regex is imported rather than copied: this gate exists to reject a row that
 // would appear under the wrong heading, so it has to be the same rule /teachers applies.
-import { TEACHER_TYPE } from "../lib/search.ts";
+import { TEACHER_TYPE } from "../lib/venue-routing.ts";
 
 const APPLY = process.argv.includes("--apply");
 const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
