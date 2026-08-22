@@ -4,6 +4,7 @@
 // Run: node --env-file=.env.local scripts/prospect-ingest.mjs <prospects.json> [--apply]
 import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "node:fs";
+import { admissionVerdict, norm, hostOf } from "../lib/prospect-guards.ts";
 
 const APPLY = process.argv.includes("--apply");
 const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -11,8 +12,6 @@ const input = JSON.parse(readFileSync(process.argv[2], "utf8"));
 const prospects = input.prospects || input;
 console.log(`raw prospects in: ${prospects.length}`);
 
-const norm = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-const hostOf = (u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return null; } };
 
 const [existingP, supp, venues, events] = await Promise.all([
   sb.from("prospects").select("name,organization_name,public_email,source_url"),
@@ -27,6 +26,13 @@ const listingEmails = new Set([...venues.data, ...events.data].map((x) => (x.con
 const listingNames = new Set([...venues.data.map((x) => norm(x.business_name) + "|" + norm(x.city)), ...events.data.map((x) => norm(x.event_name) + "|" + norm(x.city))]);
 const listingHosts = new Set(venues.data.map((x) => hostOf(x.website)).filter(Boolean));
 
+const known = {
+  suppressedEmails: suppressed,
+  prospectEmails: existingEmails,
+  prospectNames: existingNames,
+  listingEmails,
+  listingNameCityKeys: listingNames,
+};
 const seenBatch = new Set();
 const results = { qualified: [], needs_review: [], rejected: [] };
 for (const p of prospects) {
@@ -37,13 +43,10 @@ for (const p of prospects) {
   const reasons = [];
   let score = 50;
 
-  if (!p.name || !p.city || !p.state || !p.source_url) { results.rejected.push({ p, why: "missing identity, location, or source" }); continue; }
   if (seenBatch.has(cityKey) || seenBatch.has(email && "e:" + email)) { results.rejected.push({ p, why: "duplicate within batch" }); continue; }
   seenBatch.add(cityKey); if (email) seenBatch.add("e:" + email);
-  if (email && suppressed.has(email)) { results.rejected.push({ p, why: "suppressed contact" }); continue; }
-  if (email && (existingEmails.has(email) || listingEmails.has(email))) { results.rejected.push({ p, why: "email already known (prospect or listing)" }); continue; }
-  if (existingNames.has(nameKey)) { results.rejected.push({ p, why: "prospect already exists" }); continue; }
-  if (listingNames.has(cityKey)) { results.rejected.push({ p, why: "already a listing" }); continue; }
+  const verdict = admissionVerdict(p, known);
+  if (!verdict.admit) { results.rejected.push({ p, why: verdict.reason }); continue; }
   if (host && listingHosts.has(host)) { reasons.push("website host matches an existing listing"); score -= 20; }
 
   if (p.confidence === "high") score += 35;

@@ -53,7 +53,7 @@ for (const p of prospects) {
     ``,
     opener,
     ``,
-    offering ? `We found ${org} through your public listing (${offering.toLowerCase().length > 120 ? offering.toLowerCase().slice(0, 120).replace(/\s+\S*$/, "") + "..." : offering.toLowerCase()}) and would love to include you so players in ${p.city} can find you.` : `We would love to include ${org} so players in ${p.city} can find you.`,
+    offering ? `We found ${org} through your public listing (${offering.length > 120 ? offering.slice(0, 120).replace(/\s+\S*$/, "") + "..." : offering}) and would love to include you so players in ${p.city} can find you.` : `We would love to include ${org} so players in ${p.city} can find you.`,
     ``,
     `A listing is free to create and takes a few minutes. Your invitation link:`,
     `https://findmymahjgame.com/join?invite=${token}`,
