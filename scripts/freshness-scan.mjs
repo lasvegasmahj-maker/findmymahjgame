@@ -31,7 +31,7 @@ async function probe(u) {
 // so the scan is cheap and safe to run on a schedule without rework.
 const { data: cfg } = await sb.from("app_settings").select("value").eq("key", "growth_freshness_interval_days").maybeSingle();
 const parsedInterval = Number(cfg?.value);
-const INTERVAL_DAYS = Number.isFinite(parsedInterval) ? parsedInterval : 14;
+const INTERVAL_DAYS = Number.isFinite(parsedInterval) && parsedInterval > 0 ? parsedInterval : 14;
 
 const findings = [];
 for (const r of rows) {

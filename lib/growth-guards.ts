@@ -38,6 +38,7 @@ export async function canSendOutreach(prospect: {
   public_email: string | null;
   do_not_contact: boolean;
   campaign_id: string | null;
+  existing_listing_id: string | null;
 }): Promise<SendVerdict> {
   const denials: SendDenial[] = [];
   const supabase = createServerClient();
@@ -53,6 +54,11 @@ export async function canSendOutreach(prospect: {
   if (prospect.status !== "READY_FOR_OUTREACH" && prospect.status !== "FOLLOW_UP_DUE") {
     denials.push("invalid_state");
   }
+
+  // A prospect we published a listing for is already in the product. Matching on contact
+  // email alone used to carry this, but a research sourced listing may legitimately have no
+  // email, so the linkage column is the reliable signal.
+  if (prospect.existing_listing_id) denials.push("already_a_member");
 
   if (prospect.public_email) {
     try {

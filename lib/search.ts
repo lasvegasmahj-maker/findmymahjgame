@@ -8,6 +8,7 @@ import {
   type GeoPrecision,
 } from "@/lib/geo";
 import { isUpcoming, type DayName, type TimeOfDay } from "@/lib/schedule";
+import { TEACHER_TYPE } from "@/lib/venue-routing";
 
 // The single authoritative read path for public discovery. Pages and any future assistant
 // must go through here so they cannot disagree about what is published, what is upcoming,
@@ -379,7 +380,7 @@ async function runVenueQuery(fields: string[], params: VenueSearchParams, useGeo
   return data || [];
 }
 
-const TEACHER_TYPE = /instructor|teacher|lesson|studio|school|class/i;
+
 
 export async function searchVenues(
   params: VenueSearchParams = {}

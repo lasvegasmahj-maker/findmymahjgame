@@ -1,5 +1,5 @@
-import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { cronRequestAuthorized } from "@/lib/cron-auth";
 import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "@/lib/email";
 import { signActionToken } from "@/lib/game-token";
@@ -9,18 +9,14 @@ import { lazyServerClient } from "@/lib/supabase-server";
 // The Bench matcher, MVP. Ships DARK: app_settings.matcher_enabled must be
 // 'true' AND every match still requires the founder's one-click approval
 // before anyone is emailed an invite. Dallas-first per the pilot ruling:
-// only the allowlisted metro pools. Daily cadence (Vercel Hobby allows daily).
+// only the allowlisted metro pools. Daily cadence.
 const supabase = lazyServerClient();
 
 const PILOT_CITIES = ["dallas", "plano", "frisco", "richardson", "addison", "fort worth", "mckinney", "allen", "irving", "garland", "carrollton"];
 const norm = (s: string | null) => (s || "").toLowerCase().replace(/[^a-z0-9 ]/g, "").trim();
 
 export async function GET(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  const presented = req.headers.get("authorization") || "";
-  const expected = `Bearer ${secret}`;
-  const ok = !!secret && presented.length === expected.length &&
-    crypto.timingSafeEqual(Buffer.from(presented), Buffer.from(expected));
+  const ok = cronRequestAuthorized(req.headers.get("authorization"));
   if (!ok) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
