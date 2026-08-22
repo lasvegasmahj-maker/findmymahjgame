@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type Card = {
   id: string;
@@ -30,7 +31,9 @@ const EXAMPLES = [
 ];
 
 export default function AskClient() {
-  const [q, setQ] = useState("");
+  // Prefill from /ask?q=... (the homepage "Continue on the Ask page" link).
+  const searchParams = useSearchParams();
+  const [q, setQ] = useState(() => (searchParams.get("q") || "").slice(0, 200));
   const [busy, setBusy] = useState(false);
   const [resp, setResp] = useState<AskResponse | null>(null);
 

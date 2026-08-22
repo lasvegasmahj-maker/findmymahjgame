@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import USMap from "@/components/home/us-map";
-import SearchBox from "@/components/home/search-box";
+import HomeSearchCard from "@/components/home/home-search-card";
 import { createServerClient } from "@/lib/supabase-server";
 import { safeHttpUrl } from "@/lib/sanitize";
 import { STATES } from "@/lib/states-data";
@@ -78,12 +78,12 @@ export default async function Home() {
 
   return (
     <>
-      {/* HERO */}
-      <section className="hero" style={{ paddingBottom: "1.8rem" }}>
+      {/* HERO: kept tight so the state map arrives quickly. */}
+      <section className="hero" style={{ paddingTop: "clamp(1.4rem, 4vw, 2.6rem)", paddingBottom: "1.2rem" }}>
         <h1>Find Your <em>Mahj Game</em></h1>
-        <p>Search your city, ZIP code, or state to find<br />local games, players, teachers, and events.</p>
-        <SearchBox />
-        <p style={{ marginTop: "0.9rem", marginBottom: 0, fontSize: "0.9rem", color: "var(--muted)", fontWeight: 600 }}>Always free for players.</p>
+        <p style={{ marginBottom: "1.2rem" }}>Search your city, ZIP code, or state to find local games, players, teachers, and events.</p>
+        <HomeSearchCard />
+        <p style={{ marginTop: "0.8rem", marginBottom: 0, fontSize: "0.9rem", color: "var(--muted)", fontWeight: 600 }}>Always free for players.</p>
       </section>
 
       {/* MAP SECTION */}

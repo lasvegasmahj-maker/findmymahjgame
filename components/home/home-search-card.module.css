@@ -1,0 +1,166 @@
+/* Compact navy search card with a two-mode control: Find a Game and Ask Find My Mahj. */
+
+.card {
+  background: var(--navy);
+  border-radius: 16px;
+  padding: 0.9rem 1rem 1rem;
+  max-width: 620px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+/* SearchBox renders its own full-width dark container; inside this card the
+   card itself is the container, so the inner one goes flat and flush. */
+.card :global(.inline-search) {
+  background: transparent;
+  padding: 0;
+  margin-top: 0;
+  border-radius: 0;
+}
+/* SearchBox spaces its row with an inline style; the compact card removes it. */
+.card :global(.home-search-row) {
+  margin-bottom: 0 !important;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.25rem;
+  margin-bottom: 0.8rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+.tab {
+  flex: 1 1 auto;
+  min-height: 44px;
+  padding: 0 0.8rem;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: var(--font-dm-sans), "DM Sans", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.tab[aria-selected="true"] {
+  background: white;
+  color: var(--navy);
+}
+.tab:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+@media (max-width: 400px) {
+  .tab { font-size: 0.85rem; padding: 0 0.5rem; }
+}
+
+.askRow {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+@media (max-width: 520px) {
+  .askRow { flex-direction: column; }
+  .askRow > * { width: 100%; }
+}
+.askInput {
+  flex: 1 1 220px;
+  min-width: 0;
+  min-height: 54px;
+  padding: 0 1.2rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-family: var(--font-dm-sans), "DM Sans", sans-serif;
+  color: var(--text);
+  background: white;
+  outline: none;
+  box-sizing: border-box;
+}
+.askInput:focus-visible {
+  outline: 2px solid var(--pink);
+  outline-offset: 2px;
+}
+.askBtn {
+  min-height: 54px;
+  padding: 0 1.6rem;
+  border: none;
+  border-radius: 12px;
+  background: var(--pink);
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  font-family: var(--font-dm-sans), "DM Sans", sans-serif;
+  flex-shrink: 0;
+}
+.askBtn:disabled { opacity: 0.6; cursor: default; }
+.askBtn:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.askStatus {
+  max-width: 620px;
+  margin: 0.8rem auto 0;
+  font-size: 0.95rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.answer {
+  max-width: 620px;
+  margin: 0.9rem auto 0;
+  padding: 1rem 1.2rem;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  text-align: left;
+}
+.answerText {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1.5;
+}
+.answerList {
+  list-style: none;
+  margin: 0.7rem 0 0;
+  padding: 0;
+}
+.answerList li {
+  padding: 0.35rem 0;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+.answerLink {
+  color: var(--pink-text);
+  font-weight: 700;
+  text-decoration: none;
+}
+.answerLink:hover { text-decoration: underline; }
+.answerName {
+  color: var(--navy);
+  font-weight: 700;
+}
+.answerContinue {
+  margin: 0.8rem 0 0;
+  font-size: 0.9rem;
+}
+.answerContinue a {
+  color: var(--pink-text);
+  font-weight: 700;
+  text-decoration: none;
+}
+.answerContinue a:hover { text-decoration: underline; }
