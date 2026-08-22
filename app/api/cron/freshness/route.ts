@@ -1,5 +1,5 @@
-import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { cronRequestAuthorized } from "@/lib/cron-auth";
 import { lazyServerClient } from "@/lib/supabase-server";
 import { fetchAllRows } from "@/lib/fetch-all";
 
@@ -35,11 +35,7 @@ function severityFor(priority: number): string {
 }
 
 export async function GET(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  const presented = req.headers.get("authorization") || "";
-  const expected = `Bearer ${secret}`;
-  const digest = (v: string) => crypto.createHash("sha256").update(v).digest();
-  const ok = !!secret && crypto.timingSafeEqual(digest(presented), digest(expected));
+  const ok = cronRequestAuthorized(req.headers.get("authorization"));
   if (!ok) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const now = Date.now();
@@ -85,16 +81,22 @@ export async function GET(req: NextRequest) {
     let filed = 0;
     let skippedDuplicate = 0;
     let skippedHumanFlag = 0;
+    // Skips are applied before the slice, otherwise a backlog larger than one batch would
+    // re-slice the same already-flagged rows every week and never reach its tail.
+    const eligible = findings.filter((f) => {
+      const newFlag = `freshness_${f.severity.toLowerCase()}`;
+      if (f.row.review_flag === newFlag) { skippedDuplicate++; return false; }
+      // A flag a person is working through outranks anything this job wants to say.
+      if (f.row.review_flag && !f.row.review_flag.startsWith("freshness_")) { skippedHumanFlag++; return false; }
+      return true;
+    });
     // A timeout mid loop would skip the catch and leave no audit row, so each run takes a
     // bounded slice and reports the remainder for the next one.
     const PER_RUN = 200;
-    const batch = findings.slice(0, PER_RUN);
+    const batch = eligible.slice(0, PER_RUN);
     for (const f of batch) {
       const table = f.row.kind === "event" ? "event_listings" : "venue_listings";
       const newFlag = `freshness_${f.severity.toLowerCase()}`;
-      if (f.row.review_flag === newFlag) { skippedDuplicate++; continue; }
-      // A flag a person is working through outranks anything this job wants to say.
-      if (f.row.review_flag && !f.row.review_flag.startsWith("freshness_")) { skippedHumanFlag++; continue; }
 
       const { error: upErr } = await supabase.from(table).update({ review_flag: newFlag }).eq("id", f.row.id);
       if (upErr) { console.error(`freshness cron: flag failed for ${table}/${f.row.id}: ${upErr.message}`); continue; }
@@ -108,7 +110,7 @@ export async function GET(req: NextRequest) {
       filed++;
     }
 
-    const deferred = Math.max(0, findings.length - batch.length);
+    const deferred = Math.max(0, eligible.length - batch.length);
     const summary = { scanned: rows.length, findings: findings.length, filed, skippedDuplicate, skippedHumanFlag, deferred, intervalDays };
     await supabase.from("outreach_events").insert({
       agent: FRESHNESS_AGENT,

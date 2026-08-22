@@ -1,5 +1,5 @@
-import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { cronRequestAuthorized } from "@/lib/cron-auth";
 import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "@/lib/email";
 import { signActionToken } from "@/lib/game-token";
@@ -16,11 +16,7 @@ const PILOT_CITIES = ["dallas", "plano", "frisco", "richardson", "addison", "for
 const norm = (s: string | null) => (s || "").toLowerCase().replace(/[^a-z0-9 ]/g, "").trim();
 
 export async function GET(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  const presented = req.headers.get("authorization") || "";
-  const expected = `Bearer ${secret}`;
-  const digest = (v: string) => crypto.createHash("sha256").update(v).digest();
-  const ok = !!secret && crypto.timingSafeEqual(digest(presented), digest(expected));
+  const ok = cronRequestAuthorized(req.headers.get("authorization"));
   if (!ok) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

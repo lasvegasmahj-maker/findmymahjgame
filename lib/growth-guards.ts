@@ -38,7 +38,7 @@ export async function canSendOutreach(prospect: {
   public_email: string | null;
   do_not_contact: boolean;
   campaign_id: string | null;
-  existing_listing_id?: string | null;
+  existing_listing_id: string | null;
 }): Promise<SendVerdict> {
   const denials: SendDenial[] = [];
   const supabase = createServerClient();

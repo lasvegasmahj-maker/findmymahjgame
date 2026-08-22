@@ -9,6 +9,7 @@ export type LocationFields = {
   venue?: string | null;
   address?: string | null;
   description?: string | null;
+  day_time?: string | null;
   city?: string | null;
   state?: string | null;
 };
@@ -35,6 +36,7 @@ export function detectPrivateLocation(r: LocationFields): PrivacySignals {
     ["venue", r.venue || ""],
     ["address", r.address || ""],
     ["description", r.description || ""],
+    ["day_time", r.day_time || ""],
   ];
   const fields: string[] = [];
   const reasons: string[] = [];

@@ -8,7 +8,7 @@
 // Run: node --env-file=.env.local scripts/publish-verified-listings.mjs <verdicts.json> [--apply]
 import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "node:fs";
-import { detectPrivateLocation } from "../lib/private-location.ts";
+import { detectPrivateLocation, redactStreetDetail } from "../lib/private-location.ts";
 
 const APPLY = process.argv.includes("--apply");
 const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -34,8 +34,9 @@ const EVENT_TYPE_RULES = [
   [/open play|drop.?in|club|game|social|community|library|senior/i, "open_play"],
 ];
 function resolveEventType(verdict) {
-  const text = `${verdict.suggested_category || ""} ${verdict.schedule_text || ""} ${verdict.proposed_description || ""}`;
-  for (const [re, type] of EVENT_TYPE_RULES) if (re.test(text)) return type;
+  // Only the reviewer's category decides this. Matching the description too would turn a
+  // weekly game whose page mentions an annual tournament into a tournament listing.
+  for (const [re, type] of EVENT_TYPE_RULES) if (re.test(String(verdict.suggested_category || ""))) return type;
   return null;
 }
 // venue_type is rendered verbatim as a public category chip and, together with the
@@ -50,7 +51,9 @@ const VENUE_TYPE_RULES = [
   [/senior|55\+|retirement/i, "Senior Center"],
   [/community|rec center|recreation/i, "Community Center"],
   [/club/i, "Club"],
-  [/cafe|restaurant|bar|brewery|game store|shop/i, "Venue"],
+  [/cafe|coffee/i, "Cafe"],
+  [/restaurant|bar|brewery|taproom/i, "Restaurant"],
+  [/game store|board game|shop/i, "Game Store"],
   [/tournament/i, "Tournament Organizer"],
   [/retreat|travel|cruise/i, "Retreat Organizer"],
 ];
@@ -153,7 +156,7 @@ for (const v of verdicts) {
         is_recurring: days.length > 0,
         schedule_confidence: v.schedule_confidence === "HIGH_EXPLICIT" && !ordinalCadence ? "high" : "medium",
         schedule_parsed_at: new Date().toISOString(),
-        day_time: v.schedule_text ? v.schedule_text.slice(0, 200) : null,
+        day_time: v.schedule_text ? redactStreetDetail(v.schedule_text).slice(0, 200) : null,
         confirmed_active_at: new Date().toISOString(),
         status: "published",
         reviewer_notes: `Phase 5 publishability review 2026-08-22. Variant ${v.mahjong_variant}. ${v.quoted_evidence || ""}`.slice(0, 1800),
@@ -189,11 +192,14 @@ for (const v of verdicts) {
   const privacy = detectPrivateLocation({
     venue: row.venue,
     description: row.description,
+    day_time: row.day_time,
     city: row.city,
     state: row.state,
   });
+  // The reviewer's structured verdict is the strongest signal available, so it blocks on its
+  // own rather than only withholding permission from the weaker regex check.
   const streetAllowed = v.location_confidence === "EXACT_PUBLIC_ADDRESS" && v.public_or_private !== "PRIVATE_RESIDENCE";
-  if (privacy.isPrivateResidence || (privacy.hasStreetDetail && !streetAllowed)) {
+  if (v.public_or_private === "PRIVATE_RESIDENCE" || privacy.isPrivateResidence || (privacy.hasStreetDetail && !streetAllowed)) {
     console.error(`  BLOCKED by privacy policy: ${v.name} (${privacy.reasons.join("; ")})`);
     continue;
   }
@@ -217,11 +223,12 @@ for (const { v, p, table, row, existingId } of planned) {
   let listingId = existingId;
   if (existingId) {
     // Refresh only what the research owns. Status, contact fields, and reviewer notes stay
-    // as they are, so a later human edit is never undone by a rerun.
+    // as they are, so a later human edit is never undone by a rerun. confirmed_active_at is
+    // deliberately absent: it drives the public "Confirmed active" badge, and a source URL
+    // returning 200 is not evidence that a game still runs.
     const refresh = {
       description: row.description,
       source_url: row.source_url,
-      confirmed_active_at: row.confirmed_active_at,
       ...(table === "event_listings"
         ? { day_of_week: row.day_of_week, is_recurring: row.is_recurring, day_time: row.day_time, schedule_confidence: row.schedule_confidence, schedule_parsed_at: row.schedule_parsed_at, price: row.price }
         : { website: row.website }),
@@ -242,11 +249,12 @@ for (const { v, p, table, row, existingId } of planned) {
     existing_listing_table: table,
     existing_listing_id: listingId,
     updated_at: new Date().toISOString(),
-  }).eq("id", p.id);
-  const { data: staleDrafts } = await sb.from("outreach_messages")
+  }).eq("id", p.id).then((r) => { if (r.error) console.error(`  linkage write failed for ${v.name}: ${r.error.message}`); return r; });
+  const { data: staleDrafts, error: draftErr } = await sb.from("outreach_messages")
     .update({ send_status: "cancelled" })
     .eq("prospect_id", p.id).eq("send_status", "draft").eq("approved_by_human", false)
     .select("id");
+  if (draftErr) console.error(`  draft cancel failed for ${v.name}: ${draftErr.message}`);
   if (staleDrafts?.length) console.log(`  cancelled ${staleDrafts.length} draft(s) for ${v.name}: they are listed now, so the copy no longer applies`);
   await sb.from("outreach_events").insert({
     prospect_id: p.id,

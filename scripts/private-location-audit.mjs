@@ -6,29 +6,30 @@
 // Run: node --env-file=.env.local scripts/private-location-audit.mjs [--apply]
 import { createClient } from "@supabase/supabase-js";
 import { detectPrivateLocation, redactStreetDetail, PRIVATE_LOCATION_FLAG, LOCATION_ON_REQUEST_TEXT } from "../lib/private-location.ts";
+import { fetchAllRows } from "../lib/fetch-all.ts";
 
 const APPLY = process.argv.includes("--apply");
 const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 const [v, e] = await Promise.all([
-  sb.from("venue_listings").select("id,business_name,city,state,address,description,status,review_flag,reviewer_notes"),
-  sb.from("event_listings").select("id,event_name,city,state,venue,address,description,status,review_flag,reviewer_notes"),
+  fetchAllRows(sb, "venue_listings", "id,business_name,city,state,address,description,status,review_flag,reviewer_notes"),
+  fetchAllRows(sb, "event_listings", "id,event_name,city,state,venue,address,day_time,description,status,review_flag,reviewer_notes"),
 ]);
 if (v.error || e.error) {
   console.error(`listing query failed: ${v.error?.message || e.error?.message}`);
   process.exit(1);
 }
 const rows = [
-  ...v.data.map((r) => ({ ...r, table: "venue_listings", name: r.business_name, venue: null })),
-  ...e.data.map((r) => ({ ...r, table: "event_listings", name: r.event_name })),
+  ...v.rows.map((r) => ({ ...r, table: "venue_listings", name: r.business_name, venue: null })),
+  ...e.rows.map((r) => ({ ...r, table: "event_listings", name: r.event_name })),
 ];
 console.log(`listings scanned: ${rows.length}`);
 
 const findings = [];
 for (const r of rows) {
+  // Street detail on a public venue is expected and fine; only a home triggers this sweep.
   const s = detectPrivateLocation(r);
-  if (!s.isPrivateResidence && !s.hasStreetDetail) continue;
-  if (!s.isPrivateResidence) continue; // street detail on a public venue is expected and fine
+  if (!s.isPrivateResidence) continue;
   // Street detail is removed wherever it appears, not only on live rows: a pending row is
   // one approval click away from being public, so it must be safe before that click.
   findings.push({ r, s, redact: s.hasStreetDetail, urgent: r.status === "published" && s.hasStreetDetail });
@@ -58,10 +59,12 @@ for (const { r, s, urgent, redact } of findings) {
     if (r.address) update.address = redactStreetDetail(r.address) || null;
     if (r.table === "event_listings") {
       update.venue = redactStreetDetail(r.venue) || LOCATION_ON_REQUEST_TEXT;
+      if (r.day_time) update.day_time = redactStreetDetail(r.day_time) || null;
     }
   }
-  // Never overwrite a flag a human put there, and never clear an existing one.
-  if (!r.review_flag) update.review_flag = PRIVATE_LOCATION_FLAG;
+  // A human placed flag is left alone, but a machine set freshness flag yields: a privacy
+  // hold has to reach the console, and staleness can be re-derived on the next scan.
+  if (!r.review_flag || r.review_flag.startsWith("freshness_")) update.review_flag = PRIVATE_LOCATION_FLAG;
   if (!Object.keys(update).length) continue;
   update.reviewer_notes = `${r.reviewer_notes || ""} | 2026-08-22 private location audit: ${s.reasons.join("; ")}. ${redact ? "Street level detail removed from public fields. " : ""}Publication decision left to Shauna.`.slice(0, 1800);
 

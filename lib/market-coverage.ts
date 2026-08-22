@@ -93,9 +93,9 @@ export function summarizeMetro(metro: string, rows: CoverageRow[], now = Date.no
   const count = (n: number, one: string, many: string) =>
     n === 0 ? `no ${many}` : n === 1 ? `only 1 ${one}` : `only ${n} ${many}`;
   if (recurringGames < 3) limitingFactors.push(count(recurringGames, "recurring game or open play", "recurring games or open plays"));
-  if (instructors < 2) limitingFactors.push(count(instructors, "instructor", "instructors"));
+  if (instructors < 2) limitingFactors.push(count(instructors, "teacher", "teachers"));
   if (strongSchedules < 3) limitingFactors.push(count(strongSchedules, "listing a player can act on today", "listings a player can act on today"));
-  if (rows.length > 0 && currentEvidence * 2 < rows.length) limitingFactors.push(`under half the listings have evidence from the last 6 months`);
+  if (rows.length > 0 && currentEvidence * 2 < rows.length) limitingFactors.push("under half the listings have evidence from the last 6 months");
   if (rows.length >= 4 && topCityShare >= 80) limitingFactors.push(`${topCityShare} percent of listings sit in one city`);
 
   const readiness: MetroCoverage["readiness"] =

@@ -114,8 +114,8 @@ test.describe("market coverage", () => {
   test("limiting factors read grammatically at one", () => {
     const rows = [row(), row({ kind: "venue", type: "Mahjong Instructor", is_recurring: null, schedule_confidence: null })];
     const factors = summarizeMetro("Houston", rows).limitingFactors.join(" ");
-    expect(factors).toContain("only 1 instructor");
-    expect(factors).not.toContain("only 1 instructors");
+    expect(factors).toContain("only 1 teacher");
+    expect(factors).not.toContain("only 1 teachers");
     expect(factors).not.toContain("only 0");
   });
 

@@ -100,7 +100,7 @@ export default async function GrowthAgentsPage() {
       supabase.from("outreach_messages").select("id", { count: "exact", head: true }).eq("send_status", "draft").eq("approved_by_human", true),
       supabase.from("outreach_messages").select("id", { count: "exact", head: true }).eq("send_status", "sent"),
       supabase.from("email_suppressions").select("email", { count: "exact", head: true }),
-      supabase.from("prospects").select("id,name,city,state,metro,prospect_type,public_phone,public_email,status,qualification_score").not("public_phone", "is", null).limit(400),
+      supabase.from("prospects").select("id,name,city,state,metro,prospect_type,public_phone,public_email,status,qualification_score").not("public_phone", "is", null).order("qualification_score", { ascending: false }).limit(400),
       supabase.from("venue_listings").select("review_flag").not("review_flag", "is", null),
       supabase.from("event_listings").select("review_flag").not("review_flag", "is", null),
     ]);
@@ -110,6 +110,7 @@ export default async function GrowthAgentsPage() {
       .order("created_at", { ascending: false }).limit(5);
     freshnessRuns = ((fr || []) as Array<{ action: string; reason: string | null; created_at: string }>)
       .map((r) => ({ action: r.action, reason: r.reason, created: String(r.created_at).slice(0, 16).replace("T", " ") }));
+    totalDrafts = draftCount ?? drafts.length;
     if (cvRes.error || ceRes.error) throw new Error(cvRes.error || ceRes.error || "coverage query failed");
     const str = (v: unknown) => (typeof v === "string" ? v : null);
     const coverageRows: CoverageRow[] = [
@@ -140,7 +141,6 @@ export default async function GrowthAgentsPage() {
       metro: d.prospects?.metro ?? null, prospect_type: d.prospects?.prospect_type ?? null,
     }));
     draftSample = representativeSample(sampleSource).map((d) => ({ id: d.id, subject: d.subject, prospect: d.prospect, metro: d.metro ?? null, type: d.prospect_type ?? null }));
-    totalDrafts = draftCount ?? 0;
   } catch {
     coverage = [];
     digest = null;
@@ -219,7 +219,7 @@ export default async function GrowthAgentsPage() {
         <>
           <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>This week</h2>
           <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>
-            Counts marked (total) are running totals. The rest cover the 7 days ending {digest.window.until.slice(0, 10)}.
+            Counts marked (total) are running totals. The rest cover the 7 days ending {new Date(digest.window.until).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}.
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 210px), 1fr))", gap: "0.5rem" }}>
             {digest.changed.map(([label, n, scope]) => (
@@ -231,13 +231,13 @@ export default async function GrowthAgentsPage() {
           </div>
           {digest.needsShauna.length > 0 && (
             <>
-              <h3 style={{ fontSize: "1rem", color: "var(--navy)", margin: "1.2rem 0 0.4rem" }}>What needs you</h3>
+              <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1rem", color: "var(--navy)", margin: "1.2rem 0 0.4rem" }}>What needs you</h3>
               <ul style={{ margin: 0, paddingLeft: "1.1rem", color: "var(--navy)", fontSize: "0.9rem" }}>
                 {digest.needsShauna.map((t) => <li key={t} style={{ marginBottom: "0.25rem" }}>{t}</li>)}
               </ul>
             </>
           )}
-          <h3 style={{ fontSize: "1rem", color: "var(--navy)", margin: "1.2rem 0 0.4rem" }}>What the agents will work on next</h3>
+          <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1rem", color: "var(--navy)", margin: "1.2rem 0 0.4rem" }}>What the agents will work on next</h3>
           <ol style={{ margin: 0, paddingLeft: "1.2rem", color: "var(--muted)", fontSize: "0.88rem" }}>
             {digest.agentQueue.map((t) => <li key={t} style={{ marginBottom: "0.2rem" }}>{t}</li>)}
           </ol>
@@ -289,7 +289,7 @@ export default async function GrowthAgentsPage() {
       </div>
 
       <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Draft review sample ({draftSample.length})</h2>
-      <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>A spread across metro and category so you can judge the writing without reading all {totalDrafts}. Viewing this changes nothing; drafts stay unapproved until you approve one.</p>
+      <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>A spread across metro and category, drawn from the {drafts.length} most recent drafts, so you can judge the writing without reading every one. Viewing this changes nothing; drafts stay unapproved until you approve one.</p>
       {draftSample.length === 0 ? <p style={{ color: "var(--muted)" }}>No drafts to sample.</p> : (
         <div style={{ display: "grid", gap: "0.4rem" }}>
           {draftSample.map((d) => (
@@ -302,8 +302,8 @@ export default async function GrowthAgentsPage() {
         </div>
       )}
 
-      <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Calls worth making first ({phonePriority.length})</h2>
-      <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>Ranked by how many named reasons apply, with evidence score breaking ties. Opening this list changes no record.</p>
+      <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Prospect calls worth making first ({phonePriority.length})</h2>
+      <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>Drawn from the 400 prospects with the strongest evidence, then ranked by how many named reasons apply, with evidence score breaking ties. Opening this list changes no record.</p>
       {phonePriority.length === 0 ? <p style={{ color: "var(--muted)" }}>No prioritized calls right now.</p> : (
         <div style={{ display: "grid", gap: "0.4rem" }}>
           {phonePriority.map((c) => (
@@ -330,7 +330,7 @@ export default async function GrowthAgentsPage() {
           {freshnessRuns.map((r) => (
             <div key={r.created} style={{ fontSize: "0.86rem", display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
               <span style={{ color: "var(--muted)", minWidth: "min(120px, 40vw)", fontVariantNumeric: "tabular-nums" }}>{r.created}</span>
-              <strong style={{ color: r.action === "scheduled_run_failed" ? "#b3261e" : "var(--green-dark)" }}>{r.action === "scheduled_run_failed" ? "FAILED" : "ran"}</strong>
+              <strong style={{ color: r.action === "scheduled_run_failed" ? "#b3261e" : "var(--green-dark)" }}>{r.action === "scheduled_run_failed" ? "FAILED" : "RAN"}</strong>
               <span style={{ color: "var(--muted)", wordBreak: "break-word" }}>{r.reason}</span>
             </div>
           ))}
@@ -360,7 +360,7 @@ export default async function GrowthAgentsPage() {
         </div>
       )}
 
-      <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Phone verification queue ({phoneQueue.length})</h2>
+      <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Listings waiting on a phone check ({phoneQueue.length})</h2>
       {phoneQueue.length === 0 ? <p style={{ color: "var(--muted)" }}>Nothing waiting on a call.</p> : (
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>

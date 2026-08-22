@@ -10,7 +10,9 @@ export async function fetchAllRows<T>(
 ): Promise<{ rows: T[]; error: string | null }> {
   const rows: T[] = [];
   for (let from = 0; ; from += 1000) {
-    let query = supabase.from(table).select(columns).range(from, from + 999);
+    // Paging without a sort key can repeat or skip rows between pages, which for a dedupe
+    // index means publishing a second listing for an entity we already have.
+    let query = supabase.from(table).select(columns).order("id", { ascending: true }).range(from, from + 999);
     for (const [col, val] of eqFilters) query = query.eq(col, val);
     const { data, error } = await query;
     if (error) return { rows, error: error.message };
