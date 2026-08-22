@@ -1,9 +1,6 @@
-// Market coverage: does this directory actually help a player in a given city today?
-//
-// Deliberately not a single opaque score. Every input stays visible, and the readiness label
-// is derived from named thresholds so an operator can see which specific gap moved it. Raw
-// row count is the weakest signal here: ten stale instructor pages help nobody, while two
-// recurring games with current sources help immediately.
+// Deliberately not a single opaque score: the readiness label comes from named thresholds so
+// an operator can see which gap moved it. Row count is the weakest signal here, since ten
+// stale instructor pages help nobody and two current recurring games help immediately.
 
 export type CoverageRow = {
   kind: "venue" | "event";
@@ -39,7 +36,7 @@ export type MetroCoverage = {
 };
 
 const INSTRUCTOR_RE = /instructor|teacher|lesson|class|studio|school/i;
-const CLUB_RE = /club|community|jcc|library|senior|rec|social|league|program/i;
+const CLUB_RE = /\b(club|community|jcc|library|senior|rec|recreation|social|league|program)\b/i;
 const TOURNAMENT_RE = /tournament/i;
 const RETREAT_RE = /retreat|cruise|travel|getaway/i;
 const OPEN_PLAY_RE = /open.?play|recurring|drop.?in|game|play/i;
@@ -95,9 +92,10 @@ export function summarizeMetro(metro: string, rows: CoverageRow[], now = Date.no
   // schedule they can act on. These thresholds are the definition of useful, stated plainly
   // rather than hidden inside a weighted score.
   const limitingFactors: string[] = [];
-  if (recurringGames < 3) limitingFactors.push(`only ${recurringGames} recurring games or open plays`);
-  if (instructors < 2) limitingFactors.push(`only ${instructors} instructors`);
-  if (strongSchedules < 3) limitingFactors.push(`only ${strongSchedules} listings a player can act on today`);
+  const count = (n: number, noun: string) => (n === 0 ? `no ${noun}` : `only ${n} ${noun}`);
+  if (recurringGames < 3) limitingFactors.push(count(recurringGames, "recurring games or open plays"));
+  if (instructors < 2) limitingFactors.push(count(instructors, "instructors"));
+  if (strongSchedules < 3) limitingFactors.push(count(strongSchedules, "listings a player can act on today"));
   if (rows.length > 0 && currentEvidence * 2 < rows.length) limitingFactors.push(`under half the listings have evidence from the last 6 months`);
   if (rows.length >= 4 && topCityShare >= 80) limitingFactors.push(`${topCityShare} percent of listings sit in one city`);
 
@@ -127,32 +125,32 @@ export function summarizeMetro(metro: string, rows: CoverageRow[], now = Date.no
   };
 }
 
-// Metro definitions by the cities the directory actually holds. Kept explicit rather than
-// derived from radius maths so an operator can see exactly which cities roll up where.
+// Metro definitions keyed "city|state", because city names repeat across states: Glendale is
+// in both the Phoenix and Los Angeles lists, and Highland Park in both Dallas and Chicago.
 export const METRO_CITIES: Record<string, string[]> = {
-  Boston: ["boston", "cambridge", "somerville", "brookline", "newton", "lexington", "wellesley", "holliston", "medfield", "milford", "duxbury", "north shore", "roslindale", "needham", "natick", "framingham"],
-  "Las Vegas": ["las vegas", "henderson", "summerlin", "north las vegas", "boulder city", "enterprise", "spring valley", "paradise"],
-  "Los Angeles": ["los angeles", "santa monica", "beverly hills", "pasadena", "culver city", "west hollywood", "sherman oaks", "studio city", "long beach", "torrance", "irvine", "burbank", "glendale", "encino", "calabasas", "manhattan beach"],
-  Houston: ["houston", "sugar land", "katy", "the woodlands", "pearland", "bellaire", "cypress", "spring", "humble"],
-  "St. Louis": ["st. louis", "st louis", "saint louis", "clayton", "chesterfield", "kirkwood", "ladue", "des peres", "webster groves", "creve coeur", "town and country", "wildwood"],
-  Tampa: ["tampa", "st. petersburg", "st petersburg", "saint petersburg", "clearwater", "brandon", "wesley chapel", "lutz", "safety harbor", "palm harbor", "temple terrace"],
-  // Metros the directory already serves. They sit alongside the target metros so the table
-  // shows where a player is helped today, not only where the growth work is pointed.
-  "Dallas Fort Worth": ["dallas", "plano", "frisco", "richardson", "addison", "fort worth", "mckinney", "allen", "irving", "garland", "carrollton", "highland park", "university park", "southlake", "grapevine"],
-  Phoenix: ["phoenix", "scottsdale", "chandler", "tempe", "mesa", "gilbert", "paradise valley", "peoria", "glendale", "arcadia"],
-  "New York": ["new york", "brooklyn", "manhattan", "queens", "bronx", "staten island", "scarsdale", "great neck", "white plains"],
-  Chicago: ["chicago", "evanston", "highland park", "wilmette", "winnetka", "skokie", "northbrook", "oak park", "glencoe", "deerfield"],
-  "Washington DC": ["washington", "bethesda", "chevy chase", "arlington", "alexandria", "silver spring", "rockville", "potomac", "mclean"],
-  "San Diego": ["san diego", "la jolla", "encinitas", "carlsbad", "del mar", "coronado", "chula vista", "poway", "solana beach"],
-  Atlanta: ["atlanta", "decatur", "sandy springs", "roswell", "alpharetta", "marietta", "dunwoody", "brookhaven", "buckhead"],
-  "Southwest Florida": ["naples", "marco island", "bonita springs", "estero", "fort myers", "cape coral", "sanibel"],
+  Boston: ["boston|MA", "cambridge|MA", "somerville|MA", "brookline|MA", "newton|MA", "lexington|MA", "wellesley|MA", "holliston|MA", "medfield|MA", "milford|MA", "duxbury|MA", "north shore|MA", "roslindale|MA", "needham|MA", "natick|MA", "framingham|MA"],
+  "Las Vegas": ["las vegas|NV", "henderson|NV", "summerlin|NV", "north las vegas|NV", "boulder city|NV", "enterprise|NV", "spring valley|NV", "paradise|NV"],
+  "Los Angeles": ["los angeles|CA", "santa monica|CA", "beverly hills|CA", "pasadena|CA", "culver city|CA", "west hollywood|CA", "sherman oaks|CA", "studio city|CA", "long beach|CA", "torrance|CA", "irvine|CA", "burbank|CA", "glendale|CA", "encino|CA", "calabasas|CA", "manhattan beach|CA"],
+  Houston: ["houston|TX", "sugar land|TX", "katy|TX", "the woodlands|TX", "pearland|TX", "bellaire|TX", "cypress|TX", "spring|TX", "humble|TX"],
+  "St. Louis": ["st. louis|MO", "st louis|MO", "saint louis|MO", "clayton|MO", "chesterfield|MO", "kirkwood|MO", "ladue|MO", "des peres|MO", "webster groves|MO", "creve coeur|MO", "town and country|MO", "wildwood|MO"],
+  Tampa: ["tampa|FL", "st. petersburg|FL", "st petersburg|FL", "saint petersburg|FL", "clearwater|FL", "brandon|FL", "wesley chapel|FL", "lutz|FL", "safety harbor|FL", "palm harbor|FL", "temple terrace|FL"],
+  "Dallas Fort Worth": ["dallas|TX", "plano|TX", "frisco|TX", "richardson|TX", "addison|TX", "fort worth|TX", "mckinney|TX", "allen|TX", "irving|TX", "garland|TX", "carrollton|TX", "highland park|TX", "university park|TX", "southlake|TX", "grapevine|TX", "arlington|TX"],
+  Phoenix: ["phoenix|AZ", "scottsdale|AZ", "chandler|AZ", "tempe|AZ", "mesa|AZ", "gilbert|AZ", "paradise valley|AZ", "peoria|AZ", "glendale|AZ", "arcadia|AZ"],
+  "New York": ["new york|NY", "brooklyn|NY", "manhattan|NY", "queens|NY", "bronx|NY", "staten island|NY", "scarsdale|NY", "great neck|NY", "white plains|NY"],
+  Chicago: ["chicago|IL", "evanston|IL", "highland park|IL", "wilmette|IL", "winnetka|IL", "skokie|IL", "northbrook|IL", "oak park|IL", "glencoe|IL", "deerfield|IL"],
+  "Washington DC": ["washington|DC", "bethesda|MD", "chevy chase|MD", "silver spring|MD", "rockville|MD", "potomac|MD", "arlington|VA", "alexandria|VA", "mclean|VA"],
+  "San Diego": ["san diego|CA", "la jolla|CA", "encinitas|CA", "carlsbad|CA", "del mar|CA", "coronado|CA", "chula vista|CA", "poway|CA", "solana beach|CA"],
+  Atlanta: ["atlanta|GA", "decatur|GA", "sandy springs|GA", "roswell|GA", "alpharetta|GA", "marietta|GA", "dunwoody|GA", "brookhaven|GA", "buckhead|GA"],
+  "Southwest Florida": ["naples|FL", "marco island|FL", "bonita springs|FL", "estero|FL", "fort myers|FL", "cape coral|FL", "sanibel|FL"],
 };
 
-export function metroOf(city?: string | null): string | null {
+export function metroOf(city?: string | null, state?: string | null): string | null {
   const c = String(city || "").trim().toLowerCase();
-  if (!c) return null;
+  const st = String(state || "").trim().toUpperCase();
+  if (!c || !st) return null;
+  const key = `${c}|${st}`;
   for (const [metro, cities] of Object.entries(METRO_CITIES)) {
-    if (cities.includes(c)) return metro;
+    if (cities.includes(key)) return metro;
   }
   return null;
 }

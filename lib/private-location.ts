@@ -1,17 +1,9 @@
-// Private residence policy.
-//
-// Some real, useful mahjong games happen at a person's home. A player still benefits from
-// knowing the game exists, but the host's home is not a public venue and must never be
-// displayed as one. The exact address column is already outside the public field allowlist
-// in lib/search.ts; the leak risk lives in the free text fields (venue, description) that
-// research imports wrote, which is what this module governs.
-//
-// The rule: nothing narrower than a city, plus an optional named neighborhood, may be shown
-// for a private-residence game, and the copy must tell the player how the location is
-// actually obtained rather than implying a public address exists.
+// Real mahjong games happen at people's homes, and a host's home is not a public venue. The
+// address column already sits outside the public field allowlist in lib/search.ts, so the
+// leak risk lives in the free text fields research imports wrote, which is what this governs.
+// The rule: nothing narrower than a city may be shown for a private residence game.
 
 export const PRIVATE_LOCATION_FLAG = "private_location_hold";
-export const PRIVATE_LOCATION_APPROVED = "private_location_approved_city_only";
 
 export type LocationFields = {
   venue?: string | null;
@@ -72,7 +64,7 @@ export function isUrgentPrivacyExposure(r: LocationFields & { status?: string | 
   return Boolean(r.status === "published" && s.isPrivateResidence && s.hasStreetDetail);
 }
 
-export const LOCATION_ON_REQUEST_TEXT = "Location shared by the host with people who join the group";
+export const LOCATION_ON_REQUEST_TEXT = "The host shares the location once you join the group";
 
 // The safe public form: city and state, plus a neighborhood only when the source named one,
 // and never a street. Callers pass a neighborhood only when a source states it.

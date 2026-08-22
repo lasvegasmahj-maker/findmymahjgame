@@ -14,6 +14,10 @@ const [v, e] = await Promise.all([
   sb.from("venue_listings").select("id,business_name,city,state,address,description,status,review_flag,reviewer_notes"),
   sb.from("event_listings").select("id,event_name,city,state,venue,address,description,status,review_flag,reviewer_notes"),
 ]);
+if (v.error || e.error) {
+  console.error(`listing query failed: ${v.error?.message || e.error?.message}`);
+  process.exit(1);
+}
 const rows = [
   ...v.data.map((r) => ({ ...r, table: "venue_listings", name: r.business_name, venue: null })),
   ...e.data.map((r) => ({ ...r, table: "event_listings", name: r.event_name })),

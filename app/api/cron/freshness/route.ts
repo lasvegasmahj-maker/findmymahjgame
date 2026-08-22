@@ -2,13 +2,9 @@ import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { lazyServerClient } from "@/lib/supabase-server";
 
-// Scheduled freshness scan. Proposes reverification work and never changes what a player
-// sees: it writes a review flag and an audit row, and nothing here can publish, unpublish,
-// or edit listing content. The scan is the same logic the manual script runs, kept in one
-// place so the schedule cannot drift from what was tested.
-//
-// Failures are made visible rather than swallowed: a failed run returns a non-200 so the
-// platform records it, and every run writes an audit row that the growth console reads.
+// Proposes reverification and never changes what a player sees, so a scheduled job can run
+// unattended without any path to publishing or unpublishing. Failures return non-200 and
+// write an audit row, because a scan that silently stops looks identical to a clean scan.
 const supabase = lazyServerClient();
 
 const DAY = 86400000;
@@ -29,8 +25,7 @@ type Row = {
   review_flag?: string | null;
 };
 
-function severityFor(priority: number, sourceGone: boolean): string {
-  if (sourceGone) return "SOURCE_GONE";
+function severityFor(priority: number): string {
   if (priority >= 5) return "REVIEW_REQUIRED";
   if (priority >= 3) return "REVIEW_SOON";
   return "CHANGED";
@@ -40,10 +35,8 @@ export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
   const presented = req.headers.get("authorization") || "";
   const expected = `Bearer ${secret}`;
-  const ok =
-    !!secret &&
-    presented.length === expected.length &&
-    crypto.timingSafeEqual(Buffer.from(presented), Buffer.from(expected));
+  const digest = (v: string) => crypto.createHash("sha256").update(v).digest();
+  const ok = !!secret && crypto.timingSafeEqual(digest(presented), digest(expected));
   if (!ok) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const now = Date.now();
@@ -86,7 +79,7 @@ export async function GET(req: NextRequest) {
       if (r.kind === "event" && r.is_recurring && ageDays > 45) { priority += 2; reasons.push("recurring game unverified for over 45 days"); }
       if (!verifiedAt || ageDays > 90) { priority += 1; reasons.push("no verification in 90 days"); }
       if (!reasons.length) continue;
-      findings.push({ row: r, severity: severityFor(priority, false), reasons });
+      findings.push({ row: r, severity: severityFor(priority), reasons });
     }
 
     let filed = 0;

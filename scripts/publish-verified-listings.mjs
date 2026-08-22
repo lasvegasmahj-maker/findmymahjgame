@@ -22,14 +22,57 @@ const DAYS = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, frid
 const ORDINAL_RE = /\b(1st|2nd|3rd|4th|first|second|third|fourth|last)\b|\bmonthly\b|\bof (the|each) month\b|\bevery other\b|\bbi-?weekly\b/i;
 const norm = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
 
-const [venues, events, prospects] = await Promise.all([
-  sb.from("venue_listings").select("id,business_name,city,source_url"),
-  sb.from("event_listings").select("id,event_name,city,source_url"),
+// The event_type vocabulary the schema and the player-facing pages agree on. A researched
+// tournament shown as open play tells a player to drop in on a ticketed event, so an
+// unresolvable category skips the row rather than falling back.
+const EVENT_TYPE_RULES = [
+  [/tournament/i, "tournament"],
+  [/cruise/i, "cruise"],
+  [/retreat|getaway/i, "retreat"],
+  [/league/i, "league"],
+  [/class|lesson|workshop|instruction|learn/i, "class"],
+  [/open play|drop.?in|club|game|social|community|library|senior/i, "open_play"],
+];
+function resolveEventType(verdict) {
+  const text = `${verdict.suggested_category || ""} ${verdict.schedule_text || ""} ${verdict.proposed_description || ""}`;
+  for (const [re, type] of EVENT_TYPE_RULES) if (re.test(text)) return type;
+  return null;
+}
+// TEACHER_TYPE in lib/search.ts routes anything matching /instructor|teacher|lesson|studio|
+// school|class/ onto /teachers, so an uncategorized venue must not inherit a teaching word.
+const NEUTRAL_VENUE_TYPE = "Mahjong Venue";
+
+async function urlIsLive(url) {
+  if (!url) return false;
+  try {
+    const r = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(12000), headers: { "User-Agent": "Mozilla/5.0 FindMyMahjGame-publish" } });
+    return r.status >= 200 && r.status < 400;
+  } catch {
+    return false;
+  }
+}
+
+// PostgREST caps a select at 1000 rows, so the listing scan pages until it runs dry. A short
+// page silently truncated here would turn an update into a duplicate public listing.
+async function fetchAll(table, columns) {
+  const out = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await sb.from(table).select(columns).range(from, from + 999);
+    if (error) { console.error(`query failed on ${table}: ${error.message}`); process.exit(1); }
+    out.push(...(data || []));
+    if (!data || data.length < 1000) return out;
+  }
+}
+
+const [venues, events, prospectsRes] = await Promise.all([
+  fetchAll("venue_listings", "id,business_name,city,source_type,status,review_flag,reviewer_notes"),
+  fetchAll("event_listings", "id,event_name,city,source_type,status,review_flag,reviewer_notes"),
   sb.from("prospects").select("id,name,organization_name,city,state,metro,website_url,public_email,public_phone,prospect_type"),
 ]);
-const byProspect = new Map(prospects.data.map((p) => [p.id, p]));
-const venueKeys = new Map(venues.data.map((r) => [norm(r.business_name) + "|" + norm(r.city), r.id]));
-const eventKeys = new Map(events.data.map((r) => [norm(r.event_name) + "|" + norm(r.city), r.id]));
+if (prospectsRes.error) { console.error(`prospect query failed: ${prospectsRes.error.message}`); process.exit(1); }
+const byProspect = new Map(prospectsRes.data.map((p) => [p.id, p]));
+const venueKeys = new Map(venues.map((r) => [norm(r.business_name) + "|" + norm(r.city), r]));
+const eventKeys = new Map(events.map((r) => [norm(r.event_name) + "|" + norm(r.city), r]));
 
 const planned = [];
 for (const v of verdicts) {
@@ -37,11 +80,25 @@ for (const v of verdicts) {
   if (!p) { console.error(`  no prospect row for ${v.name}, skipping`); continue; }
 
   if (!v.proposed_description) { console.error(`  no verified description for ${v.name}, skipping`); continue; }
+  // The directory is built exclusively for American mahjong and has no way to show a player
+  // which variant a listing plays. Until it does, only a source-confirmed American NMJL
+  // entity may publish; anything else would send a player to a table they cannot sit at.
+  if (v.mahjong_variant !== "AMERICAN_NMJL") {
+    console.error(`  BLOCKED by variant gate: ${v.name} (${v.mahjong_variant})`);
+    continue;
+  }
 
   const isEvent = v.listing_kind === "event";
   const table = isEvent ? "event_listings" : "venue_listings";
   const nameKey = norm(v.name) + "|" + norm(p.city);
-  const existingId = (isEvent ? eventKeys : venueKeys).get(nameKey) || null;
+  const existing = (isEvent ? eventKeys : venueKeys).get(nameKey) || null;
+  // Only a row this pipeline created may be rewritten. Anything an owner submitted, a human
+  // flagged, or an admin unpublished is left exactly as it is.
+  if (existing && (existing.source_type !== "imported" || existing.review_flag)) {
+    console.error(`  existing listing for ${v.name} is human owned or flagged, leaving it alone`);
+    continue;
+  }
+  const existingId = existing?.id || null;
 
   const ordinalCadence = ORDINAL_RE.test(String(v.schedule_text || ""));
   const days = ordinalCadence ? [] : (v.day_of_week || []).map((d) => String(d).toLowerCase()).filter((d) => d in DAYS);
@@ -49,16 +106,25 @@ for (const v of verdicts) {
   const contactEmail = (v.public_contact || "").match(/[\w.+-]+@[\w.-]+\.\w+/)?.[0] || p.public_email || null;
   const phone = (v.public_contact || "").match(/\(?\d{3}\)?[ .-]?\d{3}[ .-]?\d{4}/)?.[0] || p.public_phone || null;
 
+  const eventType = isEvent ? resolveEventType(v) : null;
+  if (isEvent && !eventType) { console.error(`  cannot resolve event category for ${v.name}, skipping`); continue; }
+
+  // The no-dead-links rule applies to anything a player can click.
+  const sourceUrl = v.source_urls?.[0] || null;
+  const websiteUrl = p.website_url || sourceUrl;
+  const [sourceLive, websiteLive] = await Promise.all([urlIsLive(sourceUrl), urlIsLive(websiteUrl)]);
+  if (!sourceLive) { console.error(`  source URL not reachable for ${v.name} (${sourceUrl}), skipping`); continue; }
+
   const row = isEvent
     ? {
         event_name: v.name.slice(0, 160),
-        event_type: "open_play",
+        event_type: eventType,
         city: p.city,
         state: p.state,
         venue: v.public_address || null,
         description: v.proposed_description.slice(0, 800),
         price: v.price_text || null,
-        source_url: v.source_urls?.[0] || null,
+        source_url: sourceUrl,
         source_type: "imported",
         contact_email: v.contact_ok_to_display ? contactEmail : null,
         day_of_week: days.length ? days : null,
@@ -72,12 +138,12 @@ for (const v of verdicts) {
       }
     : {
         business_name: v.name.slice(0, 160),
-        venue_type: v.suggested_category?.slice(0, 60) || "Mahjong Instructor",
+        venue_type: v.suggested_category?.slice(0, 60) || NEUTRAL_VENUE_TYPE,
         city: p.city,
         state: p.state,
         description: v.proposed_description.slice(0, 800),
-        website: p.website_url || v.source_urls?.[0] || null,
-        source_url: v.source_urls?.[0] || null,
+        website: websiteLive ? websiteUrl : null,
+        source_url: sourceUrl,
         source_type: "imported",
         display_email: v.contact_ok_to_display ? contactEmail : null,
         contact_email: contactEmail,
@@ -91,7 +157,6 @@ for (const v of verdicts) {
   // reviewer's notes, so it tests exactly what gets displayed.
   const privacy = detectPrivateLocation({
     venue: row.venue,
-    address: row.address,
     description: row.description,
     city: row.city,
     state: row.state,
@@ -120,7 +185,17 @@ let inserted = 0, updated = 0;
 for (const { v, p, table, row, existingId } of planned) {
   let listingId = existingId;
   if (existingId) {
-    const { error } = await sb.from(table).update(row).eq("id", existingId);
+    // Refresh only what the research owns. Status, contact fields, and reviewer notes stay
+    // as they are, so a later human edit is never undone by a rerun.
+    const refresh = {
+      description: row.description,
+      source_url: row.source_url,
+      confirmed_active_at: row.confirmed_active_at,
+      ...(table === "event_listings"
+        ? { day_of_week: row.day_of_week, is_recurring: row.is_recurring, day_time: row.day_time, schedule_confidence: row.schedule_confidence, schedule_parsed_at: row.schedule_parsed_at, price: row.price }
+        : { website: row.website }),
+    };
+    const { error } = await sb.from(table).update(refresh).eq("id", existingId);
     if (error) { console.error(`  update failed ${v.name}: ${error.message}`); continue; }
     updated++;
   } else {

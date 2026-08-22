@@ -19,8 +19,8 @@ export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
   const presented = req.headers.get("authorization") || "";
   const expected = `Bearer ${secret}`;
-  const ok = !!secret && presented.length === expected.length &&
-    crypto.timingSafeEqual(Buffer.from(presented), Buffer.from(expected));
+  const digest = (v: string) => crypto.createHash("sha256").update(v).digest();
+  const ok = !!secret && crypto.timingSafeEqual(digest(presented), digest(expected));
   if (!ok) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

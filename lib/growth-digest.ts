@@ -1,6 +1,5 @@
-// Weekly operator digest. This is a report for Shauna, not an email to anyone: it renders
-// inside the admin console and introduces no sending dependency. Every number here is a
-// count over rows in a fixed window, so the same window always produces the same digest.
+// Renders in the admin console rather than being emailed, so the digest adds no sending
+// dependency to a system whose whole safety story is that it cannot send.
 
 export type DigestWindow = { since: string; until: string };
 
@@ -77,9 +76,8 @@ export function buildDigest(input: DigestInput, window: DigestWindow): Digest {
   return { window, changed, needsShauna, agentQueue, sends: input.sends };
 }
 
-// Draft sampling for review. Picks a spread across metro and prospect type rather than the
-// newest N, so a reviewer sees the range of what the generator produces. Read only: the
-// caller receives ids to display, and nothing about approval state is touched here.
+// A spread across metro and type rather than the newest N, so a reviewer judging quality
+// sees the range the generator produces instead of one metro's worth.
 export type SampleDraft = { id: string; metro?: string | null; prospect_type?: string | null; confidence?: string | null };
 
 export function representativeSample<T extends SampleDraft>(drafts: T[], target = 9): T[] {
@@ -121,8 +119,8 @@ export function representativeSample<T extends SampleDraft>(drafts: T[], target 
   return out;
 }
 
-// Phone queue priority. No invented numeric score: each entry carries the named reasons it
-// rose, and entries with no reason never appear.
+// Named reasons rather than a numeric score, because a score invites trust it has not
+// earned and hides which factor actually moved an entry.
 export type PhoneCandidate = {
   id: string;
   name: string;

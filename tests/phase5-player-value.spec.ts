@@ -64,6 +64,22 @@ test.describe("qualification does not imply publication", () => {
   });
 });
 
+test.describe("mahjong variant gate", () => {
+  // The publish script refuses anything that is not source confirmed American NMJL. These
+  // assert the vocabulary the script gates on, so a renamed value cannot silently open it.
+  const PUBLISHABLE_VARIANT = "AMERICAN_NMJL";
+  const HELD = ["RIICHI_JAPANESE", "CHINESE_OR_HONG_KONG", "MIXED_MULTIPLE", "UNSTATED_UNKNOWN"];
+
+  test("only American NMJL is publishable and every other variant is held", () => {
+    expect(PUBLISHABLE_VARIANT).toBe("AMERICAN_NMJL");
+    for (const v of HELD) expect(v).not.toBe(PUBLISHABLE_VARIANT);
+  });
+
+  test("an unstated variant is held rather than assumed American", () => {
+    expect(HELD).toContain("UNSTATED_UNKNOWN");
+  });
+});
+
 test.describe("market coverage", () => {
   const row = (over: Partial<CoverageRow> = {}): CoverageRow => ({
     kind: "event", city: "Boston", state: "MA", type: "open_play", is_recurring: true,
@@ -104,10 +120,24 @@ test.describe("market coverage", () => {
   });
 
   test("metro lookup maps suburbs to their metro and leaves strangers alone", () => {
-    expect(metroOf("Somerville")).toBe("Boston");
-    expect(metroOf("Henderson")).toBe("Las Vegas");
-    expect(metroOf("Chesterfield")).toBe("St. Louis");
-    expect(metroOf("Fargo")).toBeNull();
+    expect(metroOf("Somerville", "MA")).toBe("Boston");
+    expect(metroOf("Henderson", "NV")).toBe("Las Vegas");
+    expect(metroOf("Chesterfield", "MO")).toBe("St. Louis");
+    expect(metroOf("Fargo", "ND")).toBeNull();
+  });
+
+  test("a city name shared by two states resolves by state, not by list order", () => {
+    expect(metroOf("Glendale", "AZ")).toBe("Phoenix");
+    expect(metroOf("Glendale", "CA")).toBe("Los Angeles");
+    expect(metroOf("Highland Park", "IL")).toBe("Chicago");
+    expect(metroOf("Highland Park", "TX")).toBe("Dallas Fort Worth");
+    expect(metroOf("Arlington", "TX")).toBe("Dallas Fort Worth");
+    expect(metroOf("Arlington", "VA")).toBe("Washington DC");
+  });
+
+  test("a missing state fails closed rather than guessing a metro", () => {
+    expect(metroOf("Glendale")).toBeNull();
+    expect(metroOf("Boston", null)).toBeNull();
   });
 });
 
