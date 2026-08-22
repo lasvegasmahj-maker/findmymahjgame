@@ -99,6 +99,75 @@ export function parseAskIntent(raw: string): AskIntent {
   return { kind, types, location, radiusMiles, days, timeOfDay, recognized };
 }
 
+// Rules questions ride the same box as directory questions, so the split must be
+// deterministic: a rules signal without a discovery signal is "rules", both together is
+// "mixed", and everything else stays "directory" so the existing search path is untouched.
+export type AskTopic = "directory" | "rules" | "mixed";
+
+const RULES_SIGNAL_RES: RegExp[] = [
+  /\bjokers?\b/i,
+  /(?<!(?:near|in|around|at|visiting|by|to|from)\s)\bcharleston\b/i,
+  /\bdragons?\b/i,
+  /\bsoap\b/i,
+  // "Flower Mound" is a Texas city, not a tile question.
+  /\bflowers?\b(?!\s+mound)/i,
+  /\b(pungs?|kongs?|quints?|sextets?)\b/i,
+  /\bjokers?\b.{0,60}\bpairs?\b|\bpairs?\b.{0,60}\bjokers?\b/i,
+  /how many (tiles|players|people|suits|flowers|jokers|winds|dragons)/i,
+  /\btile count\b/i,
+  /\b152\b/,
+  /\b(concealed|exposed|exposure)\b/i,
+  /\b(open|closed) hands?\b/i,
+  /\b(call|calling|claim)\b.{0,20}\bdiscards?\b/i,
+  /\bdiscard(s|ing)?\b/i,
+  /\bwall game\b/i,
+  /\bthe wall\b/i,
+  /\bdead hand\b/i,
+  /\b(nmjl|national mah ?jongg league)\b/i,
+  /\brules?\b/i,
+  /\b(etiquette|courtes(y|ies))\b/i,
+  /(new|annual|yearly|current|next|this year'?s?)\s+card\b/i,
+  /\bcard\b.{0,30}(come(s)? out|release|hands?|lines?|categor)/i,
+  /hands? (on|for|from) (this|the) year/i,
+  /how (do|does) (i|you|someone|a player) win/i,
+  /\bwinning hand\b/i,
+  /\bdeclar(e|ing) mahjong\b/i,
+  /\bdealt?\b|\bdealer\b/i,
+  /\bstart with\b.{0,20}\btiles?\b|\btiles?\b.{0,30}\bstart\b/i,
+  /\bpenalt(y|ies)\b/i,
+  /\bracks?\b/i,
+  /\b(blind|courtesy) pass\b/i,
+  /\bwild tiles?\b/i,
+];
+
+const VARIANT_QUESTION_RE =
+  /\b(riichi|japanese|chinese|hong ?kong|cantonese|sichuan|taiwanese|korean|filipino|singapor(e|ean)|mcr|zung ?jung)\b/i;
+
+export function detectAskTopic(raw: string): AskTopic {
+  const q = String(raw || "").trim().slice(0, 300);
+  if (!q) return "directory";
+
+  const questionForm = /\b(what|how|why|when|can|could|should|is|are|do|does|rules?|work|mean)\b/i.test(q);
+  const rulesAsk =
+    RULES_SIGNAL_RES.some((re) => re.test(q)) || (VARIANT_QUESTION_RE.test(q) && questionForm);
+  if (!rulesAsk) return "directory";
+
+  // Discovery needs a strong signal here. Bare "in" is not one: extractLocation reads
+  // "in a pair" as a place, which would bolt a bogus search onto a pure rules question.
+  const intent = parseAskIntent(q);
+  const discoveryAsk =
+    intent.days.length > 0 ||
+    intent.timeOfDay !== null ||
+    intent.types !== null ||
+    /\bnear\b/i.test(q) ||
+    /\b\d{5}\b/.test(q) ||
+    /\b(nearby|in my area)\b/i.test(q) ||
+    /\bwhere can i (play|find|go)\b/i.test(q) ||
+    /\bfind (a|an|me)\b/i.test(q);
+
+  return discoveryAsk ? "mixed" : "rules";
+}
+
 // Every model-produced intent must survive this before touching search.
 export function validateIntent(x: unknown): AskIntent | null {
   if (!x || typeof x !== "object") return null;
