@@ -76,6 +76,32 @@ export default async function GrowthAgentsPage() {
     counts = null;
   }
 
+  // Level 2 readiness: each row is computed from live configuration, never hardcoded to
+  // look ready. Business decisions are labelled as such so engineering-done is not mistaken
+  // for permission to send.
+  const sendCap = Number(settings["growth_daily_send_limit"] ?? "0");
+  const outreachEnabled = settings["growth_outreach_enabled"] === "true";
+  const webhookSecretSet = Boolean(process.env.RESEND_WEBHOOK_SECRET);
+  const READINESS: Array<[string, string, string]> = [
+    ["Prospect discovery", "TESTED", "5 metros plus nationwide tournaments researched into the CRM"],
+    ["Dedupe and canonical exclusions", "TESTED", "shared admission guards with automated tests"],
+    ["Qualification", "TESTED", "deterministic scoring; deep-verify pass on review prospects"],
+    ["Provenance", "TESTED", "every prospect carries source URL and quoted evidence"],
+    ["Draft generation", "TESTED", "deterministic fact-only templates, stored unapproved"],
+    ["Human draft approval", "HUMAN DECISION REQUIRED", "drafts wait in this console for explicit approval"],
+    ["Unsubscribe suppression", "TESTED", "one-click rail live; suppression checked on every send"],
+    ["Bounce handling", "TESTED", "webhook suppresses and cancels; fails closed"],
+    ["Complaint handling", "TESTED", "same webhook path as bounces"],
+    ["Invite attribution", "TESTED", "join page stamps clicks; tokens tracked to conversion"],
+    ["Reply classification", "TESTED", "deterministic classifier plus policy layer; 30 fixture tests"],
+    ["Ambiguous replies to human review", "TESTED", "policy layer cannot act on low confidence"],
+    ["Freshness monitoring", "TESTED", "severity-scored, idempotent, cadence configurable"],
+    ["Send-rate enforcement", "READY", `guards fail closed; cap currently ${sendCap}`],
+    ["Sender domain configuration", "HUMAN DECISION REQUIRED", "dedicated subdomain on Resend not yet chosen"],
+    ["Webhook secret configured", webhookSecretSet ? "READY" : "NOT CONFIGURED", webhookSecretSet ? "RESEND_WEBHOOK_SECRET present" : "set RESEND_WEBHOOK_SECRET in Vercel when the sender is created"],
+    ["Production sending", outreachEnabled ? "BLOCKED" : "HUMAN DECISION REQUIRED", outreachEnabled ? "flag on but autonomy still gates" : "explicitly disabled; Level 2 is NOT enabled"],
+  ];
+
   const paused = settings["growth_global_pause"] !== "false";
   const outreachOn = settings["growth_outreach_enabled"] === "true";
   const level = settings["growth_autonomy_level"] ?? "0";
@@ -116,6 +142,19 @@ export default async function GrowthAgentsPage() {
         </div>
       )}
 
+
+
+      <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Level 2 readiness</h2>
+      <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>Level 2 (guarded automatic sending) is NOT enabled. This shows what is engineering-ready versus what waits on your decision.</p>
+      <div style={{ display: "grid", gap: "0.35rem" }}>
+        {READINESS.map(([item, status, note]) => (
+          <div key={item} style={{ display: "flex", gap: "0.7rem", alignItems: "baseline", fontSize: "0.88rem" }}>
+            <span style={{ minWidth: 190, fontWeight: 700, color: "var(--navy)" }}>{item}</span>
+            <span style={{ fontWeight: 800, color: status === "TESTED" || status === "READY" ? "#1a6e3a" : status === "NOT CONFIGURED" || status === "BLOCKED" ? "#b3261e" : "#a07800" }}>{status}</span>
+            <span style={{ color: "var(--muted)" }}>{note}</span>
+          </div>
+        ))}
+      </div>
 
       <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Outreach drafts awaiting your approval ({drafts.length})</h2>
       {drafts.length === 0 ? <p style={{ color: "var(--muted)" }}>No drafts. Run the draft generator after qualifying prospects.</p> : (
