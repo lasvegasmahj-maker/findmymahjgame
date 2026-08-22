@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { extractIntent } from "@/lib/ask-llm";
+import { extractIntent, rephraseApprovedAnswer } from "@/lib/ask-llm";
+import { parseAskIntent, detectAskTopic } from "@/lib/ask-intent";
+import { lookupRule, summarizeRulesGap, type RulesLookupResult } from "@/lib/rules/lookup";
+import { lazyServerClient } from "@/lib/supabase-server";
 import { searchEventsWithRelaxation, searchVenues, describeRelaxations } from "@/lib/search";
 import { resolveLocation } from "@/lib/resolve-location";
 import { formatDistance } from "@/lib/geo";
@@ -27,6 +30,30 @@ function titleCase(s: string): string {
   return s.replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+// Unmatched rules questions are demand data. Only a scrubbed topic summary is stored,
+// never the raw question, so the operator queue learns what players ask without the site
+// keeping conversations.
+async function logRulesGap(question: string, rules: RulesLookupResult) {
+  try {
+    await lazyServerClient().from("outreach_events").insert({
+      agent: "ask-rules-gap",
+      action: "rules_question_unmatched",
+      reason: summarizeRulesGap(question),
+      evidence: rules.unsupported_reason ?? null,
+      deterministic: true,
+    });
+  } catch (e) {
+    console.error("rules gap log failed:", e instanceof Error ? e.message : e);
+  }
+}
+
+async function composeRulesAnswer(rules: RulesLookupResult, question: string): Promise<string> {
+  if (rules.needs_clarification) return rules.needs_clarification;
+  if (!rules.matched || !rules.answer) return rules.answer ?? "";
+  const approved = rules.house_note ? `${rules.answer} ${rules.house_note}` : rules.answer;
+  return rephraseApprovedAnswer(approved, question);
+}
+
 export async function POST(req: NextRequest) {
   if (!(await rateLimit(req, "ask", 15, 60))) {
     return NextResponse.json({ error: "Too many questions at once. Give it a minute and ask again." }, { status: 429 });
@@ -34,13 +61,41 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const question = typeof body?.q === "string" ? body.q.slice(0, 200) : "";
   try {
+  const topic = detectAskTopic(question);
+  let rules: RulesLookupResult | null = null;
+  if (topic !== "directory") {
+    rules = lookupRule({ question });
+    if (!rules.matched && !rules.needs_clarification) await logRulesGap(question, rules);
+  }
+
+  if (topic === "rules" && rules) {
+    const answer = await composeRulesAnswer(rules, question);
+    return NextResponse.json({
+      ok: true,
+      answer,
+      results: [],
+      suggestions: [
+        { label: "Find a teacher", href: "/teachers" },
+        { label: "Browse events", href: "/events" },
+      ],
+      intent: parseAskIntent(question),
+      via: "rules",
+      topic,
+      rules,
+    });
+  }
+
   const { intent, via } = await extractIntent(question);
+  const rulesLead = rules ? await composeRulesAnswer(rules, question) : "";
+  const withRulesLead = (answer: string) => (rulesLead ? `${rulesLead} ${answer}` : answer);
+  const extras = rules ? { topic, rules } : { topic };
 
   if (!intent.recognized) {
     return NextResponse.json({
       ok: true,
-      answer:
-        "I can help you find verified mahjong games, teachers, leagues, and events. Try asking something like: where can I play Saturday morning near Naples?",
+      answer: withRulesLead(
+        "I can help you find verified mahjong games, teachers, leagues, and events. Try asking something like: where can I play Saturday morning near Naples?"
+      ),
       results: [],
       suggestions: [
         { label: "Browse all events", href: "/events" },
@@ -48,6 +103,7 @@ export async function POST(req: NextRequest) {
       ],
       intent,
       via,
+      ...extras,
     });
   }
 
@@ -86,7 +142,7 @@ export async function POST(req: NextRequest) {
       suggestions.push({ label: "Browse all teachers", href: "/teachers" });
       if (intent.location) suggestions.push({ label: "Get notified when one is added", href: `/teachers?near=${encodeURIComponent(intent.location)}` });
     }
-    return NextResponse.json({ ok: true, answer, results: cards, suggestions, intent, via });
+    return NextResponse.json({ ok: true, answer: withRulesLead(answer), results: cards, suggestions, intent, via, ...extras });
   }
 
   const out = await searchEventsWithRelaxation(
@@ -141,12 +197,13 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     ok: true,
-    answer,
+    answer: withRulesLead(answer),
     results: cards,
     relaxations: out.exact ? [] : out.relaxations,
     suggestions,
     intent,
     via,
+    ...extras,
   });
   } catch (e) {
     console.error("ask failed:", e instanceof Error ? e.message : e);
