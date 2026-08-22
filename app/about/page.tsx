@@ -3,7 +3,9 @@ import Link from "next/link";
 import { buildAboutPageSchema, schemaScriptProps } from "@/lib/schema";
 
 export const metadata: Metadata = {
-  title: "About Find My Mahj Game | National Mahjong Player Directory",
+  // Absolute: the title already carries the brand, so the root layout template
+  // would double it ("... | Find My Mahj Game") and push the title past 70 chars.
+  title: { absolute: "About Find My Mahj Game | National Mahjong Player Directory" },
   description:
     "Find My Mahj Game was created by Shauna, a certified mahjong instructor, to help players find local games across all 50 states. Learn our story.",
   alternates: {

@@ -4,7 +4,9 @@ import { FORMSPREE_URL } from "@/lib/constants";
 import { buildContactPageSchema, schemaScriptProps } from "@/lib/schema";
 
 export const metadata: Metadata = {
-  title: "Contact Find My Mahj Game | Player Listings and Advertising Help",
+  // Absolute: the title already carries the brand, so the root layout template
+  // would double it ("... | Find My Mahj Game") and push the title past 70 chars.
+  title: { absolute: "Contact Find My Mahj Game | Player Listings and Advertising Help" },
   description:
     "Questions about listing your game, advertising your venue, or partnering with us? We respond within 1-2 business days. Reach out anytime.",
   alternates: {
