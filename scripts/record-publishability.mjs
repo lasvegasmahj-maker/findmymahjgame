@@ -17,7 +17,7 @@ const writes = [];
 for (const v of verdicts) {
   const { data: p } = await sb.from("prospects").select("id,name,status,research_notes").eq("id", v.id).maybeSingle();
   if (!p) { console.error(`  no prospect ${v.name}`); continue; }
-  const note = `PUBLISHABILITY ${v.verdict} (2026-08-22): variant ${v.mahjong_variant}. ${v.variant_evidence || ""} ${v.reasoning || ""}`.slice(0, 1500);
+  const note = `PUBLISHABILITY ${v.verdict} (${new Date().toISOString().slice(0, 10)}): variant ${v.mahjong_variant}. ${v.variant_evidence || ""} ${v.reasoning || ""}`.slice(0, 1500);
   if (p.research_notes === note) { console.log(`  SKIP unchanged: ${v.name}`); continue; }
   const target = v.verdict === "REJECT_NOT_CURRENT" && canTransition(p.status, "REJECTED") ? "REJECTED" : null;
   console.log(`  ${v.verdict.padEnd(28)} ${v.name.slice(0, 44).padEnd(44)} ${target ? `${p.status} -> ${target}` : `status unchanged (${p.status})`}`);

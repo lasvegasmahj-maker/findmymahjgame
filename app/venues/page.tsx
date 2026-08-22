@@ -19,9 +19,10 @@ const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border:
 const VTYPE: Record<string, RegExp> = {
   studio: /studio|club|parlor|lounge/i,
   library: /library/i,
-  senior: /senior|retirement|55|community center|rec center|recreation/i,
+  senior: /senior|retirement|55|community center|rec center|recreation|jcc|synagogue|temple/i,
+  hangout: /cafe|coffee|restaurant|bar|brewery|taproom|game store|board game|shop/i,
 };
-const VCHIPS: [string, string][] = [["all", "All places"], ["studio", "Studios & clubs"], ["library", "Libraries"], ["senior", "Senior & community"]];
+const VCHIPS: [string, string][] = [["all", "All places"], ["studio", "Studios & clubs"], ["library", "Libraries"], ["senior", "Senior & community"], ["hangout", "Cafes & shops"]];
 
 export default async function VenuesPage({ searchParams }: { searchParams: Promise<{ near?: string; type?: string }> }) {
   const { near, type } = await searchParams;

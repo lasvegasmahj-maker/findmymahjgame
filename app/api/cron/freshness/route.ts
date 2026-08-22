@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
     const { data: cfg } = await supabase
       .from("app_settings").select("value").eq("key", "growth_freshness_interval_days").maybeSingle();
     const parsed = Number(cfg?.value);
-    const intervalDays = Number.isFinite(parsed) ? parsed : 14;
+    const intervalDays = Number.isFinite(parsed) && parsed > 0 ? parsed : 14;
 
     const PUBLISHED: Array<[string, string]> = [["status", "published"]];
     const [v, e] = await Promise.all([
@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
       const reasons: string[] = [];
       let priority = 0;
       if (datePassed) { priority += 3; reasons.push("one-off event date has passed"); }
-      if ((r.ended_reports ?? 0) > 0) { priority += 3; reasons.push(`${r.ended_reports} player report(s) that it ended`); }
+      if ((r.ended_reports ?? 0) > 0) { priority += 3; reasons.push(`${r.ended_reports} player report${r.ended_reports === 1 ? "" : "s"} that it ended`); }
       if (r.kind === "event" && r.is_recurring && ageDays > 45) { priority += 2; reasons.push("recurring game unverified for over 45 days"); }
       if (!verifiedAt || ageDays > 90) { priority += 1; reasons.push("no verification in 90 days"); }
       if (!reasons.length) continue;
@@ -86,6 +86,9 @@ export async function GET(req: NextRequest) {
     const eligible = findings.filter((f) => {
       const newFlag = `freshness_${f.severity.toLowerCase()}`;
       if (f.row.review_flag === newFlag) { skippedDuplicate++; return false; }
+      // The manual scan probes source URLs and can file SOURCE_GONE. This job does not probe,
+      // so it must never downgrade that finding to a weaker severity.
+      if (f.row.review_flag === "freshness_source_gone") { skippedDuplicate++; return false; }
       // A flag a person is working through outranks anything this job wants to say.
       if (f.row.review_flag && !f.row.review_flag.startsWith("freshness_")) { skippedHumanFlag++; return false; }
       return true;

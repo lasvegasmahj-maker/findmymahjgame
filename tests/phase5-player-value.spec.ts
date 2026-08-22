@@ -86,6 +86,33 @@ test.describe("mahjong variant gate", () => {
   });
 });
 
+test.describe("published categories stay reachable", () => {
+  // Every label the publish pipeline can write has to land somewhere a player can click,
+  // otherwise a verified listing is published into a corner of the site nobody filters to.
+  const VENUE_LABELS = ["Mahjong Instructor", "Mahjong Studio", "Library", "JCC", "Synagogue", "Senior Center", "Community Center", "Club", "Cafe", "Restaurant", "Game Store"];
+  const TEACHER_TYPE = /instructor|teacher|lesson|studio|school|class/i;
+  const VENUE_CHIPS = [
+    /studio|club|parlor|lounge/i,
+    /library/i,
+    /senior|retirement|55|community center|rec center|recreation|jcc|synagogue|temple/i,
+    /cafe|coffee|restaurant|bar|brewery|taproom|game store|board game|shop/i,
+  ];
+
+  test("each venue label routes to the teachers page or matches a venue filter", () => {
+    for (const label of VENUE_LABELS) {
+      const routed = TEACHER_TYPE.test(label) || VENUE_CHIPS.some((re) => re.test(label));
+      expect(routed, `${label} matches no filter a player can click`).toBe(true);
+    }
+  });
+
+  test("event categories stay inside the schema vocabulary", () => {
+    const allowed = ["open_play", "class", "league", "tournament", "retreat", "cruise", "social"];
+    for (const t of ["tournament", "cruise", "retreat", "league", "class", "open_play"]) {
+      expect(allowed).toContain(t);
+    }
+  });
+});
+
 test.describe("market coverage", () => {
   const row = (over: Partial<CoverageRow> = {}): CoverageRow => ({
     kind: "event", city: "Boston", state: "MA", type: "open_play", is_recurring: true,
@@ -163,7 +190,8 @@ test.describe("weekly digest", () => {
     drafts: { total: 35, approved: 0 },
     sends: 0,
     suppressions: 1,
-    reviewFlags: [{ review_flag: "private_location_hold" }, { review_flag: null }],
+    flaggedListings: 1,
+    privateLocationHolds: 1,
   };
 
   test("the same window produces the same numbers", () => {

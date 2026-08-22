@@ -5,7 +5,7 @@
 // Shauna's call, not an agent's.
 // Run: node --env-file=.env.local scripts/private-location-audit.mjs [--apply]
 import { createClient } from "@supabase/supabase-js";
-import { detectPrivateLocation, redactStreetDetail, PRIVATE_LOCATION_FLAG, LOCATION_ON_REQUEST_TEXT } from "../lib/private-location.ts";
+import { detectPrivateLocation, redactStreetDetail, isUrgentPrivacyExposure, PRIVATE_LOCATION_FLAG } from "../lib/private-location.ts";
 import { fetchAllRows } from "../lib/fetch-all.ts";
 
 const APPLY = process.argv.includes("--apply");
@@ -32,7 +32,7 @@ for (const r of rows) {
   if (!s.isPrivateResidence) continue;
   // Street detail is removed wherever it appears, not only on live rows: a pending row is
   // one approval click away from being public, so it must be safe before that click.
-  findings.push({ r, s, redact: s.hasStreetDetail, urgent: r.status === "published" && s.hasStreetDetail });
+  findings.push({ r, s, redact: s.hasStreetDetail, urgent: isUrgentPrivacyExposure(r) });
 }
 
 findings.sort((a, b) => Number(b.urgent) - Number(a.urgent));
@@ -42,7 +42,7 @@ for (const { r, s, urgent, redact } of findings) {
   console.log(`         signals: ${s.reasons.join("; ")}`);
   if (r.venue) console.log(`         venue text: ${r.venue}`);
   if (redact) {
-    console.log(`         venue after redaction: ${redactStreetDetail(r.venue) || LOCATION_ON_REQUEST_TEXT}`);
+    console.log(`         venue after redaction: ${redactStreetDetail(r.venue) || "(city and state only)"}`);
     console.log(`         description after redaction: ${redactStreetDetail(r.description).slice(0, 160)}`);
   }
 }
@@ -53,12 +53,15 @@ let redacted = 0, flagged = 0;
 for (const { r, s, urgent, redact } of findings) {
   const update = {};
   if (redact) {
-    update.description = redactStreetDetail(r.description);
+    if (r.description) {
+      const cleaned = redactStreetDetail(r.description);
+      if (cleaned !== r.description) update.description = cleaned;
+    }
     // address is inside the public allowlist, so it is the column that actually leaks a
     // street. venue exists on events only; writing it to a venue row rejects the whole update.
     if (r.address) update.address = redactStreetDetail(r.address) || null;
     if (r.table === "event_listings") {
-      update.venue = redactStreetDetail(r.venue) || LOCATION_ON_REQUEST_TEXT;
+      update.venue = redactStreetDetail(r.venue) || null;
       if (r.day_time) update.day_time = redactStreetDetail(r.day_time) || null;
     }
   }
@@ -66,7 +69,7 @@ for (const { r, s, urgent, redact } of findings) {
   // hold has to reach the console, and staleness can be re-derived on the next scan.
   if (!r.review_flag || r.review_flag.startsWith("freshness_")) update.review_flag = PRIVATE_LOCATION_FLAG;
   if (!Object.keys(update).length) continue;
-  update.reviewer_notes = `${r.reviewer_notes || ""} | 2026-08-22 private location audit: ${s.reasons.join("; ")}. ${redact ? "Street level detail removed from public fields. " : ""}Publication decision left to Shauna.`.slice(0, 1800);
+  update.reviewer_notes = `${r.reviewer_notes || ""} | ${new Date().toISOString().slice(0, 10)} private location audit: ${s.reasons.join("; ")}. ${redact ? "Street level detail removed from public fields. " : ""}Publication decision left to Shauna.`.slice(0, 1800);
 
   const { error } = await sb.from(r.table).update(update).eq("id", r.id);
   // A failed write here means a live listing still carries a home address, so the run stops

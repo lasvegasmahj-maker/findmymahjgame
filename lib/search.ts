@@ -379,7 +379,7 @@ async function runVenueQuery(fields: string[], params: VenueSearchParams, useGeo
   return data || [];
 }
 
-const TEACHER_TYPE = /instructor|teacher|lesson|studio|school|class/i;
+export const TEACHER_TYPE = /instructor|teacher|lesson|studio|school|class/i;
 
 export async function searchVenues(
   params: VenueSearchParams = {}

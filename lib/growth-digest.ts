@@ -10,7 +10,8 @@ export type DigestInput = {
   drafts: { total: number; approved: number };
   sends: number;
   suppressions: number;
-  reviewFlags: Array<{ review_flag: string | null }>;
+  flaggedListings: number;
+  privateLocationHolds: number;
 };
 
 export type Digest = {
@@ -34,8 +35,8 @@ export function buildDigest(input: DigestInput, window: DigestWindow, weakestMet
   const newlyRejected = countBy(input.eventsInWindow, /^(deep_verify_rejected|publishability_reject_not_current)$/);
   const freshnessChanges = countBy(input.eventsInWindow, /^reverification_proposed$/);
   const heldFromPublication = countBy(input.eventsInWindow, /^publishability_hold_/);
-  const privacyHolds = input.reviewFlags.filter((r) => r.review_flag === "private_location_hold").length;
-  const needsReviewNow = input.reviewFlags.filter((r) => Boolean(r.review_flag)).length;
+  const privacyHolds = input.privateLocationHolds;
+  const needsReviewNow = input.flaggedListings;
 
   // Each entry carries its own scope so no tile depends on its position in this list, and the
   // page cannot drift out of sync with which numbers are weekly.
@@ -69,7 +70,7 @@ export function buildDigest(input: DigestInput, window: DigestWindow, weakestMet
 
   // The queue names work that is already inside policy. It reports; it does not authorize.
   const agentQueue: string[] = [
-    "Verify and publish the remaining approved research candidates",
+    "Verify and publish the research candidates that passed the publishability review",
     weakestMetro ? `Research ${weakestMetro}, the weakest metro in the coverage table` : "Research the weakest metro once coverage is computed",
     "Deep verify prospects still sitting in review",
     "Confirm the mahjong variant for entities held on that question",
@@ -147,8 +148,8 @@ export function prioritizePhoneQueue(
   for (const c of candidates) {
     if (!c.public_phone) continue;
     const reasons: string[] = [];
-    if (!c.public_email) reasons.push("phone is the only way to reach them, so a call is the whole blocker");
-    if (c.metro && weakMetros.has(c.metro)) reasons.push(`${c.metro} coverage is thin, so a confirmation here counts for more`);
+    if (!c.public_email) reasons.push("no email address on file, so a call is the only way to reach them");
+    if (c.metro && weakMetros.has(c.metro)) reasons.push(`${c.metro} needs coverage, so a confirmation here counts for more`);
     if ((c.qualification_score ?? 0) >= 90) reasons.push("evidence quality scored 90 or above");
     if (c.prospect_type && /tournament|club|library|senior|jcc|rec_center|community/.test(c.prospect_type)) {
       reasons.push("community or tournament host, which serves many players per listing");

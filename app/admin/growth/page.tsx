@@ -55,7 +55,7 @@ export default async function GrowthAgentsPage() {
   let digest: Digest | null = null;
   let draftSample: Array<{ id: string; subject: string | null; prospect: string; metro: string | null; type: string | null }> = [];
   let phonePriority: PhonePriority[] = [];
-  let freshnessRuns: Array<{ action: string; reason: string | null; created: string }> = [];
+  let freshnessRuns: Array<{ id: string; action: string; reason: string | null; created: string }> = [];
   const week = isoWeekAgo();
   try {
     const [{ data: rows, error }, { data: st }, { data: pv }, { data: pe }, { data: dr }, { data: rp }, { data: ob }] = await Promise.all([
@@ -90,7 +90,7 @@ export default async function GrowthAgentsPage() {
   }
 
   try {
-    const [cvRes, ceRes, { data: newP }, { data: wkEvents }, { data: pubL }, { count: draftCount }, { count: approvedCount }, { count: sentCount }, { count: suppCount }, { data: phoneProspects }, { data: vFlags }, { data: eFlags }] = await Promise.all([
+    const [cvRes, ceRes, { data: newP }, { data: wkEvents }, { data: pubL }, { count: draftCount }, { count: approvedCount }, { count: sentCount }, { count: suppCount }, { data: phoneProspects }, { count: vFlagCount }, { count: eFlagCount }, { count: vHoldCount }, { count: eHoldCount }] = await Promise.all([
       fetchAllRows<Record<string, unknown>>(supabase, "venue_listings", "city,state,venue_type,confirmed_active_at,review_flag", [["status", "published"]]),
       fetchAllRows<Record<string, unknown>>(supabase, "event_listings", "city,state,event_type,is_recurring,schedule_confidence,day_of_week,event_date,confirmed_active_at,review_flag", [["status", "published"]]),
       supabase.from("prospects").select("status,metro").gte("discovered_at", week.since),
@@ -100,16 +100,18 @@ export default async function GrowthAgentsPage() {
       supabase.from("outreach_messages").select("id", { count: "exact", head: true }).eq("send_status", "draft").eq("approved_by_human", true),
       supabase.from("outreach_messages").select("id", { count: "exact", head: true }).eq("send_status", "sent"),
       supabase.from("email_suppressions").select("email", { count: "exact", head: true }),
-      supabase.from("prospects").select("id,name,city,state,metro,prospect_type,public_phone,public_email,status,qualification_score").not("public_phone", "is", null).order("qualification_score", { ascending: false }).limit(400),
-      supabase.from("venue_listings").select("review_flag").not("review_flag", "is", null),
-      supabase.from("event_listings").select("review_flag").not("review_flag", "is", null),
+      supabase.from("prospects").select("id,name,city,state,metro,prospect_type,public_phone,public_email,status,qualification_score").not("public_phone", "is", null).order("qualification_score", { ascending: false, nullsFirst: false }).limit(400),
+      supabase.from("venue_listings").select("id", { count: "exact", head: true }).not("review_flag", "is", null),
+      supabase.from("event_listings").select("id", { count: "exact", head: true }).not("review_flag", "is", null),
+      supabase.from("venue_listings").select("id", { count: "exact", head: true }).eq("review_flag", "private_location_hold"),
+      supabase.from("event_listings").select("id", { count: "exact", head: true }).eq("review_flag", "private_location_hold"),
     ]);
     const { data: fr } = await supabase.from("outreach_events")
-      .select("action,reason,created_at").eq("agent", "freshness-agent-scheduled")
+      .select("id,action,reason,created_at").eq("agent", "freshness-agent-scheduled")
       .in("action", ["scheduled_run_completed", "scheduled_run_failed"])
       .order("created_at", { ascending: false }).limit(5);
-    freshnessRuns = ((fr || []) as Array<{ action: string; reason: string | null; created_at: string }>)
-      .map((r) => ({ action: r.action, reason: r.reason, created: String(r.created_at).slice(0, 16).replace("T", " ") }));
+    freshnessRuns = ((fr || []) as Array<{ id: string; action: string; reason: string | null; created_at: string }>)
+      .map((r) => ({ id: r.id, action: r.action, reason: r.reason, created: String(r.created_at).slice(0, 16).replace("T", " ") }));
     totalDrafts = draftCount ?? drafts.length;
     if (cvRes.error || ceRes.error) throw new Error(cvRes.error || ceRes.error || "coverage query failed");
     const str = (v: unknown) => (typeof v === "string" ? v : null);
@@ -130,7 +132,8 @@ export default async function GrowthAgentsPage() {
       drafts: { total: draftCount ?? 0, approved: approvedCount ?? 0 },
       sends: sentCount ?? 0,
       suppressions: suppCount ?? 0,
-      reviewFlags: [...((vFlags || []) as Array<{ review_flag: string | null }>), ...((eFlags || []) as Array<{ review_flag: string | null }>)],
+      flaggedListings: (vFlagCount ?? 0) + (eFlagCount ?? 0),
+      privateLocationHolds: (vHoldCount ?? 0) + (eHoldCount ?? 0),
     }, week, weakest);
 
     const weak = new Set(coverage.filter((c) => c.readiness !== "USEFUL").map((c) => c.metro));
@@ -141,7 +144,8 @@ export default async function GrowthAgentsPage() {
       metro: d.prospects?.metro ?? null, prospect_type: d.prospects?.prospect_type ?? null,
     }));
     draftSample = representativeSample(sampleSource).map((d) => ({ id: d.id, subject: d.subject, prospect: d.prospect, metro: d.metro ?? null, type: d.prospect_type ?? null }));
-  } catch {
+  } catch (err) {
+    console.error("growth dashboard: coverage and digest failed", err);
     coverage = [];
     digest = null;
   }
@@ -247,7 +251,7 @@ export default async function GrowthAgentsPage() {
 
       <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Market coverage</h2>
       <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>
-        If a player in this city opened the site today, could they find somewhere to play or learn? Every factor behind the label is shown.
+        If a player in this metro opened the site today, could they find somewhere to play or learn? Every factor behind the label is shown.
         {coverageTotals.published > 0 && ` Of ${coverageTotals.published} published listings, ${coverageTotals.outsideMetros} sit in cities outside these metros and are not counted below.`}
       </p>
       <div style={{ overflowX: "auto" }}>
@@ -303,7 +307,7 @@ export default async function GrowthAgentsPage() {
       )}
 
       <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Prospect calls worth making first ({phonePriority.length})</h2>
-      <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>Drawn from the 400 prospects with the strongest evidence, then ranked by how many named reasons apply, with evidence score breaking ties. Opening this list changes no record.</p>
+      <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>Drawn from the 400 highest scoring prospects that have a phone number on file, then ranked by how many named reasons apply, with evidence score breaking ties. Opening this list changes no record.</p>
       {phonePriority.length === 0 ? <p style={{ color: "var(--muted)" }}>No prioritized calls right now.</p> : (
         <div style={{ display: "grid", gap: "0.4rem" }}>
           {phonePriority.map((c) => (
@@ -322,13 +326,13 @@ export default async function GrowthAgentsPage() {
       )}
 
       <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Freshness scans</h2>
-      <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>Runs every Monday. It proposes reverification and flags listings; it never publishes or unpublishes anything.</p>
+      <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>Runs every Monday. It flags listings that need a fresh check. It never publishes or unpublishes anything.</p>
       {freshnessRuns.length === 0 ? (
         <p style={{ color: "var(--muted)" }}>No scheduled run has reported yet. The first one runs on the next Monday after deployment.</p>
       ) : (
         <div style={{ display: "grid", gap: "0.3rem" }}>
           {freshnessRuns.map((r) => (
-            <div key={r.created} style={{ fontSize: "0.86rem", display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+            <div key={r.id} style={{ fontSize: "0.86rem", display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
               <span style={{ color: "var(--muted)", minWidth: "min(120px, 40vw)", fontVariantNumeric: "tabular-nums" }}>{r.created}</span>
               <strong style={{ color: r.action === "scheduled_run_failed" ? "#b3261e" : "var(--green-dark)" }}>{r.action === "scheduled_run_failed" ? "FAILED" : "RAN"}</strong>
               <span style={{ color: "var(--muted)", wordBreak: "break-word" }}>{r.reason}</span>

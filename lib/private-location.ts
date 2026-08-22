@@ -94,5 +94,6 @@ export function redactStreetDetail(text: string | null | undefined): string {
     .replace(/\s{2,}/g, " ")
     .replace(/\s+([.,;])/g, "$1")
     .replace(/[·,;]\s*$/, "")
+    .replace(/\s+\b(at|near|on|by|around|between|and|in)\b\s*$/i, "")
     .trim();
 }

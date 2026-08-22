@@ -9,6 +9,10 @@
 import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "node:fs";
 import { detectPrivateLocation, redactStreetDetail } from "../lib/private-location.ts";
+import { fetchAllRows } from "../lib/fetch-all.ts";
+// The routing regex is imported rather than copied: this gate exists to reject a row that
+// would appear under the wrong heading, so it has to be the same rule /teachers applies.
+import { TEACHER_TYPE } from "../lib/search.ts";
 
 const APPLY = process.argv.includes("--apply");
 const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -47,23 +51,23 @@ const VENUE_TYPE_RULES = [
   [/instructor|teacher|teaching|lesson|class|coach/i, "Mahjong Instructor"],
   [/studio/i, "Mahjong Studio"],
   [/library/i, "Library"],
-  [/jcc|synagogue|temple/i, "JCC"],
+  [/jcc/i, "JCC"],
+  [/synagogue|temple/i, "Synagogue"],
   [/senior|55\+|retirement/i, "Senior Center"],
   [/community|rec center|recreation/i, "Community Center"],
   [/club/i, "Club"],
   [/cafe|coffee/i, "Cafe"],
   [/restaurant|bar|brewery|taproom/i, "Restaurant"],
   [/game store|board game|shop/i, "Game Store"],
-  [/tournament/i, "Tournament Organizer"],
-  [/retreat|travel|cruise/i, "Retreat Organizer"],
 ];
+// A tournament or retreat organizer has no venue label a player can filter by, so those
+// candidates skip rather than publishing a row reachable only under "All places". They
+// belong as dated events.
 function resolveVenueType(verdict) {
   for (const [re, label] of VENUE_TYPE_RULES) if (re.test(String(verdict.suggested_category || ""))) return label;
   return null;
 }
-// A row whose category says one thing while its description routes it somewhere else would
-// appear under the wrong heading, so the composed row is checked before it is written.
-const TEACHER_ROUTING = /instructor|teacher|lesson|studio|school|class/i;
+
 
 async function urlIsLive(url) {
   if (!url) return false;
@@ -75,27 +79,16 @@ async function urlIsLive(url) {
   }
 }
 
-// PostgREST caps a select at 1000 rows, so the listing scan pages until it runs dry. A short
-// page silently truncated here would turn an update into a duplicate public listing.
-async function fetchAll(table, columns) {
-  const out = [];
-  for (let from = 0; ; from += 1000) {
-    const { data, error } = await sb.from(table).select(columns).range(from, from + 999);
-    if (error) { console.error(`query failed on ${table}: ${error.message}`); process.exit(1); }
-    out.push(...(data || []));
-    if (!data || data.length < 1000) return out;
-  }
-}
-
 const [venues, events, prospectsRes] = await Promise.all([
-  fetchAll("venue_listings", "id,business_name,city,source_type,status,review_flag,reviewer_notes"),
-  fetchAll("event_listings", "id,event_name,city,source_type,status,review_flag,reviewer_notes"),
+  fetchAllRows(sb, "venue_listings", "id,business_name,city,source_type,status,review_flag,reviewer_notes"),
+  fetchAllRows(sb, "event_listings", "id,event_name,city,source_type,status,review_flag,reviewer_notes"),
   sb.from("prospects").select("id,name,organization_name,city,state,metro,website_url,public_email,public_phone,prospect_type"),
 ]);
 if (prospectsRes.error) { console.error(`prospect query failed: ${prospectsRes.error.message}`); process.exit(1); }
 const byProspect = new Map(prospectsRes.data.map((p) => [p.id, p]));
-const venueKeys = new Map(venues.map((r) => [norm(r.business_name) + "|" + norm(r.city), r]));
-const eventKeys = new Map(events.map((r) => [norm(r.event_name) + "|" + norm(r.city), r]));
+if (venues.error || events.error) { console.error(`listing query failed: ${venues.error || events.error}`); process.exit(1); }
+const venueKeys = new Map(venues.rows.map((r) => [norm(r.business_name) + "|" + norm(r.city), r]));
+const eventKeys = new Map(events.rows.map((r) => [norm(r.event_name) + "|" + norm(r.city), r]));
 
 const planned = [];
 for (const v of verdicts) {
@@ -159,7 +152,7 @@ for (const v of verdicts) {
         day_time: v.schedule_text ? redactStreetDetail(v.schedule_text).slice(0, 200) : null,
         confirmed_active_at: new Date().toISOString(),
         status: "published",
-        reviewer_notes: `Phase 5 publishability review 2026-08-22. Variant ${v.mahjong_variant}. ${v.quoted_evidence || ""}`.slice(0, 1800),
+        reviewer_notes: `Publishability review ${new Date().toISOString().slice(0, 10)}. Variant ${v.mahjong_variant}. ${v.quoted_evidence || ""}`.slice(0, 1800),
       }
     : {
         business_name: v.name.slice(0, 160),
@@ -175,13 +168,13 @@ for (const v of verdicts) {
         phone: v.contact_ok_to_display ? phone : null,
         confirmed_active_at: new Date().toISOString(),
         status: "published",
-        reviewer_notes: `Phase 5 publishability review 2026-08-22. Variant ${v.mahjong_variant}. ${v.quoted_evidence || ""}`.slice(0, 1800),
+        reviewer_notes: `Publishability review ${new Date().toISOString().slice(0, 10)}. Variant ${v.mahjong_variant}. ${v.quoted_evidence || ""}`.slice(0, 1800),
       };
 
   // The privacy screen runs on the row that will actually reach players, not on the
   // reviewer's notes, so it tests exactly what gets displayed.
   if (!isEvent) {
-    const routesAsTeacher = TEACHER_ROUTING.test(`${row.venue_type} ${row.description}`);
+    const routesAsTeacher = TEACHER_TYPE.test(`${row.venue_type} ${row.description}`);
     const meantAsTeacher = venueType === "Mahjong Instructor" || venueType === "Mahjong Studio";
     if (routesAsTeacher !== meantAsTeacher) {
       console.error(`  ${v.name} would appear under the wrong heading (category ${venueType}, description routes as teacher ${routesAsTeacher}), skipping`);
