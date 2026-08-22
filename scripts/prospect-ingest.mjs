@@ -32,7 +32,6 @@ const known = {
   prospectNames: existingNames,
   listingEmails,
   listingNameCityKeys: listingNames,
-  listingHosts,
 };
 const seenBatch = new Set();
 const results = { qualified: [], needs_review: [], rejected: [] };

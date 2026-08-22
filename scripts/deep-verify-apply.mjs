@@ -13,7 +13,7 @@ for (const f of findings) {
   const { data: prior } = await sb.from("outreach_events").select("id").eq("prospect_id", f.id).eq("agent", "deep-verify-agent").limit(1);
   if (prior && prior.length) { console.log(`SKIP (already applied): ${f.name}`); continue; }
 
-  const { data: p, error: perr } = await sb.from("prospects").select("id,name,status,city,public_email,public_phone,metro,state").eq("id", f.id).single();
+  const { data: p, error: perr } = await sb.from("prospects").select("id,name,status,city,public_email,public_phone,website_url,metro,state").eq("id", f.id).single();
   if (perr || !p) { console.error(`missing prospect ${f.name}: ${perr?.message}`); continue; }
 
   const target = f.disposition === "QUALIFIED" ? "QUALIFIED" : f.disposition === "REJECTED" ? "REJECTED" : null;
@@ -28,11 +28,13 @@ for (const f of findings) {
     if (!canTransition(p.status, target)) { console.error(`ILLEGAL ${p.status} -> ${target} for ${f.name}, leaving as is`); continue; }
     update.status = target;
     if (target === "QUALIFIED") update.verified_at = new Date().toISOString();
-  } else {
+  } else if (!target) {
     const label = f.disposition === "PHONE_VERIFY" ? "PHONE_VERIFY" : "STILL_NEEDS_HUMAN_REVIEW";
     update.research_notes = `${label}: ${(f.evidence || "").slice(0, 700)}`;
   }
+  const CONTACT_FIELDS = new Set(["public_email", "public_phone", "website_url", "metro", "state", "city"]);
   for (const [k, v] of Object.entries(f.contact_updates || {})) {
+    if (!CONTACT_FIELDS.has(k)) { console.log(`  refusing to write non-contact field ${k}`); continue; }
     if (k === "public_email") {
       if (p.public_email) continue;
       const { data: clash } = await sb.from("prospects").select("id").ilike("public_email", v).limit(1);
@@ -41,8 +43,9 @@ for (const f of findings) {
     } else if (!p[k]) update[k] = v;
   }
 
-  const { error: uerr } = await sb.from("prospects").update(update).eq("id", f.id).eq("status", p.status);
+  const { data: touched, error: uerr } = await sb.from("prospects").update(update).eq("id", f.id).eq("status", p.status).select("id");
   if (uerr) { console.error(`update failed ${f.name}: ${uerr.message}`); continue; }
+  if (!touched || !touched.length) { console.error(`status moved concurrently for ${f.name}, skipping audit`); continue; }
 
   const { error: aerr } = await sb.from("outreach_events").insert({
     prospect_id: f.id,
@@ -50,7 +53,7 @@ for (const f of findings) {
     action: "deep_verify_" + f.disposition.toLowerCase(),
     reason: (f.evidence || "").slice(0, 400) + (f.duplicate_of ? ` | duplicate_of: ${f.duplicate_of}` : ""),
     evidence: (f.source_urls || []).join(" "),
-    previous_state: alreadyThere ? "NEEDS_REVIEW" : p.status,
+    previous_state: p.status,
     new_state: target || p.status,
     deterministic: false,
     ai_generated: true,

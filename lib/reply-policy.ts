@@ -67,6 +67,7 @@ export function replyActions(c: ReplyClassification): ReplyAction[] {
       break;
     case "AMBIGUOUS":
     case "HUMAN_REVIEW_REQUIRED":
+      actions.add("cancel_followups");
       actions.add("queue_human_review");
       break;
   }

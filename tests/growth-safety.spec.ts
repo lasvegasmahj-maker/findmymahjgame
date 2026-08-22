@@ -12,7 +12,6 @@ function known(over: Partial<KnownEntities> = {}): KnownEntities {
     prospectNames: new Set(),
     listingEmails: new Set(),
     listingNameCityKeys: new Set(),
-    listingHosts: new Set(),
     ...over,
   };
 }

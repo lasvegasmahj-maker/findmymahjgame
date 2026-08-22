@@ -10,8 +10,8 @@ const NOW = Date.now();
 const DAY = 86400000;
 
 const [v, e] = await Promise.all([
-  sb.from("venue_listings").select("id,business_name,city,state,venue_type,website,source_url,confirmed_active_at,updated_at,ended_reports").eq("status", "published"),
-  sb.from("event_listings").select("id,event_name,city,state,event_type,source_url,registration_url,confirmed_active_at,updated_at,event_date,is_recurring,day_of_week,ended_reports,schedule_parsed_at").eq("status", "published"),
+  sb.from("venue_listings").select("id,business_name,city,state,venue_type,website,source_url,confirmed_active_at,updated_at,ended_reports,review_flag").eq("status", "published"),
+  sb.from("event_listings").select("id,event_name,city,state,event_type,source_url,registration_url,confirmed_active_at,updated_at,event_date,is_recurring,day_of_week,ended_reports,schedule_parsed_at,review_flag").eq("status", "published"),
 ]);
 const rows = [
   ...v.data.map((r) => ({ ...r, kind: "venue", name: r.business_name })),
@@ -39,7 +39,8 @@ for (const r of rows) {
   const verifiedAt = r.confirmed_active_at || r.schedule_parsed_at || r.updated_at;
   const ageDays = verifiedAt ? (NOW - new Date(verifiedAt).getTime()) / DAY : Infinity;
 
-  if (Number.isFinite(ageDays) && ageDays < INTERVAL_DAYS) continue;
+  const urgent = (r.ended_reports ?? 0) > 0 || (r.kind === "event" && !r.is_recurring && r.event_date && new Date(r.event_date).getTime() < NOW);
+  if (Number.isFinite(ageDays) && ageDays < INTERVAL_DAYS && !urgent) continue;
   if (r.kind === "event" && r.is_recurring) { priority += 2; if (ageDays > 45) reasons.push(`recurring game unverified for ${Math.round(ageDays)} days`); }
   if (r.kind === "event" && r.event_date && new Date(r.event_date).getTime() < NOW && !r.is_recurring) { priority += 3; reasons.push("one-off event date has passed"); }
   if ((r.ended_reports ?? 0) > 0) { priority += 3; reasons.push(`${r.ended_reports} player report(s) that it ended`); }
@@ -61,7 +62,7 @@ for (const r of rows) {
     priority >= 3 ? "REVIEW_SOON" :
     reasons.some((x) => x.includes("redirects")) ? "CHANGED" :
     reasons.length ? "REVIEW_SOON" : "HEALTHY";
-  if (reasons.length) findings.push({ id: r.id, kind: r.kind, name: r.name, city: r.city, state: r.state, priority, severity, reasons });
+  if (reasons.length) findings.push({ id: r.id, kind: r.kind, name: r.name, city: r.city, state: r.state, priority, severity, reasons, currentFlag: r.review_flag });
 }
 
 findings.sort((a, b) => b.priority - a.priority);
@@ -78,16 +79,18 @@ if (!APPLY) { console.log("\nDRY RUN. Re-run with --apply to file review flags a
 let flagged = 0, skippedDup = 0;
 for (const f of findings) {
   const table = f.kind === "event" ? "event_listings" : "venue_listings";
-  await sb.from(table).update({ review_flag: `freshness_${f.severity.toLowerCase()}` }).eq("id", f.id);
-  // One open review task per listing: an identical unresolved finding is not refiled.
-  const marker = `listing ${table}/${f.id}`;
-  const { data: open } = await sb.from("outreach_events").select("id").eq("agent", "freshness-agent-l0").eq("evidence", marker).eq("reason", f.reasons.join("; ").slice(0, 500)).limit(1);
-  if (open && open.length) { skippedDup++; continue; }
+  const newFlag = `freshness_${f.severity.toLowerCase()}`;
+  // One open review task per listing, keyed on the live flag: while the flag an admin has
+  // not yet cleared still matches this severity, nothing is refiled. Clearing the flag or a
+  // severity change makes the next scan file a fresh finding.
+  if (f.currentFlag === newFlag) { skippedDup++; continue; }
+  if (f.currentFlag && !f.currentFlag.startsWith("freshness_")) { console.log(`  ${f.name.slice(0, 40)}: already queued for humans as ${f.currentFlag}, not overwriting`); skippedDup++; continue; }
+  await sb.from(table).update({ review_flag: newFlag }).eq("id", f.id);
   await sb.from("outreach_events").insert({
     agent: "freshness-agent-l0",
     action: "reverification_proposed",
     reason: f.reasons.join("; ").slice(0, 500),
-    evidence: marker,
+    evidence: `listing ${table}/${f.id} severity=${f.severity}`,
     deterministic: true,
   });
   flagged++;

@@ -20,6 +20,10 @@ const FIXTURES: Array<[string, string, string]> = [
   ["I am out of office until Sept 2 with limited access to email.", "OUT_OF_OFFICE", "vacation responder"],
   ["Automatic reply: I will respond upon my return.", "OUT_OF_OFFICE", "autoresponder"],
   ["Delivery Status Notification: address not found", "BOUNCE_OR_DELIVERY_FAILURE", "bounce text"],
+  ["Please don't email me again.", "UNSUBSCRIBE", "contraction opt-out"],
+  ["Remove us from your list", "UNSUBSCRIBE", "plural opt-out"],
+  ["Take us off the list please", "UNSUBSCRIBE", "plural take-off"],
+  ["No more emails please", "UNSUBSCRIBE", "no-more-emails"],
   ["ok", "AMBIGUOUS", "vague one-word"],
   ["Thanks", "AMBIGUOUS", "vague one-word"],
 ];
@@ -101,11 +105,12 @@ test.describe("reply policy safety", () => {
     expect(acts).toContain("cancel_followups");
   });
 
-  test("ambiguous and human-review can only queue human review", () => {
+  test("ambiguous and human-review pause follow-ups and queue a person, nothing else", () => {
     for (const text of ["ok", "Thanks", "Per my last email, the committee will convene regarding the matter."]) {
       const acts = replyActions(classifyReply(text));
-      const allowed: ReplyAction[] = ["queue_human_review"];
+      const allowed: ReplyAction[] = ["queue_human_review", "cancel_followups"];
       for (const a of acts) expect(allowed).toContain(a);
+      expect(acts).toContain("cancel_followups");
     }
   });
 

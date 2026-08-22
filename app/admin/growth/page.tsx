@@ -76,11 +76,12 @@ export default async function GrowthAgentsPage() {
     counts = null;
   }
 
-  // Level 2 readiness: each row is computed from live configuration, never hardcoded to
-  // look ready. Business decisions are labelled as such so engineering-done is not mistaken
-  // for permission to send.
+  // Level 2 readiness. The last four rows read live configuration; the TESTED rows are
+  // point-in-time engineering assessments from the 2026-08-22 Phase 4 gate, backed by the
+  // automated suites in tests/. Business decisions are labelled as such so engineering-done
+  // is not mistaken for permission to send.
   const sendCap = Number(settings["growth_daily_send_limit"] ?? "0");
-  const outreachEnabled = settings["growth_outreach_enabled"] === "true";
+  const outreachOn = settings["growth_outreach_enabled"] === "true";
   const webhookSecretSet = Boolean(process.env.RESEND_WEBHOOK_SECRET);
   const READINESS: Array<[string, string, string]> = [
     ["Prospect discovery", "TESTED", "5 metros plus nationwide tournaments researched into the CRM"],
@@ -93,17 +94,16 @@ export default async function GrowthAgentsPage() {
     ["Bounce handling", "TESTED", "webhook suppresses and cancels; fails closed"],
     ["Complaint handling", "TESTED", "same webhook path as bounces"],
     ["Invite attribution", "TESTED", "join page stamps clicks; tokens tracked to conversion"],
-    ["Reply classification", "TESTED", "deterministic classifier plus policy layer; 30 fixture tests"],
+    ["Reply classification", "TESTED", "deterministic classifier plus policy layer; 34 automated tests"],
     ["Ambiguous replies to human review", "TESTED", "policy layer cannot act on low confidence"],
     ["Freshness monitoring", "TESTED", "severity-scored, idempotent, cadence configurable"],
     ["Send-rate enforcement", "READY", `guards fail closed; cap currently ${sendCap}`],
     ["Sender domain configuration", "HUMAN DECISION REQUIRED", "dedicated subdomain on Resend not yet chosen"],
     ["Webhook secret configured", webhookSecretSet ? "READY" : "NOT CONFIGURED", webhookSecretSet ? "RESEND_WEBHOOK_SECRET present" : "set RESEND_WEBHOOK_SECRET in Vercel when the sender is created"],
-    ["Production sending", outreachEnabled ? "BLOCKED" : "HUMAN DECISION REQUIRED", outreachEnabled ? "flag on but autonomy still gates" : "explicitly disabled; Level 2 is NOT enabled"],
+    ["Production sending", outreachOn ? "BLOCKED" : "HUMAN DECISION REQUIRED", outreachOn ? "flag on but autonomy still gates" : "explicitly disabled; Level 2 is NOT enabled"],
   ];
 
   const paused = settings["growth_global_pause"] !== "false";
-  const outreachOn = settings["growth_outreach_enabled"] === "true";
   const level = settings["growth_autonomy_level"] ?? "0";
 
   return (
@@ -148,10 +148,10 @@ export default async function GrowthAgentsPage() {
       <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>Level 2 (guarded automatic sending) is NOT enabled. This shows what is engineering-ready versus what waits on your decision.</p>
       <div style={{ display: "grid", gap: "0.35rem" }}>
         {READINESS.map(([item, status, note]) => (
-          <div key={item} style={{ display: "flex", gap: "0.7rem", alignItems: "baseline", fontSize: "0.88rem" }}>
-            <span style={{ minWidth: 190, fontWeight: 700, color: "var(--navy)" }}>{item}</span>
+          <div key={item} style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem 0.7rem", alignItems: "baseline", fontSize: "0.88rem" }}>
+            <span style={{ minWidth: "min(190px, 45vw)", fontWeight: 700, color: "var(--navy)" }}>{item}</span>
             <span style={{ fontWeight: 800, color: status === "TESTED" || status === "READY" ? "#1a6e3a" : status === "NOT CONFIGURED" || status === "BLOCKED" ? "#b3261e" : "#a07800" }}>{status}</span>
-            <span style={{ color: "var(--muted)" }}>{note}</span>
+            <span style={{ color: "var(--muted)", wordBreak: "break-word" }}>{note}</span>
           </div>
         ))}
       </div>

@@ -18,7 +18,6 @@ export type KnownEntities = {
   prospectNames: Set<string>;
   listingEmails: Set<string>;
   listingNameCityKeys: Set<string>;
-  listingHosts: Set<string>;
 };
 
 export const norm = (s: unknown): string => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");

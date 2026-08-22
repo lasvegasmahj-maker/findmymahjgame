@@ -46,7 +46,7 @@ export function stripQuotedText(raw: string): string {
 const BOUNCE_RE =
   /\b(delivery (status notification|has failed)|undeliverable|mailbox (full|unavailable)|address not found|user unknown|550[- ]5\.\d|mailer-daemon|postmaster notification)\b/i;
 const UNSUB_RE =
-  /\b(unsubscribe|remove me|take me off|opt me out|opt out|do not (contact|email)( me)?( again)?|stop (emailing|contacting)|delete my (info|email|address))\b/i;
+  /\b(unsubscribe|remove (me|us)|take (me|us) off|opt (me|us) out|opt out|(do not|don'?t) (contact|email)( (me|us))?( again)?|stop (emailing|contacting)|delete (my|our) (info|email|address)|no (more|further) emails?)\b/i;
 const STOP_ALONE_RE = /^\s*(stop|no|unsubscribe|remove)[.!]?\s*$/i;
 const WRONG_PERSON_RE =
   /\b(wrong (person|contact|email)|handles? (this|that) now|no longer (with|at|runs?|involved|teach|host)|i (left|retired from)|not my (role|department)|reached the wrong|has taken over|please contact .+ instead|forward(ed)? (this|your (message|email)) to)\b/i;
@@ -102,7 +102,7 @@ export function classifyReply(raw: string): ReplyClassification {
     const strong = /\b(yes,? please|sign (me|us) up|add (us|me)|count (me|us) in|please (list|include|add)|go ahead)\b/i.test(t);
     return {
       ...base,
-      classification: strong ? "INTERESTED" : "INTERESTED",
+      classification: "INTERESTED",
       confidence: strong ? "high" : "medium",
       rationale: strong ? "explicit acceptance" : "positive sentiment without explicit commitment",
     };
