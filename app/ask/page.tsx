@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import AskClient from "./ask-client";
 
 export const metadata: Metadata = {
@@ -17,7 +18,10 @@ export default function AskPage() {
       <p style={{ fontSize: "1.15rem", color: "var(--muted)", textAlign: "center", lineHeight: 1.5, margin: "0 0 1.8rem" }}>
         Ask in plain English. Every answer comes from reviewed listings, never a guess.
       </p>
-      <AskClient />
+      {/* Suspense lets AskClient read ?q= for prefill while the page stays static. */}
+      <Suspense fallback={null}>
+        <AskClient />
+      </Suspense>
       <p style={{ fontSize: "0.85rem", color: "var(--muted)", textAlign: "center", marginTop: "2.5rem", maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
         Ask searches the same reviewed directory as the Events and Teachers pages. If nothing is
         listed, we say so instead of guessing, and you can ask to be notified when something is added.
