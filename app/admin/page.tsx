@@ -73,7 +73,7 @@ export default async function AdminHome() {
   return (
     <main style={{ maxWidth: 960, margin: "0 auto", padding: "2.2rem 1.2rem 4rem" }}>
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: "0.8rem" }}>
-        <h1 style={{ ...heading, fontSize: "2rem", margin: 0 }}>Find My Mahj admin</h1>
+        <h1 style={{ ...heading, fontSize: "2rem", margin: 0 }}>Find My Mahj Game admin</h1>
         <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "var(--green-dark)", border: "1px solid var(--green-dark)", borderRadius: 6, padding: "0.15rem 0.5rem", letterSpacing: "0.04em" }}>
           PRODUCTION LIVE DATA
         </span>
@@ -123,7 +123,7 @@ export default async function AdminHome() {
 
           <Section title="Traffic and SEO" source="external systems">
             <NotConnected label="Site traffic (GA4)" note="Google Analytics is not connected to this dashboard." />
-            <NotConnected label="Google Search (Search Console)" note="Search Console is verified for the site but not wired into this dashboard yet. View it at search.google.com/search-console." />
+            <NotConnected label="Google Search (Search Console)" note="Search Console is set up for the site but not wired into this dashboard yet. View it at search.google.com/search-console." />
           </Section>
 
           <Section title="Data quality" source="deterministic reconciliation checks, computed live">

@@ -115,8 +115,8 @@ export default function TodayPage() {
             <Card label="Player listings to approve" count={c!.pendingPlayers} href="/admin/review" cta="Review" />
             <Card label="Venue listings to approve" count={c!.pendingVenues} href="/admin/review" cta="Review" />
             <Card label="Event listings to approve" count={c!.pendingEvents} href="/admin/review" cta="Review" />
-            <Card label="New inquiries" count={c!.newInquiries} href="/admin" cta="Open" />
-            <Card label="New ambassador applications" count={c!.newAmbassadors} href="/admin" cta="Open" />
+            <Card label="New inquiries" count={c!.newInquiries} href="/admin/review" cta="Open" />
+            <Card label="New ambassador applications" count={c!.newAmbassadors} href="/admin/review" cta="Open" />
             <Card label="Listing edits to approve" count={c!.pendingEdits} href="/admin/edits" cta="Review" />
           </div>
 

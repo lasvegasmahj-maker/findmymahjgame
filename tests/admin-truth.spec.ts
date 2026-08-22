@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { RECORD_CLASSES } from "../lib/data-trust";
+import { readFileSync } from "fs";
+import { join } from "path";
 
 // The admin home is the owner's source of truth, so its two invariants get their own suite:
 // nobody sees it without the password, and no number it shows can mix real people with seed
@@ -49,7 +51,7 @@ test.describe("data trust vocabulary", () => {
     // The queries in lib/data-trust.ts filter on record_class = real_external for every
     // signup metric. This assertion pins the source so a refactor that drops the filter
     // fails a test instead of silently inflating a number.
-    const source = require("fs").readFileSync(require("path").join(__dirname, "..", "lib", "data-trust.ts"), "utf8");
+    const source = readFileSync(join(__dirname, "..", "lib", "data-trust.ts"), "utf8");
     const signupFilters = source.match(/eq\("record_class", "real_external"\)/g) || [];
     expect(signupFilters.length).toBeGreaterThanOrEqual(2);
     expect(source).toContain('paidMembers: 0');

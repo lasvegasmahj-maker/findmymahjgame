@@ -37,8 +37,7 @@ update public.cruise_posts set record_class = 'seed_demo'
 
 -- Seed players and demo cruise posts must not be shown to the public as real people. This is
 -- the site's own hard rule; the rows are archived to review status, not deleted.
-update public.player_listings set status = 'pending_review',
-  bio = coalesce(bio, '')
+update public.player_listings set status = 'pending_review'
  where record_class = 'seed_demo' and status = 'published';
 update public.cruise_posts set status = 'pending_review'
  where record_class = 'seed_demo' and status = 'published';

@@ -99,9 +99,10 @@ export type DataQualityIssue = { check: string; count: number; detail: string };
 export async function readDataQualityIssues(supabase: SupabaseClient): Promise<DataQualityIssue[]> {
   const issues: DataQualityIssue[] = [];
 
-  const { count: publishedNonRealCount } = await supabase
+  const { count: publishedNonRealCount, error: e1 } = await supabase
     .from("player_listings").select("id", { count: "exact", head: true })
     .eq("status", "published").neq("record_class", "real_external");
+  if (e1) throw new Error(e1.message);
   if ((publishedNonRealCount ?? 0) > 0) {
     issues.push({
       check: "Seed or test players visible to the public",
@@ -109,8 +110,9 @@ export async function readDataQualityIssues(supabase: SupabaseClient): Promise<D
       detail: "player_listings rows that are published but not classified real_external. These render on state pages as real people.",
     });
   }
-  const { count: unclassified } = await supabase
+  const { count: unclassified, error: e2 } = await supabase
     .from("player_listings").select("id", { count: "exact", head: true }).is("record_class", null);
+  if (e2) throw new Error(e2.message);
   if ((unclassified ?? 0) > 0) {
     issues.push({
       check: "Players with no trust classification",
@@ -119,9 +121,10 @@ export async function readDataQualityIssues(supabase: SupabaseClient): Promise<D
     });
   }
 
-  const { count: paidWithoutPayment } = await supabase
+  const { count: paidWithoutPayment, error: e3 } = await supabase
     .from("venue_listings").select("id", { count: "exact", head: true })
     .not("tier", "in", '("free")').not("tier", "is", null).is("stripe_payment_id", null);
+  if (e3) throw new Error(e3.message);
   if ((paidWithoutPayment ?? 0) > 0) {
     issues.push({
       check: "Paid-looking tier with no payment record",
