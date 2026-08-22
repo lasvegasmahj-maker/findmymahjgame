@@ -12,6 +12,11 @@ export type DigestInput = {
   suppressions: number;
   flaggedListings: number;
   privateLocationHolds: number;
+  researchedProspects: number;
+  qualifiedProspects: number;
+  publishableAmericanListings: number;
+  publishableUnclassifiedListings: number;
+  variantHeldProspects: number;
 };
 
 export type Digest = {
@@ -42,6 +47,11 @@ export function buildDigest(input: DigestInput, window: DigestWindow, weakestMet
   // page cannot drift out of sync with which numbers are weekly.
   const changed: Array<[string, number, "window" | "total"]> = [
     ["New prospects discovered", input.prospectsCreated.length, "window"],
+    ["Prospects on file", input.researchedProspects, "total"],
+    ["Qualified or further along", input.qualifiedProspects, "total"],
+    ["Published American Mahjong listings", input.publishableAmericanListings, "total"],
+    ["Published listings not yet classified", input.publishableUnclassifiedListings, "total"],
+    ["Held on mahjong variant", input.variantHeldProspects, "total"],
     ["Discovered this week, now qualified", discoveredNowQualified, "window"],
     ["Newly published listings", input.listingsPublished.length, "window"],
     ["Newly rejected", newlyRejected, "window"],
@@ -66,6 +76,11 @@ export function buildDigest(input: DigestInput, window: DigestWindow, weakestMet
   }
   if (needsReviewNow > 0) {
     needsShauna.push(`${needsReviewNow} listings carry a review flag awaiting a decision.`);
+  }
+  // The gap between what is researched and what a player can actually use is the number that
+  // matters most, and it is the one a CRM row count hides.
+  if (input.variantHeldProspects > 0) {
+    needsShauna.push(`${input.variantHeldProspects} researched ${input.variantHeldProspects === 1 ? "group or teacher is" : "groups and teachers are"} held because the mahjong variant is unconfirmed or not American. Some need a source check; the rest need a decision on whether the directory ever shows other variants.`);
   }
 
   // The queue names work that is already inside policy. It reports; it does not authorize.

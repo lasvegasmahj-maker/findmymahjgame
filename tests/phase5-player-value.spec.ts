@@ -116,7 +116,8 @@ test.describe("published categories stay reachable", () => {
 test.describe("market coverage", () => {
   const row = (over: Partial<CoverageRow> = {}): CoverageRow => ({
     kind: "event", city: "Boston", state: "MA", type: "open_play", is_recurring: true,
-    schedule_confidence: "high", confirmed_active_at: new Date().toISOString(), ...over,
+    schedule_confidence: "high", confirmed_active_at: new Date().toISOString(),
+    mahjong_variant: "AMERICAN", ...over,
   });
 
   test("a metro with games, teachers, and actionable schedules reads USEFUL", () => {
@@ -192,6 +193,11 @@ test.describe("weekly digest", () => {
     suppressions: 1,
     flaggedListings: 1,
     privateLocationHolds: 1,
+    researchedProspects: 120,
+    qualifiedProspects: 90,
+    publishableAmericanListings: 58,
+    publishableUnclassifiedListings: 53,
+    variantHeldProspects: 14,
   };
 
   test("the same window produces the same numbers", () => {
