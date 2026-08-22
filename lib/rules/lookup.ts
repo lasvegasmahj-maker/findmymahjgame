@@ -115,9 +115,11 @@ export function lookupRule(input: RulesLookupInput): RulesLookupResult {
 // must already exist in the approved input. A new digit means new rule content, and the
 // caller ships the approved text verbatim instead.
 export function synthesisDigitGuard(input: string, output: string): boolean {
-  const allowed = new Set(input.match(/\d/g) ?? []);
-  for (const d of output.match(/\d/g) ?? []) {
-    if (!allowed.has(d)) return false;
+  // Whole number tokens, not digit characters: "152" and "16" in the input must not license
+  // an invented "12" or "56" in the output.
+  const allowed = new Set(input.match(/\d+/g) ?? []);
+  for (const n of output.match(/\d+/g) ?? []) {
+    if (!allowed.has(n)) return false;
   }
   return true;
 }

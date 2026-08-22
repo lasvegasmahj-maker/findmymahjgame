@@ -44,7 +44,10 @@ export async function GET(req: NextRequest) {
     pendingEditsCount,
     draftsResult,
   ] = await Promise.all([
-    supabase.from("player_listings").select("id", { count: "exact", head: true }).eq("status", "pending_review").eq("record_class", "real_external").then((r) => r.count ?? 0),
+    supabase.from("player_listings").select("id", { count: "exact", head: true }).eq("status", "pending_review").eq("record_class", "real_external").then((r) => {
+      if (r.error) throw new Error(r.error.message);
+      return r.count ?? 0;
+    }),
     countPending("venue_listings", "status", "pending_review"),
     countPending("event_listings", "status", "pending_review"),
     countPending("inquiries", "status", "new"),

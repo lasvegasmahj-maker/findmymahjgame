@@ -54,6 +54,8 @@ async function composeRulesAnswer(rules: RulesLookupResult, question: string): P
   return rephraseApprovedAnswer(approved, question);
 }
 
+export const maxDuration = 30;
+
 export async function POST(req: NextRequest) {
   if (!(await rateLimit(req, "ask", 15, 60))) {
     return NextResponse.json({ error: "Too many questions at once. Give it a minute and ask again." }, { status: 429 });
@@ -65,7 +67,7 @@ export async function POST(req: NextRequest) {
   let rules: RulesLookupResult | null = null;
   if (topic !== "directory") {
     rules = lookupRule({ question });
-    if (!rules.matched && !rules.needs_clarification) await logRulesGap(question, rules);
+    if (!rules.matched && !rules.needs_clarification) void logRulesGap(question, rules);
   }
 
   if (topic === "rules" && rules) {
@@ -85,8 +87,12 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const { intent, via } = await extractIntent(question);
-  const rulesLead = rules ? await composeRulesAnswer(rules, question) : "";
+  const [{ intent, via }, rulesLead] = await Promise.all([
+    extractIntent(question),
+    // An unmatched rules half contributes nothing useful to a mixed answer; prepending a
+    // cannot-verify paragraph to real directory results would bury them.
+    rules && rules.matched ? composeRulesAnswer(rules, question) : Promise.resolve(""),
+  ]);
   const withRulesLead = (answer: string) => (rulesLead ? `${rulesLead} ${answer}` : answer);
   const extras = rules ? { topic, rules } : { topic };
 

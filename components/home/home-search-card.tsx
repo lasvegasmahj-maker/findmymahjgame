@@ -132,7 +132,7 @@ export default function HomeSearchCard() {
       </div>
 
       <div role="status" aria-live="polite">
-        {mode === "ask" && busy && <p className={styles.askStatus}>Searching verified listings...</p>}
+        {mode === "ask" && busy && <p className={styles.askStatus}>Looking that up...</p>}
         {mode === "ask" && !busy && resp && (
           <div className={styles.answer}>
             <p className={styles.answerText}>{resp.error || resp.answer}</p>

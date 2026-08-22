@@ -26,7 +26,7 @@ update public.player_listings set record_class = 'seed_demo'
  where contact_email like '%@fmg-sample.test'
     or (created_at::date = '2026-05-22' and contact_email is null);
 update public.player_listings set record_class = 'test' where state = 'ZZ';
-update public.player_listings set record_class = 'internal' where contact_email = 'sbruckma@gmail.com';
+update public.player_listings set record_class = 'internal' where lower(contact_email) = 'sbruckma@gmail.com';
 
 -- The nine 2026-06-13 submissions all use x.com test addresses.
 update public.listing_submissions set record_class = 'test'

@@ -119,12 +119,10 @@ const RULES_SIGNAL_RES: RegExp[] = [
   /\b(concealed|exposed|exposure)\b/i,
   /\b(open|closed) hands?\b/i,
   /\b(call|calling|claim)\b.{0,20}\bdiscards?\b/i,
-  /\bdiscard(s|ing)?\b/i,
   /\bwall game\b/i,
   /\bthe wall\b/i,
   /\bdead hand\b/i,
   /\b(nmjl|national mah ?jongg league)\b/i,
-  /\brules?\b/i,
   /\b(etiquette|courtes(y|ies))\b/i,
   /(new|annual|yearly|current|next|this year'?s?)\s+card\b/i,
   /\bcard\b.{0,30}(come(s)? out|release|hands?|lines?|categor)/i,
@@ -132,10 +130,8 @@ const RULES_SIGNAL_RES: RegExp[] = [
   /how (do|does) (i|you|someone|a player) win/i,
   /\bwinning hand\b/i,
   /\bdeclar(e|ing) mahjong\b/i,
-  /\bdealt?\b|\bdealer\b/i,
   /\bstart with\b.{0,20}\btiles?\b|\btiles?\b.{0,30}\bstart\b/i,
   /\bpenalt(y|ies)\b/i,
-  /\bracks?\b/i,
   /\b(blind|courtesy) pass\b/i,
   /\bwild tiles?\b/i,
 ];
@@ -147,9 +143,14 @@ export function detectAskTopic(raw: string): AskTopic {
   const q = String(raw || "").trim().slice(0, 300);
   if (!q) return "directory";
 
-  const questionForm = /\b(what|how|why|when|can|could|should|is|are|do|does|rules?|work|mean)\b/i.test(q);
+  const questionForm = /\b(what|how|why|when|can|could|should|is|are|do|does|work|mean)\b/i.test(q);
+  // The weak nouns (rules, rack, discard, deal) only signal a rules question when the
+  // sentence actually asks something. "Any good deal on lessons in Naples" is commerce.
+  const weakRulesNoun = /\b(rules?|racks?|discard(s|ing)?|deal(t|ing)?|dealer)\b/i.test(q);
   const rulesAsk =
-    RULES_SIGNAL_RES.some((re) => re.test(q)) || (VARIANT_QUESTION_RE.test(q) && questionForm);
+    RULES_SIGNAL_RES.some((re) => re.test(q)) ||
+    (weakRulesNoun && questionForm) ||
+    (VARIANT_QUESTION_RE.test(q) && questionForm);
   if (!rulesAsk) return "directory";
 
   // Discovery needs a strong signal here. Bare "in" is not one: extractLocation reads
@@ -163,7 +164,8 @@ export function detectAskTopic(raw: string): AskTopic {
     /\b\d{5}\b/.test(q) ||
     /\b(nearby|in my area)\b/i.test(q) ||
     /\bwhere can i (play|find|go)\b/i.test(q) ||
-    /\bfind (a|an|me)\b/i.test(q);
+    /\bfind (a|an|me)\b/i.test(q) ||
+    Boolean(intent.location);
 
   return discoveryAsk ? "mixed" : "rules";
 }
