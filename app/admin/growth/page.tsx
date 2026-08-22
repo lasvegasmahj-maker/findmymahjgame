@@ -51,6 +51,7 @@ export default async function GrowthAgentsPage() {
   let coverage: MetroCoverage[] = [];
   let coverageTotals = { published: 0, outsideMetros: 0 };
   let totalDrafts = 0;
+  let coverageError: string | null = null;
   let draftJoin: Array<{ id: string; generated_subject: string | null; created_at: string; prospect_id: string; prospects: { name: string; metro: string | null; prospect_type: string | null } | null }> = [];
   let digest: Digest | null = null;
   let draftSample: Array<{ id: string; subject: string | null; prospect: string; metro: string | null; type: string | null }> = [];
@@ -90,9 +91,9 @@ export default async function GrowthAgentsPage() {
   }
 
   try {
-    const [cvRes, ceRes, { data: newP }, { data: wkEvents }, { data: pubL }, { count: draftCount }, { count: approvedCount }, { count: sentCount }, { count: suppCount }, { data: phoneProspects }, { count: vFlagCount }, { count: eFlagCount }, { count: vHoldCount }, { count: eHoldCount }] = await Promise.all([
-      fetchAllRows<Record<string, unknown>>(supabase, "venue_listings", "city,state,venue_type,confirmed_active_at,review_flag", [["status", "published"]]),
-      fetchAllRows<Record<string, unknown>>(supabase, "event_listings", "city,state,event_type,is_recurring,schedule_confidence,day_of_week,event_date,confirmed_active_at,review_flag", [["status", "published"]]),
+    const [cvRes, ceRes, { data: newP }, { data: wkEvents }, { data: pubL }, { count: draftCount }, { count: approvedCount }, { count: sentCount }, { count: suppCount }, { data: phoneProspects }, { count: vFlagCount }, { count: eFlagCount }, { count: vHoldCount }, { count: eHoldCount }, { count: allProspects }, { count: qualifiedProspects }, { count: variantHeld }, allProspectRows] = await Promise.all([
+      fetchAllRows<Record<string, unknown>>(supabase, "venue_listings", "city,state,venue_type,confirmed_active_at,review_flag,mahjong_variant", [["status", "published"]]),
+      fetchAllRows<Record<string, unknown>>(supabase, "event_listings", "city,state,event_type,is_recurring,schedule_confidence,day_of_week,day_time,event_date,confirmed_active_at,review_flag,mahjong_variant", [["status", "published"]]),
       supabase.from("prospects").select("status,metro").gte("discovered_at", week.since),
       supabase.from("outreach_events").select("agent,action").gte("created_at", week.since),
       supabase.from("outreach_events").select("created_at").eq("action", "listing_published").gte("created_at", week.since),
@@ -105,6 +106,10 @@ export default async function GrowthAgentsPage() {
       supabase.from("event_listings").select("id", { count: "exact", head: true }).not("review_flag", "is", null),
       supabase.from("venue_listings").select("id", { count: "exact", head: true }).eq("review_flag", "private_location_hold"),
       supabase.from("event_listings").select("id", { count: "exact", head: true }).eq("review_flag", "private_location_hold"),
+      supabase.from("prospects").select("id", { count: "exact", head: true }),
+      supabase.from("prospects").select("id", { count: "exact", head: true }).in("status", ["QUALIFIED", "READY_FOR_OUTREACH", "OUTREACH_ACTIVE", "FOLLOW_UP_DUE", "REPLIED", "INTERESTED", "QUESTION", "ONBOARDING", "SIGNUP_STARTED", "LISTING_SUBMITTED", "CONVERTED"]),
+      supabase.from("prospects").select("id", { count: "exact", head: true }).not("mahjong_variant", "is", null).neq("mahjong_variant", "AMERICAN"),
+      fetchAllRows<Record<string, unknown>>(supabase, "prospects", "id,metro,city,state,mahjong_variant"),
     ]);
     const { data: fr } = await supabase.from("outreach_events")
       .select("id,action,reason,created_at").eq("agent", "freshness-agent-scheduled")
@@ -113,15 +118,37 @@ export default async function GrowthAgentsPage() {
     freshnessRuns = ((fr || []) as Array<{ id: string; action: string; reason: string | null; created_at: string }>)
       .map((r) => ({ id: r.id, action: r.action, reason: r.reason, created: String(r.created_at).slice(0, 16).replace("T", " ") }));
     totalDrafts = draftCount ?? drafts.length;
-    if (cvRes.error || ceRes.error) throw new Error(cvRes.error || ceRes.error || "coverage query failed");
+    if (cvRes.error || ceRes.error || allProspectRows.error) throw new Error(cvRes.error || ceRes.error || allProspectRows.error || "coverage query failed");
     const str = (v: unknown) => (typeof v === "string" ? v : null);
     const coverageRows: CoverageRow[] = [
-      ...cvRes.rows.map((r) => ({ kind: "venue" as const, city: str(r.city), state: str(r.state), type: str(r.venue_type), confirmed_active_at: str(r.confirmed_active_at), review_flag: str(r.review_flag) })),
-      ...ceRes.rows.map((r) => ({ kind: "event" as const, city: str(r.city), state: str(r.state), type: str(r.event_type), is_recurring: Boolean(r.is_recurring), schedule_confidence: str(r.schedule_confidence), day_of_week: Array.isArray(r.day_of_week) ? (r.day_of_week as string[]) : null, event_date: str(r.event_date), confirmed_active_at: str(r.confirmed_active_at), review_flag: str(r.review_flag) })),
+      ...cvRes.rows.map((r) => ({ kind: "venue" as const, city: str(r.city), state: str(r.state), type: str(r.venue_type), mahjong_variant: str(r.mahjong_variant), confirmed_active_at: str(r.confirmed_active_at), review_flag: str(r.review_flag) })),
+      ...ceRes.rows.map((r) => ({ kind: "event" as const, city: str(r.city), state: str(r.state), type: str(r.event_type), mahjong_variant: str(r.mahjong_variant), is_recurring: Boolean(r.is_recurring), schedule_confidence: str(r.schedule_confidence), day_of_week: Array.isArray(r.day_of_week) ? (r.day_of_week as string[]) : null, day_time: str(r.day_time), event_date: str(r.event_date), confirmed_active_at: str(r.confirmed_active_at), review_flag: str(r.review_flag) })),
     ];
+    const heldByMetro = new Map<string, number>();
+    for (const p of allProspectRows.rows) {
+      const variant = typeof p.mahjong_variant === "string" ? p.mahjong_variant : null;
+      if (!variant || variant === "AMERICAN") continue;
+      const m = metroOf(typeof p.city === "string" ? p.city : null, typeof p.state === "string" ? p.state : null)
+        ?? (typeof p.metro === "string" ? p.metro : "");
+      heldByMetro.set(m, (heldByMetro.get(m) || 0) + 1);
+    }
+    // Held games are by definition not published, so this counts across every status rather
+    // than reusing coverageRows, which only ever contains live listings.
+    const privacyByMetro = new Map<string, number>();
+    for (const table of ["venue_listings", "event_listings"] as const) {
+      const heldRes = await fetchAllRows<{ city: string | null; state: string | null; status: string | null }>(supabase, table, "city,state,status", [["review_flag", "private_location_hold"]]);
+      if (heldRes.error) throw new Error(heldRes.error);
+      for (const r of heldRes.rows.filter((x) => x.status !== "published")) {
+        const m = metroOf(r.city, r.state);
+        if (m) privacyByMetro.set(m, (privacyByMetro.get(m) || 0) + 1);
+      }
+    }
     coverage = Object.keys(METRO_CITIES)
-      .map((m) => summarizeMetro(m, coverageRows.filter((r) => metroOf(r.city, r.state) === m)))
-      .sort((a, b) => b.total - a.total);
+      .map((m) => summarizeMetro(m, coverageRows.filter((r) => metroOf(r.city, r.state) === m), {
+        variantHeldProspects: heldByMetro.get(m) || 0,
+        privateGameHolds: privacyByMetro.get(m) || 0,
+      }))
+      .sort((a, b) => b.americanConfirmed - a.americanConfirmed || b.total - a.total);
     coverageTotals = { published: coverageRows.length, outsideMetros: coverageRows.filter((r) => !metroOf(r.city, r.state)).length };
 
     const weakest = [...coverage].reverse().find((c) => c.readiness !== "USEFUL")?.metro ?? null;
@@ -134,6 +161,11 @@ export default async function GrowthAgentsPage() {
       suppressions: suppCount ?? 0,
       flaggedListings: (vFlagCount ?? 0) + (eFlagCount ?? 0),
       privateLocationHolds: (vHoldCount ?? 0) + (eHoldCount ?? 0),
+      researchedProspects: allProspects ?? 0,
+      qualifiedProspects: qualifiedProspects ?? 0,
+      publishableAmericanListings: coverageRows.filter((r) => r.mahjong_variant === "AMERICAN").length,
+      publishableUnclassifiedListings: coverageRows.filter((r) => !r.mahjong_variant || r.mahjong_variant === "UNKNOWN").length,
+      variantHeldProspects: variantHeld ?? 0,
     }, week, weakest);
 
     const weak = new Set(coverage.filter((c) => c.readiness !== "USEFUL").map((c) => c.metro));
@@ -146,6 +178,7 @@ export default async function GrowthAgentsPage() {
     draftSample = representativeSample(sampleSource).map((d) => ({ id: d.id, subject: d.subject, prospect: d.prospect, metro: d.metro ?? null, type: d.prospect_type ?? null }));
   } catch (err) {
     console.error("growth dashboard: coverage and digest failed", err);
+    coverageError = err instanceof Error ? err.message : "coverage and digest could not be computed";
     coverage = [];
     digest = null;
   }
@@ -254,11 +287,16 @@ export default async function GrowthAgentsPage() {
         If a player in this metro opened the site today, could they find somewhere to play or learn? Every factor behind the label is shown.
         {coverageTotals.published > 0 && ` Of ${coverageTotals.published} published listings, ${coverageTotals.outsideMetros} sit in cities outside these metros and are not counted below.`}
       </p>
+      {coverageError && (
+        <p style={{ background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: 10, padding: "0.7rem 1rem", color: "#b3261e", fontWeight: 700 }}>
+          Coverage and the weekly digest could not be computed, so the numbers below are missing rather than zero. {coverageError}
+        </p>
+      )}
       <div style={{ overflowX: "auto" }}>
         <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "0.86rem" }}>
           <thead>
             <tr style={{ textAlign: "left", color: "var(--muted)" }}>
-              {["Metro", "Status", "Listings", "Teachers", "Games", "Clubs", "Tournaments", "Actionable", "Current", "Flagged"].map((h) => (
+              {["Metro", "Status", "Listings", "American", "Unclassified", "Teaching", "Games", "Clubs", "Tournaments", "Actionable", "Current", "Flagged"].map((h) => (
                 <th key={h} style={{ padding: "0.35rem 0.5rem", borderBottom: "1px solid var(--border)", whiteSpace: "nowrap" }}>{h}</th>
               ))}
             </tr>
@@ -269,6 +307,8 @@ export default async function GrowthAgentsPage() {
                 <td style={{ padding: "0.35rem 0.5rem", fontWeight: 700, color: "var(--navy)", whiteSpace: "nowrap" }}>{c.metro}</td>
                 <td style={{ padding: "0.35rem 0.5rem", fontWeight: 800, color: c.readiness === "USEFUL" ? "var(--green-dark)" : c.readiness === "THIN" ? "#a07800" : "#b3261e" }}>{c.readiness}</td>
                 <td style={{ padding: "0.35rem 0.5rem" }}>{c.total}</td>
+                <td style={{ padding: "0.35rem 0.5rem", fontWeight: 700, color: "var(--navy)" }}>{c.americanConfirmed}</td>
+                <td style={{ padding: "0.35rem 0.5rem", color: "var(--muted)" }}>{c.variantUnclassified}</td>
                 <td style={{ padding: "0.35rem 0.5rem" }}>{c.instructors}</td>
                 <td style={{ padding: "0.35rem 0.5rem" }}>{c.recurringGames}</td>
                 <td style={{ padding: "0.35rem 0.5rem" }}>{c.clubsAndPrograms}</td>
@@ -282,7 +322,7 @@ export default async function GrowthAgentsPage() {
         </table>
       </div>
       <p style={{ color: "var(--muted)", fontSize: "0.8rem", margin: "0.5rem 0 0" }}>
-        Actionable means a player can act on the schedule today. Current means evidence from the last 6 months. Flagged means an open review flag.
+        American means the listing has evidence it plays American Mahjong. Unclassified means we have not recorded a variant yet, either because no source stated one or because nobody has reviewed the listing. Teaching counts teacher listings and scheduled classes together. Actionable means a player can act on the schedule today. Current means evidence from the last 6 months. Flagged means an open review flag.
       </p>
       <div style={{ display: "grid", gap: "0.3rem", marginTop: "0.6rem" }}>
         {coverage.filter((c) => c.limitingFactors.length > 0).map((c) => (

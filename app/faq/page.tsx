@@ -23,7 +23,7 @@ const FAQ_ITEMS: FaqItem[] = [
   },
   {
     q: "What kind of mahjong is played here?",
-    a: "Right now Find My Mahj Game is focused on American mahjong, the most popular version in the United States, played with the National Mah Jongg League (NMJL) card. That is the game our community plays, so every player, teacher, and event you find here is American mahjong.",
+    a: "Find My Mahj Game is built for American mahjong, the most popular version in the United States, played with the National Mah Jongg League (NMJL) card. Every new listing has its variant confirmed against the source before it goes live, and we are working back through the older listings to confirm those too.",
   },
   {
     q: "How do I find players near me?",

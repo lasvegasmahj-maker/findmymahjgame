@@ -13,6 +13,7 @@ import { fetchAllRows } from "../lib/fetch-all.ts";
 // The routing regex is imported rather than copied: this gate exists to reject a row that
 // would appear under the wrong heading, so it has to be the same rule /teachers applies.
 import { TEACHER_TYPE } from "../lib/venue-routing.ts";
+import { canPublishToAmericanDirectory, canPlayerJoin, normalizeVariant, VARIANT_CONFIDENCES } from "../lib/mahjong-variant.ts";
 
 const APPLY = process.argv.includes("--apply");
 const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -37,11 +38,41 @@ const EVENT_TYPE_RULES = [
   [/class|lesson|workshop|instruction|learn/i, "class"],
   [/open play|drop.?in|club|game|social|community|library|senior/i, "open_play"],
 ];
-function resolveEventType(verdict) {
+// prospect_type is a structured field the intake pipeline set, so it is a better fallback
+// than parsing more free text when the reviewer's own category label does not map.
+const PROSPECT_EVENT_TYPE = {
+  tournament_organizer: "tournament",
+  retreat_organizer: "retreat",
+  travel_organizer: "retreat",
+  league: "league",
+  instructor: "class",
+  studio: "class",
+  open_play_host: "open_play",
+  club: "open_play",
+  library: "open_play",
+  jcc: "open_play",
+  community_center: "open_play",
+  rec_center: "open_play",
+  senior_org: "open_play",
+  game_store: "open_play",
+};
+const PROSPECT_VENUE_TYPE = {
+  instructor: "Mahjong Instructor",
+  studio: "Mahjong Studio",
+  library: "Library",
+  jcc: "JCC",
+  senior_org: "Senior Center",
+  community_center: "Community Center",
+  rec_center: "Community Center",
+  club: "Club",
+  game_store: "Game Store",
+};
+
+function resolveEventType(verdict, prospectType) {
   // Only the reviewer's category decides this. Matching the description too would turn a
   // weekly game whose page mentions an annual tournament into a tournament listing.
   for (const [re, type] of EVENT_TYPE_RULES) if (re.test(String(verdict.suggested_category || ""))) return type;
-  return null;
+  return PROSPECT_EVENT_TYPE[prospectType] || null;
 }
 // venue_type is rendered verbatim as a public category chip and, together with the
 // description, decides whether lib/search.ts routes a row onto /teachers. AI free text cannot
@@ -63,9 +94,9 @@ const VENUE_TYPE_RULES = [
 // A tournament or retreat organizer has no venue label a player can filter by, so those
 // candidates skip rather than publishing a row reachable only under "All places". They
 // belong as dated events.
-function resolveVenueType(verdict) {
+function resolveVenueType(verdict, prospectType) {
   for (const [re, label] of VENUE_TYPE_RULES) if (re.test(String(verdict.suggested_category || ""))) return label;
-  return null;
+  return PROSPECT_VENUE_TYPE[prospectType] || null;
 }
 
 
@@ -96,18 +127,52 @@ for (const v of verdicts) {
   if (!p) { console.error(`  no prospect row for ${v.name}, skipping`); continue; }
 
   if (!v.proposed_description) { console.error(`  no verified description for ${v.name}, skipping`); continue; }
-  // The directory is built exclusively for American mahjong and has no way to show a player
-  // which variant a listing plays. Until it does, only a source-confirmed American NMJL
-  // entity may publish; anything else would send a player to a table they cannot sit at.
-  if (v.mahjong_variant !== "AMERICAN_NMJL") {
-    console.error(`  BLOCKED by variant gate: ${v.name} (${v.mahjong_variant})`);
+  // Phase 5 wrote AMERICAN_NMJL; Phase 6 writes AMERICAN. Both mean the same thing, and
+  // everything else is refused: the directory cannot tell a player which variant they would
+  // be walking into.
+  const variant = normalizeVariant(v.mahjong_variant === "AMERICAN_NMJL" ? "AMERICAN" : v.mahjong_variant);
+  const rawConfidence = String(v.variant_confidence || "").toLowerCase();
+  const confidence = VARIANT_CONFIDENCES.includes(rawConfidence) ? rawConfidence : "low";
+  if (!v.variant_evidence) { console.error(`  BLOCKED: no variant evidence recorded for ${v.name}`); continue; }
+  const variantGate = canPublishToAmericanDirectory(variant, confidence);
+  if (!variantGate.allowed) {
+    console.error(`  BLOCKED by variant gate: ${v.name} (${variantGate.reason})`);
     continue;
   }
 
-  const isEvent = v.listing_kind === "event";
+  // A game a player cannot join is not player value. Residents-only and members-only
+  // programs, and home games without evidence the host wants outsiders, stay out.
+  const joinGate = canPlayerJoin(v.outside_players_welcome, v.public_or_private);
+  if (!joinGate.allowed) {
+    console.error(`  BLOCKED: ${v.name} (${joinGate.reason})`);
+    continue;
+  }
+  if (v.player_can_act === false) {
+    console.error(`  BLOCKED: a player has no next step for ${v.name}`);
+    continue;
+  }
+
+  // The reviewer's listing_kind is a label; the evidence decides. A record with a recurring
+  // schedule at a named public address is a game a player attends, which is an event, even
+  // when the host is a library or a rec center. A record with no schedule is a business you
+  // contact, which is a venue.
+  const hasRealSchedule = v.schedule_confidence === "HIGH_EXPLICIT" && (v.day_of_week || []).length > 0;
+  // Only promote a row the reviewer left unshaped. Overriding an explicit venue verdict would
+  // skip the teachers routing check below and drop the contact fields only venues carry.
+  const isEvent = v.listing_kind === "venue" ? false : hasRealSchedule || v.listing_kind === "event";
+  if (isEvent !== (v.listing_kind === "event")) {
+    console.log(`  note: ${v.name} publishes as an event, not a venue, because it has a fixed recurring schedule`);
+  }
   const table = isEvent ? "event_listings" : "venue_listings";
   const nameKey = norm(v.name) + "|" + norm(p.city);
+  // The flip changes which table a row belongs in, so both maps are checked: publishing into
+  // the new table while the old row stays live would put the same game in the directory twice.
   const existing = (isEvent ? eventKeys : venueKeys).get(nameKey) || null;
+  const inOtherTable = (isEvent ? venueKeys : eventKeys).get(nameKey) || null;
+  if (!existing && inOtherTable) {
+    console.error(`  ${v.name} already exists as a ${isEvent ? "venue" : "event"} listing; leaving it there rather than publishing a second row`);
+    continue;
+  }
   // Only a row this pipeline created may be rewritten. Anything an owner submitted, a human
   // flagged, or an admin unpublished is left exactly as it is.
   if (existing && (existing.source_type !== "imported" || (existing.review_flag && !existing.review_flag.startsWith("freshness_")))) {
@@ -122,9 +187,9 @@ for (const v of verdicts) {
   const contactEmail = (v.public_contact || "").match(/[\w.+-]+@[\w.-]+\.\w+/)?.[0] || p.public_email || null;
   const phone = (v.public_contact || "").match(/\(?\d{3}\)?[ .-]?\d{3}[ .-]?\d{4}/)?.[0] || p.public_phone || null;
 
-  const eventType = isEvent ? resolveEventType(v) : null;
+  const eventType = isEvent ? resolveEventType(v, p.prospect_type) : null;
   if (isEvent && !eventType) { console.error(`  cannot resolve event category for ${v.name}, skipping`); continue; }
-  const venueType = isEvent ? null : resolveVenueType(v);
+  const venueType = isEvent ? null : resolveVenueType(v, p.prospect_type);
   if (!isEvent && !venueType) { console.error(`  cannot resolve venue category for ${v.name} (${v.suggested_category}), skipping`); continue; }
 
   // The no-dead-links rule applies to anything a player can click.
@@ -152,7 +217,10 @@ for (const v of verdicts) {
         day_time: v.schedule_text ? redactStreetDetail(v.schedule_text).slice(0, 200) : null,
         confirmed_active_at: new Date().toISOString(),
         status: "published",
-        reviewer_notes: `Publishability review ${new Date().toISOString().slice(0, 10)}. Variant ${v.mahjong_variant}. ${v.quoted_evidence || ""}`.slice(0, 1800),
+        mahjong_variant: variant,
+        variant_confidence: confidence,
+        variant_evidence: (v.variant_evidence || "").slice(0, 900),
+        reviewer_notes: `Publishability review ${new Date().toISOString().slice(0, 10)}. ${v.quoted_evidence || ""}`.slice(0, 1800),
       }
     : {
         business_name: v.name.slice(0, 160),
@@ -168,7 +236,10 @@ for (const v of verdicts) {
         phone: v.contact_ok_to_display ? phone : null,
         confirmed_active_at: new Date().toISOString(),
         status: "published",
-        reviewer_notes: `Publishability review ${new Date().toISOString().slice(0, 10)}. Variant ${v.mahjong_variant}. ${v.quoted_evidence || ""}`.slice(0, 1800),
+        mahjong_variant: variant,
+        variant_confidence: confidence,
+        variant_evidence: (v.variant_evidence || "").slice(0, 900),
+        reviewer_notes: `Publishability review ${new Date().toISOString().slice(0, 10)}. ${v.quoted_evidence || ""}`.slice(0, 1800),
       };
 
   // The privacy screen runs on the row that will actually reach players, not on the
@@ -253,7 +324,7 @@ for (const { v, p, table, row, existingId } of planned) {
     prospect_id: p.id,
     agent: "publishability-review-p5",
     action: existingId ? "listing_updated" : "listing_published",
-    reason: `${v.mahjong_variant} verified; ${v.activity_recency}; schedule ${v.schedule_confidence}`.slice(0, 400),
+    reason: `${row.mahjong_variant} verified; ${v.activity_recency}; schedule ${v.schedule_confidence}; outside players ${v.outside_players_welcome}`.slice(0, 400),
     evidence: `${table}/${listingId} | ${(v.source_urls || []).join(" ")}`.slice(0, 900),
     deterministic: false,
     ai_generated: true,

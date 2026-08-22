@@ -4,6 +4,7 @@
 
 export type CoverageRow = {
   kind: "venue" | "event";
+  mahjong_variant?: string | null;
   city?: string | null;
   state?: string | null;
   type?: string | null;
@@ -11,6 +12,7 @@ export type CoverageRow = {
   schedule_confidence?: string | null;
   day_of_week?: string[] | null;
   event_date?: string | null;
+  day_time?: string | null;
   confirmed_active_at?: string | null;
   review_flag?: string | null;
 };
@@ -18,6 +20,11 @@ export type CoverageRow = {
 export type MetroCoverage = {
   metro: string;
   total: number;
+  americanConfirmed: number;
+  variantUnclassified: number;
+  notCovered: number;
+  variantHeldProspects: number;
+  privateGameHolds: number;
   instructors: number;
   recurringGames: number;
   clubsAndPrograms: number;
@@ -47,15 +54,28 @@ function isCurrent(r: CoverageRow, now: number): boolean {
   return Number.isFinite(age) && age <= 180;
 }
 
+const WEEKDAY_RE = /\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)s?\b/i;
+const PAUSED_RE = /\b(no sessions|not currently|none scheduled|paused|on hiatus|suspended|by appointment only)\b/i;
+const CLOCK_TIME_RE = /\b\d{1,2}(:\d{2})?\s?[ap]\.?\s?m\.?/i;
+
 function hasStrongSchedule(r: CoverageRow, now: number): boolean {
   if (r.kind === "venue") return false;
+  // A host saying nothing is scheduled outranks any structured field still on the row.
+  if (PAUSED_RE.test(String(r.day_time || ""))) return false;
   if (r.schedule_confidence === "high") return true;
   const days = Array.isArray(r.day_of_week) ? r.day_of_week.filter(Boolean) : [];
   if (days.length > 0 && (r.is_recurring ?? false)) return true;
+  // A monthly game carries no structured weekday, because "third Thursday" is not every
+  // Thursday, but a player can still act on it when the text names a day and a time.
+  const finished = Boolean(r.event_date && new Date(r.event_date).getTime() < now);
+  const when = String(r.day_time || "");
+  if (!finished && WEEKDAY_RE.test(when) && CLOCK_TIME_RE.test(when)) return true;
   return Boolean(r.event_date && new Date(r.event_date).getTime() >= now);
 }
 
-export function summarizeMetro(metro: string, rows: CoverageRow[], now = Date.now()): MetroCoverage {
+export type MetroHolds = { variantHeldProspects?: number; privateGameHolds?: number };
+
+export function summarizeMetro(metro: string, rows: CoverageRow[], holds: MetroHolds = {}, now = Date.now()): MetroCoverage {
   const cityCounts = new Map<string, number>();
   let instructors = 0;
   let recurringGames = 0;
@@ -65,16 +85,27 @@ export function summarizeMetro(metro: string, rows: CoverageRow[], now = Date.no
   let strongSchedules = 0;
   let currentEvidence = 0;
   let needsReview = 0;
+  let americanConfirmed = 0;
+  let variantUnclassified = 0;
+  let notCovered = 0;
 
   for (const r of rows) {
+    if (!r.mahjong_variant || r.mahjong_variant === "UNKNOWN") variantUnclassified++;
+    else if (r.mahjong_variant === "AMERICAN") americanConfirmed++;
+    else notCovered++;
     const key = (r.city || "unknown").toLowerCase();
     cityCounts.set(key, (cityCounts.get(key) || 0) + 1);
     const type = String(r.type || "");
 
-    if (r.kind === "venue" && INSTRUCTOR_RE.test(type)) instructors++;
+    // Teaching capacity counts wherever it lives, because a teacher whose listing is a
+    // scheduled class serves a learner exactly as a teacher profile does. A class must not
+    // then also count as a drop-in game: letting one row satisfy both halves of the readiness
+    // gate would let a single teacher make an empty metro look useful.
+    const teaches = INSTRUCTOR_RE.test(type);
+    if (teaches) instructors++;
     if (TOURNAMENT_RE.test(type)) tournaments++;
     else if (RETREAT_RE.test(type)) retreatsAndSpecials++;
-    else if (r.kind === "event" && (r.is_recurring || OPEN_PLAY_RE.test(type))) recurringGames++;
+    else if (!teaches && r.kind === "event" && (r.is_recurring || OPEN_PLAY_RE.test(type))) recurringGames++;
     if (CLUB_RE.test(type)) clubsAndPrograms++;
 
     if (hasStrongSchedule(r, now)) strongSchedules++;
@@ -97,17 +128,28 @@ export function summarizeMetro(metro: string, rows: CoverageRow[], now = Date.no
   if (strongSchedules < 3) limitingFactors.push(count(strongSchedules, "listing a player can act on today", "listings a player can act on today"));
   if (rows.length > 0 && currentEvidence * 2 < rows.length) limitingFactors.push("under half the listings have evidence from the last 6 months");
   if (rows.length >= 4 && topCityShare >= 80) limitingFactors.push(`${topCityShare} percent of listings sit in one city`);
+  if (notCovered > 0) limitingFactors.push(`${notCovered} ${notCovered === 1 ? "listing plays a game or card" : "listings play a game or card"} this directory does not cover`);
+  if (holds.variantHeldProspects) limitingFactors.push(`${holds.variantHeldProspects} researched ${holds.variantHeldProspects === 1 ? "group or teacher is" : "groups and teachers are"} held because the mahjong variant is unconfirmed or not American`);
+  if (holds.privateGameHolds) limitingFactors.push(`${holds.privateGameHolds} private home ${holds.privateGameHolds === 1 ? "game is" : "games are"} held pending host intent`);
 
+  // Readiness is about American mahjong a player can join, so it is capped by how much of the
+  // metro is actually confirmed American. Counting unclassified or non-covered rows toward a
+  // green label would let a riichi-only metro read as useful.
   const readiness: MetroCoverage["readiness"] =
-    recurringGames >= 3 && strongSchedules >= 3 && instructors >= 2
+    recurringGames >= 3 && strongSchedules >= 3 && instructors >= 2 && americanConfirmed >= 3
       ? "USEFUL"
-      : recurringGames + instructors >= 2
+      : recurringGames + instructors >= 2 && americanConfirmed >= 1
         ? "THIN"
         : "GAP";
 
   return {
     metro,
     total: rows.length,
+    americanConfirmed,
+    variantUnclassified,
+    notCovered,
+    variantHeldProspects: holds.variantHeldProspects ?? 0,
+    privateGameHolds: holds.privateGameHolds ?? 0,
     instructors,
     recurringGames,
     clubsAndPrograms,
