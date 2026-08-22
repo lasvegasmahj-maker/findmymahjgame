@@ -1,7 +1,7 @@
 // Real mahjong games happen at people's homes, and a host's home is not a public venue. The
-// address column already sits outside the public field allowlist in lib/search.ts, so the
-// leak risk lives in the free text fields research imports wrote, which is what this governs.
-// The rule: nothing narrower than a city may be shown for a private residence game.
+// address column is inside the public allowlist (VENUE_BASE_FIELDS in lib/search.ts), so it
+// leaks a street just as readily as the free text fields research imports wrote; all three
+// are screened here. The rule: nothing narrower than a city for a private residence game.
 
 export const PRIVATE_LOCATION_FLAG = "private_location_hold";
 
@@ -75,11 +75,17 @@ export function safePublicVenue(city?: string | null, state?: string | null, nei
 
 // Strips street level detail from a free text field without inventing anything. Used when a
 // legitimate private game is kept live: the game, day, and city survive; the block does not.
+// The detectors stay non-global: a g-flagged regex reused with .test() carries lastIndex and
+// would alternate true and false across calls. Redaction needs every match, so it uses global
+// copies, otherwise a description listing two homes keeps the second one.
+const CROSS_STREET_G = new RegExp(CROSS_STREET_RE.source, "gi");
+const STREET_ADDRESS_G = new RegExp(STREET_ADDRESS_RE.source, "gi");
+
 export function redactStreetDetail(text: string | null | undefined): string {
   if (!text) return "";
   return String(text)
-    .replace(CROSS_STREET_RE, "")
-    .replace(STREET_ADDRESS_RE, "")
+    .replace(CROSS_STREET_G, "")
+    .replace(STREET_ADDRESS_G, "")
     .replace(/\(\s*[;,]\s*/g, "(")
     .replace(/\s*[;,]\s*\)/g, ")")
     .replace(/\(\s*\)/g, "")

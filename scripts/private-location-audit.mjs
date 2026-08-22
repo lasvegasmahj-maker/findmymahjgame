@@ -52,9 +52,13 @@ let redacted = 0, flagged = 0;
 for (const { r, s, urgent, redact } of findings) {
   const update = {};
   if (redact) {
-    const venue = redactStreetDetail(r.venue);
-    update.venue = venue || LOCATION_ON_REQUEST_TEXT;
     update.description = redactStreetDetail(r.description);
+    // address is inside the public allowlist, so it is the column that actually leaks a
+    // street. venue exists on events only; writing it to a venue row rejects the whole update.
+    if (r.address) update.address = redactStreetDetail(r.address) || null;
+    if (r.table === "event_listings") {
+      update.venue = redactStreetDetail(r.venue) || LOCATION_ON_REQUEST_TEXT;
+    }
   }
   // Never overwrite a flag a human put there, and never clear an existing one.
   if (!r.review_flag) update.review_flag = PRIVATE_LOCATION_FLAG;
@@ -62,7 +66,9 @@ for (const { r, s, urgent, redact } of findings) {
   update.reviewer_notes = `${r.reviewer_notes || ""} | 2026-08-22 private location audit: ${s.reasons.join("; ")}. ${redact ? "Street level detail removed from public fields. " : ""}Publication decision left to Shauna.`.slice(0, 1800);
 
   const { error } = await sb.from(r.table).update(update).eq("id", r.id);
-  if (error) { console.error(`  update failed ${r.name}: ${error.message}`); continue; }
+  // A failed write here means a live listing still carries a home address, so the run stops
+  // rather than finishing with a summary that reads like a clean sweep.
+  if (error) { console.error(`  update failed ${r.name}: ${error.message}`); process.exit(1); }
   if (redact) redacted++;
   if (update.review_flag) flagged++;
   await sb.from("outreach_events").insert({

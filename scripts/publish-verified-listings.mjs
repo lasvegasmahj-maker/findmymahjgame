@@ -38,15 +38,35 @@ function resolveEventType(verdict) {
   for (const [re, type] of EVENT_TYPE_RULES) if (re.test(text)) return type;
   return null;
 }
-// TEACHER_TYPE in lib/search.ts routes anything matching /instructor|teacher|lesson|studio|
-// school|class/ onto /teachers, so an uncategorized venue must not inherit a teaching word.
-const NEUTRAL_VENUE_TYPE = "Mahjong Venue";
+// venue_type is rendered verbatim as a public category chip and, together with the
+// description, decides whether lib/search.ts routes a row onto /teachers. AI free text cannot
+// be trusted with either job, so it is mapped onto a fixed vocabulary and an unmappable
+// category skips the row, matching the rule events already follow.
+const VENUE_TYPE_RULES = [
+  [/instructor|teacher|teaching|lesson|class|coach/i, "Mahjong Instructor"],
+  [/studio/i, "Mahjong Studio"],
+  [/library/i, "Library"],
+  [/jcc|synagogue|temple/i, "JCC"],
+  [/senior|55\+|retirement/i, "Senior Center"],
+  [/community|rec center|recreation/i, "Community Center"],
+  [/club/i, "Club"],
+  [/cafe|restaurant|bar|brewery|game store|shop/i, "Venue"],
+  [/tournament/i, "Tournament Organizer"],
+  [/retreat|travel|cruise/i, "Retreat Organizer"],
+];
+function resolveVenueType(verdict) {
+  for (const [re, label] of VENUE_TYPE_RULES) if (re.test(String(verdict.suggested_category || ""))) return label;
+  return null;
+}
+// A row whose category says one thing while its description routes it somewhere else would
+// appear under the wrong heading, so the composed row is checked before it is written.
+const TEACHER_ROUTING = /instructor|teacher|lesson|studio|school|class/i;
 
 async function urlIsLive(url) {
   if (!url) return false;
   try {
     const r = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(12000), headers: { "User-Agent": "Mozilla/5.0 FindMyMahjGame-publish" } });
-    return r.status >= 200 && r.status < 400;
+    return r.status === 200;
   } catch {
     return false;
   }
@@ -94,7 +114,7 @@ for (const v of verdicts) {
   const existing = (isEvent ? eventKeys : venueKeys).get(nameKey) || null;
   // Only a row this pipeline created may be rewritten. Anything an owner submitted, a human
   // flagged, or an admin unpublished is left exactly as it is.
-  if (existing && (existing.source_type !== "imported" || existing.review_flag)) {
+  if (existing && (existing.source_type !== "imported" || (existing.review_flag && !existing.review_flag.startsWith("freshness_")))) {
     console.error(`  existing listing for ${v.name} is human owned or flagged, leaving it alone`);
     continue;
   }
@@ -108,6 +128,8 @@ for (const v of verdicts) {
 
   const eventType = isEvent ? resolveEventType(v) : null;
   if (isEvent && !eventType) { console.error(`  cannot resolve event category for ${v.name}, skipping`); continue; }
+  const venueType = isEvent ? null : resolveVenueType(v);
+  if (!isEvent && !venueType) { console.error(`  cannot resolve venue category for ${v.name} (${v.suggested_category}), skipping`); continue; }
 
   // The no-dead-links rule applies to anything a player can click.
   const sourceUrl = v.source_urls?.[0] || null;
@@ -138,7 +160,7 @@ for (const v of verdicts) {
       }
     : {
         business_name: v.name.slice(0, 160),
-        venue_type: v.suggested_category?.slice(0, 60) || NEUTRAL_VENUE_TYPE,
+        venue_type: venueType,
         city: p.city,
         state: p.state,
         description: v.proposed_description.slice(0, 800),
@@ -155,6 +177,15 @@ for (const v of verdicts) {
 
   // The privacy screen runs on the row that will actually reach players, not on the
   // reviewer's notes, so it tests exactly what gets displayed.
+  if (!isEvent) {
+    const routesAsTeacher = TEACHER_ROUTING.test(`${row.venue_type} ${row.description}`);
+    const meantAsTeacher = venueType === "Mahjong Instructor" || venueType === "Mahjong Studio";
+    if (routesAsTeacher !== meantAsTeacher) {
+      console.error(`  ${v.name} would appear under the wrong heading (category ${venueType}, description routes as teacher ${routesAsTeacher}), skipping`);
+      continue;
+    }
+  }
+
   const privacy = detectPrivateLocation({
     venue: row.venue,
     description: row.description,

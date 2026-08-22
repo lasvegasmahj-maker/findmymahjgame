@@ -4,22 +4,12 @@ import { verifyAdminSessionToken, ADMIN_COOKIE } from "@/lib/admin-auth";
 import { PROSPECT_STATES } from "@/lib/prospect-state";
 import { lazyServerClient } from "@/lib/supabase-server";
 import { summarizeMetro, metroOf, METRO_CITIES, type CoverageRow, type MetroCoverage } from "@/lib/market-coverage";
-import { buildDigest, isoWeekAgo, representativeSample, prioritizePhoneQueue, type Digest, type PhonePriority } from "@/lib/growth-digest";
+import { buildDigest, isoWeekAgo, representativeSample, prioritizePhoneQueue, type Digest, type PhoneCandidate, type PhonePriority } from "@/lib/growth-digest";
+import { fetchAllRows } from "@/lib/fetch-all";
 
 export const dynamic = "force-dynamic";
 
 const supabase = lazyServerClient();
-
-// The digest mixes a 7 day window with running totals. These are the windowed ones; every
-// other tile is labelled "(total)" so no number claims a timeframe it does not have.
-const WINDOWED_LABELS = new Set([
-  "New prospects discovered",
-  "Newly qualified",
-  "Newly published listings",
-  "Newly rejected",
-  "Duplicates prevented",
-  "Freshness findings filed",
-]);
 
 const FUNNEL: Array<[string, string]> = [
   ["DISCOVERED", "Discovered"],
@@ -100,17 +90,19 @@ export default async function GrowthAgentsPage() {
   }
 
   try {
-    const [{ data: cv }, { data: ce }, { data: newP }, { data: wkEvents }, { data: pubL }, { count: draftCount }, { count: approvedCount }, { count: sentCount }, { count: suppCount }, { data: phoneProspects }] = await Promise.all([
-      supabase.from("venue_listings").select("city,state,venue_type,source_url,confirmed_active_at,review_flag").eq("status", "published"),
-      supabase.from("event_listings").select("city,state,event_type,is_recurring,schedule_confidence,day_of_week,day_time,event_date,source_url,confirmed_active_at,review_flag").eq("status", "published"),
+    const [cvRes, ceRes, { data: newP }, { data: wkEvents }, { data: pubL }, { count: draftCount }, { count: approvedCount }, { count: sentCount }, { count: suppCount }, { data: phoneProspects }, { data: vFlags }, { data: eFlags }] = await Promise.all([
+      fetchAllRows<Record<string, unknown>>(supabase, "venue_listings", "city,state,venue_type,confirmed_active_at,review_flag", [["status", "published"]]),
+      fetchAllRows<Record<string, unknown>>(supabase, "event_listings", "city,state,event_type,is_recurring,schedule_confidence,day_of_week,event_date,confirmed_active_at,review_flag", [["status", "published"]]),
       supabase.from("prospects").select("status,metro").gte("discovered_at", week.since),
       supabase.from("outreach_events").select("agent,action").gte("created_at", week.since),
       supabase.from("outreach_events").select("created_at").eq("action", "listing_published").gte("created_at", week.since),
-      supabase.from("outreach_messages").select("id", { count: "exact", head: true }).eq("send_status", "draft"),
-      supabase.from("outreach_messages").select("id", { count: "exact", head: true }).eq("approved_by_human", true),
+      supabase.from("outreach_messages").select("id", { count: "exact", head: true }).eq("send_status", "draft").eq("approved_by_human", false),
+      supabase.from("outreach_messages").select("id", { count: "exact", head: true }).eq("send_status", "draft").eq("approved_by_human", true),
       supabase.from("outreach_messages").select("id", { count: "exact", head: true }).eq("send_status", "sent"),
       supabase.from("email_suppressions").select("email", { count: "exact", head: true }),
       supabase.from("prospects").select("id,name,city,state,metro,prospect_type,public_phone,public_email,status,qualification_score").not("public_phone", "is", null).limit(400),
+      supabase.from("venue_listings").select("review_flag").not("review_flag", "is", null),
+      supabase.from("event_listings").select("review_flag").not("review_flag", "is", null),
     ]);
     const { data: fr } = await supabase.from("outreach_events")
       .select("action,reason,created_at").eq("agent", "freshness-agent-scheduled")
@@ -118,17 +110,18 @@ export default async function GrowthAgentsPage() {
       .order("created_at", { ascending: false }).limit(5);
     freshnessRuns = ((fr || []) as Array<{ action: string; reason: string | null; created_at: string }>)
       .map((r) => ({ action: r.action, reason: r.reason, created: String(r.created_at).slice(0, 16).replace("T", " ") }));
-    type CVRow = { city: string | null; state: string | null; venue_type: string | null; source_url: string | null; confirmed_active_at: string | null; review_flag: string | null };
-    type CERow = CVRow & { event_type: string | null; is_recurring: boolean | null; schedule_confidence: string | null; day_of_week: string[] | null; day_time: string | null; event_date: string | null };
+    if (cvRes.error || ceRes.error) throw new Error(cvRes.error || ceRes.error || "coverage query failed");
+    const str = (v: unknown) => (typeof v === "string" ? v : null);
     const coverageRows: CoverageRow[] = [
-      ...((cv || []) as CVRow[]).map((r) => ({ kind: "venue" as const, city: r.city, state: r.state, type: r.venue_type, source_url: r.source_url, confirmed_active_at: r.confirmed_active_at, review_flag: r.review_flag })),
-      ...((ce || []) as unknown as CERow[]).map((r) => ({ kind: "event" as const, city: r.city, state: r.state, type: r.event_type, is_recurring: r.is_recurring, schedule_confidence: r.schedule_confidence, day_of_week: r.day_of_week, day_time: r.day_time, event_date: r.event_date, source_url: r.source_url, confirmed_active_at: r.confirmed_active_at, review_flag: r.review_flag })),
+      ...cvRes.rows.map((r) => ({ kind: "venue" as const, city: str(r.city), state: str(r.state), type: str(r.venue_type), confirmed_active_at: str(r.confirmed_active_at), review_flag: str(r.review_flag) })),
+      ...ceRes.rows.map((r) => ({ kind: "event" as const, city: str(r.city), state: str(r.state), type: str(r.event_type), is_recurring: Boolean(r.is_recurring), schedule_confidence: str(r.schedule_confidence), day_of_week: Array.isArray(r.day_of_week) ? (r.day_of_week as string[]) : null, event_date: str(r.event_date), confirmed_active_at: str(r.confirmed_active_at), review_flag: str(r.review_flag) })),
     ];
     coverage = Object.keys(METRO_CITIES)
       .map((m) => summarizeMetro(m, coverageRows.filter((r) => metroOf(r.city, r.state) === m)))
       .sort((a, b) => b.total - a.total);
     coverageTotals = { published: coverageRows.length, outsideMetros: coverageRows.filter((r) => !metroOf(r.city, r.state)).length };
 
+    const weakest = [...coverage].reverse().find((c) => c.readiness !== "USEFUL")?.metro ?? null;
     digest = buildDigest({
       prospectsCreated: ((newP || []) as Array<{ status: string; metro: string | null }>),
       eventsInWindow: ((wkEvents || []) as Array<{ agent: string; action: string }>),
@@ -136,11 +129,11 @@ export default async function GrowthAgentsPage() {
       drafts: { total: draftCount ?? 0, approved: approvedCount ?? 0 },
       sends: sentCount ?? 0,
       suppressions: suppCount ?? 0,
-      reviewFlags: coverageRows.map((r) => ({ review_flag: r.review_flag ?? null })),
-    }, week);
+      reviewFlags: [...((vFlags || []) as Array<{ review_flag: string | null }>), ...((eFlags || []) as Array<{ review_flag: string | null }>)],
+    }, week, weakest);
 
     const weak = new Set(coverage.filter((c) => c.readiness !== "USEFUL").map((c) => c.metro));
-    phonePriority = prioritizePhoneQueue(((phoneProspects || []) as PhonePriority[]), weak);
+    phonePriority = prioritizePhoneQueue(((phoneProspects || []) as PhoneCandidate[]), weak);
 
     const sampleSource = draftJoin.map((d) => ({
       id: d.id, subject: d.generated_subject, prospect: d.prospects?.name || d.prospect_id,
@@ -226,12 +219,12 @@ export default async function GrowthAgentsPage() {
         <>
           <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>This week</h2>
           <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>
-            The first six counts cover the 7 days ending {digest.window.until.slice(0, 10)}. The rest are running totals, labelled below.
+            Counts marked (total) are running totals. The rest cover the 7 days ending {digest.window.until.slice(0, 10)}.
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 210px), 1fr))", gap: "0.5rem" }}>
-            {digest.changed.map(([label, n]) => (
+            {digest.changed.map(([label, n, scope]) => (
               <div key={label} style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, padding: "0.6rem 0.8rem", display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "0.6rem" }}>
-                <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>{label}{WINDOWED_LABELS.has(label) ? "" : " (total)"}</span>
+                <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>{label}{scope === "total" ? " (total)" : ""}</span>
                 <strong style={{ fontSize: "1.15rem", color: label === "Emails sent" && n > 0 ? "#b3261e" : "var(--navy)", fontVariantNumeric: "tabular-nums" }}>{n}</strong>
               </div>
             ))}
@@ -310,7 +303,7 @@ export default async function GrowthAgentsPage() {
       )}
 
       <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Calls worth making first ({phonePriority.length})</h2>
-      <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>Ranked by how many named reasons apply, not by a score. Opening this list changes no record.</p>
+      <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: "0 0 0.8rem" }}>Ranked by how many named reasons apply, with evidence score breaking ties. Opening this list changes no record.</p>
       {phonePriority.length === 0 ? <p style={{ color: "var(--muted)" }}>No prioritized calls right now.</p> : (
         <div style={{ display: "grid", gap: "0.4rem" }}>
           {phonePriority.map((c) => (
@@ -356,7 +349,7 @@ export default async function GrowthAgentsPage() {
         ))}
       </div>
 
-      <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Outreach drafts awaiting your approval ({drafts.length})</h2>
+      <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "var(--navy)", margin: "2.2rem 0 0.6rem" }}>Outreach drafts awaiting your approval (showing {drafts.length} of {totalDrafts})</h2>
       {drafts.length === 0 ? <p style={{ color: "var(--muted)" }}>No drafts. Run the draft generator after qualifying prospects.</p> : (
         <div style={{ display: "grid", gap: "0.5rem" }}>
           {drafts.map((d) => (

@@ -4,9 +4,9 @@
 export type DigestWindow = { since: string; until: string };
 
 export type DigestInput = {
-  prospectsCreated: Array<{ status: string; metro?: string | null }>;
-  eventsInWindow: Array<{ agent: string; action: string }>;
-  listingsPublished: Array<{ city?: string | null; state?: string | null }>;
+  prospectsCreated: Array<{ status: string }>;
+  eventsInWindow: Array<{ action: string }>;
+  listingsPublished: unknown[];
   drafts: { total: number; approved: number };
   sends: number;
   suppressions: number;
@@ -15,7 +15,7 @@ export type DigestInput = {
 
 export type Digest = {
   window: DigestWindow;
-  changed: Array<[string, number]>;
+  changed: Array<[string, number, "window" | "total"]>;
   needsShauna: string[];
   agentQueue: string[];
   sends: number;
@@ -29,27 +29,29 @@ function countBy(rows: Array<{ action: string }>, re: RegExp): number {
   return rows.filter((r) => re.test(r.action)).length;
 }
 
-export function buildDigest(input: DigestInput, window: DigestWindow): Digest {
-  const newlyQualified = input.prospectsCreated.filter((p) => p.status === "QUALIFIED").length;
-  const newlyRejected = countBy(input.eventsInWindow, /deep_verify_rejected|rejected/);
-  const duplicatesPrevented = countBy(input.eventsInWindow, /duplicate|already_(a_listing|known)/);
-  const freshnessChanges = countBy(input.eventsInWindow, /reverification_proposed/);
+export function buildDigest(input: DigestInput, window: DigestWindow, weakestMetro?: string | null): Digest {
+  const discoveredNowQualified = input.prospectsCreated.filter((p) => p.status === "QUALIFIED").length;
+  const newlyRejected = countBy(input.eventsInWindow, /^(deep_verify_rejected|publishability_reject_not_current)$/);
+  const freshnessChanges = countBy(input.eventsInWindow, /^reverification_proposed$/);
+  const heldFromPublication = countBy(input.eventsInWindow, /^publishability_hold_/);
   const privacyHolds = input.reviewFlags.filter((r) => r.review_flag === "private_location_hold").length;
   const needsReviewNow = input.reviewFlags.filter((r) => Boolean(r.review_flag)).length;
 
-  const changed: Array<[string, number]> = [
-    ["New prospects discovered", input.prospectsCreated.length],
-    ["Newly qualified", newlyQualified],
-    ["Newly published listings", input.listingsPublished.length],
-    ["Newly rejected", newlyRejected],
-    ["Duplicates prevented", duplicatesPrevented],
-    ["Freshness findings filed", freshnessChanges],
-    ["Listings needing review", needsReviewNow],
-    ["Private location holds", privacyHolds],
-    ["Suppressions on file", input.suppressions],
-    ["Outreach drafts waiting", input.drafts.total],
-    ["Drafts you approved", input.drafts.approved],
-    ["Emails sent", input.sends],
+  // Each entry carries its own scope so no tile depends on its position in this list, and the
+  // page cannot drift out of sync with which numbers are weekly.
+  const changed: Array<[string, number, "window" | "total"]> = [
+    ["New prospects discovered", input.prospectsCreated.length, "window"],
+    ["Discovered this week, now qualified", discoveredNowQualified, "window"],
+    ["Newly published listings", input.listingsPublished.length, "window"],
+    ["Newly rejected", newlyRejected, "window"],
+    ["Held from publication", heldFromPublication, "window"],
+    ["Freshness findings filed", freshnessChanges, "window"],
+    ["Listings needing review", needsReviewNow, "total"],
+    ["Private location holds", privacyHolds, "total"],
+    ["Suppressions on file", input.suppressions, "total"],
+    ["Outreach drafts waiting", input.drafts.total, "total"],
+    ["Drafts you approved", input.drafts.approved, "total"],
+    ["Emails sent", input.sends, "total"],
   ];
 
   // Only genuine human calls belong here. Anything an agent may do at the current autonomy
@@ -68,9 +70,9 @@ export function buildDigest(input: DigestInput, window: DigestWindow): Digest {
   // The queue names work that is already inside policy. It reports; it does not authorize.
   const agentQueue: string[] = [
     "Verify and publish the remaining approved research candidates",
-    "Run the freshness scan and file findings for stale listings",
-    "Research the weakest metro identified by market coverage",
+    weakestMetro ? `Research ${weakestMetro}, the weakest metro in the coverage table` : "Research the weakest metro once coverage is computed",
     "Deep verify prospects still sitting in review",
+    "Confirm the mahjong variant for entities held on that question",
   ];
 
   return { window, changed, needsShauna, agentQueue, sends: input.sends };
@@ -146,8 +148,8 @@ export function prioritizePhoneQueue(
     if (!c.public_phone) continue;
     const reasons: string[] = [];
     if (!c.public_email) reasons.push("phone is the only way to reach them, so a call is the whole blocker");
-    if (c.metro && weakMetros.has(c.metro)) reasons.push(`${c.metro} coverage is thin, so one confirmation moves the metro`);
-    if ((c.qualification_score ?? 0) >= 90) reasons.push("evidence quality is high, so the call is likely to convert");
+    if (c.metro && weakMetros.has(c.metro)) reasons.push(`${c.metro} coverage is thin, so a confirmation here counts for more`);
+    if ((c.qualification_score ?? 0) >= 90) reasons.push("evidence quality scored 90 or above");
     if (c.prospect_type && /tournament|club|library|senior|jcc|rec_center|community/.test(c.prospect_type)) {
       reasons.push("community or tournament host, which serves many players per listing");
     }

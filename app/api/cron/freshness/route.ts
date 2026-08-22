@@ -1,11 +1,14 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { lazyServerClient } from "@/lib/supabase-server";
+import { fetchAllRows } from "@/lib/fetch-all";
 
 // Proposes reverification and never changes what a player sees, so a scheduled job can run
 // unattended without any path to publishing or unpublishing. Failures return non-200 and
 // write an audit row, because a scan that silently stops looks identical to a clean scan.
 const supabase = lazyServerClient();
+
+export const maxDuration = 300;
 
 const DAY = 86400000;
 const FRESHNESS_AGENT = "freshness-agent-scheduled";
@@ -46,23 +49,20 @@ export async function GET(req: NextRequest) {
     const parsed = Number(cfg?.value);
     const intervalDays = Number.isFinite(parsed) ? parsed : 14;
 
+    const PUBLISHED: Array<[string, string]> = [["status", "published"]];
     const [v, e] = await Promise.all([
-      supabase.from("venue_listings")
-        .select("id,business_name,city,state,confirmed_active_at,updated_at,ended_reports,review_flag")
-        .eq("status", "published"),
-      supabase.from("event_listings")
-        .select("id,event_name,city,state,confirmed_active_at,updated_at,event_date,is_recurring,ended_reports,schedule_parsed_at,review_flag")
-        .eq("status", "published"),
+      fetchAllRows<Record<string, unknown>>(supabase, "venue_listings", "id,business_name,city,state,confirmed_active_at,updated_at,ended_reports,review_flag", PUBLISHED),
+      fetchAllRows<Record<string, unknown>>(supabase, "event_listings", "id,event_name,city,state,confirmed_active_at,updated_at,event_date,is_recurring,ended_reports,schedule_parsed_at,review_flag", PUBLISHED),
     ]);
     if (v.error || e.error) {
-      console.error("freshness cron: listing query failed", v.error?.message || e.error?.message);
+      console.error("freshness cron: listing query failed", v.error || e.error);
       return NextResponse.json({ error: "listing query failed" }, { status: 500 });
     }
 
     const rows: Row[] = [
-      ...(v.data || []).map((r) => ({ ...r, kind: "venue" as const, name: r.business_name })),
-      ...(e.data || []).map((r) => ({ ...r, kind: "event" as const, name: r.event_name })),
-    ];
+      ...v.rows.map((r) => ({ ...r, kind: "venue" as const, name: String(r.business_name) })),
+      ...e.rows.map((r) => ({ ...r, kind: "event" as const, name: String(r.event_name) })),
+    ] as Row[];
 
     const findings: Array<{ row: Row; severity: string; reasons: string[] }> = [];
     for (const r of rows) {
@@ -85,7 +85,11 @@ export async function GET(req: NextRequest) {
     let filed = 0;
     let skippedDuplicate = 0;
     let skippedHumanFlag = 0;
-    for (const f of findings) {
+    // A timeout mid loop would skip the catch and leave no audit row, so each run takes a
+    // bounded slice and reports the remainder for the next one.
+    const PER_RUN = 200;
+    const batch = findings.slice(0, PER_RUN);
+    for (const f of batch) {
       const table = f.row.kind === "event" ? "event_listings" : "venue_listings";
       const newFlag = `freshness_${f.severity.toLowerCase()}`;
       if (f.row.review_flag === newFlag) { skippedDuplicate++; continue; }
@@ -104,11 +108,12 @@ export async function GET(req: NextRequest) {
       filed++;
     }
 
-    const summary = { scanned: rows.length, findings: findings.length, filed, skippedDuplicate, skippedHumanFlag, intervalDays };
+    const deferred = Math.max(0, findings.length - batch.length);
+    const summary = { scanned: rows.length, findings: findings.length, filed, skippedDuplicate, skippedHumanFlag, deferred, intervalDays };
     await supabase.from("outreach_events").insert({
       agent: FRESHNESS_AGENT,
       action: "scheduled_run_completed",
-      reason: `scanned ${summary.scanned}, findings ${summary.findings}, filed ${filed}, duplicates skipped ${skippedDuplicate}, human flags respected ${skippedHumanFlag}`,
+      reason: `scanned ${summary.scanned}, findings ${summary.findings}, filed ${filed}, duplicates skipped ${skippedDuplicate}, human flags respected ${skippedHumanFlag}, deferred to next run ${deferred}`,
       evidence: `interval_days=${intervalDays}`,
       deterministic: true,
     });

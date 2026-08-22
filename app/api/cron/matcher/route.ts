@@ -9,7 +9,7 @@ import { lazyServerClient } from "@/lib/supabase-server";
 // The Bench matcher, MVP. Ships DARK: app_settings.matcher_enabled must be
 // 'true' AND every match still requires the founder's one-click approval
 // before anyone is emailed an invite. Dallas-first per the pilot ruling:
-// only the allowlisted metro pools. Daily cadence (Vercel Hobby allows daily).
+// only the allowlisted metro pools. Daily cadence.
 const supabase = lazyServerClient();
 
 const PILOT_CITIES = ["dallas", "plano", "frisco", "richardson", "addison", "fort worth", "mckinney", "allen", "irving", "garland", "carrollton"];

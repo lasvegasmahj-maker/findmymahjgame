@@ -21,6 +21,12 @@ test.describe("private location protections", () => {
     expect(detectPrivateLocation({ venue: "Private residence at 1428 Elm Street" }).hasStreetDetail).toBe(true);
   });
 
+  test("redaction removes every address in a field, not only the first", () => {
+    const out = redactStreetDetail("Games rotate between 1428 Elm Street and 22 Oak Avenue each month.");
+    expect(out).not.toMatch(/1428/);
+    expect(out).not.toMatch(/Oak Avenue/);
+  });
+
   test("redaction removes the block but keeps the game", () => {
     const out = redactStreetDetail("Private residence in North Central Phoenix (near 16th St & Glendale Ave; address shared via Meetup)");
     expect(out).toContain("Private residence in North Central Phoenix");
@@ -102,7 +108,15 @@ test.describe("market coverage", () => {
   test("an empty metro is a GAP and says why", () => {
     const c = summarizeMetro("Tampa", []);
     expect(c.readiness).toBe("GAP");
-    expect(c.limitingFactors.join(" ")).toContain("recurring games");
+    expect(c.limitingFactors.join(" ")).toContain("no recurring games");
+  });
+
+  test("limiting factors read grammatically at one", () => {
+    const rows = [row(), row({ kind: "venue", type: "Mahjong Instructor", is_recurring: null, schedule_confidence: null })];
+    const factors = summarizeMetro("Houston", rows).limitingFactors.join(" ");
+    expect(factors).toContain("only 1 instructor");
+    expect(factors).not.toContain("only 1 instructors");
+    expect(factors).not.toContain("only 0");
   });
 
   test("stale evidence and one-city concentration surface as named factors", () => {
@@ -144,7 +158,7 @@ test.describe("market coverage", () => {
 test.describe("weekly digest", () => {
   const input = {
     prospectsCreated: [{ status: "QUALIFIED" }, { status: "NEEDS_REVIEW" }],
-    eventsInWindow: [{ agent: "a", action: "deep_verify_rejected" }, { agent: "a", action: "reverification_proposed" }],
+    eventsInWindow: [{ action: "deep_verify_rejected" }, { action: "reverification_proposed" }, { action: "publishability_hold_variant_review" }],
     listingsPublished: [{}, {}],
     drafts: { total: 35, approved: 0 },
     sends: 0,
@@ -161,12 +175,30 @@ test.describe("weekly digest", () => {
     const d = buildDigest(input, isoWeekAgo(1_700_000_000_000));
     expect(d.sends).toBe(0);
     expect(d.changed.find(([label]) => label === "Emails sent")?.[1]).toBe(0);
+    expect(d.changed.find(([label]) => label === "Emails sent")?.[2]).toBe("total");
   });
 
   test("unreviewed drafts and privacy holds reach the human list", () => {
     const d = buildDigest(input, isoWeekAgo(1_700_000_000_000));
     expect(d.needsShauna.join(" ")).toContain("35 outreach drafts");
     expect(d.needsShauna.join(" ")).toContain("private home");
+  });
+
+  test("every tile declares whether it is a weekly count or a running total", () => {
+    const d = buildDigest(input, isoWeekAgo(1_700_000_000_000));
+    for (const [, , scope] of d.changed) expect(["window", "total"]).toContain(scope);
+  });
+
+  test("counted actions are ones the system actually writes", () => {
+    const d = buildDigest(input, isoWeekAgo(1_700_000_000_000));
+    expect(d.changed.find(([label]) => label === "Newly rejected")?.[1]).toBe(1);
+    expect(d.changed.find(([label]) => label === "Held from publication")?.[1]).toBe(1);
+    expect(d.changed.find(([label]) => label === "Freshness findings filed")?.[1]).toBe(1);
+  });
+
+  test("the queue names the weakest metro when coverage supplies one", () => {
+    const d = buildDigest(input, isoWeekAgo(1_700_000_000_000), "Tampa");
+    expect(d.agentQueue.join(" ")).toContain("Tampa");
   });
 
   test("the agent queue never proposes sending", () => {

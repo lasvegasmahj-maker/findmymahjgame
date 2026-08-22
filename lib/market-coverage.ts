@@ -10,9 +10,7 @@ export type CoverageRow = {
   is_recurring?: boolean | null;
   schedule_confidence?: string | null;
   day_of_week?: string[] | null;
-  day_time?: string | null;
   event_date?: string | null;
-  source_url?: string | null;
   confirmed_active_at?: string | null;
   review_flag?: string | null;
 };
@@ -49,12 +47,12 @@ function isCurrent(r: CoverageRow, now: number): boolean {
   return Number.isFinite(age) && age <= 180;
 }
 
-function hasStrongSchedule(r: CoverageRow): boolean {
+function hasStrongSchedule(r: CoverageRow, now: number): boolean {
   if (r.kind === "venue") return false;
   if (r.schedule_confidence === "high") return true;
   const days = Array.isArray(r.day_of_week) ? r.day_of_week.filter(Boolean) : [];
   if (days.length > 0 && (r.is_recurring ?? false)) return true;
-  return Boolean(r.event_date && new Date(r.event_date).getTime() >= Date.now());
+  return Boolean(r.event_date && new Date(r.event_date).getTime() >= now);
 }
 
 export function summarizeMetro(metro: string, rows: CoverageRow[], now = Date.now()): MetroCoverage {
@@ -79,7 +77,7 @@ export function summarizeMetro(metro: string, rows: CoverageRow[], now = Date.no
     else if (r.kind === "event" && (r.is_recurring || OPEN_PLAY_RE.test(type))) recurringGames++;
     if (CLUB_RE.test(type)) clubsAndPrograms++;
 
-    if (hasStrongSchedule(r)) strongSchedules++;
+    if (hasStrongSchedule(r, now)) strongSchedules++;
     if (isCurrent(r, now)) currentEvidence++;
     if (r.review_flag) needsReview++;
   }
@@ -92,10 +90,11 @@ export function summarizeMetro(metro: string, rows: CoverageRow[], now = Date.no
   // schedule they can act on. These thresholds are the definition of useful, stated plainly
   // rather than hidden inside a weighted score.
   const limitingFactors: string[] = [];
-  const count = (n: number, noun: string) => (n === 0 ? `no ${noun}` : `only ${n} ${noun}`);
-  if (recurringGames < 3) limitingFactors.push(count(recurringGames, "recurring games or open plays"));
-  if (instructors < 2) limitingFactors.push(count(instructors, "instructors"));
-  if (strongSchedules < 3) limitingFactors.push(count(strongSchedules, "listings a player can act on today"));
+  const count = (n: number, one: string, many: string) =>
+    n === 0 ? `no ${many}` : n === 1 ? `only 1 ${one}` : `only ${n} ${many}`;
+  if (recurringGames < 3) limitingFactors.push(count(recurringGames, "recurring game or open play", "recurring games or open plays"));
+  if (instructors < 2) limitingFactors.push(count(instructors, "instructor", "instructors"));
+  if (strongSchedules < 3) limitingFactors.push(count(strongSchedules, "listing a player can act on today", "listings a player can act on today"));
   if (rows.length > 0 && currentEvidence * 2 < rows.length) limitingFactors.push(`under half the listings have evidence from the last 6 months`);
   if (rows.length >= 4 && topCityShare >= 80) limitingFactors.push(`${topCityShare} percent of listings sit in one city`);
 
