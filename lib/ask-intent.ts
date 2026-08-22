@@ -164,8 +164,7 @@ export function detectAskTopic(raw: string): AskTopic {
     /\b\d{5}\b/.test(q) ||
     /\b(nearby|in my area)\b/i.test(q) ||
     /\bwhere can i (play|find|go)\b/i.test(q) ||
-    /\bfind (a|an|me)\b/i.test(q) ||
-    Boolean(intent.location);
+    /\bfind (a|an|me)\b/i.test(q);
 
   return discoveryAsk ? "mixed" : "rules";
 }
