@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { ALL_STATE_SLUGS, STATES } from "@/lib/states-data";
 import { createServerClient } from "@/lib/supabase-server";
+import { isFounderListing } from "@/lib/featured-listings";
 
 const BASE = "https://findmymahjgame.com";
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -42,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const supabase = createServerClient();
     const [ev, ve, pl] = await Promise.all([
       supabase.from("event_listings").select("city, state, updated_at, created_at").eq("status", "published"),
-      supabase.from("venue_listings").select("id, city, state, venue_type, description, updated_at, created_at").eq("status", "published"),
+      supabase.from("venue_listings").select("id, city, state, venue_type, description, website, instagram, updated_at, created_at").eq("status", "published"),
       supabase.from("player_listings").select("city, state, updated_at, created_at").eq("status", "published"),
     ]);
     const bump = (map: Map<string, string>, key: string, ts: string | null | undefined) => {
@@ -73,12 +74,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
 
     // Teacher profiles mirror the gating in app/teachers/[id]/page.tsx:
-    // published venue rows that read as instruction, outside Nevada (Nevada
-    // lessons route to Las Vegas Mahjong).
+    // published venue rows that read as instruction, every state ranked alike.
     const TEACHER_TYPE = /instructor|teacher|lesson|studio|school|class/i;
     for (const t of ve.data || []) {
-      if (t.state === "NV") continue;
       if (!TEACHER_TYPE.test(`${t.venue_type || ""} ${t.description || ""}`)) continue;
+      if (isFounderListing(t)) continue;
       const ts = t.updated_at || t.created_at;
       teacherPages.push({
         url: `${BASE}/teachers/${t.id}`,

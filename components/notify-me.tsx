@@ -78,7 +78,7 @@ export default function NotifyMe({
         {status === "submitting" ? "Adding you..." : "Notify me"}
       </button>
       {status === "error" && <p role="alert" style={{ color: "#dc2626", fontSize: "1rem", textAlign: "center", marginTop: "0.7rem", marginBottom: 0 }}>{err}</p>}
-      <p style={{ fontSize: "0.85rem", color: "var(--muted)", textAlign: "center", marginTop: "0.7rem", marginBottom: 0 }}>Free. Your email is never shown publicly or sold.</p>
+      <p style={{ fontSize: "0.85rem", color: "var(--muted)", textAlign: "center", marginTop: "0.7rem", marginBottom: 0 }}>Free. Your email is never shown publicly or sold. We keep your name and email so we can tell you when games open up near you.</p>
     </form>
   );
 }
