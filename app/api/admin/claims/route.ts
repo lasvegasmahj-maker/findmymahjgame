@@ -77,11 +77,12 @@ export async function POST(req: NextRequest) {
     // The 90-day trial starts the first time ownership is ever granted and never
     // restarts: an ownership transfer keeps the original entitlement clock, so a
     // re-claim can never be used to reset the trial.
-    await supabase
+    const { error: trialErr } = await supabase
       .from(claimRow.listing_table)
       .update({ premium_until: trialUntilFrom(new Date()) })
       .eq("id", claimRow.listing_id)
       .is("premium_until", null);
+    if (trialErr) console.error("admin claims: trial start failed:", trialErr.message);
     const { data: updated, error: ownErr } = await supabase
       .from(claimRow.listing_table)
       .update({ account_id: claimRow.profile_id })

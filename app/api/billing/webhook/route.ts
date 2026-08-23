@@ -79,7 +79,7 @@ async function syncListingEntitlement(supabase: SupabaseClient, sub: Stripe.Subs
     .from(table)
     .update({ premium_until: periodEnd, stripe_payment_id: sub.id })
     .eq("id", listingId)
-    .or(`premium_until.is.null,premium_until.lt.${periodEnd}`);
+    .or(`premium_until.is.null,premium_until.lt."${periodEnd}"`);
   if (error) throw new Error(`${table} entitlement sync failed: ${error.message}`);
 }
 

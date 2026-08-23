@@ -359,11 +359,14 @@ export type PremiumLeadDiagnostic = {
   providersWithRealLeadWhoPaid: number;
 };
 
-// The primary Premium diagnostic: among providers who received at least one qualified
-// (real, delivered) Find My Mahj lead during their entitlement, how many chose to pay?
-// Zero leads and zero conversions is a liquidity problem; plenty of leads and zero
-// conversions is a Premium value problem. Only record_class real_external, status sent
-// leads count, so QA traffic can never make Premium look like it is working.
+// The primary Premium diagnostic: among providers who ever held a Premium entitlement
+// and received at least one qualified (real, delivered) Find My Mahj lead, how many
+// chose to pay? Expired entitlements are included on purpose: the trial cohort that
+// chose not to pay is the signal. Zero leads and zero conversions is a liquidity
+// problem; plenty of leads and zero conversions is a Premium value problem. Only
+// record_class real_external, status sent leads count, so QA traffic can never make
+// Premium look like it is working. Queries are unpaginated, which is fine at launch
+// scale; paginate before provider or lead counts approach 1000 rows.
 export async function readPremiumLeadDiagnostic(supabase: SupabaseClient): Promise<PremiumLeadDiagnostic> {
   const providers: Array<{ id: string; paid: boolean; table: string }> = [];
   for (const t of ["venue_listings", "event_listings"]) {

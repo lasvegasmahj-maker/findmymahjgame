@@ -88,18 +88,15 @@ export async function POST(req: NextRequest) {
   // Record only structured metadata, never the message or the player's identity.
   // record_class keeps QA traffic (non-production host, or the founder demo id) out
   // of the real lead counts that feed the Premium conversion diagnostic.
-  const recordClass = hostRecordClass(req.headers.get("host")) === "test" || teacherId === LAS_VEGAS_MAHJONG.id ? "test" : "real_external";
   if (teacherId !== LAS_VEGAS_MAHJONG.id) {
-    try {
-      await createServerClient().from("provider_leads").insert({
-        provider_table: "venue_listings",
-        provider_id: teacherId,
-        status: res.ok ? "sent" : "failed",
-        record_class: recordClass,
-      });
-    } catch (e) {
-      console.error("provider_leads insert failed:", e instanceof Error ? e.message : e);
-    }
+    const recordClass = hostRecordClass(req.headers.get("host")) === "test" ? "test" : "real_external";
+    const { error: leadErr } = await createServerClient().from("provider_leads").insert({
+      provider_table: "venue_listings",
+      provider_id: teacherId,
+      status: res.ok ? "sent" : "failed",
+      record_class: recordClass,
+    });
+    if (leadErr) console.error("provider_leads insert failed:", leadErr.message);
   }
 
   if (!res.ok) {

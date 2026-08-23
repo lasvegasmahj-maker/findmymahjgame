@@ -104,7 +104,7 @@ export default async function JoinPage({ searchParams }: { searchParams: Promise
           <ul style={list}>
             <Check>On-platform lesson requests from players, sent straight to your inbox</Check>
             <Check>The Premium Provider badge on your listing</Check>
-            <Check>Never billed automatically: paying is always your explicit choice</Check>
+            <Check>Your free trial never turns into a charge on its own: paying is always your explicit choice</Check>
           </ul>
         </div>
 
@@ -155,8 +155,10 @@ export default async function JoinPage({ searchParams }: { searchParams: Promise
             <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
               <StatusBadge type="verified" />
               <StatusBadge type="verified" label="Verified Organizer" />
+              <StatusBadge type="premium" />
             </div>
-            <p style={{ ...tierLead, margin: "0.8rem 0 0" }}>An admin-approved trust badge for real teachers, organizers, and businesses with a complete profile and a website or social account. Shows players you are confirmed and legitimate. Stacks with Charter Member.</p>
+            <p style={{ ...tierLead, margin: "0.8rem 0 0" }}>A trust badge earned by verifying you own your listing through the claim process. It is never sold: no payment can buy it, and paying does not add it. Shows players you are confirmed and legitimate. Stacks with Charter Member.</p>
+            <p style={{ ...tierLead, margin: "0.8rem 0 0" }}>The Premium Provider badge is different: it marks a commercial membership (paid or on the 90-day trial), never trust or verification, and it has no effect on search placement.</p>
           </div>
         </div>
 

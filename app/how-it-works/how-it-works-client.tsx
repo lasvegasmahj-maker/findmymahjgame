@@ -94,7 +94,7 @@ export default function HowItWorksClient() {
             <p>Being listed is free forever, and claiming your listing earns the Verified badge at no cost. Premium helps turn discovery into customers. Players never pay.</p>
             <div className="grid grid-cols-2 gap-4 my-6 max-sm:grid-cols-1">
               <div className="bg-bg border border-border rounded-xl p-5">
-                <h3 className="text-[0.9rem] font-bold text-navy mb-1">Community Listing</h3>
+                <h3 className="text-[0.9rem] font-bold text-navy mb-1">Basic listing</h3>
                 <div className="font-heading text-[1.4rem] text-pink font-black mb-1">Free</div>
                 <p className="text-[0.78rem] text-muted !mb-0">Your basic profile, appearing in search so players can find you. Free to be listed, always.
                 </p>

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useId } from "react";
 
 // "Request a lesson" inquiry funnel. A player sends a structured request and the
 // API emails it to the teacher (reply-to the player), so the teacher just hits
-// reply. Shown on paid Member (pro) teacher cards. Players never pay.
+// reply. Shown on cards with an active Premium entitlement (paid or 90-day claim trial). Players never pay.
 export default function LessonInquiry({ teacherId, teacherName }: { teacherId: string; teacherName: string }) {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "sent" | "error">("idle");

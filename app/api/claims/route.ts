@@ -126,9 +126,18 @@ export async function POST(req: NextRequest) {
     // so two concurrent auto-approvals can never both succeed. A failed or errored
     // write (including a schema not yet caught up to this contract) never gets
     // reported as a win; it falls back to a human decision instead.
+    // The trial write is separately guarded on premium_until being null so it can
+    // never overwrite an existing entitlement (for example a paid period stamped
+    // by the billing webhook before the owner claimed).
+    const { error: trialErr } = await supabase
+      .from(table)
+      .update({ premium_until: trialUntilFrom(new Date()) })
+      .eq("id", id)
+      .is("premium_until", null);
+    if (trialErr) console.error("claims: trial start failed:", trialErr.message);
     const { data: updated, error: updateErr } = await supabase
       .from(table)
-      .update({ account_id: session.userId, premium_until: trialUntilFrom(new Date()) })
+      .update({ account_id: session.userId })
       .eq("id", id)
       .is("account_id", null)
       .select("id");

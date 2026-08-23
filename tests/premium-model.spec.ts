@@ -43,19 +43,20 @@ test.describe("trial entitlement math", () => {
 
 test.describe("claim starts the trial, payment is never faked", () => {
   test("every ownership-granting claim path sets the 90-day trial idempotently", () => {
+    // Every route starts the trial in a separate write guarded on premium_until
+    // being null: the trial starts once per listing, ever. Neither a re-claim nor
+    // an ownership transfer can restart it, and granting ownership can never
+    // overwrite an existing entitlement (such as a paid period already stamped
+    // by the billing webhook).
     for (const route of [
       ["app", "api", "claims", "route.ts"],
       ["app", "api", "claim", "route.ts"],
+      ["app", "api", "admin", "claims", "route.ts"],
     ]) {
       const source = srcOf(...route);
       expect(source, route.join("/")).toContain("trialUntilFrom");
-      expect(source, route.join("/")).toContain('.is("account_id", null)');
+      expect(source, route.join("/")).toContain('.is("premium_until", null)');
     }
-    // The admin route can transfer ownership, so its guard is on the entitlement
-    // itself: the trial starts once per listing and a transfer never restarts it.
-    const admin = srcOf("app", "api", "admin", "claims", "route.ts");
-    expect(admin).toContain("trialUntilFrom");
-    expect(admin).toContain('.is("premium_until", null)');
   });
 
   test("no claim path touches Stripe or writes a payment record", () => {
