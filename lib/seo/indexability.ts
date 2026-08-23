@@ -70,10 +70,10 @@ export const CATEGORY_THRESHOLDS = {
  * Rule CITY-2: is a /states/[state]/[city] page indexable?
  *
  * Every city must earn indexation on marketplace value: at least 3 published
- * listings, 2 variant-confirmed, and 1 with current evidence. Owner ruling
- * The owner removed the old launch-metro bypass: no page is indexed on a
- * business commitment alone. Failing pages are noindex, never 404, because
- * they still render real listings and state navigation.
+ * listings, 2 variant-confirmed, and 1 with current evidence (rule CITY-2). The
+ * owner removed the old launch-metro bypass, so no page is indexed on a business
+ * commitment alone. Failing pages are noindex, never 404, because they still
+ * render real listings and state navigation.
  */
 export function cityIndexability(counts: MetroCounts): IndexabilityVerdict {
   if (counts.published === 0) {

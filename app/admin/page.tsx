@@ -120,7 +120,7 @@ export default async function AdminHome() {
             </div>
             <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--navy)" }}>{g.label}</div>
             <div style={{ fontSize: "0.76rem", color: "var(--muted)", marginTop: "0.2rem" }}>
-              {g.on === null ? "Could not read the setting. State unknown." : g.on ? "Live to the public." : "Closed. This is the right state before launch. Only you flip it."}
+              {g.on === null ? "Could not read the setting. State unknown." : g.on ? "Live to the public." : "Closed. This is the right state before launch. Only you can flip it."}
             </div>
           </div>
         ))}

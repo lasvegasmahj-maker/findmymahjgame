@@ -60,8 +60,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       if (citySlug) bump(cityLastmod, `${stateSlug}/${citySlug}`, ts);
     }
     // SITEMAP-1: a city is listed only when its verdict is indexable, computed by
-    // the same functions the city page and admin panel use so nothing drifts.
-    const cityRows = groupRowsByCity(rows as Array<CityCountRow & { state?: string | null }>, ABBR_TO_SLUG);
+    // the same functions the city page and admin panel use so nothing drifts. The
+    // city page counts events and venues only (it never renders players), so the
+    // indexability input must match; players still drive lastmod above.
+    const indexRows = [...(ev.data || []), ...(ve.data || [])] as Array<CityCountRow & { state?: string | null }>;
+    const cityRows = groupRowsByCity(indexRows, ABBR_TO_SLUG);
     for (const [key, counts] of buildCityCounts(cityRows)) {
       if (cityIndexability(counts).indexable) cityKeys.add(key);
     }
