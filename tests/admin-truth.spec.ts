@@ -56,4 +56,12 @@ test.describe("data trust vocabulary", () => {
     expect(signupFilters.length).toBeGreaterThanOrEqual(2);
     expect(source).toContain('paidMembers: 0');
   });
+  test("the unsupported-paid-tier guard excludes founding-member entitlements so it cannot false-positive or be defeated", () => {
+    // Owner-approved 2026-08-23: paid status must trace to a real payment (stripe_payment_id)
+    // or a documented entitlement (is_founding_member). The reconciliation check must keep
+    // catching non-free tiers that have neither, and must never silently reappear.
+    const source = readFileSync(join(__dirname, "..", "lib", "data-trust.ts"), "utf8");
+    expect(source).toContain('Paid-looking tier with no payment record');
+    expect(source).toMatch(/is\("stripe_payment_id", null\)\.not\("is_founding_member", "is", true\)/);
+  });
 });
