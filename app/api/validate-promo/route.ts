@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { clampText } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
 import { lazyServerClient } from "@/lib/supabase-server";

@@ -25,19 +25,20 @@ export type TruthMetrics = {
 
 // A signup is a person acting; a listing is a fact we researched. The queries keep those two
 // ideas apart so a directory import can never inflate a signup number.
+type CountQuery = { count: number | null; error: { message: string } | null };
+// The builder is typed structurally because the generated PostgREST generics fight any
+// generic wrapper, and every call site is a fixed, reviewed query.
+type Filter = {
+  eq: (c: string, v: unknown) => Filter & PromiseLike<CountQuery>;
+  neq: (c: string, v: unknown) => Filter & PromiseLike<CountQuery>;
+  in: (c: string, v: unknown[]) => Filter & PromiseLike<CountQuery>;
+  not: (c: string, op: string, v: unknown) => Filter & PromiseLike<CountQuery>;
+  is: (c: string, v: unknown) => Filter & PromiseLike<CountQuery>;
+  gt: (c: string, v: unknown) => Filter & PromiseLike<CountQuery>;
+  lte: (c: string, v: unknown) => Filter & PromiseLike<CountQuery>;
+} & PromiseLike<CountQuery>;
+
 export async function readTruthMetrics(supabase: SupabaseClient): Promise<TruthMetrics> {
-  type CountQuery = { count: number | null; error: { message: string } | null };
-  type Filter = {
-    eq: (c: string, v: unknown) => Filter & PromiseLike<CountQuery>;
-    neq: (c: string, v: unknown) => Filter & PromiseLike<CountQuery>;
-    in: (c: string, v: unknown[]) => Filter & PromiseLike<CountQuery>;
-    not: (c: string, op: string, v: unknown) => Filter & PromiseLike<CountQuery>;
-    is: (c: string, v: unknown) => Filter & PromiseLike<CountQuery>;
-    gt: (c: string, v: unknown) => Filter & PromiseLike<CountQuery>;
-    lte: (c: string, v: unknown) => Filter & PromiseLike<CountQuery>;
-  } & PromiseLike<CountQuery>;
-  // The builder is typed structurally because the generated PostgREST generics fight any
-  // generic wrapper, and every call site is a fixed, reviewed query.
   const count = async (table: string, build: (q: Filter) => PromiseLike<CountQuery>) => {
     const { count: n, error } = await build(supabase.from(table).select("id", { count: "exact", head: true }) as unknown as Filter);
     if (error) throw new Error(`${table}: ${error.message}`);
@@ -322,10 +323,8 @@ export type MembershipBreakdown = {
 // can be measured. Charter is recognition, not a tier.
 export async function readMembershipBreakdown(supabase: SupabaseClient): Promise<MembershipBreakdown> {
   const nowISO = new Date().toISOString();
-  type CountQuery = { count: number | null; error: { message: string } | null };
-  // Structural any for the same reason as readTruthMetrics: fixed, reviewed queries.
-  const count = async (table: string, build: (q: any) => PromiseLike<CountQuery>) => {
-    const { count: n, error } = await build(supabase.from(table).select("id", { count: "exact", head: true }));
+  const count = async (table: string, build: (q: Filter) => PromiseLike<CountQuery>) => {
+    const { count: n, error } = await build(supabase.from(table).select("id", { count: "exact", head: true }) as unknown as Filter);
     if (error) throw new Error(`${table}: ${error.message}`);
     return n ?? 0;
   };
@@ -339,11 +338,11 @@ export async function readMembershipBreakdown(supabase: SupabaseClient): Promise
   let published = 0, trial = 0, paid = 0, expired = 0, charter = 0;
   for (const t of tables) {
     const [pub, tr, pd, ex, ch] = await Promise.all([
-      count(t, (q: any) => q.eq("status", "published")),
-      count(t, (q: any) => q.eq("status", "published").gt("premium_until", nowISO).is("stripe_payment_id", null)),
-      count(t, (q: any) => q.eq("status", "published").gt("premium_until", nowISO).not("stripe_payment_id", "is", null)),
-      count(t, (q: any) => q.eq("status", "published").lte("premium_until", nowISO).is("stripe_payment_id", null)),
-      count(t, (q: any) => q.eq("status", "published").eq("is_founding_member", true)),
+      count(t, (q) => q.eq("status", "published")),
+      count(t, (q) => q.eq("status", "published").gt("premium_until", nowISO).is("stripe_payment_id", null)),
+      count(t, (q) => q.eq("status", "published").gt("premium_until", nowISO).not("stripe_payment_id", "is", null)),
+      count(t, (q) => q.eq("status", "published").lte("premium_until", nowISO).is("stripe_payment_id", null)),
+      count(t, (q) => q.eq("status", "published").eq("is_founding_member", true)),
     ]);
     published += pub; trial += tr; paid += pd; expired += ex; charter += ch;
   }

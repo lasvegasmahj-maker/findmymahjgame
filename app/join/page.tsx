@@ -98,13 +98,12 @@ export default async function JoinPage({ searchParams }: { searchParams: Promise
         <div style={{ ...cardFeatured, background: "#fff5fa", marginBottom: "1.8rem" }}>
           <p className="eyebrow" style={{ marginBottom: "0.4rem" }}>Founding launch offer</p>
           <h2 style={sectionH2}>Premium</h2>
-          <p style={tierLead}>Premium helps turn discovery into customers. Try it free for 90 days when you claim your listing; no card needed to start. After the trial, choose $89 a year or stay on your free Basic listing.</p>
+          <p style={tierLead}>Premium helps turn discovery into customers. Try it free for 90 days when you claim your listing; no card needed to start, and the trial never turns into a charge on its own. After the trial, paying is always your explicit choice: $89 a year, or stay on your free Basic listing.</p>
           <div style={price}>$89/year <span style={{ fontSize: "1rem", color: "var(--muted)", fontWeight: 600 }}>90 days free when you claim</span></div>
           <p style={label}>Adds:</p>
           <ul style={list}>
-            <Check>On-platform lesson requests from players (teacher listings), sent straight to your inbox</Check>
+            <Check>Lesson requests from players sent straight to your inbox (for teacher listings)</Check>
             <Check>The Premium Provider badge on your listing</Check>
-            <Check>Your free trial never turns into a charge on its own: paying is always your explicit choice</Check>
           </ul>
         </div>
 

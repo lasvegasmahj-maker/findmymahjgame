@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { clampText, isValidEmail, safeHttpUrl } from "@/lib/sanitize";
 import { toStateAbbr } from "@/lib/near-match";
 import { rateLimit } from "@/lib/rate-limit";

@@ -79,7 +79,9 @@ export async function POST(req: NextRequest) {
 
   const res = await sendEmail({
     to: teacherEmail,
-    subject: `New lesson request from ${name}`,
+    // The send log stores subjects, so the player's name stays out of the subject
+    // (the metadata-only promise on /privacy depends on it).
+    subject: `New lesson request for ${teacherName}`,
     html,
     replyTo: email,
     kind: "lesson-inquiry",

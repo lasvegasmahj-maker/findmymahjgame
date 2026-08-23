@@ -94,6 +94,7 @@ webhook secret), then repeat once with Live mode keys.
       response 200
 - [ ] In Supabase: billing_subscriptions has one new row with status `active`
 - [ ] Confirm checkout shows the plain $89/year total with no promotion code field
+- [ ] Wire the checkout entry point to send the payer's claimed listing reference (listingTable + listingId) so a paid subscription extends that listing's premium_until; without it a paying provider's listing quietly reverts to Basic when the trial date lapses. Confirm in test mode that a completed checkout stamps premium_until, and that a reference is dropped (with a log line) when the checkout email does not match the listing owner
 - [ ] Cancel the test subscription in Stripe and confirm the row's status updates
 - [ ] Set `launch_payments` back to 'false' and confirm `/api/billing/checkout` says
       "Payments are not yet enabled" again

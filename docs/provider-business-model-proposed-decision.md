@@ -38,7 +38,7 @@ APPROVED and implemented 2026-08-23 (see the implementation record below). Launc
 
 ## Implementation record (2026-08-23)
 
-- premium_until entitlement column on venue and event listings; the 90-day trial starts idempotently when any claim path grants ownership. Paid Premium later extends it through Stripe truth; a trial provider is never counted as paying.
+- premium_until entitlement column on venue and event listings. The 90-day trial starts idempotently, after ownership is granted, on venue (teacher) listings only: the only listings where Premium surfaces exist today. The event_listings column is reserved for future use. Paid Premium later extends the date through Stripe truth; a trial provider is never counted as paying.
 - Verified badge now comes from the evidence-based claim (trust), Premium Provider is the separate commercial badge; payment cannot award verification anywhere.
 - The structured lesson inquiry is entitlement-gated in the API, sends the lead straight to the provider with no founder copy, and records only PII-free metadata (provider, timestamp, delivery status, test or real class) in provider_leads for the conversion diagnostic.
 - FINDMYMAHJGAME retired everywhere (validate-promo, get-listed form and route, join, how-it-works, FAQ schema); the Stripe checkout takes no promotion codes and the runbook coupon step is replaced.
