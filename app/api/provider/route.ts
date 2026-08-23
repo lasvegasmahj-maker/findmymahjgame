@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
   const [venuesRes, eventsRes, claimsRes] = await Promise.all([
     supabase
       .from("venue_listings")
-      .select("id, business_name, city, state, status, tier, website, instagram, display_email, description")
+      .select("id, business_name, city, state, status, tier, premium_until, website, instagram, display_email, description")
       .eq("account_id", session.userId),
     supabase
       .from("event_listings")

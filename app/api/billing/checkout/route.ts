@@ -1,15 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe, isBillingConfigured, PAYMENTS_DISABLED_MESSAGE } from "@/lib/billing/stripe";
-import { isLaunched } from "@/lib/launch-gates";
+import { isLaunched, canUseDarkFeature } from "@/lib/launch-gates";
 import { lazyServerClient } from "@/lib/supabase-server";
 import { rateLimit } from "@/lib/rate-limit";
-import { clampText, isValidEmail } from "@/lib/sanitize";
+import { verifyUserSessionToken, USER_COOKIE } from "@/lib/user-auth";
 
-// Starts a Stripe Checkout Session for the $89/year directory membership.
-// Dark until launch: requires BOTH the launch_payments gate (fails closed) and a
-// configured Stripe account. No promotion codes: the old free-period coupon is
-// retired, and the complimentary period is the app-managed 90-day trial, which
-// never creates a Stripe subscription. Checkout is the plain $89/year price.
+// Starts a Stripe Checkout Session for the $89/year Premium membership.
+// Dark until launch: requires a configured Stripe account AND the launch_payments
+// gate (test-classified accounts pass while the gate is OFF, per the shared
+// dark-launch rule, so activation can be rehearsed in Stripe test mode).
+//
+// The payer is the SIGNED-IN PROVIDER, never a request body: their email comes
+// from their auth account and the listing their payment extends is their own
+// claimed, published teacher listing, both resolved server-side. Nothing the
+// client sends can point the subscription at someone else's listing. If the
+// owned listing cannot be determined unambiguously, checkout REFUSES rather
+// than take money that would grant nothing.
+//
+// No promotion codes: the old free-period coupon is retired, and the
+// complimentary period is the app-managed 90-day claim trial, which never
+// creates a Stripe subscription. Checkout is the plain $89/year price.
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://findmymahjgame.com";
 
@@ -18,61 +28,89 @@ function paymentsDisabled() {
 }
 
 export async function POST(req: NextRequest) {
-  // Configuration and gate checks come before anything else so an unconfigured
+  // Configuration checks come before anything else so an unconfigured
   // deployment answers with a clean 503 instead of a crash.
   const priceId = process.env.STRIPE_PRICE_MEMBERSHIP_ANNUAL;
   const stripe = getStripe();
   if (!isBillingConfigured() || !stripe || !priceId) return paymentsDisabled();
 
-  // Rate limit before the gate read so unthrottled traffic never reaches the DB.
+  // Rate limit before any DB read so unthrottled traffic never reaches it.
   if (!(await rateLimit(req, "billing-checkout", 5, 60))) {
     return NextResponse.json({ error: "Too many requests. Please wait a minute and try again." }, { status: 429 });
   }
 
+  const session = verifyUserSessionToken(req.cookies.get(USER_COOKIE)?.value);
+  if (!session) {
+    return NextResponse.json({ error: "Sign in to choose Premium." }, { status: 401 });
+  }
+
   const supabase = lazyServerClient();
-  if (!(await isLaunched(supabase, "payments"))) return paymentsDisabled();
+  const { data: profile, error: profileErr } = await supabase
+    .from("profiles")
+    .select("record_class, deactivated_at")
+    .eq("id", session.userId)
+    .maybeSingle();
+  if (profileErr) {
+    console.error("billing/checkout: profile read failed:", profileErr.message);
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+  }
+  if (!profile) return NextResponse.json({ error: "Sign in to choose Premium." }, { status: 401 });
+  if (profile.deactivated_at) return NextResponse.json({ error: "Account deactivated" }, { status: 403 });
 
-  const b = (await req.json().catch(() => null)) || {};
-  const email = clampText(b?.email, 254).toLowerCase();
-  if (!email || !isValidEmail(email)) {
-    return NextResponse.json({ error: "A valid email is required to start checkout." }, { status: 400 });
+  const launched = await isLaunched(supabase, "payments");
+  if (!canUseDarkFeature(launched, profile.record_class)) return paymentsDisabled();
+
+  // The payer's email is auth-account truth, never client input.
+  let email = "";
+  try {
+    const { data: owner } = await supabase.auth.admin.getUserById(session.userId);
+    email = (owner?.user?.email || "").toLowerCase();
+  } catch (e) {
+    console.error("billing/checkout: account lookup failed:", e instanceof Error ? e.message : e);
+  }
+  if (!email) {
+    return NextResponse.json({ error: "We could not confirm your account email. Please try again." }, { status: 500 });
   }
 
-  // Optional listing reference so payment can extend that listing's premium_until.
-  // Scoped to teacher (venue) listings, the only place Premium surfaces exist, and
-  // BOUND TO THE PAYER: the reference is kept only when the listing is claimed and
-  // the checkout email matches the owning account's email, so a stranger can never
-  // stamp a paid entitlement onto someone else's listing. An invalid or unowned
-  // reference is dropped rather than failing checkout. The reference rides on the
-  // SUBSCRIPTION metadata so every subscription webhook event carries it.
-  let listingTable: string | null = null;
-  let listingId: string | null = null;
-  const rawTable = String(b?.listingTable || "");
-  const rawId = clampText(b?.listingId, 64);
-  if (rawTable === "venue_listings" && /^[0-9a-f-]{36}$/i.test(rawId)) {
-    const { data: row } = await supabase.from(rawTable).select("id, account_id").eq("id", rawId).eq("status", "published").maybeSingle();
-    if (row?.account_id) {
-      try {
-        const { data: owner } = await supabase.auth.admin.getUserById(String(row.account_id));
-        if (owner?.user?.email?.toLowerCase() === email) {
-          listingTable = rawTable;
-          listingId = rawId;
-        }
-      } catch (e) {
-        console.error("billing/checkout: owner lookup failed", e instanceof Error ? e.message : e);
-      }
-    }
+  // The listing this payment extends: the payer's own claimed, published teacher
+  // listing. Premium surfaces exist only on venue (teacher) listings today.
+  const { data: owned, error: ownedErr } = await supabase
+    .from("venue_listings")
+    .select("id")
+    .eq("account_id", session.userId)
+    .eq("status", "published");
+  if (ownedErr) {
+    console.error("billing/checkout: owned listing read failed:", ownedErr.message);
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
+  if (!owned || owned.length === 0) {
+    return NextResponse.json(
+      { error: "Premium extends your claimed teacher listing. Claim your listing first, then choose Premium." },
+      { status: 409 }
+    );
+  }
+  if (owned.length > 1) {
+    // Refuse rather than guess or take money that binds to nothing; a person
+    // resolves which listing the membership is for.
+    console.error(`billing/checkout: ambiguous listing binding for account ${session.userId} (${owned.length} published venue listings)`);
+    return NextResponse.json(
+      { error: "You own more than one listing. Email hello@findmymahjgame.com and we will set up Premium on the right one." },
+      { status: 409 }
+    );
+  }
+  const listingId = String(owned[0].id);
 
   try {
-    const session = await stripe.checkout.sessions.create({
+    const checkout = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
       customer_email: email,
       allow_promotion_codes: false,
-      subscription_data: listingTable && listingId ? { metadata: { listing_table: listingTable, listing_id: listingId } } : undefined,
-      success_url: `${SITE}/join?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${SITE}/join?checkout=cancelled`,
+      // The reference rides on the SUBSCRIPTION metadata so every subscription
+      // webhook event carries it and can extend this listing's premium_until.
+      subscription_data: { metadata: { listing_table: "venue_listings", listing_id: listingId } },
+      success_url: `${SITE}/provider?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${SITE}/provider?checkout=cancelled`,
     });
 
     // Record the intent locally so the admin dashboard can see who started checkout.
@@ -84,7 +122,7 @@ export async function POST(req: NextRequest) {
       console.error("billing/checkout: intent record failed", error.message);
     }
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: checkout.url });
   } catch (e) {
     console.error("billing/checkout: session create failed", e instanceof Error ? e.message : e);
     return NextResponse.json({ error: "Could not start checkout. Please try again later." }, { status: 502 });

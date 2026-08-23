@@ -305,6 +305,29 @@ export async function readDataQualityIssues(supabase: SupabaseClient): Promise<D
     });
   }
 
+  // Billing reconciliation guard: every active subscription must be linked to a
+  // listing (its id stamped on that listing by the webhook). An unlinked active
+  // subscription means someone paid and received nothing, the exact failure the
+  // payer-bound checkout is built to prevent; it must land in front of a person,
+  // never hide inside a KPI.
+  const { data: activeSubs, error: eSubs } = await supabase
+    .from("billing_subscriptions").select("stripe_subscription_id").eq("status", "active");
+  if (eSubs) throw new Error(eSubs.message);
+  if ((activeSubs || []).length > 0) {
+    const { data: linkedRows, error: eLinked } = await supabase
+      .from("venue_listings").select("stripe_payment_id").not("stripe_payment_id", "is", null);
+    if (eLinked) throw new Error(eLinked.message);
+    const linked = new Set((linkedRows || []).map((r) => String(r.stripe_payment_id)));
+    const unlinked = (activeSubs || []).filter((sub) => !linked.has(String(sub.stripe_subscription_id))).length;
+    if (unlinked > 0) {
+      issues.push({
+        check: "Active paid subscription not linked to any listing",
+        count: unlinked,
+        detail: "Someone is paying for Premium but no listing carries their subscription id, so no entitlement is being extended. Reconcile by hand and fix the binding.",
+      });
+    }
+  }
+
   return issues;
 }
 

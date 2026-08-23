@@ -11,6 +11,7 @@ type OwnedListing = {
   state: string | null;
   status: string;
   tier: string | null;
+  premium_until?: string | null;
   website?: string | null;
   instagram?: string | null;
   display_email?: string | null;
@@ -91,6 +92,31 @@ export default function ProviderClient({ signedIn, gateOpen }: { signedIn: boole
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
   const [savingEdit, setSavingEdit] = useState(false);
+  const [startingCheckout, setStartingCheckout] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
+
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("checkout");
+    if (q === "success") setNotice("Thanks! Premium activates as soon as your payment is confirmed, usually within a minute.");
+    if (q === "cancelled") setNotice("Checkout cancelled. Nothing was charged.");
+  }, []);
+
+  async function startCheckout() {
+    setStartingCheckout(true);
+    setCheckoutError("");
+    try {
+      const r = await fetch("/api/billing/checkout", { method: "POST" });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j?.url) {
+        window.location.href = j.url;
+        return;
+      }
+      setCheckoutError(j?.error || "Could not start checkout. Please try again.");
+    } catch {
+      setCheckoutError("Could not start checkout. Please try again.");
+    }
+    setStartingCheckout(false);
+  }
 
   const canLoad = signedIn && gateOpen;
 
@@ -361,11 +387,40 @@ export default function ProviderClient({ signedIn, gateOpen }: { signedIn: boole
       <section>
         <h2 style={sectionTitle}>Membership</h2>
         <div style={card}>
-          {dash?.billing.configured ? (
-            <p style={{ margin: 0, color: "var(--navy)" }}>Membership and billing details will appear here once you have a plan.</p>
-          ) : (
-            <p style={{ margin: 0, color: "var(--muted)" }}>Billing is not configured yet. Every listing stays free while this is being built.</p>
-          )}
+          {(() => {
+            const teacher = dash?.ownedListings.find((l) => l.listing_table === "venue_listings" && l.status === "published");
+            const premiumActive = teacher?.premium_until ? new Date(teacher.premium_until).getTime() > Date.now() : false;
+            if (premiumActive) {
+              return (
+                <p style={{ margin: 0, color: "var(--navy)" }}>
+                  Premium is active on {teacher?.business_name || "your listing"} through {new Date(String(teacher?.premium_until)).toLocaleDateString()}.
+                  Players can send you lesson requests directly, and your card shows the Premium Provider badge.
+                </p>
+              );
+            }
+            if (!dash?.billing.configured) {
+              return <p style={{ margin: 0, color: "var(--muted)" }}>Your listing is free forever. Premium options appear here once billing opens.</p>;
+            }
+            if (!teacher) {
+              return <p style={{ margin: 0, color: "var(--muted)" }}>Premium extends your claimed teacher listing. Claim your listing above, then choose Premium here.</p>;
+            }
+            return (
+              <div>
+                <p style={{ margin: "0 0 0.8rem", color: "var(--navy)" }}>
+                  Premium on {teacher.business_name || "your listing"}: on-platform lesson requests from players plus the Premium Provider badge. $89 a year, cancel anytime, and your listing stays free forever either way.
+                </p>
+                <button
+                  type="button"
+                  onClick={startCheckout}
+                  disabled={startingCheckout}
+                  style={{ minHeight: 48, padding: "0 1.5rem", borderRadius: 12, background: "var(--pink)", color: "white", border: "none", fontWeight: 800, fontSize: "1rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", opacity: startingCheckout ? 0.6 : 1 }}
+                >
+                  {startingCheckout ? "Opening checkout..." : "Choose Premium: $89/year"}
+                </button>
+                {checkoutError && <p style={{ margin: "0.7rem 0 0", color: "#b3261e", fontWeight: 600 }}>{checkoutError}</p>}
+              </div>
+            );
+          })()}
         </div>
       </section>
 
