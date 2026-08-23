@@ -52,6 +52,7 @@ export default function BlockButton({
         onClick={toggle}
         disabled={busy}
         style={{
+          minHeight: 44,
           background: blocked ? "var(--bg)" : "white",
           border: `1.5px solid ${blocked ? "var(--border)" : "#fca5a5"}`,
           borderRadius: 8,
@@ -66,7 +67,7 @@ export default function BlockButton({
       >
         {busy ? "..." : blocked ? "Unblock" : "Block"}
       </button>
-      {error && <p style={{ color: "#dc2626", fontSize: "0.78rem", margin: "0.4rem 0 0" }}>{error}</p>}
+      {error && <p role="alert" style={{ color: "#dc2626", fontSize: "0.78rem", margin: "0.4rem 0 0" }}>{error}</p>}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useId } from "react";
 import { STATES } from "@/lib/states-data";
 
 type Suggestion = { label: string; city: string; state: string; kind: "state" | "city" };
@@ -49,6 +49,7 @@ export default function CityAutocomplete({
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const listboxId = useId();
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -134,6 +135,11 @@ export default function CityAutocomplete({
         id={id}
         type="text"
         autoComplete="off"
+        role="combobox"
+        aria-autocomplete="list"
+        aria-expanded={open}
+        aria-controls={listboxId}
+        aria-activedescendant={open && active >= 0 ? `${listboxId}-opt-${active}` : undefined}
         value={value}
         placeholder={placeholder}
         aria-label={placeholder}
@@ -143,11 +149,12 @@ export default function CityAutocomplete({
         style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }}
       />
       {open && (
-        <ul style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 60, listStyle: "none", margin: 0, padding: "0.3rem", background: "white", border: "1px solid var(--border)", borderRadius: 12, boxShadow: "0 12px 32px rgba(26,31,94,0.16)", maxHeight: 300, overflowY: "auto" }}>
+        <ul id={listboxId} role="listbox" style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 60, listStyle: "none", margin: 0, padding: "0.3rem", background: "white", border: "1px solid var(--border)", borderRadius: 12, boxShadow: "0 12px 32px rgba(26,31,94,0.16)", maxHeight: 300, overflowY: "auto" }}>
           {list.map((s, i) => (
-            <li key={`${s.kind}:${s.label}`}>
+            <li key={`${s.kind}:${s.label}`} id={`${listboxId}-opt-${i}`} role="option" aria-selected={i === active}>
               <button
                 type="button"
+                tabIndex={-1}
                 onMouseDown={(e) => { e.preventDefault(); pick(s); }}
                 onMouseEnter={() => setActive(i)}
                 style={{ display: "block", width: "100%", textAlign: "left", padding: "0.6rem 0.8rem", border: "none", borderRadius: 8, background: i === active ? "var(--bg)" : "transparent", cursor: "pointer", fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif", fontSize: "1rem", color: "var(--navy)" }}

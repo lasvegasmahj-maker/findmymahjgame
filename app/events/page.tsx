@@ -192,7 +192,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
         {external && <div style={{ marginTop: "0.9rem", color: "var(--pink-text)", fontWeight: 800, fontSize: "1.15rem" }}>Sign up &rarr;</div>}
       </>
     );
-    const cardStyle = { display: "block", height: "100%", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", paddingRight: "3rem", textDecoration: "none" } as const;
+    const cardStyle = { display: "block", height: "100%", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", paddingRight: "3.7rem", textDecoration: "none" } as const;
     return (
       <div key={e.id} style={{ position: "relative" }}>
         {external ? (

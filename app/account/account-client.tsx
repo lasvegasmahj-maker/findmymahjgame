@@ -108,8 +108,8 @@ export default function AccountClient({ signupOpen }: { signupOpen: boolean }) {
           <button type="submit" disabled={busy} style={{ ...primaryBtn, width: "100%", marginTop: "0.9rem", opacity: busy ? 0.7 : 1 }}>
             {busy ? "Sending..." : "Email me a sign-in link"}
           </button>
-          {notice && <p style={{ color: "#1a6e3a", fontWeight: 700, marginTop: "0.9rem", marginBottom: 0 }}>{notice}</p>}
-          {error && <p style={{ color: "#dc2626", fontWeight: 600, marginTop: "0.9rem", marginBottom: 0 }}>{error}</p>}
+          {notice && <p role="status" style={{ color: "#1a6e3a", fontWeight: 700, marginTop: "0.9rem", marginBottom: 0 }}>{notice}</p>}
+          {error && <p role="alert" style={{ color: "#dc2626", fontWeight: 600, marginTop: "0.9rem", marginBottom: 0 }}>{error}</p>}
           <p style={{ fontSize: "0.78rem", color: "var(--muted)", marginTop: "0.9rem", marginBottom: 0 }}>
             Browsing and search never need an account. We keep your email to sign you in and never show it publicly.
           </p>
@@ -136,15 +136,15 @@ export default function AccountClient({ signupOpen }: { signupOpen: boolean }) {
       </form>
 
       <div style={{ ...card, display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
-        <button onClick={signOut} disabled={busy} style={quietBtn}>Sign out</button>
-        <button onClick={deactivate} disabled={busy} style={quietBtn}>Deactivate account</button>
-        <button onClick={requestDeletion} disabled={busy} style={{ ...quietBtn, color: "#dc2626", borderColor: "#fca5a5" }}>Request deletion</button>
+        <button type="button" onClick={signOut} disabled={busy} style={quietBtn}>Sign out</button>
+        <button type="button" onClick={deactivate} disabled={busy} style={quietBtn}>Deactivate account</button>
+        <button type="button" onClick={requestDeletion} disabled={busy} style={{ ...quietBtn, color: "#dc2626", borderColor: "#fca5a5" }}>Request deletion</button>
       </div>
 
       <MahjMatchSection />
 
-      {notice && <p style={{ color: "#1a6e3a", fontWeight: 700, margin: 0 }}>{notice}</p>}
-      {error && <p style={{ color: "#dc2626", fontWeight: 600, margin: 0 }}>{error}</p>}
+      {notice && <p role="status" style={{ color: "#1a6e3a", fontWeight: 700, margin: 0 }}>{notice}</p>}
+      {error && <p role="alert" style={{ color: "#dc2626", fontWeight: 600, margin: 0 }}>{error}</p>}
     </div>
   );
 }
@@ -314,24 +314,24 @@ function MahjMatchSection() {
       <>
         <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "0.6rem" }}>
           <div>
-            <label style={smallLbl}>City</label>
-            <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Las Vegas" style={input} maxLength={80} />
+            <label style={smallLbl} htmlFor="acct-mm-city">City</label>
+            <input id="acct-mm-city" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Las Vegas" style={input} maxLength={80} />
           </div>
           <div>
-            <label style={smallLbl}>State</label>
-            <input value={stateCode} onChange={(e) => setStateCode(e.target.value)} placeholder="NV" style={input} maxLength={20} />
+            <label style={smallLbl} htmlFor="acct-mm-state">State</label>
+            <input id="acct-mm-state" value={stateCode} onChange={(e) => setStateCode(e.target.value)} placeholder="NV" style={input} maxLength={20} />
           </div>
         </div>
         <div>
-          <label style={smallLbl}>Willing to travel (miles)</label>
-          <input type="number" min={1} max={200} value={radius} onChange={(e) => setRadius(e.target.value)} style={input} />
+          <label style={smallLbl} htmlFor="acct-mm-radius">Willing to travel (miles)</label>
+          <input id="acct-mm-radius" type="number" min={1} max={200} value={radius} onChange={(e) => setRadius(e.target.value)} style={input} />
         </div>
         <div>
-          <label style={smallLbl}>Availability</label>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+          <label style={smallLbl} id="acct-mm-availability-label">Availability</label>
+          <div role="group" aria-labelledby="acct-mm-availability-label" style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
             {DAYS.map((d) => (
               <div key={d.value} style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
-                <span style={{ width: 36, fontSize: "0.78rem", fontWeight: 700, color: "var(--navy)" }}>{d.label}</span>
+                <span aria-hidden="true" style={{ width: 36, fontSize: "0.78rem", fontWeight: 700, color: "var(--navy)" }}>{d.label}</span>
                 {TIMES_OF_DAY.map((t) => {
                   const on = availability.some((s) => s.day === d.value && s.time_of_day === t.value);
                   return (
@@ -339,7 +339,9 @@ function MahjMatchSection() {
                       key={t.value}
                       type="button"
                       onClick={() => toggleSlot(d.value, t.value)}
-                      style={{ padding: "0.3rem 0.6rem", borderRadius: 50, border: `1.5px solid ${on ? "var(--pink)" : "var(--border)"}`, background: on ? "var(--pink)" : "white", color: on ? "white" : "var(--navy)", fontWeight: 700, fontSize: "0.75rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
+                      aria-pressed={on}
+                      aria-label={`${d.label} ${t.label}`}
+                      style={{ minHeight: 44, padding: "0.3rem 0.6rem", borderRadius: 50, border: `1.5px solid ${on ? "var(--pink)" : "var(--border)"}`, background: on ? "var(--pink)" : "white", color: on ? "white" : "var(--navy)", fontWeight: 700, fontSize: "0.75rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}
                     >
                       {t.label}
                     </button>
@@ -351,8 +353,8 @@ function MahjMatchSection() {
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.6rem" }}>
           <div>
-            <label style={smallLbl}>Skill level</label>
-            <select className="form-select" value={skill} onChange={(e) => setSkill(e.target.value)} style={input}>
+            <label style={smallLbl} htmlFor="acct-mm-skill">Skill level</label>
+            <select id="acct-mm-skill" className="form-select" value={skill} onChange={(e) => setSkill(e.target.value)} style={input}>
               <option value="">No preference</option>
               <option value="beginner">Beginner</option>
               <option value="intermediate">Intermediate</option>
@@ -361,8 +363,8 @@ function MahjMatchSection() {
             </select>
           </div>
           <div>
-            <label style={smallLbl}>Style</label>
-            <select className="form-select" value={socialStyle} onChange={(e) => setSocialStyle(e.target.value)} style={input}>
+            <label style={smallLbl} htmlFor="acct-mm-social-style">Style</label>
+            <select id="acct-mm-social-style" className="form-select" value={socialStyle} onChange={(e) => setSocialStyle(e.target.value)} style={input}>
               <option value="">No preference</option>
               <option value="social">Social</option>
               <option value="competitive">Competitive</option>
@@ -370,8 +372,8 @@ function MahjMatchSection() {
             </select>
           </div>
           <div>
-            <label style={smallLbl}>Hosting</label>
-            <select className="form-select" value={hostPref} onChange={(e) => setHostPref(e.target.value)} style={input}>
+            <label style={smallLbl} htmlFor="acct-mm-host-pref">Hosting</label>
+            <select id="acct-mm-host-pref" className="form-select" value={hostPref} onChange={(e) => setHostPref(e.target.value)} style={input}>
               <option value="">No preference</option>
               <option value="can_host">I can host</option>
               <option value="prefer_travel">I prefer to travel</option>
@@ -379,8 +381,8 @@ function MahjMatchSection() {
             </select>
           </div>
           <div>
-            <label style={smallLbl}>Group</label>
-            <select className="form-select" value={groupPref} onChange={(e) => setGroupPref(e.target.value)} style={input}>
+            <label style={smallLbl} htmlFor="acct-mm-group-pref">Group</label>
+            <select id="acct-mm-group-pref" className="form-select" value={groupPref} onChange={(e) => setGroupPref(e.target.value)} style={input}>
               <option value="">No preference</option>
               <option value="same_group">Same group each time</option>
               <option value="new_people">New people</option>
@@ -451,8 +453,8 @@ function MahjMatchSection() {
         )}
       </div>
 
-      {notice && <p style={{ color: "#1a6e3a", fontWeight: 700, margin: 0, fontSize: "0.85rem" }}>{notice}</p>}
-      {error && <p style={{ color: "#dc2626", fontWeight: 600, margin: 0, fontSize: "0.85rem" }}>{error}</p>}
+      {notice && <p role="status" style={{ color: "#1a6e3a", fontWeight: 700, margin: 0, fontSize: "0.85rem" }}>{notice}</p>}
+      {error && <p role="alert" style={{ color: "#dc2626", fontWeight: 600, margin: 0, fontSize: "0.85rem" }}>{error}</p>}
     </div>
   );
 }

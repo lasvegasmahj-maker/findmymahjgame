@@ -88,8 +88,9 @@ export default function AskClient() {
           {EXAMPLES.map((ex) => (
             <button
               key={ex}
+              type="button"
               onClick={() => { setQ(ex); ask(ex); }}
-              style={{ padding: "0.45rem 1rem", borderRadius: 50, fontSize: "0.9rem", fontWeight: 700, border: "2px solid var(--border)", background: "white", color: "var(--navy)", cursor: "pointer", fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif" }}
+              style={{ minHeight: 44, padding: "0.45rem 1rem", borderRadius: 50, fontSize: "0.9rem", fontWeight: 700, border: "2px solid var(--border)", background: "white", color: "var(--navy)", cursor: "pointer", fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif" }}
             >
               {ex}
             </button>
@@ -98,7 +99,7 @@ export default function AskClient() {
       )}
 
       {resp && (
-        <div style={{ maxWidth: 720, margin: "0 auto" }}>
+        <div role="status" aria-live="polite" style={{ maxWidth: 720, margin: "0 auto" }}>
           <p style={{ fontSize: "1.1rem", color: "var(--navy)", fontWeight: 600, textAlign: "center", lineHeight: 1.55 }}>
             {resp.error || resp.answer}
           </p>

@@ -188,12 +188,12 @@ export default function MahjMatchClient({ launched }: { launched: boolean }) {
         </div>
       )}
       {error && (
-        <div style={{ ...card, background: "#fef2f2", borderColor: "#fca5a5" }}>
+        <div role="alert" style={{ ...card, background: "#fef2f2", borderColor: "#fca5a5" }}>
           <p style={{ margin: 0, color: "#dc2626", fontWeight: 600 }}>{error}</p>
         </div>
       )}
       {notice && (
-        <div style={{ ...card, background: "rgba(46,201,92,0.12)", borderColor: "#2ec95c" }}>
+        <div role="status" style={{ ...card, background: "rgba(46,201,92,0.12)", borderColor: "#2ec95c" }}>
           <p style={{ margin: 0, color: "#1a6e3a", fontWeight: 700 }}>{notice}</p>
         </div>
       )}

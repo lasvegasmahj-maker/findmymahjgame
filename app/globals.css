@@ -63,6 +63,20 @@ textarea:focus-visible,
   border-radius: 4px;
 }
 
+/* A visually-hidden native checkbox paired with a custom visual box (e.g. the
+   city filter on state pages) still needs a visible keyboard focus ring; since
+   the real input is 1px, the ring goes on its visible sibling instead. */
+.vh-checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.vh-checkbox:focus-visible + .vh-checkbox-box {
+  outline: 3px solid var(--pink);
+  outline-offset: 2px;
+}
+
 body {
   background: white;
   color: var(--text);
@@ -97,7 +111,7 @@ body {
 .nav-advertise {
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--pink);
+  color: var(--pink-text);
   text-decoration: none;
   transition: opacity 0.2s;
 }
@@ -209,7 +223,7 @@ body {
   font-size: 0.75rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--pink);
+  color: var(--pink-text);
   font-weight: 700;
   margin-bottom: 0.5rem;
 }
