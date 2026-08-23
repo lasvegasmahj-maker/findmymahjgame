@@ -364,7 +364,7 @@ export function buildHowItWorksSchema() {
         name: "How do businesses get listed?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Create your profile on the Join page at findmymahjgame.com/join or email hello@findmymahjgame.com. Listings are reviewed within 1-2 business days. Create your free listing through the Get Listed page, or join the Directory Membership for a verified badge and more visibility.",
+          text: "Create your profile on the Join page at findmymahjgame.com/join or email hello@findmymahjgame.com. Listings are reviewed within 1-2 business days. A basic listing is free forever, and claiming your listing starts 90 days of Premium at no cost.",
         },
       },
       {
@@ -372,7 +372,7 @@ export function buildHowItWorksSchema() {
         name: "How much does it cost to get listed?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Players never pay to find a game. A basic Community Listing for teachers and organizers is free. The Directory Membership is $89 a year, with the first 6 months free during launch using code FINDMYMAHJGAME, and covers your profile, your classes, and your events.",
+          text: "Players never pay to find a game. A basic listing for teachers and organizers is free forever, including your profile, classes, and events. Premium is $89 a year and adds on-platform lesson requests and a Premium Provider badge, with 90 days free when you claim your listing.",
         },
       },
       {
@@ -490,8 +490,8 @@ export function buildHowItWorksSchema() {
       {
         "@type": "HowToStep",
         position: 3,
-        name: "Choose your plan",
-        text: "Create your free listing through the Get Listed page, or join the Directory Membership for a verified badge and more visibility.",
+        name: "Claim your listing",
+        text: "Create your free listing through the Get Listed page. Claiming it is free, earns the Verified badge, and starts 90 days of Premium: on-platform lesson requests for $89 a year after the trial, or stay on your free listing.",
         url: `${SITE_URL}/join`,
       },
       {

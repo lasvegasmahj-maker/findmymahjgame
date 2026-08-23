@@ -86,24 +86,24 @@ export default function HowItWorksClient() {
             <div className="flex flex-col gap-6 my-6">
               <Step num={1} title="Submit your profile" desc="Create your profile on the Join page or email hello@findmymahjgame.com. Takes less than 2 minutes." />
               <Step num={2} title="We review & approve" desc="All listings are reviewed within 1-2 business days. We maintain quality standards for everyone listed." />
-              <Step num={3} title="Choose your plan" desc="Stay on the free Community Listing, or join the Directory Membership for a verified badge and more visibility." />
+              <Step num={3} title="Claim your listing" desc="Claiming is free and starts 90 days of Premium automatically. After the trial, choose Premium at $89 a year or stay on your free listing." />
               <Step num={4} title="Go live!" desc="Your listing goes live within 24-48 hours. Players start finding you right away." />
             </div>
 
             <h2>Membership Tiers for Teachers &amp; Organizers</h2>
-            <p>Being listed is free forever. Premium tiers add visibility, a verified badge, and promotion. Players never pay.</p>
+            <p>Being listed is free forever, and claiming your listing earns the Verified badge at no cost. Premium helps turn discovery into customers. Players never pay.</p>
             <div className="grid grid-cols-2 gap-4 my-6 max-sm:grid-cols-1">
               <div className="bg-bg border border-border rounded-xl p-5">
-                <h3 className="text-[0.9rem] font-bold text-navy mb-1">Community Listing</h3>
+                <h3 className="text-[0.9rem] font-bold text-navy mb-1">Basic listing</h3>
                 <div className="font-heading text-[1.4rem] text-pink font-black mb-1">Free</div>
                 <p className="text-[0.78rem] text-muted !mb-0">Your basic profile, appearing in search so players can find you. Free to be listed, always.
                 </p>
               </div>
               <div className="bg-bg border border-pink rounded-xl p-5">
-                <h3 className="text-[0.9rem] font-bold text-navy mb-1">Directory Membership
+                <h3 className="text-[0.9rem] font-bold text-navy mb-1">Premium
                 </h3>
                 <div className="font-heading text-[1.4rem] text-pink font-black mb-1">$89/year</div>
-                <p className="text-[0.78rem] text-muted !mb-0">Verified badge, priority placement, featured on state pages, more photos, and featured events. First 6 months free with code FINDMYMAHJGAME.
+                <p className="text-[0.78rem] text-muted !mb-0">On-platform lesson requests from players plus the Premium Provider badge. 90 days free when you claim your listing, then your choice: $89 a year or stay on the free listing.
                 </p>
               </div>
             </div>

@@ -180,8 +180,12 @@ test.describe("source pins", () => {
   });
 
   test("ownership is only ever granted by writing account_id on the listing, by system auto-approval or by admin approval", () => {
+    // Every claim path starts the 90-day Premium trial in a SEPARATE write guarded
+    // on premium_until being null (approved model, 2026-08-23), so granting
+    // ownership can never overwrite an existing entitlement.
     const claims = readFileSync(join(__dirname, "..", "app/api/claims/route.ts"), "utf8");
     expect(claims).toMatch(/update\(\{\s*account_id:\s*session\.userId\s*\}\)/);
+    expect(claims).toMatch(/\.is\("premium_until", null\)/);
     const admin = readFileSync(join(__dirname, "..", "app/api/admin/claims/route.ts"), "utf8");
     expect(admin).toMatch(/update\(\{\s*account_id:\s*claimRow\.profile_id\s*\}\)/);
   });

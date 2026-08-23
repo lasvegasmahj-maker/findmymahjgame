@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { verifyAdminSessionToken, ADMIN_COOKIE } from "@/lib/admin-auth";
 import { lazyServerClient } from "@/lib/supabase-server";
-import { readTruthMetrics, readDataQualityIssues, type TruthMetrics, type DataQualityIssue } from "@/lib/data-trust";
+import { readTruthMetrics, readDataQualityIssues, readMembershipBreakdown, readPremiumLeadDiagnostic, type TruthMetrics, type DataQualityIssue, type MembershipBreakdown, type PremiumLeadDiagnostic } from "@/lib/data-trust";
 import { LAUNCH_GATES } from "@/lib/launch-gates";
 import AdminLogin from "@/components/admin-login";
 
@@ -63,6 +63,8 @@ export default async function AdminHome() {
 
   let metrics: TruthMetrics | null = null;
   let issues: DataQualityIssue[] = [];
+  let membership: MembershipBreakdown | null = null;
+  let leads: PremiumLeadDiagnostic | null = null;
   let loadError: string | null = null;
   let gates: Array<{ label: string; key: string; on: boolean | null }> = [];
   try {
@@ -78,7 +80,12 @@ export default async function AdminHome() {
       { label: "Payments", key: LAUNCH_GATES.payments, on: readGate(LAUNCH_GATES.payments) },
       { label: "Player matching", key: LAUNCH_GATES.playerMatching, on: readGate(LAUNCH_GATES.playerMatching) },
     ];
-    [metrics, issues] = await Promise.all([readTruthMetrics(supabase), readDataQualityIssues(supabase)]);
+    [metrics, issues, membership, leads] = await Promise.all([
+      readTruthMetrics(supabase),
+      readDataQualityIssues(supabase),
+      readMembershipBreakdown(supabase),
+      readPremiumLeadDiagnostic(supabase),
+    ]);
   } catch (err) {
     console.error("admin home metrics failed", err);
     loadError = "Metrics could not be computed. The numbers are missing, not zero.";
@@ -137,10 +144,26 @@ export default async function AdminHome() {
             <Stat label="Seed, test and internal records" value={m.nonRealPlayers + m.testProviderSubmissions} sub="classified and excluded from every signup number" />
           </Section>
 
-          <Section title="Membership and money" source="Supabase; payment truth requires a payment provider">
-            <Stat label="Founding Members" value={m.foundingMembers} sub="rows with is_founding_member true" />
+          <Section title="Membership and money" source="teacher listings: premium_until entitlement dates + payment records; a trial never counts as paying">
+            <Stat label="Basic (free forever)" value={membership ? membership.basic : "?"} sub="published with no active Premium entitlement" />
+            <Stat label="Complimentary Premium trial" value={membership ? membership.complimentaryTrial : "?"} sub="90 days from claim; no card, zero revenue" />
+            <Stat label="Paid Premium" value={membership ? membership.paidPremium : "?"} sub="requires a real payment record" />
+            <Stat label="Expired trial, back to Basic" value={membership ? membership.expiredReverted : "?"} sub="trial lapsed without payment; the listing stays live and is counted in Basic" />
+            <Stat label="Charter recognition" value={m.foundingMembers} sub="recognition, not a tier; no ranking effect" />
             <Stat label="Verified paying customers" value={m.verifiedPayments} sub="rows with a real payment id" />
             <NotConnected label="Revenue and MRR" note="No payment provider is integrated. Money metrics appear here once Stripe (or equivalent) is connected and becomes the source of truth." />
+          </Section>
+
+          <Section title="Premium conversion diagnostic" source="provider_leads metadata, real_external delivered leads only">
+            <Stat label="Premium providers, 0 leads" value={leads ? leads.buckets.none : "?"} sub="no real leads yet: a liquidity signal, not a value signal" />
+            <Stat label="1 lead" value={leads ? leads.buckets.one : "?"} />
+            <Stat label="2-3 leads" value={leads ? leads.buckets.twoToThree : "?"} />
+            <Stat label="4+ leads" value={leads ? leads.buckets.fourPlus : "?"} />
+            <Stat
+              label="Got a lead, then chose $89"
+              value={leads ? `${leads.providersWithRealLeadWhoPaid} of ${leads.providersWithRealLead}` : "?"}
+              sub="the primary diagnostic: separates liquidity failure from Premium value failure. No target is set; real data decides."
+            />
           </Section>
 
           <Section title="Directory" source="Supabase venue_listings and event_listings">

@@ -7,8 +7,9 @@ import { clampText, isValidEmail } from "@/lib/sanitize";
 
 // Starts a Stripe Checkout Session for the $89/year directory membership.
 // Dark until launch: requires BOTH the launch_payments gate (fails closed) and a
-// configured Stripe account. Promotion codes are enabled so FINDMYMAHJGAME gives
-// teachers their first period free without a separate code path here.
+// configured Stripe account. No promotion codes: the old free-period coupon is
+// retired, and the complimentary period is the app-managed 90-day trial, which
+// never creates a Stripe subscription. Checkout is the plain $89/year price.
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://findmymahjgame.com";
 
@@ -37,12 +38,39 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "A valid email is required to start checkout." }, { status: 400 });
   }
 
+  // Optional listing reference so payment can extend that listing's premium_until.
+  // Scoped to teacher (venue) listings, the only place Premium surfaces exist, and
+  // BOUND TO THE PAYER: the reference is kept only when the listing is claimed and
+  // the checkout email matches the owning account's email, so a stranger can never
+  // stamp a paid entitlement onto someone else's listing. An invalid or unowned
+  // reference is dropped rather than failing checkout. The reference rides on the
+  // SUBSCRIPTION metadata so every subscription webhook event carries it.
+  let listingTable: string | null = null;
+  let listingId: string | null = null;
+  const rawTable = String(b?.listingTable || "");
+  const rawId = clampText(b?.listingId, 64);
+  if (rawTable === "venue_listings" && /^[0-9a-f-]{36}$/i.test(rawId)) {
+    const { data: row } = await supabase.from(rawTable).select("id, account_id").eq("id", rawId).eq("status", "published").maybeSingle();
+    if (row?.account_id) {
+      try {
+        const { data: owner } = await supabase.auth.admin.getUserById(String(row.account_id));
+        if (owner?.user?.email?.toLowerCase() === email) {
+          listingTable = rawTable;
+          listingId = rawId;
+        }
+      } catch (e) {
+        console.error("billing/checkout: owner lookup failed", e instanceof Error ? e.message : e);
+      }
+    }
+  }
+
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
       customer_email: email,
-      allow_promotion_codes: true,
+      allow_promotion_codes: false,
+      subscription_data: listingTable && listingId ? { metadata: { listing_table: listingTable, listing_id: listingId } } : undefined,
       success_url: `${SITE}/join?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${SITE}/join?checkout=cancelled`,
     });

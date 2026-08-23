@@ -96,7 +96,7 @@ export default async function StatePage({ params, searchParams }: { params: Prom
       .order("event_date", { ascending: true }),
     supabase
       .from("venue_listings")
-      .select("id, business_name, venue_type, city, state, address, description, website, instagram, display_email, logo_url, tier, created_at")
+      .select("id, business_name, venue_type, city, state, address, description, website, instagram, display_email, logo_url, tier, account_id, premium_until, created_at")
       .eq("state", data.abbr)
       .eq("status", "published")
       .order("created_at", { ascending: false }),
@@ -104,7 +104,11 @@ export default async function StatePage({ params, searchParams }: { params: Prom
 
   const players = playersRes.data || [];
   const events = (eventsRes.data || []).filter((e) => isUpcoming(e));
-  const venues = (venuesRes.data || []).filter((v) => !isFounderListing(v));
+  // account_id is an auth UUID and must never serialize into client props; the
+  // card only needs the derived verified boolean.
+  const venues = (venuesRes.data || [])
+    .filter((v) => !isFounderListing(v))
+    .map(({ account_id, ...v }) => ({ ...v, verified: Boolean(account_id) }));
 
   const STATE_CITIES: Record<string, [string, string][]> = {
     texas: [["dallas", "Dallas"], ["houston", "Houston"], ["austin", "Austin"], ["san-antonio", "San Antonio"]],

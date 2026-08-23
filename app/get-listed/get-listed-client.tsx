@@ -27,7 +27,6 @@ const labelStyle: React.CSSProperties = {
   marginBottom: "0.4rem",
 };
 
-type PromoStatus = "idle" | "checking" | "valid" | "invalid";
 
 const ALLOWED_TYPES = ["Mahjong Instructor", "Open Play", "Tournament", "Retreat", "League"];
 const fmtDate = (d: string) => {
@@ -47,7 +46,6 @@ export default function GetListedClient({ defaultType = "" }: { defaultType?: st
     website: "",
     instagram: "",
     description: "",
-    promo_code: "",
     host: "",
     event_schedule: "one_time",
     event_date: "",
@@ -59,33 +57,12 @@ export default function GetListedClient({ defaultType = "" }: { defaultType?: st
     venue: "",
     signup_url: "",
   });
-  const [promoStatus, setPromoStatus] = useState<PromoStatus>("idle");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
 
   const isEvent = ["Open Play", "Tournament", "Retreat", "League"].includes(form.type);
   const recurring = form.event_schedule === "recurring";
-
-  async function validatePromo() {
-    const code = form.promo_code.trim().toUpperCase();
-    if (!code) return;
-    // Founding code is accepted directly; billing is set up manually until the
-    // Stripe build lands. Other codes validate against the promo_codes table.
-    if (code === "FINDMYMAHJGAME") { setPromoStatus("valid"); return; }
-    setPromoStatus("checking");
-    try {
-      const res = await fetch("/api/validate-promo", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-      });
-      const data = await res.json();
-      setPromoStatus(data?.valid ? "valid" : "invalid");
-    } catch {
-      setPromoStatus("invalid");
-    }
-  }
 
   function whenText(): string {
     if (!isEvent) return "";
@@ -133,7 +110,6 @@ export default function GetListedClient({ defaultType = "" }: { defaultType?: st
           beginner_friendly: isEvent ? form.beginner_friendly : null,
           venue: form.venue || null,
           signup_url: form.signup_url || null,
-          promo_code: form.promo_code.trim().toUpperCase() || null,
         }),
       });
       if (!res.ok) {
@@ -157,11 +133,6 @@ export default function GetListedClient({ defaultType = "" }: { defaultType?: st
         <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.7, marginBottom: "1rem" }}>
           Thanks{firstName ? `, ${firstName}` : ""}! We received your {typeLabel} listing and emailed a confirmation to <strong>{form.email}</strong>. We&rsquo;ll review it and email you within 1-2 business days. Once it&rsquo;s approved it goes live on your {STATE_OPTIONS.find((s) => s.abbr === form.state)?.name || "state"} page, and we&rsquo;ll send you the link plus how to edit it.
         </p>
-        {promoStatus === "valid" && (
-          <p style={{ fontSize: "1rem", color: "#1a6e3a", lineHeight: 1.7, marginBottom: "2rem", fontWeight: 600 }}>
-            As a Charter Member, your first 6 months are free. Nothing is charged today, we&rsquo;ll email you to set up billing before the free period ends.
-          </p>
-        )}
         <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", alignItems: "center" }}>
           <Link href="/states" style={{ display: "inline-block", padding: "0.75rem 1.8rem", background: "var(--navy)", color: "white", borderRadius: 10, fontWeight: 700, textDecoration: "none", fontSize: "0.95rem" }}>Browse the directory &rarr;</Link>
           <Link href="/" style={{ color: "var(--muted)", fontSize: "0.85rem", textDecoration: "none" }}>Back to home</Link>
@@ -181,7 +152,7 @@ export default function GetListedClient({ defaultType = "" }: { defaultType?: st
       <div className="page-body" style={{ maxWidth: 680 }}>
         <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 20, padding: "2.5rem" }}>
           <h2 style={{ border: "none", marginTop: 0, marginBottom: "0.3rem" }}>Tell us about what you offer</h2>
-          <p style={{ color: "var(--muted)", fontSize: "16px", marginBottom: "2rem" }}>We review every listing by hand and email you within 1-2 business days. Have a promo code? Enter it below.</p>
+          <p style={{ color: "var(--muted)", fontSize: "16px", marginBottom: "2rem" }}>We review every listing by hand and email you within 1-2 business days.</p>
 
           <form onSubmit={handleSubmit}>
             {/* Type first, so the form adapts */}
@@ -315,20 +286,6 @@ export default function GetListedClient({ defaultType = "" }: { defaultType?: st
               <textarea placeholder={isEvent ? "What is it, who is it for, and what should players expect?" : "Describe your classes, venue, or events..."} required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} style={{ ...inputStyle, height: 120, resize: "vertical" }} />
             </div>
 
-            {/* Promo Code */}
-            <div style={{ marginBottom: "1.8rem" }}>
-              <label style={labelStyle}>Promo Code <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span></label>
-              <div style={{ display: "flex", gap: "0.6rem" }}>
-                <input type="text" placeholder="FINDMYMAHJGAME" value={form.promo_code} onChange={(e) => { setForm({ ...form, promo_code: e.target.value }); setPromoStatus("idle"); }} style={{ ...inputStyle, flex: 1, textTransform: "uppercase" }} />
-                <button type="button" onClick={validatePromo} disabled={!form.promo_code.trim() || promoStatus === "checking"} style={{ background: "var(--navy)", color: "white", border: "none", borderRadius: 8, padding: "0.7rem 1.2rem", fontFamily: "'DM Sans', sans-serif", fontSize: "0.88rem", fontWeight: 700, cursor: !form.promo_code.trim() || promoStatus === "checking" ? "not-allowed" : "pointer", opacity: !form.promo_code.trim() ? 0.5 : 1, whiteSpace: "nowrap" }}>{promoStatus === "checking" ? "Checking..." : "Validate"}</button>
-              </div>
-              {promoStatus === "valid" && (
-                <div style={{ marginTop: "0.6rem", background: "rgba(46,201,92,0.1)", border: "1.5px solid rgba(46,201,92,0.4)", borderRadius: 8, padding: "0.75rem 1rem", fontSize: "0.88rem", color: "#1a9648", fontWeight: 600 }}>Code {form.promo_code.trim().toUpperCase()} applied. As a Charter Member your first 6 months are free. Nothing is charged today, we&rsquo;ll set up billing by email.</div>
-              )}
-              {promoStatus === "invalid" && (
-                <div style={{ marginTop: "0.6rem", background: "rgba(220,38,38,0.08)", border: "1.5px solid rgba(220,38,38,0.3)", borderRadius: 8, padding: "0.75rem 1rem", fontSize: "0.88rem", color: "#b91c1c" }}>Code not recognized. Please check your code and try again.</div>
-              )}
-            </div>
 
             {error && (
               <div style={{ background: "rgba(220,38,38,0.08)", border: "1.5px solid rgba(220,38,38,0.3)", borderRadius: 8, padding: "0.8rem 1rem", fontSize: "0.88rem", color: "#b91c1c", marginBottom: "1.2rem" }}>{error}</div>

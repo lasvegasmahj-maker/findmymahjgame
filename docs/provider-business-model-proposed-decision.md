@@ -1,6 +1,6 @@
-# PROPOSED DECISION: Provider Business Model (awaiting final owner approval)
+# APPROVED DECISION: Provider Business Model (owner-approved 2026-08-23, implemented)
 
-Recorded 2026-08-23 in release-manager mode. Build freeze active; nothing implemented. This records the proposed model and the implementation audit supporting it. Analysis backing it: docs/provider-business-model-decision-2026-08.md.
+Owner-approved 2026-08-23 with two refinements (verification is never bought; the founder is not copied on routine leads) and implemented the same day. This records the approved model and the audit that supported it. Analysis backing it: docs/provider-business-model-decision-2026-08.md.
 
 ## The proposed model
 
@@ -8,7 +8,7 @@ PLAYERS: free forever.
 
 PROVIDER BASIC: free forever. Includes legitimate listing, claiming and verification, the provider dashboard, editing and maintaining the listing, posting legitimate events, classes, and open plays supported by the current marketplace, neutral organic directory and search placement, Ask Find My Mahj inclusion, and at least one provider-controlled external contact path where available. A free listing must never be a dead end for a player.
 
-PROVIDER PREMIUM: $89/year. Premium monetizes business conversion, not marketplace admission. Centered on structured on-platform lesson and provider inquiries, lead capture, lead notifications, lead history and analytics where already built, the Verified Community Leader badge, and Charter or Founding recognition for qualifying early converts. Principle: Basic gets you found. Premium helps turn discovery into customers. No hidden paid ranking. No suppression of Basic providers. No bias in Ask answers toward paid providers. Any future paid promotional placement must be clearly labeled.
+PROVIDER PREMIUM: $89/year. Premium monetizes business conversion, not marketplace admission. Centered on structured on-platform lesson and provider inquiries, lead capture, lead notifications, lead history and analytics where already built, the Premium Provider badge (per the owner refinement, verification is a separate earned trust state and is never bought), and Charter or Founding recognition for qualifying early converts. Principle: Basic gets you found. Premium helps turn discovery into customers. No hidden paid ranking. No suppression of Basic providers. No bias in Ask answers toward paid providers. Any future paid promotional placement must be clearly labeled.
 
 FOUNDING OFFER: 90 days of Premium starting from each provider's individual claim date. No card required to begin. At day 90 the provider voluntarily chooses $89/year Premium or automatically returns to permanent free Basic. Nobody is ever billed without a clear opt in.
 
@@ -34,4 +34,13 @@ MONETIZATION DIAGNOSTIC: segment trial-to-paid conversion by market maturity and
 
 ## Status
 
-Awaiting explicit owner approval. Until then: build freeze holds, gates stay OFF, no copy changes, no pricing changes, no Stripe changes.
+APPROVED and implemented 2026-08-23 (see the implementation record below). Launch gates remain OFF; build freeze resumes for unrelated work.
+
+## Implementation record (2026-08-23)
+
+- premium_until entitlement column on venue and event listings. The 90-day trial starts idempotently, after ownership is granted, on venue (teacher) listings only: the only listings where Premium surfaces exist today. The event_listings column is reserved for future use. Paid Premium later extends the date through Stripe truth; a trial provider is never counted as paying.
+- Verified badge now comes from the evidence-based claim (trust), Premium Provider is the separate commercial badge; payment cannot award verification anywhere.
+- The structured lesson inquiry is entitlement-gated in the API, sends the lead straight to the provider with no founder copy, and records only PII-free metadata (provider, timestamp, delivery status, test or real class) in provider_leads for the conversion diagnostic.
+- FINDMYMAHJGAME retired everywhere (validate-promo, get-listed form and route, join, how-it-works, FAQ schema); the Stripe checkout takes no promotion codes and the runbook coupon step is replaced.
+- Join and pricing copy rewritten to the Basic free forever / Premium $89 truth with the false higher-placement promise removed.
+

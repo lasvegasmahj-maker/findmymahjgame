@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { clampText } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
 import { lazyServerClient } from "@/lib/supabase-server";
@@ -18,7 +17,8 @@ export async function POST(req: NextRequest) {
   const code = (clampText(body.code, 40) || "").toUpperCase();
   if (!code) return NextResponse.json({ valid: false });
 
-  if (code === "FINDMYMAHJGAME") return NextResponse.json({ valid: true });
+  // FINDMYMAHJGAME (the old 6-month founding offer) is retired; the 90-day
+  // Premium trial now starts automatically on claim, so no code is needed.
 
   const { data, error } = await supabase
     .from("promo_codes")

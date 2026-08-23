@@ -7,6 +7,7 @@ import { notify } from "@/lib/notifications/notify";
 import { track } from "@/lib/analytics/events";
 import type { RecordClass } from "@/lib/analytics/events";
 import { escapeHtml } from "@/lib/sanitize";
+import { trialUntilFrom } from "@/lib/premium";
 import { scoreClaimEvidence, WINNING_CLAIM_STATUSES, OPEN_CLAIM_STATUSES, type ClaimEvidence } from "@/lib/claims/contract";
 
 // Account-based claim flow. A claim row is only ever an audit entry; ownership is
@@ -132,6 +133,19 @@ export async function POST(req: NextRequest) {
       .is("account_id", null)
       .select("id");
     if (!updateErr && updated && updated.length > 0) {
+      // The 90-day trial starts only once ownership has actually been granted, so
+      // a lost race or failed write can never burn the one-time trial clock on an
+      // unowned listing. The premium_until-null guard means it can never overwrite
+      // an existing entitlement (such as a paid period stamped by the billing
+      // webhook), and Premium surfaces exist only on teacher listings today.
+      if (table === "venue_listings") {
+        const { error: trialErr } = await supabase
+          .from(table)
+          .update({ premium_until: trialUntilFrom(new Date()) })
+          .eq("id", id)
+          .is("premium_until", null);
+        if (trialErr) console.error("claims: trial start failed:", trialErr.message);
+      }
       status = "auto_approved";
       decisionReason = score.reasons.join("; ");
       decidedBy = "system";

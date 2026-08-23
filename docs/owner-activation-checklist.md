@@ -6,7 +6,7 @@ The product is engineering-complete and frozen. Only the items below remain, and
 
 ### Stripe
 Status: READY, AWAITING OWNER CREDENTIAL/ACCOUNT
-What: create the Stripe account, the $89/year price, the FINDMYMAHJGAME code, and set four env vars in Vercel. Full steps in docs/billing-launch-runbook.md.
+What: create the Stripe account, the $89/year price, and set four env vars in Vercel. No promo code: the 90-day Premium trial is app-managed and starts on claim. Full steps in docs/billing-launch-runbook.md.
 When done: I verify checkout, webhook, idempotency, cancellation, reconciliation, and admin revenue in Stripe test mode. launch_payments stays OFF until you approve launch.
 
 ### Search Console

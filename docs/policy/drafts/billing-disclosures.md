@@ -5,12 +5,12 @@ review and edit. No billing disclosure document exists anywhere on the site toda
 currently appears only as marketing copy on `/join` and `/get-listed`. See
 `docs/policy/audit-2026-08.md`, section 6, for the full audit.
 
-**This document cannot be finalized yet.** The audit found two different free-period mechanisms
-already built in the code, and they do not agree with each other (6 months, no card, manual
-billing setup by email, which is what actually runs today, versus a full year, card collected
-at checkout, automatic renewal, which is built but not yet turned on). Sections below marked
-`[OWNER TO CONFIRM]` include this conflict. Do not publish this document, or flip the `payments`
-launch gate, until it is resolved. See `docs/policy/launch-gate.md`.
+**Free-period conflict RESOLVED 2026-08-23.** The owner-approved provider business model
+replaced both old free-period mechanisms (the 6-month FINDMYMAHJGAME code and the 12-month
+Stripe coupon) with one: a 90-day Premium trial that starts automatically when a provider
+claims their listing, no card collected, no automatic billing ever. Sections below reflect
+the approved model. Bracketed `[OWNER TO CONFIRM]` items that remain are unrelated to the
+free period (notice days, refunds).
 
 Bracketed items marked `[OWNER TO CONFIRM]` are business or legal facts only the owner can
 decide. Do not publish this document with any bracket still open.
@@ -20,9 +20,11 @@ decide. Do not publish this document with any bracket still open.
 ## The short version
 
 - Players never pay, for anything, ever.
-- A basic listing (Community Listing) is free forever for teachers, organizers, and businesses.
-- Directory Membership is $89 a year and adds visibility features on top of your free listing.
-- Promo code FINDMYMAHJGAME gives new members a free introductory period.
+- A Basic listing is free forever for teachers, organizers, and businesses, and it is never
+  ranked lower for being free.
+- Premium is $89 a year and adds business conversion tools (structured lesson requests through
+  Find My Mahj and the Premium Provider badge). It never buys search placement or verification.
+- Claiming your listing starts 90 days of Premium free, automatically, no card collected.
 - We never see or store your card number. Payments are handled by Stripe.
 
 ## Who pays, and who does not
@@ -30,44 +32,34 @@ decide. Do not publish this document with any bracket still open.
 Directory Membership is for teachers, organizers, and businesses. Players browsing, searching,
 creating a player listing, or using Mahj Match never pay anything.
 
-## What Directory Membership costs
+## What Premium costs
 
-Directory Membership is $89 per year. It includes your profile, your classes, and your events,
-plus visibility features on top of the free Community Listing (search placement, state directory
-placement, and similar). Your basic listing is never removed or hidden for not paying; paying
-only adds promotion on top of it.
+Premium is $89 per year. It adds business conversion tools on top of your free Basic listing:
+structured lesson requests from players delivered straight to you through Find My Mahj, and the
+Premium Provider badge. Payment never buys search placement, ranking, or verification; your
+Basic listing is never removed, hidden, or demoted for not paying.
 
-## The introductory offer, code FINDMYMAHJGAME
+## The introductory offer: 90 days of Premium when you claim your listing
 
-[OWNER TO CONFIRM: which of the following two mechanisms is the actual policy going forward. As
-of this draft, only mechanism A is live.]
-
-**A. What is live today:** if you join using promo code FINDMYMAHJGAME, your first 6 months are
-free. No card is collected when you submit your listing. Before your free period ends, we email
-you to set up billing. Nothing is charged automatically; billing is set up by hand with our team.
-
-**B. What is built but not yet turned on:** an automated checkout, through Stripe, for the $89
-per year membership. A promo code applied at checkout can waive an entire billing period. Because
-the membership is billed annually, waiving one billing period this way waives a full year, not 6
-months, and a card is collected at checkout time even though the waived period is free, so it is
-on file for automatic renewal afterward.
-
-Until this is resolved, the only offer this document can describe with confidence is A: 6 months
-free, no card collected, billing set up manually by our team before the free period ends.
+When you claim your listing, Premium turns on automatically for 90 days from your claim date.
+No promo code, no card collected, nothing to cancel. At the end of the 90 days you choose: pay
+$89 a year to keep Premium, or do nothing and your listing simply continues as a free Basic
+listing. You are never billed automatically at the end of the trial, because we never collected
+a card. The old FINDMYMAHJGAME code is retired and no longer grants anything.
 
 ## Renewal
 
-[OWNER TO CONFIRM, dependent on resolving the section above.] Once mechanism B (automated Stripe
-checkout) is turned on: your membership renews automatically each year at $89 unless you cancel
+[OWNER TO CONFIRM: advance-notice days.] Once automated Stripe checkout is turned on: a paid
+membership (started by your own explicit checkout, never by trial expiry) renews automatically each year at $89 unless you cancel
 before your renewal date. You will be notified before a renewal charge. [OWNER TO CONFIRM: how
 many days of advance notice].
 
 ## Cancellation
 
-You can cancel your Directory Membership at any time. [OWNER TO CONFIRM: whether cancellation is
+You can cancel Premium at any time. [OWNER TO CONFIRM: whether cancellation is
 self-service once automated billing is live, or handled by request to hello@findmymahjgame.com
 in the meantime]. There is no cancellation fee. Cancelling stops future billing; it does not
-remove your listing, which reverts to the free Community Listing tier.
+remove your listing, which reverts to the free Basic listing.
 
 ## If a payment fails
 
@@ -77,9 +69,9 @@ automatic grace-period notice, reminder email, or downgrade currently happens; t
 built before this paragraph can be published as a description of present behavior.]
 
 The intended policy: if a payment fails, you get a 14-day grace period during which your
-Directory Membership benefits continue while we ask you to update your payment method. If
-payment is not resolved within that window, your listing reverts to the free Community Listing
-tier. It is never deleted. There is no penalty fee for a failed or late payment beyond the loss
+Premium benefits continue while we ask you to update your payment method. If
+payment is not resolved within that window, your listing reverts to the free Basic
+listing. It is never deleted. There is no penalty fee for a failed or late payment beyond the loss
 of paid visibility features once the grace period ends.
 
 ## What we store, and what we never store
@@ -92,7 +84,7 @@ records and Stripe's ever disagree, Stripe's record is always the correct one.
 
 ## Refunds
 
-[OWNER TO CONFIRM: refund policy for the $89/year Directory Membership. The former advertiser
+[OWNER TO CONFIRM: refund policy for the $89/year Premium membership. The former advertiser
 pricing model had a 30-day prorated refund window for annual plans; whether that carries forward
 to Directory Membership, and whether it is the same policy as the separate advertiser/sponsor
 track described in Advertiser Terms, needs a decision.]

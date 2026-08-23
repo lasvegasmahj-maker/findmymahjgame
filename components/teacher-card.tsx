@@ -4,6 +4,7 @@
 // handle and the website link can each be clickable.
 import StatusBadge from "@/components/status-badge";
 import LessonInquiry from "@/components/lesson-inquiry";
+import { isPremiumActive } from "@/lib/premium";
 
 type TeacherLike = {
   id: string;
@@ -18,6 +19,8 @@ type TeacherLike = {
   tier?: string | null;
   charter?: boolean | null;
   advisor?: boolean | null;
+  verified?: boolean | null;
+  premium_until?: string | null;
 };
 
 // The founder's own business gets a clearly disclosed house treatment. The
@@ -29,22 +32,33 @@ export function FounderSpotlight({ t }: { t: TeacherLike }) {
     <aside data-testid="founder-card" aria-label="From our founder" style={{ background: "linear-gradient(135deg, rgba(233,30,140,0.04), rgba(233,30,140,0.08))", border: "2px solid rgba(233,30,140,0.3)", borderRadius: 18, padding: "1.2rem 1.3rem", marginBottom: "1.6rem" }}>
       <p style={{ fontSize: "0.8rem", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--pink-text)", margin: "0 0 0.3rem" }}>From our founder</p>
       <p style={{ fontSize: "0.95rem", color: "var(--muted)", lineHeight: 1.5, margin: "0 0 0.9rem" }}>The teacher behind Las Vegas Mahjong started Find My Mahj Game. We list it here as our own business, clearly marked. It never changes how other teachers appear or rank.</p>
-      <div style={{ maxWidth: 380 }}><TeacherCard t={t} /></div>
+      <div style={{ maxWidth: 380 }}><TeacherCard t={t} house /></div>
     </aside>
   );
 }
 
-export default function TeacherCard({ t }: { t: TeacherLike }) {
+// house: the founder's disclosed own-business card. It keeps the working lesson
+// button but wears no Verified or Premium badge: those mark real marketplace
+// participants (an evidence-based claim, a paid or trial membership), and the
+// house listing earned neither.
+export default function TeacherCard({ t, house }: { t: TeacherLike; house?: boolean }) {
   const ig = t.instagram ? String(t.instagram).replace(/^@/, "") : "";
   const site = t.website && /^https?:\/\//i.test(t.website) ? t.website : "";
   const desc = t.description ? String(t.description) : "";
+  // Verified means an owner claimed this listing through the evidence-based claim
+  // process; it is a trust state, never bought, derived server-side from ownership
+  // (the auth UUID itself never crosses to the client). Premium is the commercial
+  // membership (paid or in the complimentary trial). They are independent.
+  const verified = Boolean(t.verified);
+  const premium = isPremiumActive(t.premium_until);
   return (
     <div style={{ display: "flex", flexDirection: "column", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", height: "100%" }}>
-      {(t.advisor || t.charter || t.tier === "pro") && (
+      {(t.advisor || t.charter || ((verified || premium) && !house)) && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginBottom: "0.6rem" }}>
           {t.advisor && <StatusBadge type="advisor" />}
           {t.charter && <StatusBadge type="charter" />}
-          {t.tier === "pro" && <StatusBadge type="verified" />}
+          {verified && !house && <StatusBadge type="verified" />}
+          {premium && !house && <StatusBadge type="premium" />}
         </div>
       )}
       <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", lineHeight: 1.25 }}>{t.business_name || "Teacher"}</div>
@@ -53,9 +67,9 @@ export default function TeacherCard({ t }: { t: TeacherLike }) {
       {t.display_email && <a href={`mailto:${t.display_email}`} style={{ display: "block", fontSize: "0.95rem", color: "var(--pink-text)", fontWeight: 600, marginTop: "0.4rem", textDecoration: "none" }}>{t.display_email}</a>}
       {ig && <a href={`https://instagram.com/${ig}`} target="_blank" rel="noopener noreferrer" style={{ display: "block", fontSize: "0.95rem", color: "var(--pink-text)", fontWeight: 600, marginTop: "0.4rem", textDecoration: "none" }}>@{ig}</a>}
       {desc && <div style={{ fontSize: "1rem", color: "var(--muted)", marginTop: "0.5rem", lineHeight: 1.5 }}>{desc.slice(0, 280)}{desc.length > 280 ? "..." : ""}</div>}
-      {(t.tier === "pro" || site) && (
+      {(premium || site) && (
         <div style={{ marginTop: "auto", paddingTop: "0.9rem", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "0.7rem" }}>
-          {t.tier === "pro" && <LessonInquiry teacherId={t.id} teacherName={t.business_name || "this teacher"} />}
+          {premium && <LessonInquiry teacherId={t.id} teacherName={t.business_name || "this teacher"} />}
           {site && <a href={site} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink-text)", fontWeight: 800, textDecoration: "none" }}>Visit Website &rarr;</a>}
         </div>
       )}

@@ -71,6 +71,10 @@ keep your listing's benefits current.
 
 - To publish and manage your listing.
 - To respond to your messages and inquiries.
+- **Deliver lesson requests.** When you send a lesson request, we email your name, contact
+  details, and message directly to that teacher so they can reply. We keep no copy of your
+  message or contact details, only a delivery record (which teacher, when, and whether the
+  email sent) to spot abuse and confirm delivery.
 - To send you transactional emails related to your account, your listing, a claim you submitted,
   or a Mahj Match table (confirmations, status updates, and similar). These are separate from
   marketing email; see "Transactional email versus marketing email" below.

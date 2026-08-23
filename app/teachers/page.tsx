@@ -28,10 +28,13 @@ const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border:
 export default async function TeachersPage({ searchParams }: { searchParams: Promise<{ near?: string }> }) {
   const { near } = await searchParams;
   const supabase = createServerClient();
-  const { data } = await supabase.from("venue_listings").select("id, business_name, venue_type, city, state, description, website, instagram, display_email, logo_url, tier, created_at").eq("status", "published").neq("state", "ZZ");
+  const { data } = await supabase.from("venue_listings").select("id, business_name, venue_type, city, state, description, website, instagram, display_email, logo_url, tier, account_id, premium_until, created_at").eq("status", "published").neq("state", "ZZ");
 
+  // Same contract as the state page: the auth UUID never leaves the server,
+  // only the derived verified boolean does.
   let rows = (data || [])
-    .filter((r) => TEACHER_TYPE.test(`${r.venue_type || ""} ${r.description || ""}`) && !isFounderListing(r));
+    .filter((r) => TEACHER_TYPE.test(`${r.venue_type || ""} ${r.description || ""}`) && !isFounderListing(r))
+    .map(({ account_id, ...r }) => ({ ...r, verified: Boolean(account_id) }));
   if (near && near.trim()) {
     const n = near.trim().toLowerCase();
     rows = rows.filter((r) => nearMatches(n, r.city, r.state));

@@ -25,5 +25,6 @@ export const LAS_VEGAS_MAHJONG = {
   instructor: "Shauna Bruckman",
   tier: "pro",
   advisor: true,
+  premium_until: "2099-01-01T00:00:00Z", // house entitlement: keeps the lesson-request button working; it renders no badge, and its inquiries are never recorded in provider_leads
   created_at: "2026-01-01T00:00:00Z",
 };
