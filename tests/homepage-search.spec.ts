@@ -5,7 +5,7 @@ import { test, expect } from "@playwright/test";
 // what POST /api/ask returns, never an invented answer.
 
 const SEARCH_PLACEHOLDER = "City, state, or ZIP code";
-const ASK_PLACEHOLDER = "Ask about mahjong, games, lessons, or rules...";
+const ASK_PLACEHOLDER = "Ask where to play or how to play...";
 
 test.describe("homepage search card", () => {
   test("Find a Game is the default mode", async ({ page }) => {

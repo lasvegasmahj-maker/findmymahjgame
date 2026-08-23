@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       ok: true,
       answer: withRulesLead(
-        "I can help you find verified mahjong games, teachers, leagues, and events. Try asking something like: where can I play Saturday morning near Naples?"
+        "I can help you find reviewed mahjong games, teachers, and events, or answer American Mahjong rules questions. Try asking something like: where can I play Saturday morning near Naples? Or a rules question, like: can I use a joker in a pair?"
       ),
       results: [],
       suggestions: [

@@ -24,10 +24,10 @@ type AskResponse = {
 };
 
 const EXAMPLES = [
+  "Can I use a joker in a pair?",
   "Where can I play Saturday morning near Naples?",
-  "Find mahjong within 10 miles of Dallas",
+  "How does the Charleston work?",
   "Find an instructor near Phoenix",
-  "Are there games Wednesday evening near Atlanta?",
 ];
 
 export default function AskClient() {
@@ -69,7 +69,7 @@ export default function AskClient() {
           id="ask-q"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Where can I play Thursday evening near Dallas?"
+          placeholder="Ask about games, teachers, events, or mahjong rules..."
           maxLength={200}
           className="form-input"
           style={{ flex: "1 1 300px", minHeight: 54, fontSize: "1.05rem" }}
