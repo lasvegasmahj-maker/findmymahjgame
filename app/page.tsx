@@ -59,10 +59,12 @@ export default async function Home() {
     .filter((e) => !e.event_date || e.event_date >= _todayISO)
     .slice(0, 6);
   // Forming tables with open seats (never the nearly-full ones; see below).
+  // record_class filter keeps QA's synthetic "test" tables off the public homepage.
   const { data: formingRaw } = await supabase
     .from("tables")
     .select("id, share_code, day_of_week, time_of_day, city, seats_total")
     .eq("status", "forming")
+    .eq("record_class", "real_external")
     .order("created_at", { ascending: false })
     .limit(20);
   const forming: { share_code: string; day_of_week: string | null; time_of_day: string | null; city: string | null; total: number; filled: number }[] = [];
@@ -81,10 +83,15 @@ export default async function Home() {
       {/* HERO: kept tight so the state map arrives quickly. */}
       <section className="hero" style={{ paddingTop: "clamp(1.4rem, 4vw, 2.6rem)", paddingBottom: "1.2rem" }}>
         <h1>Find Your <em>Mahj Game</em></h1>
-        <p style={{ marginBottom: "1.2rem" }}>Search your city, ZIP code, or state to find local games, players, teachers, and events.</p>
+        <p style={{ marginBottom: "1.2rem" }}>Find where to play. Ask how to play.</p>
         <HomeSearchCard />
-        <p style={{ marginTop: "0.8rem", marginBottom: 0, fontSize: "0.9rem", color: "var(--muted)", fontWeight: 600 }}>Always free for players.</p>
       </section>
+
+      {/* DISCOVERY STRIP: one line, tiny spacing, so the map still arrives quickly. */}
+      <p data-testid="discovery-strip" style={{ textAlign: "center", padding: "0 1rem 1rem", fontSize: "1rem", lineHeight: 2 }}>
+        <span style={{ color: "var(--muted)", fontWeight: 700 }}>Explore Find My Mahj: </span>
+        <Link href="/states" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Games Near Me</Link> &middot; <Link href="/teachers" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Teachers</Link> &middot; <Link href="/events" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Events</Link> &middot; <Link href="/tournaments" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Tournaments</Link> &middot; <Link href="/travel" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Getaways</Link> &middot; <Link href="/ask" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Mahjong Rules</Link>
+      </p>
 
       {/* MAP SECTION */}
       <section className="map-section" id="map">
@@ -98,12 +105,6 @@ export default async function Home() {
           <div className="map-wrapper">
             <USMap stateCounts={stateCounts} />
           </div>
-
-          {/* Categories below the map */}
-          <p style={{ textAlign: "center", marginTop: "1.8rem", fontSize: "1rem", lineHeight: 2 }}>
-            <span style={{ color: "var(--muted)", fontWeight: 700 }}>Explore: </span>
-            <Link href="/events" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Open plays &amp; events</Link> &middot; <Link href="/teachers" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Teachers</Link> &middot; <Link href="/tournaments" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Tournaments</Link> &middot; <Link href="/leagues" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Leagues</Link> &middot; <Link href="/travel" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Getaways</Link>
-          </p>
 
         </div>
       </section>
