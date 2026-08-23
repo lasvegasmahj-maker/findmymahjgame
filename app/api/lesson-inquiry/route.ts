@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   }
 
   let body: Record<string, string> = {};
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Bad request." }, { status: 400 }); }
+  try { body = (await req.json()) || {}; } catch { return NextResponse.json({ error: "Bad request." }, { status: 400 }); }
 
   const teacherId = String(body.teacherId || "").trim();
   const name = String(body.name || "").trim().slice(0, 120);

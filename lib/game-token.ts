@@ -15,6 +15,9 @@ export function verifyGameToken(token: string): { tableId: string; answer: "yes"
     if (parts.length !== 5) return null;
     const [label, tableId, answer, expiresStr, sig] = parts;
     if (label !== "played" || (answer !== "yes" && answer !== "no")) return null;
+    // See lib/admin-auth.ts: Buffer.from(sig, "hex") truncates instead of
+    // rejecting on trailing garbage, so pin the exact digest length first.
+    if (sig.length !== 64) return null;
     const expected = crypto.createHmac("sha256", getHmacSecret()).update(`${label}:${tableId}:${answer}:${expiresStr}`).digest("hex");
     const a = Buffer.from(sig, "hex");
     const e = Buffer.from(expected, "hex");
@@ -46,6 +49,9 @@ export function verifyActionToken(token: string): { action: ActionKind; subjectI
     if (parts.length !== 5) return null;
     const [label, action, subjectId, expiresStr, sig] = parts;
     if (label !== "act" || !ACTIONS.includes(action as ActionKind)) return null;
+    // See lib/admin-auth.ts: Buffer.from(sig, "hex") truncates instead of
+    // rejecting on trailing garbage, so pin the exact digest length first.
+    if (sig.length !== 64) return null;
     const expected = crypto.createHmac("sha256", getHmacSecret()).update(`${label}:${action}:${subjectId}:${expiresStr}`).digest("hex");
     const a = Buffer.from(sig, "hex");
     const e = Buffer.from(expected, "hex");

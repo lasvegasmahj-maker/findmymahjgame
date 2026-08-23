@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
   if (!(await rateLimit(req, "admin-login", 5, 300, "strict"))) {
     return NextResponse.json({ error: "Too many attempts. Try again in a few minutes." }, { status: 429 });
   }
-  const body = await req.json().catch(() => ({}));
+  const body = (await req.json().catch(() => null)) || {};
 
   if (!process.env.ADMIN_PASSWORD) {
     return NextResponse.json({ error: "Admin login is not configured" }, { status: 500 });

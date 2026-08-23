@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   const supabase = lazyServerClient();
   if (!(await isLaunched(supabase, "payments"))) return paymentsDisabled();
 
-  const b = await req.json().catch(() => ({}));
+  const b = (await req.json().catch(() => null)) || {};
   const email = clampText(b?.email, 254).toLowerCase();
   if (!email || !isValidEmail(email)) {
     return NextResponse.json({ error: "A valid email is required to start checkout." }, { status: 400 });

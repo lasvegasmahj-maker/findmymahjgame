@@ -122,9 +122,8 @@ const PRICING_HTML = `
 
 export async function POST(req: NextRequest) {
   if (!(await rateLimit(req, "advertise-inquiry", 3, 60))) return NextResponse.json({ error: "Too many requests. Please wait a minute and try again." }, { status: 429 });
+  const raw = (await req.json().catch(() => null)) || {};
   try {
-    const raw = await req.json();
-
     if (!raw?.name || !raw?.email || !raw?.interest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }

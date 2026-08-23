@@ -20,9 +20,19 @@ export function isValidEmail(email: unknown): email is string {
 // label is not enforcement; people type full names anyway and those names land
 // on public, indexable pages. "First Last" with a multi letter surname becomes
 // "First L."; a single name or an already abbreviated one passes through.
+// This is also the account display name for Mahj Match, where a single-token or
+// letterless-surname value skips the surname-to-initial rewrite below and would
+// otherwise pass through verbatim: an email address or phone number typed as a
+// "name" would then be handed to co-invitees before mutual consent (firstNameOf
+// in lib/match/engine.ts just takes the first whitespace token), exactly the PII
+// this whole pathway exists to withhold. Reject those shapes outright instead of
+// trying to redact them.
+const EMAIL_LIKE_RE = /\S+@\S+\.\S+/;
 export function enforcePublicName(input: unknown): string {
   if (input == null) return "";
   const name = String(input).trim().replace(/\s+/g, " ");
+  if (EMAIL_LIKE_RE.test(name)) return "";
+  if ((name.match(/\d/g) || []).length >= 7) return "";
   const parts = name.split(" ");
   if (parts.length >= 2) {
     const surnameLetters = parts[parts.length - 1].replace(/[^\p{L}]/gu, "");

@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 
   if (!(await rateLimit(req, "events", 60, 60))) return ok;
 
-  const body = await req.json().catch(() => ({}));
+  const body = (await req.json().catch(() => null)) || {};
   const name = typeof body?.name === "string" ? body.name : "";
   if (!NAME_SET.has(name)) return ok;
 

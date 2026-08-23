@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   if (!profile) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
   if (profile.deactivated_at) return NextResponse.json({ error: "Account deactivated" }, { status: 403 });
 
-  const body = await req.json().catch(() => ({}));
+  const body = (await req.json().catch(() => null)) || {};
   const action = String(body?.action || "");
 
   if (action === "set_display_name") {

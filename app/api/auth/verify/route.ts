@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Too many attempts. Try again in a few minutes." }, { status: 429 });
   }
 
-  const body = await req.json().catch(() => ({}));
+  const body = (await req.json().catch(() => null)) || {};
   const tokenHash = String(body?.token_hash || "");
   const role = body?.role === "provider" ? "provider" : "player";
   if (!tokenHash) {
