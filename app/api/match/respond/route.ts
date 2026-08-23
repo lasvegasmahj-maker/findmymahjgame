@@ -132,10 +132,19 @@ async function handleAccept(req: NextRequest, userId: string, table: TableRow, s
   const canHostId = (hostFacts || []).find((f) => f.host_pref === "can_host")?.user_id || acceptedUserIds[0];
   const hostProfile = await getProfileBasics(supabase, canHostId);
 
-  await supabase
+  // Compare-and-swap so only one request forms the table. If two invitees accept
+  // the final seat at once, both can read TABLE_SIZE accepted seats, but only the
+  // update that actually flips proposed -> forming proceeds; the other sees zero
+  // rows changed and returns without re-sending confirmations or re-matching.
+  const { data: claimed, error: claimErr } = await supabase
     .from("tables")
     .update({ status: "forming", host_user_id: canHostId, host_name: hostProfile?.displayName || "Mahj Match Host" })
-    .eq("id", table.id);
+    .eq("id", table.id)
+    .eq("status", "proposed")
+    .select("id");
+  if (claimErr || !claimed || claimed.length === 0) {
+    return NextResponse.json({ ok: true, seatStatus: "accepted", tableStatus: "forming" });
+  }
   await supabase.from("table_seats").update({ is_host: true }).eq("table_id", table.id).eq("user_id", canHostId);
   await supabase.from("tables").update({ status: "confirmed", filled_at: new Date().toISOString() }).eq("id", table.id);
   await supabase.from("play_requests").update({ status: "matched" }).in("user_id", acceptedUserIds);

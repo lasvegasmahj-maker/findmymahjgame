@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { verifyActionToken } from "@/lib/game-token";
 import { clampText, isValidEmail, safeHttpUrl, escapeHtml } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";

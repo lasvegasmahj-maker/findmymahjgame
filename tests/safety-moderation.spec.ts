@@ -15,7 +15,7 @@ import { CONSENT_VERSION } from "../lib/match/consent";
 //
 // One deliberate gap: filing a harassment/unsafe/false_identity report (or any
 // report whose detail escalates) makes the report route call notify() to the
-// real hello@findmymahjgame.com inbox for real — see lib/notifications/notify.ts,
+// real hello@findmymahjgame.com inbox for real, see lib/notifications/notify.ts,
 // where only @fmg-qa.test recipients are suppressed and the founder inbox is not
 // one. A suite that runs on every push must not send that inbox a live email
 // each time, so the needs_human path is proven with the deterministic unit tests

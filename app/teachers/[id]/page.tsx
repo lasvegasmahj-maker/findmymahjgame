@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
+import ViewTracker from "@/components/analytics/view-tracker";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { headers } from "next/headers";
 import { createServerClient } from "@/lib/supabase-server";
 import { isFounderListing } from "@/lib/featured-listings";
 import { safeHttpUrl } from "@/lib/sanitize";
 import { schemaScriptProps } from "@/lib/schema";
-import { track, hostRecordClass } from "@/lib/analytics/events";
 
 export const revalidate = 600;
 export const dynamicParams = true;
@@ -74,9 +73,6 @@ export default async function TeacherProfilePage({ params }: { params: Promise<{
   const t = await getTeacher(id);
   if (!t) notFound();
 
-  const h = (await headers()).get("host");
-  void track(createServerClient(), "listing_viewed", { props: { kind: "teacher" }, recordClass: hostRecordClass(h) });
-
   const name = t.business_name || "Mahjong teacher";
   const location = [t.city, t.state].filter(Boolean).join(", ");
   const beginner = isBeginnerFriendly(`${t.venue_type || ""} ${t.description || ""}`);
@@ -103,6 +99,7 @@ export default async function TeacherProfilePage({ params }: { params: Promise<{
 
   return (
     <main style={{ maxWidth: 760, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
+      <ViewTracker kind="teacher" />
       <script {...schemaScriptProps([breadcrumb, profile])} />
 
       <nav style={{ fontSize: "0.95rem", color: "var(--muted)", marginBottom: "0.8rem" }}>

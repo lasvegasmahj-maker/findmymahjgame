@@ -268,14 +268,14 @@ export default function MahjMatchClient({ launched }: { launched: boolean }) {
           <label style={{ ...fieldLabel, marginTop: "0.9rem" }} htmlFor="mm-state">State</label>
           <input id="mm-state" required value={region} onChange={(e) => setRegion(e.target.value)} placeholder="NV" maxLength={60} style={fieldInput} />
           <label style={{ ...fieldLabel, marginTop: "0.9rem" }} htmlFor="mm-day">Day (optional, any day if left blank)</label>
-          <select id="mm-day" value={day} onChange={(e) => setDay(e.target.value)} style={fieldInput}>
+          <select id="mm-day" className="form-select" value={day} onChange={(e) => setDay(e.target.value)} style={fieldInput}>
             <option value="">Any day</option>
             {DAYS_OF_WEEK.map((d) => (
               <option key={d} value={d}>{d}</option>
             ))}
           </select>
           <label style={{ ...fieldLabel, marginTop: "0.9rem" }} htmlFor="mm-time">Time (optional, any time if left blank)</label>
-          <select id="mm-time" value={time} onChange={(e) => setTime(e.target.value)} style={fieldInput}>
+          <select id="mm-time" className="form-select" value={time} onChange={(e) => setTime(e.target.value)} style={fieldInput}>
             <option value="">Any time</option>
             {TIMES_OF_DAY.map((t) => (
               <option key={t} value={t}>{t}</option>

@@ -3,6 +3,7 @@ import { lazyServerClient } from "@/lib/supabase-server";
 import { verifyUserSessionToken, USER_COOKIE } from "@/lib/user-auth";
 import { isLaunched, canUseDarkFeature } from "@/lib/launch-gates";
 import { clampText } from "@/lib/sanitize";
+import { rateLimit } from "@/lib/rate-limit";
 
 // Listing lookup for the "claim a listing" flow. Published listings only, and only
 // the fields a claimant needs to recognize her own listing; contact details stay
@@ -10,6 +11,9 @@ import { clampText } from "@/lib/sanitize";
 const supabase = lazyServerClient();
 
 export async function GET(req: NextRequest) {
+  if (!(await rateLimit(req, "provider-search", 30, 60))) {
+    return NextResponse.json({ error: "Too many requests. Please wait a minute." }, { status: 429 });
+  }
   const session = verifyUserSessionToken(req.cookies.get(USER_COOKIE)?.value);
   if (!session) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
 
@@ -30,9 +34,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Provider claims are not open yet." }, { status: 403 });
   }
 
-  const q = clampText(req.nextUrl.searchParams.get("q") || "", 80).trim();
-  if (q.length < 2) return NextResponse.json({ results: [] });
-  const pattern = `%${q.replace(/[%_]/g, "")}%`;
+  // Strip every character that is not a letter, number, space, apostrophe, or
+  // hyphen. This removes PostgREST reserved characters (comma, dot, colon,
+  // parentheses) as well as LIKE wildcards, so the value can never inject an
+  // extra filter predicate into the .or() clause below.
+  const raw = clampText(req.nextUrl.searchParams.get("q") || "", 80);
+  const cleaned = raw.replace(/[^\p{L}\p{N}\s'-]/gu, "").trim();
+  if (cleaned.length < 2) return NextResponse.json({ results: [] });
+  const pattern = `%${cleaned}%`;
 
   const [venues, events] = await Promise.all([
     supabase

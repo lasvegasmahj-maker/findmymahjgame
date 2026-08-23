@@ -349,10 +349,10 @@ function MahjMatchSection() {
             ))}
           </div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.6rem" }}>
           <div>
             <label style={smallLbl}>Skill level</label>
-            <select value={skill} onChange={(e) => setSkill(e.target.value)} style={input}>
+            <select className="form-select" value={skill} onChange={(e) => setSkill(e.target.value)} style={input}>
               <option value="">No preference</option>
               <option value="beginner">Beginner</option>
               <option value="intermediate">Intermediate</option>
@@ -362,7 +362,7 @@ function MahjMatchSection() {
           </div>
           <div>
             <label style={smallLbl}>Style</label>
-            <select value={socialStyle} onChange={(e) => setSocialStyle(e.target.value)} style={input}>
+            <select className="form-select" value={socialStyle} onChange={(e) => setSocialStyle(e.target.value)} style={input}>
               <option value="">No preference</option>
               <option value="social">Social</option>
               <option value="competitive">Competitive</option>
@@ -371,7 +371,7 @@ function MahjMatchSection() {
           </div>
           <div>
             <label style={smallLbl}>Hosting</label>
-            <select value={hostPref} onChange={(e) => setHostPref(e.target.value)} style={input}>
+            <select className="form-select" value={hostPref} onChange={(e) => setHostPref(e.target.value)} style={input}>
               <option value="">No preference</option>
               <option value="can_host">I can host</option>
               <option value="prefer_travel">I prefer to travel</option>
@@ -380,7 +380,7 @@ function MahjMatchSection() {
           </div>
           <div>
             <label style={smallLbl}>Group</label>
-            <select value={groupPref} onChange={(e) => setGroupPref(e.target.value)} style={input}>
+            <select className="form-select" value={groupPref} onChange={(e) => setGroupPref(e.target.value)} style={input}>
               <option value="">No preference</option>
               <option value="same_group">Same group each time</option>
               <option value="new_people">New people</option>
