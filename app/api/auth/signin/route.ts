@@ -60,7 +60,6 @@ export async function POST(req: NextRequest) {
   // QA identities use an unroutable domain, so the link comes back in the response instead of
   // an email. Only reachable with an admin session, checked above.
   if (qa) {
-    void userId;
     return NextResponse.json({ ok: true, qa: true, confirmUrl });
   }
 
