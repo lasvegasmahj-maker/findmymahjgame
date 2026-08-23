@@ -38,3 +38,11 @@ export const QA_EMAIL_DOMAIN = "fmg-qa.test";
 export function isQaEmail(email: unknown): boolean {
   return typeof email === "string" && email.toLowerCase().endsWith("@" + QA_EMAIL_DOMAIN);
 }
+
+// The shared dark-launch rule: while a gate is OFF, only test-classified accounts
+// may use the feature, so the whole product can be QA-run in production without a
+// real person ever reaching an unlaunched flow. Real accounts pass only once the
+// gate flips. Every gated feature route uses this, not its own variant.
+export function canUseDarkFeature(launched: boolean, recordClass: string | null | undefined): boolean {
+  return launched || recordClass === "test";
+}

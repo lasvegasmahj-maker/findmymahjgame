@@ -99,6 +99,24 @@ export type DataQualityIssue = { check: string; count: number; detail: string };
 export async function readDataQualityIssues(supabase: SupabaseClient): Promise<DataQualityIssue[]> {
   const issues: DataQualityIssue[] = [];
 
+  // Fairness regression guard: the founder's business lives only in the labelled
+  // card. A published organic copy (like the Summerlin duplicate unpublished on
+  // 2026-08-24) must never quietly return.
+  const { data: founderRows, error: e0 } = await supabase
+    .from("venue_listings").select("id, website, instagram").eq("status", "published");
+  if (e0) throw new Error(e0.message);
+  const founderPublished = (founderRows || []).filter((r) => {
+    const ig = String(r.instagram || "").replace(/^@/, "").toLowerCase();
+    return String(r.website || "").toLowerCase().includes("lasvegasmahj.com") || ig === "lasvegasmahjong";
+  }).length;
+  if (founderPublished > 0) {
+    issues.push({
+      check: "Founder business published as an organic listing",
+      count: founderPublished,
+      detail: "The founder's business may appear only in the labelled From our founder card, never as an organic venue listing.",
+    });
+  }
+
   const { count: publishedNonRealCount, error: e1 } = await supabase
     .from("player_listings").select("id", { count: "exact", head: true })
     .eq("status", "published").neq("record_class", "real_external");
