@@ -31,7 +31,7 @@ const ADMIN_PASSWORD = ENV.ADMIN_PASSWORD || process.env.ADMIN_PASSWORD;
 if (ENV.HMAC_SECRET && !process.env.HMAC_SECRET) process.env.HMAC_SECRET = ENV.HMAC_SECRET;
 const hasSupabase = Boolean(SUPABASE_URL && SERVICE_KEY);
 const service: SupabaseClient | null = hasSupabase ? createClient(SUPABASE_URL, SERVICE_KEY) : null;
-const BASE = "http://localhost:3210";
+const BASE = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000";
 
 // A signature with attacker-appended trailing bytes that are (a) not valid hex, so
 // Buffer.from(sig, "hex") stops decoding at the real 64-char digest, and (b) contain
