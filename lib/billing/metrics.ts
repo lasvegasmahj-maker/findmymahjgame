@@ -47,7 +47,9 @@ export async function readRevenueMetrics(supabase: SupabaseClient): Promise<Reve
     .from("billing_subscriptions")
     .select("status, price_id, cancel_at_period_end, stripe_customer_id")
     .eq("record_class", "real_external");
-  if (error || !data) return { configured: true, ...ZERO };
+  // Same rule as lib/data-trust.ts: a failed read means the numbers are missing,
+  // not zero. Zero revenue during an outage would be a fake number.
+  if (error || !data) throw new Error(`billing_subscriptions read failed: ${error?.message ?? "no data"}`);
 
   const amounts = priceAmounts();
   const revenueRows = data.filter((r) => REVENUE_STATUSES.includes(r.status));

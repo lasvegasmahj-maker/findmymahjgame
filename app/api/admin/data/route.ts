@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { verifyAdminSessionToken, ADMIN_COOKIE } from "@/lib/admin-auth";
 import { lazyServerClient } from "@/lib/supabase-server";
 

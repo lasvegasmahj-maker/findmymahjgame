@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createServerClient } from "@/lib/supabase-server";
+import { isFounderListing } from "@/lib/featured-listings";
 import { safeHttpUrl } from "@/lib/sanitize";
 import { schemaScriptProps } from "@/lib/schema";
 
@@ -48,6 +49,7 @@ async function getTeacher(id: string): Promise<Teacher | null> {
   if (!data) return null;
   const t = data as Teacher;
   if (!TEACHER_TYPE.test(`${t.venue_type || ""} ${t.description || ""}`)) return null;
+  if (isFounderListing(t)) return null;
   return t;
 }
 

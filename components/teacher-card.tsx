@@ -28,7 +28,7 @@ export function FounderSpotlight({ t }: { t: TeacherLike }) {
   return (
     <aside data-testid="founder-card" aria-label="From our founder" style={{ background: "linear-gradient(135deg, rgba(233,30,140,0.04), rgba(233,30,140,0.08))", border: "2px solid rgba(233,30,140,0.3)", borderRadius: 18, padding: "1.2rem 1.3rem", marginBottom: "1.6rem" }}>
       <p style={{ fontSize: "0.8rem", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--pink-text)", margin: "0 0 0.3rem" }}>From our founder</p>
-      <p style={{ fontSize: "0.95rem", color: "var(--muted)", lineHeight: 1.5, margin: "0 0 0.9rem" }}>Find My Mahj Game was started by the teacher behind Las Vegas Mahjong. We list it here as our own business, clearly marked. It never changes how other teachers appear or rank.</p>
+      <p style={{ fontSize: "0.95rem", color: "var(--muted)", lineHeight: 1.5, margin: "0 0 0.9rem" }}>The teacher behind Las Vegas Mahjong started Find My Mahj Game. We list it here as our own business, clearly marked. It never changes how other teachers appear or rank.</p>
       <div style={{ maxWidth: 380 }}><TeacherCard t={t} /></div>
     </aside>
   );

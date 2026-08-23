@@ -10,7 +10,7 @@ import { clampText, isValidEmail } from "@/lib/sanitize";
 // configured Stripe account. Promotion codes are enabled so FINDMYMAHJGAME gives
 // teachers their first period free without a separate code path here.
 
-const SITE = "https://findmymahjgame.com";
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://findmymahjgame.com";
 
 function paymentsDisabled() {
   return NextResponse.json({ error: PAYMENTS_DISABLED_MESSAGE }, { status: 503 });
@@ -23,12 +23,13 @@ export async function POST(req: NextRequest) {
   const stripe = getStripe();
   if (!isBillingConfigured() || !stripe || !priceId) return paymentsDisabled();
 
-  const supabase = lazyServerClient();
-  if (!(await isLaunched(supabase, "payments"))) return paymentsDisabled();
-
+  // Rate limit before the gate read so unthrottled traffic never reaches the DB.
   if (!(await rateLimit(req, "billing-checkout", 5, 60))) {
     return NextResponse.json({ error: "Too many requests. Please wait a minute and try again." }, { status: 429 });
   }
+
+  const supabase = lazyServerClient();
+  if (!(await isLaunched(supabase, "payments"))) return paymentsDisabled();
 
   const b = await req.json().catch(() => ({}));
   const email = clampText(b?.email, 254).toLowerCase();
@@ -48,11 +49,11 @@ export async function POST(req: NextRequest) {
 
     // Record the intent locally so the admin dashboard can see who started checkout.
     // Stripe stays the source of financial truth; this row proves nothing about payment.
-    const { data: existing } = await supabase
-      .from("billing_customers").select("id").eq("email", email).limit(1).maybeSingle();
-    if (!existing) {
-      const { error } = await supabase.from("billing_customers").insert({ email });
-      if (error) console.error("billing/checkout: intent record failed", error.message);
+    // The partial unique index on lower(email) where stripe_customer_id is null
+    // makes concurrent starts collapse to one intent row; a duplicate is expected.
+    const { error } = await supabase.from("billing_customers").insert({ email });
+    if (error && error.code !== "23505") {
+      console.error("billing/checkout: intent record failed", error.message);
     }
 
     return NextResponse.json({ url: session.url });

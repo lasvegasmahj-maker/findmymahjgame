@@ -64,7 +64,7 @@ export default function CruiseBoard({ posts }: { posts: CruisePost[] }) {
         <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.5rem", color: "var(--navy)", margin: "0 0 0.3rem" }}>Post your cruise</h2>
         {pStatus === "done" ? (
           <div style={{ background: "rgba(46,201,92,0.1)", border: "2px solid #2ec95c", borderRadius: 14, padding: "1.3rem", textAlign: "center" }}>
-            <p style={{ fontSize: "1.1rem", color: "#1a6e3a", fontWeight: 800, lineHeight: 1.5, margin: 0 }}>Thanks, we got your sailing! It appears on the board after a quick review, usually within a day. Once it is live, other players sailing with you can send you a request, and it comes straight to your email.</p>
+            <p style={{ fontSize: "1.1rem", color: "#1a6e3a", fontWeight: 800, lineHeight: 1.5, margin: 0 }}>Thanks, we got your sailing! It appears on the board after a quick review; we check new posts regularly. Once it is live, other players sailing with you can send you a request, and it comes straight to your email.</p>
           </div>
         ) : (
           <form onSubmit={submitPost}>

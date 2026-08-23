@@ -20,6 +20,10 @@ create table if not exists public.billing_customers (
 );
 alter table public.billing_customers enable row level security;
 create index if not exists billing_customers_email_idx on public.billing_customers (lower(email));
+-- One intent row per email until Stripe assigns a customer id, so concurrent
+-- checkout starts cannot create duplicates.
+create unique index if not exists billing_customers_intent_unique
+  on public.billing_customers (lower(email)) where stripe_customer_id is null;
 
 comment on table public.billing_customers is
   'Local mirror of Stripe customers. Stripe is the source of financial truth; this table exists for reporting and email-to-customer joins, never as proof of payment.';
@@ -33,6 +37,9 @@ create table if not exists public.billing_subscriptions (
   price_id text,
   current_period_end timestamptz,
   cancel_at_period_end boolean default false,
+  -- Stripe does not guarantee webhook order; the newest event's created time is
+  -- kept here so a delayed older event can never overwrite fresher state.
+  last_event_at timestamptz,
   -- Which directory listing this subscription pays for, once known.
   listing_table text,
   listing_id uuid,
@@ -56,7 +63,12 @@ create table if not exists public.billing_events (
   stripe_event_id text unique not null,
   type text not null,
   payload_summary text,
-  processed_at timestamptz default now()
+  -- Processing state lives in the row, not in its existence: a claim row with
+  -- processed=false means an earlier attempt died mid-flight, and the webhook
+  -- reprocesses it on Stripe's retry instead of answering "duplicate".
+  processed boolean not null default false,
+  received_at timestamptz not null default now(),
+  processed_at timestamptz
 );
 alter table public.billing_events enable row level security;
 

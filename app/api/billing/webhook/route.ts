@@ -25,15 +25,32 @@ function refId(ref: string | { id?: string } | null | undefined): string | null 
   return ref?.id ?? null;
 }
 
-async function upsertSubscription(supabase: SupabaseClient, sub: Stripe.Subscription) {
+async function upsertSubscription(supabase: SupabaseClient, sub: Stripe.Subscription, eventCreated: number) {
+  const customerId = refId(sub.customer);
+  // A subscription event without a customer is malformed; fail loudly so Stripe
+  // retries instead of writing a mirror row that joins to nothing.
+  if (!customerId) throw new Error(`subscription ${sub.id} arrived without a customer reference`);
+
+  // Stripe does not guarantee delivery order: skip if the mirror already holds
+  // state from a newer event, so a delayed update cannot resurrect old status.
+  const eventAt = new Date(eventCreated * 1000).toISOString();
+  const { data: existing, error: readError } = await supabase
+    .from("billing_subscriptions")
+    .select("last_event_at")
+    .eq("stripe_subscription_id", sub.id)
+    .maybeSingle();
+  if (readError) throw new Error(`billing_subscriptions read failed: ${readError.message}`);
+  if (existing?.last_event_at && existing.last_event_at >= eventAt) return;
+
   const { error } = await supabase.from("billing_subscriptions").upsert(
     {
       stripe_subscription_id: sub.id,
-      stripe_customer_id: refId(sub.customer) ?? "",
+      stripe_customer_id: customerId,
       status: sub.status,
       price_id: sub.items?.data?.[0]?.price?.id ?? null,
       current_period_end: readPeriodEnd(sub),
       cancel_at_period_end: Boolean(sub.cancel_at_period_end),
+      last_event_at: eventAt,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "stripe_subscription_id" }
@@ -85,7 +102,11 @@ export async function POST(req: Request) {
 
   const supabase = lazyServerClient();
 
-  // Idempotency: the unique stripe_event_id makes Stripe redeliveries no-ops.
+  // Idempotency via processing state, not row existence: the claim row is inserted
+  // unprocessed, marked processed only after the handlers succeed, and a redelivery
+  // of a still-unprocessed event runs the (idempotent) handlers again instead of
+  // being swallowed as a duplicate. A crash between claim and completion therefore
+  // cannot permanently drop an event.
   const object = event.data.object as { id?: string };
   const { error: ledgerError } = await supabase.from("billing_events").insert({
     stripe_event_id: event.id,
@@ -94,10 +115,23 @@ export async function POST(req: Request) {
   });
   if (ledgerError) {
     if (ledgerError.code === "23505") {
-      return NextResponse.json({ received: true, duplicate: true });
+      const { data: claim, error: claimError } = await supabase
+        .from("billing_events")
+        .select("processed")
+        .eq("stripe_event_id", event.id)
+        .maybeSingle();
+      if (claimError) {
+        console.error("billing/webhook: claim re-check failed", claimError.message);
+        return NextResponse.json({ error: "Event could not be verified" }, { status: 500 });
+      }
+      if (claim?.processed) {
+        return NextResponse.json({ received: true, duplicate: true });
+      }
+      // Unprocessed claim: an earlier attempt died mid-flight; fall through and process.
+    } else {
+      console.error("billing/webhook: event ledger insert failed", ledgerError.message);
+      return NextResponse.json({ error: "Event could not be recorded" }, { status: 500 });
     }
-    console.error("billing/webhook: event ledger insert failed", ledgerError.message);
-    return NextResponse.json({ error: "Event could not be recorded" }, { status: 500 });
   }
 
   try {
@@ -108,7 +142,7 @@ export async function POST(req: Request) {
       case "customer.subscription.created":
       case "customer.subscription.updated":
       case "customer.subscription.deleted":
-        await upsertSubscription(supabase, event.data.object as Stripe.Subscription);
+        await upsertSubscription(supabase, event.data.object as Stripe.Subscription, event.created);
         break;
       case "invoice.payment_failed": {
         // Mark the failure immediately; the authoritative status still arrives via
@@ -132,10 +166,21 @@ export async function POST(req: Request) {
         break;
     }
   } catch (e) {
-    // Release the idempotency claim so Stripe's retry is not swallowed as a duplicate.
-    await supabase.from("billing_events").delete().eq("stripe_event_id", event.id);
+    // The claim row stays unprocessed, so Stripe's retry reprocesses instead of
+    // being answered as a duplicate. Nothing to clean up, nothing to lose.
     console.error("billing/webhook: processing failed", e instanceof Error ? e.message : e);
     return NextResponse.json({ error: "Event processing failed" }, { status: 500 });
+  }
+
+  const { error: doneError } = await supabase
+    .from("billing_events")
+    .update({ processed: true, processed_at: new Date().toISOString() })
+    .eq("stripe_event_id", event.id);
+  if (doneError) {
+    // Handlers succeeded but the completion mark failed; the retry will rerun the
+    // idempotent handlers and try the mark again. Report failure so Stripe retries.
+    console.error("billing/webhook: completion mark failed", doneError.message);
+    return NextResponse.json({ error: "Event processing incomplete" }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });

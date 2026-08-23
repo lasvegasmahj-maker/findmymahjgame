@@ -67,7 +67,7 @@ const FAQ_ITEMS: FaqItem[] = [
   },
   {
     q: "Who runs Find My Mahj Game?",
-    a: "Find My Mahj Game is an independent national platform for helping players find games, teachers, and community. Our founder also owns Las Vegas Mahjong, a teaching business in Las Vegas. We are open about that: her business appears only in a clearly labelled card, never mixed into search results, and every teacher in every state, including Nevada, is listed and ranked the same way. Our goal is simple: help more people find a seat at a table near them.",
+    a: "Find My Mahj Game is an independent national platform for helping players find games, teachers, and community. Our founder also owns Las Vegas Mahjong, a teaching business in Las Vegas. We are open about that: her business appears only in a clearly labeled card, never mixed into search results, and we list and rank every teacher in every state, including Nevada, the same way. Our goal is simple: help more people find a seat at a table near them.",
     links: [{ href: "/about", label: "More about us" }],
   },
   {
