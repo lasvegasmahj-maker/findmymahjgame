@@ -180,8 +180,11 @@ test.describe("source pins", () => {
   });
 
   test("ownership is only ever granted by writing account_id on the listing, by system auto-approval or by admin approval", () => {
+    // The self-claim write also starts the 90-day Premium trial (approved model,
+    // 2026-08-23); the admin route starts it in a separate premium_until-guarded
+    // write so an ownership transfer never restarts the trial.
     const claims = readFileSync(join(__dirname, "..", "app/api/claims/route.ts"), "utf8");
-    expect(claims).toMatch(/update\(\{\s*account_id:\s*session\.userId\s*\}\)/);
+    expect(claims).toMatch(/update\(\{\s*account_id:\s*session\.userId,\s*premium_until:\s*trialUntilFrom/);
     const admin = readFileSync(join(__dirname, "..", "app/api/admin/claims/route.ts"), "utf8");
     expect(admin).toMatch(/update\(\{\s*account_id:\s*claimRow\.profile_id\s*\}\)/);
   });
