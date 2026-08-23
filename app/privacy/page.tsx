@@ -32,6 +32,7 @@ export default function PrivacyPage() {
             <ul style={{ paddingLeft: "1.5rem", marginTop: "0.5rem" }}>
               <li>Publish and manage your player or venue listing</li>
               <li>Respond to your messages and inquiries</li>
+              <li>Deliver lesson requests: when you send a lesson request to a teacher, your name, contact details, and message are emailed directly to that teacher so they can reply to you. We do not keep a copy of your message or contact details from that request; we keep only a delivery record (which teacher, when, and whether the email sent) to spot abuse and confirm delivery</li>
               <li>Send transactional emails related to your listing (confirmations, updates)</li>
               <li>Improve the directory based on usage patterns</li>
             </ul>
