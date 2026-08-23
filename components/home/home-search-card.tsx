@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Search, Sparkles } from "lucide-react";
 import SearchBox from "@/components/home/search-box";
 import styles from "./home-search-card.module.css";
 
@@ -25,37 +26,69 @@ type AskResponse = {
   error?: string;
 };
 
-type Mode = "find" | "ask";
+// Verified against production /api/ask: rules questions with a high-confidence
+// answer, and directory questions with real results. Never substitute an
+// unverified question here.
+const ROTATING_QUESTIONS = [
+  "Can I use a joker in a pair?",
+  "Where can I play Saturday morning near Naples?",
+  "How does the Charleston work?",
+  "Find an instructor near Phoenix",
+];
+
+const CHIPS = ["Can I use a joker in a pair?", "Find an instructor near me", "How does the Charleston work?"];
+
+const ROTATE_MS = 3500;
+const FADE_MS = 300;
+
+function subscribeReducedMotion(onChange: () => void) {
+  const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+}
+function getReducedMotionSnapshot() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+function getReducedMotionServerSnapshot() {
+  return false;
+}
 
 export default function HomeSearchCard() {
-  const [mode, setMode] = useState<Mode>("find");
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
   const [resp, setResp] = useState<AskResponse | null>(null);
   const [askedQ, setAskedQ] = useState("");
-  const findTabRef = useRef<HTMLButtonElement>(null);
-  const askTabRef = useRef<HTMLButtonElement>(null);
 
-  function switchMode(next: Mode, moveFocus = false) {
-    setMode(next);
-    if (moveFocus) (next === "find" ? findTabRef : askTabRef).current?.focus();
+  const reducedMotion = useSyncExternalStore(subscribeReducedMotion, getReducedMotionSnapshot, getReducedMotionServerSnapshot);
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [fading, setFading] = useState(false);
+  const [focused, setFocused] = useState(false);
+  // Once true this never resets: the rotation is a discovery aid for a blank
+  // field, not something that should reappear after someone has engaged.
+  const [rotationStopped, setRotationStopped] = useState(false);
+  const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (reducedMotion || rotationStopped) return;
+    const id = setInterval(() => {
+      setFading(true);
+      fadeTimeoutRef.current = setTimeout(() => {
+        setPlaceholderIndex((i) => (i + 1) % ROTATING_QUESTIONS.length);
+        setFading(false);
+      }, FADE_MS);
+    }, ROTATE_MS);
+    return () => {
+      clearInterval(id);
+      if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
+    };
+  }, [reducedMotion, rotationStopped]);
+
+  function stopRotation() {
+    if (!rotationStopped) setRotationStopped(true);
   }
 
-  // Standard tabs keyboard pattern: arrows move between the two tabs and
-  // selection follows focus.
-  function onTablistKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "ArrowLeft" || e.key === "Home") {
-      e.preventDefault();
-      switchMode("find", true);
-    } else if (e.key === "ArrowRight" || e.key === "End") {
-      e.preventDefault();
-      switchMode("ask", true);
-    }
-  }
-
-  async function ask(e: React.FormEvent) {
-    e.preventDefault();
-    const query = q.trim();
+  async function submitAsk(question: string) {
+    const query = question.trim();
     if (!query || busy) return;
     setBusy(true);
     setResp(null);
@@ -75,65 +108,96 @@ export default function HomeSearchCard() {
     setBusy(false);
   }
 
+  function onAskSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    submitAsk(q);
+  }
+
+  function onAskChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setQ(e.target.value);
+    stopRotation();
+  }
+
+  function onAskFocus() {
+    setFocused(true);
+    stopRotation();
+  }
+
+  function onChipClick(text: string) {
+    setQ(text);
+    stopRotation();
+    submitAsk(text);
+  }
+
+  const overlayVisible = !rotationStopped && !focused && q.length === 0;
+  const overlayText = reducedMotion ? ROTATING_QUESTIONS[0] : ROTATING_QUESTIONS[placeholderIndex];
+
   return (
     <div>
-      <div className={styles.card}>
-        <div role="tablist" aria-label="Search mode" className={styles.tabs} onKeyDown={onTablistKeyDown}>
-          <button
-            ref={findTabRef}
-            type="button"
-            role="tab"
-            id="home-tab-find"
-            aria-selected={mode === "find"}
-            aria-controls="home-panel-find"
-            tabIndex={mode === "find" ? 0 : -1}
-            className={styles.tab}
-            onClick={() => switchMode("find")}
-          >
-            Find a Game
-          </button>
-          <button
-            ref={askTabRef}
-            type="button"
-            role="tab"
-            id="home-tab-ask"
-            aria-selected={mode === "ask"}
-            aria-controls="home-panel-ask"
-            tabIndex={mode === "ask" ? 0 : -1}
-            className={styles.tab}
-            onClick={() => switchMode("ask")}
-          >
-            Ask Find My Mahj
-          </button>
+      <div className={styles.grid}>
+        <div className={styles.card}>
+          <div className={styles.cardHead}>
+            <Search size={18} aria-hidden="true" className={styles.cardIcon} />
+            <div>
+              <h2 className={styles.cardTitle}>Find a Game</h2>
+              <p className={styles.cardSub}>Find games near you</p>
+            </div>
+          </div>
+          <SearchBox />
+          <p className={styles.freeLine}>Always free for players.</p>
         </div>
 
-        {/* Both panels stay mounted so switching modes never wipes what was typed. */}
-        <div role="tabpanel" id="home-panel-find" aria-labelledby="home-tab-find" hidden={mode !== "find"}>
-          <SearchBox />
-        </div>
-        <div role="tabpanel" id="home-panel-ask" aria-labelledby="home-tab-ask" hidden={mode !== "ask"}>
-          <form onSubmit={ask} className={styles.askRow}>
+        <div className={`${styles.card} ${styles.askCard}`}>
+          <div className={styles.cardHead}>
+            <Sparkles size={18} aria-hidden="true" className={styles.askIcon} />
+            <div>
+              <h2 className={styles.cardTitle}>Ask Find My Mahj</h2>
+              <p className={styles.cardSub}>Your mahjong concierge</p>
+            </div>
+          </div>
+
+          <form onSubmit={onAskSubmit} className={styles.askRow}>
             <label htmlFor="home-ask-q" className={styles.srOnly}>
               Ask where to play or how to play
             </label>
-            <input
-              id="home-ask-q"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Ask where to play or how to play..."
-              maxLength={200}
-              className={styles.askInput}
-            />
+            <div className={styles.askInputWrap}>
+              <input
+                id="home-ask-q"
+                value={q}
+                onChange={onAskChange}
+                onFocus={onAskFocus}
+                onBlur={() => setFocused(false)}
+                placeholder=""
+                maxLength={200}
+                className={styles.askInput}
+              />
+              <span
+                aria-hidden="true"
+                data-testid="ask-placeholder-overlay"
+                className={styles.askPlaceholderOverlay}
+                style={{ opacity: overlayVisible && !fading ? 1 : 0, visibility: overlayVisible ? "visible" : "hidden" }}
+              >
+                {overlayText}
+              </span>
+            </div>
             <button type="submit" disabled={busy} className={styles.askBtn}>
               {busy ? "Searching..." : "Ask"}
             </button>
           </form>
+
+          <div className={styles.chips}>
+            {CHIPS.map((c) => (
+              <button key={c} type="button" onClick={() => onChipClick(c)} className={styles.chip}>
+                {c}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       <div role="status" aria-live="polite">
-        {mode === "ask" && busy && <p className={styles.askStatus}>Looking that up...</p>}
-        {mode === "ask" && !busy && resp && (
+        {busy && <p className={styles.askStatus}>Looking that up...</p>}
+        {!busy && resp && (
           <div className={styles.answer}>
             <p className={styles.answerText}>{resp.error || resp.answer}</p>
             {resp.results.length > 0 && (

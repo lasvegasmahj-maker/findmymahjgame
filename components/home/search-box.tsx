@@ -52,6 +52,13 @@ export default function SearchBox() {
     const raw = query.trim();
     if (!raw) return;
     setMsg("");
+    // Fire-and-forget: /api/events ships from a parallel lane, so a 404 today is
+    // expected and must never block or surface to the search flow.
+    fetch("/api/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "search_performed", props: { kind: "homepage" } }),
+    }).catch(() => {});
     // A 5-digit ZIP is resolved to its city/state server-side, then routed there.
     if (/^\d{5}$/.test(raw)) {
       try {

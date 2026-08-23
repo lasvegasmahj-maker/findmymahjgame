@@ -1,28 +1,19 @@
 import { test, expect } from "@playwright/test";
 
-// The homepage search card has two modes: Find a Game (default) and Ask Find My Mahj.
-// Find a Game must keep the exact destination it always had, and Ask must show only
-// what POST /api/ask returns, never an invented answer.
+// The homepage hero shows two always-visible action cards: Find a Game and
+// Ask Find My Mahj. Find must keep the exact destination it always had, and
+// Ask must show only what POST /api/ask returns, never an invented answer.
 
 const SEARCH_PLACEHOLDER = "City, state, or ZIP code";
-const ASK_PLACEHOLDER = "Ask where to play or how to play...";
+const ASK_LABEL = "Ask where to play or how to play";
 
 test.describe("homepage search card", () => {
-  test("Find a Game is the default mode", async ({ page }) => {
+  test("both cards are visible with no mode switching", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("tab", { name: "Find a Game" })).toHaveAttribute("aria-selected", "true");
     await expect(page.getByPlaceholder(SEARCH_PLACEHOLDER)).toBeVisible();
-    await expect(page.getByPlaceholder(ASK_PLACEHOLDER)).toBeHidden();
-  });
-
-  test("switching modes shows Ask and preserves the search input", async ({ page }) => {
-    await page.goto("/");
-    await page.getByPlaceholder(SEARCH_PLACEHOLDER).fill("Dallas");
-    await page.getByRole("tab", { name: "Ask Find My Mahj" }).click();
-    await expect(page.getByPlaceholder(ASK_PLACEHOLDER)).toBeVisible();
-    await expect(page.getByPlaceholder(SEARCH_PLACEHOLDER)).toBeHidden();
-    await page.getByRole("tab", { name: "Find a Game" }).click();
-    await expect(page.getByPlaceholder(SEARCH_PLACEHOLDER)).toHaveValue("Dallas");
+    await expect(page.getByLabel(ASK_LABEL)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Find a Game", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Ask Find My Mahj" })).toBeVisible();
   });
 
   test("search submits to the same state destination as before", async ({ page }) => {
@@ -37,7 +28,7 @@ test.describe("homepage search card", () => {
     );
   });
 
-  test("Ask mode posts to /api/ask and renders the answer with up to 3 links", async ({ page }) => {
+  test("Ask posts to /api/ask and renders the answer with up to 3 links", async ({ page }) => {
     let posted: unknown = null;
     await page.route("**/api/ask", async (route) => {
       posted = route.request().postDataJSON();
@@ -61,8 +52,7 @@ test.describe("homepage search card", () => {
       });
     });
     await page.goto("/");
-    await page.getByRole("tab", { name: "Ask Find My Mahj" }).click();
-    await page.getByPlaceholder(ASK_PLACEHOLDER).fill("Where can I play near Dallas?");
+    await page.getByLabel(ASK_LABEL).fill("Where can I play near Dallas?");
     await page.getByRole("button", { name: "Ask", exact: true }).click();
 
     const status = page.getByRole("status");
@@ -78,23 +68,11 @@ test.describe("homepage search card", () => {
   test("a failed Ask request shows the fixed error, not an invented answer", async ({ page }) => {
     await page.route("**/api/ask", (route) => route.abort());
     await page.goto("/");
-    await page.getByRole("tab", { name: "Ask Find My Mahj" }).click();
-    await page.getByPlaceholder(ASK_PLACEHOLDER).fill("Where can I play near Dallas?");
+    await page.getByLabel(ASK_LABEL).fill("Where can I play near Dallas?");
     await page.getByRole("button", { name: "Ask", exact: true }).click();
     const status = page.getByRole("status");
     await expect(status.getByText("Something went wrong. Try again, or browse the Events page.")).toBeVisible();
     await expect(status.locator("ul li")).toHaveCount(0);
-  });
-
-  test("mode control works with arrow keys", async ({ page }) => {
-    await page.goto("/");
-    await page.getByRole("tab", { name: "Find a Game" }).focus();
-    await page.keyboard.press("ArrowRight");
-    await expect(page.getByRole("tab", { name: "Ask Find My Mahj" })).toHaveAttribute("aria-selected", "true");
-    await expect(page.getByPlaceholder(ASK_PLACEHOLDER)).toBeVisible();
-    await page.keyboard.press("ArrowLeft");
-    await expect(page.getByRole("tab", { name: "Find a Game" })).toHaveAttribute("aria-selected", "true");
-    await expect(page.getByPlaceholder(SEARCH_PLACEHOLDER)).toBeVisible();
   });
 
   test("/ask prefills the question from ?q=", async ({ page }) => {
