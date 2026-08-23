@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { lazyServerClient } from "@/lib/supabase-server";
-import { track, EVENT_NAMES, type EventName, type RecordClass } from "@/lib/analytics/events";
+import { track, hostRecordClass, EVENT_NAMES, type EventName, type RecordClass } from "@/lib/analytics/events";
 import { verifyUserSessionToken, USER_COOKIE } from "@/lib/user-auth";
 import { rateLimit } from "@/lib/rate-limit";
 
@@ -13,6 +13,7 @@ const NAME_SET = new Set<string>(EVENT_NAMES);
 const MAX_SESSION_KEY = 128;
 
 async function resolveRecordClass(req: NextRequest): Promise<RecordClass> {
+  if (hostRecordClass(req.headers.get("host")) === "test") return "test";
   const session = verifyUserSessionToken(req.cookies.get(USER_COOKIE)?.value);
   if (!session) return "real_external";
   try {

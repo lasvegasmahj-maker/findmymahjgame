@@ -9,7 +9,7 @@ import { formatDistance } from "@/lib/geo";
 import { whenLabel } from "@/lib/event-display";
 import { safeHttpUrl } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
-import { track, type RecordClass } from "@/lib/analytics/events";
+import { track, type RecordClass, hostRecordClass } from "@/lib/analytics/events";
 import { verifyUserSessionToken, USER_COOKIE } from "@/lib/user-auth";
 
 // Ask Find My Mahj. The question is interpreted into filters, deterministic search runs
@@ -60,6 +60,8 @@ async function composeRulesAnswer(rules: RulesLookupResult, question: string): P
 // profile is classified test (the admin-driven QA walkthrough), so QA traffic run against
 // this route in production never inflates real ask numbers.
 async function resolveAskRecordClass(req: NextRequest): Promise<RecordClass> {
+  const hostClass = hostRecordClass(req.headers.get("host"));
+  if (hostClass === "test") return "test";
   const session = verifyUserSessionToken(req.cookies.get(USER_COOKIE)?.value);
   if (!session) return "real_external";
   try {

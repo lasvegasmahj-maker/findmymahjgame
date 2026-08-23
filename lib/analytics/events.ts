@@ -53,6 +53,18 @@ const MAX_PROP_STRING = 64;
 
 export type RecordClass = "real_external" | "test" | "internal" | "seed_demo";
 
+// Only traffic to the real production host counts as real. Playwright, CI, local
+// dev, and Vercel preview deploys all hit some other host, so their events land as
+// test and can never contaminate a real analytics funnel. A signed-in test account
+// still wins (it is already test). This is deterministic and needs no header the
+// client could spoof into the real bucket.
+const PRODUCTION_HOST = "findmymahjgame.com";
+
+export function hostRecordClass(host: string | null | undefined): RecordClass {
+  const h = (host || "").toLowerCase().split(":")[0];
+  return h === PRODUCTION_HOST || h === `www.${PRODUCTION_HOST}` ? "real_external" : "test";
+}
+
 export function scrubProps(props: Record<string, unknown> | undefined): Record<string, string | number | boolean> {
   const out: Record<string, string | number | boolean> = {};
   if (!props) return out;
