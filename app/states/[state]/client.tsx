@@ -528,7 +528,7 @@ export default function StatePageClient({ stateData, players, events, venues, in
                   >
                     {connectForm.submitting ? "Sending..." : "Send Connection Request →"}
                   </button>
-                  <p style={{ fontSize: "0.75rem", color: "var(--muted)", textAlign: "center", marginTop: "0.8rem" }}>Free for players. Your email is never shown publicly or sold. Your request goes straight to {connectForm.player.name.split(" ")[0]}, who can reply to you directly.
+                  <p style={{ fontSize: "0.75rem", color: "var(--muted)", textAlign: "center", marginTop: "0.8rem" }}>Free for players. Your email is never shown publicly or sold. Your request goes straight to {connectForm.player.name.split(" ")[0]}, who can reply to you directly. We keep your name and email so that reply can reach you.
                   </p>
                 </form>
               </>

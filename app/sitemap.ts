@@ -73,11 +73,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
 
     // Teacher profiles mirror the gating in app/teachers/[id]/page.tsx:
-    // published venue rows that read as instruction, outside Nevada (Nevada
-    // lessons route to Las Vegas Mahjong).
+    // published venue rows that read as instruction, every state ranked alike.
     const TEACHER_TYPE = /instructor|teacher|lesson|studio|school|class/i;
     for (const t of ve.data || []) {
-      if (t.state === "NV") continue;
       if (!TEACHER_TYPE.test(`${t.venue_type || ""} ${t.description || ""}`)) continue;
       const ts = t.updated_at || t.created_at;
       teacherPages.push({

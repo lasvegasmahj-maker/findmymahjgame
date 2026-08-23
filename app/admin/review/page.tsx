@@ -5,7 +5,7 @@ import { safeHttpUrl } from "@/lib/sanitize";
 import { parseSchedule } from "@/lib/schedule";
 import { sourceHost, byReviewOrder } from "@/lib/review-queue";
 
-type Tab = "inquiries" | "players" | "venues" | "events" | "ads" | "ambassadors";
+type Tab = "inquiries" | "players" | "venues" | "events" | "ads" | "ambassadors" | "cruise";
 
 interface Inquiry {
   id: string;
@@ -71,6 +71,18 @@ interface AdListing {
   tier: string;
   status: string;
   contact_email: string;
+  created_at: string;
+}
+
+interface CruisePost {
+  id: string;
+  name: string;
+  cruise_line: string;
+  ship: string | null;
+  depart_date: string;
+  return_date: string | null;
+  skill_level: string;
+  status: string;
   created_at: string;
 }
 
@@ -233,6 +245,7 @@ export default function AdminPage() {
   const [events, setEvents] = useState<EventListing[]>([]);
   const [ads, setAds] = useState<AdListing[]>([]);
   const [ambassadors, setAmbassadors] = useState<Ambassador[]>([]);
+  const [cruisePosts, setCruisePosts] = useState<CruisePost[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [sourceFilter, setSourceFilter] = useState("all");
@@ -322,6 +335,9 @@ export default function AdminPage() {
       setEvents(byReviewOrder(items as EventListing[]));
     } else if (tab === "ads") {
       setAds(items as AdListing[]);
+    } else if (tab === "cruise") {
+      const order: Record<string, number> = { pending_review: 0, flagged: 1, published: 2 };
+      setCruisePosts((items as CruisePost[]).slice().sort((a, b) => (order[a.status] ?? 3) - (order[b.status] ?? 3)));
     } else if (tab === "ambassadors") {
       const order: Record<string, number> = { new: 0, contacted: 1, approved: 2, declined: 3 };
       setAmbassadors((items as Ambassador[]).slice().sort((a, b) => (order[a.status] ?? 4) - (order[b.status] ?? 4)));
@@ -614,6 +630,7 @@ export default function AdminPage() {
           { id: "events" as Tab, label: "Events", icon: "🎫" },
           { id: "ads" as Tab, label: "Ads", icon: "📢" },
           { id: "ambassadors" as Tab, label: "Ambassadors", icon: "🤝" },
+          { id: "cruise" as Tab, label: "Cruise", icon: "🚢" },
         ]).map((t) => (
           <button
             key={t.id}
@@ -855,6 +872,43 @@ export default function AdminPage() {
                 ))}
               </tbody>
             </table>
+          )}
+        </div>
+      )}
+
+      {/* CRUISE TAB */}
+      {!loading && tab === "cruise" && (
+        <div>
+          {cruisePosts.length === 0 ? (
+            <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 16, padding: "3rem", textAlign: "center" }}>
+              <p style={{ color: "var(--muted)" }}>No cruise companion posts yet. New posts wait here for review before they appear on /cruise.</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              {cruisePosts.map((c) => (
+                <div key={c.id} style={{ background: "white", border: "1px solid var(--border)", borderRadius: 12, padding: "1.5rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.6rem" }}>
+                    <strong style={{ color: "var(--navy)", fontSize: "1rem" }}>{c.name}</strong>
+                    <StatusBadge status={c.status} />
+                  </div>
+                  <p style={{ fontSize: "0.85rem", color: "var(--muted)", margin: "0 0 0.8rem" }}>
+                    {[c.cruise_line, c.ship].filter(Boolean).join(" - ")} · departs {formatDate(c.depart_date)}{c.return_date ? `, returns ${formatDate(c.return_date)}` : ""} · skill: {c.skill_level}
+                  </p>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", fontSize: "0.78rem", flexWrap: "wrap" }}>
+                    <span style={{ color: "var(--muted)" }}>{formatDate(c.created_at)}</span>
+                    {(c.status === "pending_review" || c.status === "flagged") && (
+                      <button onClick={() => updateStatus("cruise_posts", c.id, "published")} style={{ background: "var(--green)", color: "white", border: "none", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.75rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Approve</button>
+                    )}
+                    {c.status === "published" && (
+                      <button onClick={() => updateStatus("cruise_posts", c.id, "flagged")} style={{ background: "#fef3c7", border: "1px solid #f5c842", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.75rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>Flag</button>
+                    )}
+                    {c.status !== "rejected" && (
+                      <button onClick={() => updateStatus("cruise_posts", c.id, "rejected")} style={{ background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: 4, padding: "0.3rem 0.8rem", fontSize: "0.75rem", cursor: "pointer", fontWeight: 600, fontFamily: "'DM Sans', sans-serif", color: "#dc2626" }}>Reject</button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}
