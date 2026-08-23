@@ -20,10 +20,13 @@ closed-gate default already in place; nothing blocks engineering.
 6. Advertiser terms page still describes the old $19-$79 pricing; the policy
    drafts propose replacements. Needs owner approval before publishing.
 
-7. RESOLVED 2026-08-23 (owner-approved): the 16 paid-tier-without-payment
-   listings were reset to free. Prior tiers preserved in listing_tier_corrections;
-   reconciliation guard tightened to exclude founding-member entitlements. Revenue
-   and paying-member counts unchanged at 0.
+7. RESOLVED 2026-08-23 (owner-approved): unsupported paid-tier listings reset to
+   free. The owner flagged 16 on the directory (venue_listings); applying the same
+   approved data-truth rule surfaced 35 more on event_listings with the identical
+   issue, so all 51 were corrected. Prior tiers preserved in
+   listing_tier_corrections (16 venue + 35 event). Reconciliation guard now covers
+   both tables and excludes founding-member entitlements. Revenue and paying-member
+   counts unchanged at 0.
 
 8. The legacy "quick table" share-link feature (app/api/tables/create, claim,
    find, played, run-it-back) predates the account and consent system and has no

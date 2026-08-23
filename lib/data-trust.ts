@@ -143,18 +143,23 @@ export async function readDataQualityIssues(supabase: SupabaseClient): Promise<D
   // founding-member entitlement. Founding members legitimately carry a tier by
   // documented entitlement, so they are excluded; a real payment carries a
   // stripe_payment_id. Anything else is a paid-looking row that never paid, and it
-  // must never silently reappear (16 such rows were corrected 2026-08-23, audited
-  // in listing_tier_corrections).
-  const { count: paidWithoutPayment, error: e3 } = await supabase
-    .from("venue_listings").select("id", { count: "exact", head: true })
-    .not("tier", "in", '("free")').not("tier", "is", null)
-    .is("stripe_payment_id", null).not("is_founding_member", "is", true);
-  if (e3) throw new Error(e3.message);
-  if ((paidWithoutPayment ?? 0) > 0) {
+  // must never silently reappear (the historical set was corrected 2026-08-23 and
+  // audited in listing_tier_corrections). Checked on both listing tables that
+  // carry a tier and a payment id.
+  let paidWithoutPayment = 0;
+  for (const table of ["venue_listings", "event_listings"] as const) {
+    const { count, error } = await supabase
+      .from(table).select("id", { count: "exact", head: true })
+      .not("tier", "in", '("free")').not("tier", "is", null)
+      .is("stripe_payment_id", null).not("is_founding_member", "is", true);
+    if (error) throw new Error(error.message);
+    paidWithoutPayment += count ?? 0;
+  }
+  if (paidWithoutPayment > 0) {
     issues.push({
       check: "Paid-looking tier with no payment record",
-      count: paidWithoutPayment ?? 0,
-      detail: "venue_listings with a non-free tier but no payment and no founding-member entitlement. A tier field is not revenue.",
+      count: paidWithoutPayment,
+      detail: "Listings with a non-free tier but no payment and no founding-member entitlement. A tier field is not revenue.",
     });
   }
 
