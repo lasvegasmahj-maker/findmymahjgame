@@ -228,6 +228,54 @@ test.describe("old offers are retired", () => {
     expect(source).toContain("allow_promotion_codes: false");
   });
 
+  test("checkout identity is the session, never the request body", () => {
+    // The payer and the listing their payment extends are both derived
+    // server-side from the signed-in session. The request body is never read,
+    // so a crafted request cannot bind a subscription to someone else's
+    // listing or spoof another payer's email.
+    const source = srcOf("app", "api", "billing", "checkout", "route.ts");
+    expect(source).toContain("verifyUserSessionToken");
+    expect(source).toContain('.eq("account_id", session.userId)');
+    expect(source).toContain("auth.admin.getUserById(session.userId)");
+    expect(source).not.toContain("req.json");
+    expect(source).not.toContain("b?.");
+    expect(source).toContain("canUseDarkFeature");
+  });
+
+  test("checkout fails closed when the owned listing is missing or ambiguous", () => {
+    const source = srcOf("app", "api", "billing", "checkout", "route.ts");
+    expect(source).toContain("Claim your listing first");
+    expect(source).toContain("more than one listing");
+    const refusals = source.match(/status: 409/g) || [];
+    expect(refusals.length).toBe(2);
+  });
+
+  test("checkout binds the subscription to the payer's own teacher listing", () => {
+    const source = srcOf("app", "api", "billing", "checkout", "route.ts");
+    expect(source).toContain('subscription_data: { metadata: { listing_table: "venue_listings", listing_id: listingId } }');
+  });
+
+  test("the dashboard Premium button ships dark behind billing configuration", () => {
+    const source = srcOf("app", "provider", "provider-client.tsx");
+    expect(source).toContain("dash?.billing.configured");
+    expect(source).toContain("Choose Premium: $89/year");
+    const api = srcOf("app", "api", "provider", "route.ts");
+    expect(api).toContain("premium_until");
+  });
+
+  test("live API: no anonymous checkout, ever", async ({ request }) => {
+    // 503 while Stripe is unconfigured (today), 401 for anonymous callers once
+    // activation sets the Stripe env vars. Both refuse an anonymous checkout.
+    const res = await request.post("/api/billing/checkout");
+    expect([503, 401]).toContain(res.status());
+  });
+
+  test("an unreconciled paid subscription surfaces as a data-quality issue", () => {
+    const source = srcOf("lib", "data-trust.ts");
+    expect(source).toContain("Active paid subscription not linked to any listing");
+    expect(source).toMatch(/billing_subscriptions[\s\S]{0,200}eq\("status", "active"\)/);
+  });
+
   test("the billing runbook no longer instructs creating the coupon", () => {
     const runbook = srcOf("docs", "billing-launch-runbook.md");
     expect(runbook).not.toMatch(/create the FINDMYMAHJGAME promo code/i);

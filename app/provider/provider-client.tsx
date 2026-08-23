@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { isPremiumActive } from "@/lib/premium";
 
 type OwnedListing = {
   id: string;
@@ -11,6 +12,8 @@ type OwnedListing = {
   state: string | null;
   status: string;
   tier: string | null;
+  premium_until?: string | null;
+  premium_paid?: boolean;
   website?: string | null;
   instagram?: string | null;
   display_email?: string | null;
@@ -82,6 +85,7 @@ export default function ProviderClient({ signedIn, gateOpen }: { signedIn: boole
   const [loading, setLoading] = useState(() => signedIn && gateOpen);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [noticeTone, setNoticeTone] = useState<"success" | "neutral">("success");
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -91,6 +95,34 @@ export default function ProviderClient({ signedIn, gateOpen }: { signedIn: boole
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
   const [savingEdit, setSavingEdit] = useState(false);
+  const [startingCheckout, setStartingCheckout] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
+
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("checkout");
+    if (q === "success") setNotice("Thanks! Premium activates as soon as your payment is confirmed, usually within a minute.");
+    if (q === "cancelled") {
+      setNoticeTone("neutral");
+      setNotice("Checkout cancelled. Nothing was charged.");
+    }
+  }, []);
+
+  async function startCheckout() {
+    setStartingCheckout(true);
+    setCheckoutError("");
+    try {
+      const r = await fetch("/api/billing/checkout", { method: "POST" });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j?.url) {
+        window.location.href = j.url;
+        return;
+      }
+      setCheckoutError(j?.error || "Could not start checkout. Please try again.");
+    } catch {
+      setCheckoutError("Could not start checkout. Please try again.");
+    }
+    setStartingCheckout(false);
+  }
 
   const canLoad = signedIn && gateOpen;
 
@@ -221,7 +253,7 @@ export default function ProviderClient({ signedIn, gateOpen }: { signedIn: boole
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.6rem" }}>
-      {notice && <p role="status" style={{ color: "#1a6e3a", fontWeight: 700, margin: 0 }}>{notice}</p>}
+      {notice && <p role="status" style={{ color: noticeTone === "success" ? "#1a6e3a" : "var(--navy)", fontWeight: 700, margin: 0 }}>{notice}</p>}
       {error && <p role="alert" style={{ color: "#dc2626", fontWeight: 600, margin: 0 }}>{error}</p>}
 
       <section>
@@ -361,11 +393,57 @@ export default function ProviderClient({ signedIn, gateOpen }: { signedIn: boole
       <section>
         <h2 style={sectionTitle}>Membership</h2>
         <div style={card}>
-          {dash?.billing.configured ? (
-            <p style={{ margin: 0, color: "var(--navy)" }}>Membership and billing details will appear here once you have a plan.</p>
-          ) : (
-            <p style={{ margin: 0, color: "var(--muted)" }}>Billing is not configured yet. Every listing stays free while this is being built.</p>
-          )}
+          {(() => {
+            const teacher = dash?.ownedListings.find((l) => l.listing_table === "venue_listings" && l.status === "published");
+            const premiumActive = isPremiumActive(teacher?.premium_until);
+            const until = teacher?.premium_until ? new Date(teacher.premium_until).toLocaleDateString() : "";
+            const checkoutButton = (
+              <div>
+                <button
+                  type="button"
+                  onClick={startCheckout}
+                  disabled={startingCheckout}
+                  style={{ ...primaryBtn, minHeight: 48, fontSize: "1rem", opacity: startingCheckout ? 0.6 : 1 }}
+                >
+                  {startingCheckout ? "Opening checkout..." : "Choose Premium: $89/year"}
+                </button>
+                {checkoutError && <p style={{ margin: "0.7rem 0 0", color: "#b3261e", fontWeight: 600 }}>{checkoutError}</p>}
+              </div>
+            );
+            if (premiumActive && teacher?.premium_paid) {
+              return (
+                <p style={{ margin: 0, color: "var(--navy)" }}>
+                  Premium is active on {teacher.business_name || "your listing"} through {until}.
+                  Players can send you lesson requests directly, and your card shows the Premium Provider badge.
+                </p>
+              );
+            }
+            if (premiumActive) {
+              return (
+                <div>
+                  <p style={{ margin: "0 0 0.8rem", color: "var(--navy)" }}>
+                    Your free Premium period on {teacher?.business_name || "your listing"} runs through {until}: lesson requests from players plus the Premium Provider badge.
+                    To keep Premium after that date, choose Premium for $89 a year. Otherwise your listing simply continues on the free Basic plan; nothing is ever charged on its own.
+                  </p>
+                  {dash?.billing.configured && checkoutButton}
+                </div>
+              );
+            }
+            if (!dash?.billing.configured) {
+              return <p style={{ margin: 0, color: "var(--muted)" }}>Your listing is free forever. Premium options appear here once billing opens.</p>;
+            }
+            if (!teacher) {
+              return <p style={{ margin: 0, color: "var(--muted)" }}>Premium extends your claimed teacher listing. Claim your listing above, then choose Premium here.</p>;
+            }
+            return (
+              <div>
+                <p style={{ margin: "0 0 0.8rem", color: "var(--navy)" }}>
+                  Premium on {teacher.business_name || "your listing"}: on-platform lesson requests from players plus the Premium Provider badge. $89 a year, cancel anytime, and your listing stays free forever either way.
+                </p>
+                {checkoutButton}
+              </div>
+            );
+          })()}
         </div>
       </section>
 
