@@ -9,7 +9,7 @@ const input: React.CSSProperties = { width: "100%", minHeight: 48, padding: "0 1
 const primaryBtn: React.CSSProperties = { background: "var(--pink)", color: "white", border: "none", borderRadius: 8, padding: "0.8rem 1.5rem", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" };
 const quietBtn: React.CSSProperties = { background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 8, padding: "0.8rem 1.5rem", fontWeight: 600, fontSize: "0.9rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)" };
 
-export default function AccountClient() {
+export default function AccountClient({ signupOpen }: { signupOpen: boolean }) {
   const [me, setMe] = useState<Me | null>(null);
   const [checked, setChecked] = useState(false);
   const [email, setEmail] = useState("");
@@ -83,6 +83,17 @@ export default function AccountClient() {
   if (!checked) return <p style={{ color: "var(--muted)", textAlign: "center" }}>Loading...</p>;
 
   if (!me) {
+    if (!signupOpen) {
+      return (
+        <div style={{ ...card, marginTop: "1.2rem", textAlign: "center" }}>
+          <p style={{ margin: 0, color: "var(--navy)", fontWeight: 700 }}>Accounts are not open yet.</p>
+          <p style={{ margin: "0.5rem 0 0", color: "var(--muted)" }}>
+            Browsing and search are free and need no account. When accounts open, you will be able to
+            sign in here with just your email; no password to remember.
+          </p>
+        </div>
+      );
+    }
     return (
       <div>
         <p style={{ color: "var(--muted)", textAlign: "center", margin: "0 0 1.6rem" }}>

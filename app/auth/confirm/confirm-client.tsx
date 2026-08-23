@@ -36,7 +36,7 @@ export default function ConfirmClient() {
   }
 
   if (!tokenHash) {
-    return <p style={{ color: "var(--muted)" }}>This link is incomplete. Open the newest sign-in email and tap the button again, or request a new link from the account page.</p>;
+    return <p style={{ color: "var(--muted)" }}>This link is incomplete. Open the newest sign-in email and tap the button again, or request a new link from <a href="/account" style={{ color: "var(--pink-text)", fontWeight: 700 }}>the account page</a>.</p>;
   }
 
   return (

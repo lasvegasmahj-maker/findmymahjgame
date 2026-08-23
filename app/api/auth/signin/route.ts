@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     kind: "auth-signin",
     to: email,
     subject: "Sign in to Find My Mahj Game",
-    html: `<p>Click to sign in. This link works once and expires in an hour.</p><p><a href="${confirmUrl}">Sign in to Find My Mahj Game</a></p><p>If you did not request this, ignore this email.</p>`,
+    html: `<p>Click to sign in. This link works once, so use it soon.</p><p><a href="${confirmUrl}">Sign in to Find My Mahj Game</a></p><p>If you did not request this, ignore this email.</p>`,
   });
   if (!sent.ok) {
     return NextResponse.json({ error: "We could not send the email. Please try again." }, { status: 500 });

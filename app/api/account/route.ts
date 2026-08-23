@@ -17,6 +17,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Too many requests. Please wait a minute and try again." }, { status: 429 });
   }
 
+  // Session tokens are stateless and live 30 days; deactivation must beat a stale
+  // cookie on another device, so the profile state is checked on every write.
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles").select("deactivated_at").eq("id", session.userId).maybeSingle();
+  if (profileError) {
+    console.error("account profile read failed:", profileError.message);
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+  }
+  if (!profile) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+  if (profile.deactivated_at) return NextResponse.json({ error: "Account deactivated" }, { status: 403 });
+
   const body = await req.json().catch(() => ({}));
   const action = String(body?.action || "");
 

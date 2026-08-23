@@ -7,7 +7,6 @@ import path from "path";
 // The gate is OFF in production, so these tests prove the closed behavior plus
 // the full QA walkthrough that launch-day verification will reuse.
 
-const QA_EMAIL = "playwright-qa@fmg-qa.test";
 
 test.describe("identity", () => {
   test("real email cannot sign in while the gate is closed", async ({ request }) => {
@@ -18,7 +17,7 @@ test.describe("identity", () => {
   });
 
   test("QA email without an admin session is refused", async ({ request }) => {
-    const r = await request.post("/api/auth/signin", { data: { email: QA_EMAIL } });
+    const r = await request.post("/api/auth/signin", { data: { email: "anyone@fmg-qa.test" } });
     expect(r.status()).toBe(403);
   });
 
@@ -27,7 +26,7 @@ test.describe("identity", () => {
     expect((await request.post("/api/account", { data: { action: "deactivate" } })).status()).toBe(401);
   });
 
-  test("a garbage session cookie is rejected", async ({ playwright, baseURL }) => {
+  test("a garbage session cookie is rejected", async ({ baseURL }) => {
     const ctx = await pwRequest.newContext({
       baseURL: baseURL || "http://localhost:3000",
       extraHTTPHeaders: { cookie: "fmg_user=Zm9yZ2VkOnRva2VuOnZhbHVl" },
@@ -36,7 +35,7 @@ test.describe("identity", () => {
     await ctx.dispose();
   });
 
-  test("a user cookie never grants admin access", async ({ playwright, baseURL }) => {
+  test("a user cookie never grants admin access", async ({ baseURL }) => {
     const ctx = await pwRequest.newContext({
       baseURL: baseURL || "http://localhost:3000",
       extraHTTPHeaders: { cookie: "fmg_user=Zm9yZ2VkOnRva2VuOnZhbHVl" },
@@ -52,21 +51,27 @@ test.describe("identity", () => {
     expect(String(j.error)).toContain("expired or was already used");
   });
 
-  test("signed-out account page shows the sign-in form", async ({ page }) => {
+  test("signed-out account page tells the truth while the gate is closed", async ({ page }) => {
     await page.goto("/account");
-    await expect(page.getByLabel("Email address")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Email me a sign-in link" })).toBeVisible();
+    await expect(page.getByText("Accounts are not open yet.")).toBeVisible();
+    await expect(page.getByLabel("Email address")).toBeHidden();
   });
 
-  test("full QA walkthrough: admin-driven signin lands as a test account", async ({ baseURL }) => {
+  test("full QA walkthrough: admin-driven signin lands as a test account", async ({ baseURL }, testInfo) => {
     // The dev server loads .env.local itself; the test process does not, so read
-    // the value here. It stays in memory and is never logged.
+    // the value here. It stays in memory and is never logged. CI has no .env.local,
+    // so a missing file falls through to skip instead of crashing.
     let password = process.env.ADMIN_PASSWORD;
-    if (!password) {
-      const envFile = fs.readFileSync(path.join(__dirname, "..", ".env.local"), "utf8");
+    const envPath = path.join(__dirname, "..", ".env.local");
+    if (!password && fs.existsSync(envPath)) {
+      const envFile = fs.readFileSync(envPath, "utf8");
       password = envFile.match(/^ADMIN_PASSWORD=(.*)$/m)?.[1]?.replace(/^"|"$/g, "");
     }
     test.skip(!password, "ADMIN_PASSWORD not available in this environment");
+
+    // Per-project identity: parallel projects each get their own QA user so two
+    // concurrent generateLink calls never invalidate each other's token.
+    const QA_EMAIL = `playwright-qa-${testInfo.project.name.replace(/[^a-z0-9-]/gi, "-")}@fmg-qa.test`;
 
     const admin = await pwRequest.newContext({ baseURL: baseURL || "http://localhost:3000" });
     const login = await admin.post("/api/admin/login", { data: { password } });
