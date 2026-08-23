@@ -47,7 +47,6 @@ async function getTeacher(id: string): Promise<Teacher | null> {
   }
   if (!data) return null;
   const t = data as Teacher;
-  if (t.state === "NV") return null;
   if (!TEACHER_TYPE.test(`${t.venue_type || ""} ${t.description || ""}`)) return null;
   return t;
 }

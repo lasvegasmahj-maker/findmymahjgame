@@ -1,7 +1,15 @@
-// Las Vegas Mahjong is the founder's flagship teaching business and the one
-// Nevada teacher we feature (the /teachers page otherwise excludes Nevada
-// teachers). Shared so the instructor page and the Nevada state page show the
-// same real listing. This is a real business, not seed or demo data.
+// Las Vegas Mahjong is the founder's own teaching business. It renders only
+// inside the labelled "From our founder" block (components/teacher-card.tsx),
+// never inside ranked results, and Nevada competitors list like everyone else.
+// This is a real business, not seed or demo data.
+// The founder's business appears only through the labelled FounderSpotlight,
+// so organic lists drop any row that points at the founder's own site or
+// Instagram (the database holds one such duplicate listing).
+export function isFounderListing(r: { website?: string | null; instagram?: string | null }): boolean {
+  const ig = String(r.instagram || "").replace(/^@/, "").toLowerCase();
+  return String(r.website || "").toLowerCase().includes("lasvegasmahj.com") || ig === "lasvegasmahjong";
+}
+
 export const LAS_VEGAS_MAHJONG = {
   id: "las-vegas-mahjong",
   business_name: "Las Vegas Mahjong",

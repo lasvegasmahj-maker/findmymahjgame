@@ -4,9 +4,9 @@ import NotifyMe from "@/components/notify-me";
 import BrandedEmptyState from "@/components/branded-empty-state";
 import { createServerClient } from "@/lib/supabase-server";
 import CityAutocomplete from "@/components/city-autocomplete";
-import TeacherCard from "@/components/teacher-card";
+import TeacherCard, { FounderSpotlight } from "@/components/teacher-card";
 import { nearMatches } from "@/lib/near-match";
-import { LAS_VEGAS_MAHJONG } from "@/lib/featured-listings";
+import { LAS_VEGAS_MAHJONG, isFounderListing } from "@/lib/featured-listings";
 
 export const metadata: Metadata = {
   title: "Find a Mahjong Teacher Near You",
@@ -16,9 +16,10 @@ export const metadata: Metadata = {
 
 export const revalidate = 300;
 
-// Teachers are sourced from listings whose type indicates instruction.
-// Las Vegas guardrail: Nevada is Las Vegas Mahjong's home teaching market,
-// so competing Nevada teachers are excluded here on purpose.
+// Teachers are sourced from listings whose type indicates instruction. Every
+// state queries and ranks the same way, Nevada included. The founder's own
+// business appears only in the labelled "From our founder" block and is never
+// mixed into these results.
 const TEACHER_TYPE = /instructor|teacher|lesson|studio|school|class/i;
 
 const field: React.CSSProperties = { minHeight: 54, padding: "0 1rem", border: "2px solid var(--border)", borderRadius: 12, fontSize: "1.1rem", fontFamily: "'DM Sans', sans-serif", color: "var(--navy)", flex: "1 1 200px" };
@@ -27,17 +28,17 @@ const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border:
 export default async function TeachersPage({ searchParams }: { searchParams: Promise<{ near?: string }> }) {
   const { near } = await searchParams;
   const supabase = createServerClient();
-  const { data } = await supabase.from("venue_listings").select("id, business_name, venue_type, city, state, description, website, instagram, display_email, logo_url, tier, created_at").eq("status", "published").or("state.is.null,state.neq.NV");
+  const { data } = await supabase.from("venue_listings").select("id, business_name, venue_type, city, state, description, website, instagram, display_email, logo_url, tier, created_at").eq("status", "published");
 
   let rows = (data || [])
-    .filter((r) => TEACHER_TYPE.test(`${r.venue_type || ""} ${r.description || ""}`));
-  // Always feature Las Vegas Mahjong (the founder's own business). The Nevada
-  // guardrail above excludes competing NV teachers, not this listing.
-  rows = [LAS_VEGAS_MAHJONG, ...rows] as unknown as typeof rows;
+    .filter((r) => TEACHER_TYPE.test(`${r.venue_type || ""} ${r.description || ""}`) && !isFounderListing(r));
   if (near && near.trim()) {
     const n = near.trim().toLowerCase();
     rows = rows.filter((r) => nearMatches(n, r.city, r.state));
   }
+  // The founder's business shows only in its own labelled block, never in the
+  // ranked list, and only when it is relevant to the search.
+  const showFounder = !near || !near.trim() || nearMatches(near.trim().toLowerCase(), LAS_VEGAS_MAHJONG.city, LAS_VEGAS_MAHJONG.state);
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
       <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", textAlign: "center", margin: "0 0 0.4rem" }}>Find a mahjong teacher near you</h1>
@@ -55,6 +56,8 @@ export default async function TeachersPage({ searchParams }: { searchParams: Pro
           Find My Mahj Game never stands between you and your students. They book on your own site. No booking cuts, ever.
         </p>
       </div>
+
+      {showFounder && <FounderSpotlight t={LAS_VEGAS_MAHJONG} />}
 
       {rows.length > 0 ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 300px), 1fr))", gap: "1.2rem" }}>
