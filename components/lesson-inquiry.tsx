@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 
 // "Request a lesson" inquiry funnel. A player sends a structured request and the
 // API emails it to the teacher (reply-to the player), so the teacher just hits
@@ -11,6 +11,19 @@ export default function LessonInquiry({ teacherId, teacherName }: { teacherId: s
   const [err, setErr] = useState("");
   const [form, setForm] = useState({ name: "", email: "", phone: "", area: "", experience: "", message: "Hi! I'm looking for mahjong lessons. " });
   const set = (k: string, v: string) => setForm((p) => ({ ...p, [k]: v }));
+  const firstFieldRef = useRef<HTMLInputElement>(null);
+  const uid = useId();
+
+  useEffect(() => {
+    if (open) firstFieldRef.current?.focus();
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -54,23 +67,23 @@ export default function LessonInquiry({ teacherId, teacherName }: { teacherId: s
                   <h3 style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--navy)", margin: 0, lineHeight: 1.3 }}>Request a lesson with {teacherName}</h3>
                   <button type="button" aria-label="Close" onClick={() => setOpen(false)} style={{ background: "none", border: "none", fontSize: "1.5rem", color: "var(--muted)", cursor: "pointer", lineHeight: 1, padding: 0 }}>&times;</button>
                 </div>
-                <label style={lbl}>Your name</label>
-                <input style={field} required value={form.name} onChange={(e) => set("name", e.target.value)} />
+                <label style={lbl} htmlFor={`${uid}-name`}>Your name</label>
+                <input ref={firstFieldRef} id={`${uid}-name`} style={field} required value={form.name} onChange={(e) => set("name", e.target.value)} />
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}>
-                  <div><label style={lbl}>Email</label><input style={field} type="email" required value={form.email} onChange={(e) => set("email", e.target.value)} /></div>
-                  <div><label style={lbl}>Phone <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span></label><input style={field} value={form.phone} onChange={(e) => set("phone", e.target.value)} /></div>
+                  <div><label style={lbl} htmlFor={`${uid}-email`}>Email</label><input id={`${uid}-email`} style={field} type="email" required value={form.email} onChange={(e) => set("email", e.target.value)} /></div>
+                  <div><label style={lbl} htmlFor={`${uid}-phone`}>Phone <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span></label><input id={`${uid}-phone`} style={field} value={form.phone} onChange={(e) => set("phone", e.target.value)} /></div>
                 </div>
-                <label style={lbl}>Your area <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span></label>
-                <input style={field} placeholder="City or neighborhood" value={form.area} onChange={(e) => set("area", e.target.value)} />
-                <label style={lbl}>Experience <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span></label>
-                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                <label style={lbl} htmlFor={`${uid}-area`}>Your area <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span></label>
+                <input id={`${uid}-area`} style={field} placeholder="City or neighborhood" value={form.area} onChange={(e) => set("area", e.target.value)} />
+                <label style={lbl} id={`${uid}-experience-label`}>Experience <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span></label>
+                <div role="group" aria-labelledby={`${uid}-experience-label`} style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                   {["New", "Beginner", "Some experience"].map((x) => (
-                    <button key={x} type="button" onClick={() => set("experience", form.experience === x ? "" : x)} style={{ padding: "0.45rem 0.8rem", borderRadius: 50, border: `1.5px solid ${form.experience === x ? "var(--pink)" : "var(--border)"}`, background: form.experience === x ? "var(--pink)" : "white", color: form.experience === x ? "white" : "var(--navy)", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>{x}</button>
+                    <button key={x} type="button" aria-pressed={form.experience === x} onClick={() => set("experience", form.experience === x ? "" : x)} style={{ minHeight: 44, padding: "0.45rem 0.8rem", borderRadius: 50, border: `1.5px solid ${form.experience === x ? "var(--pink)" : "var(--border)"}`, background: form.experience === x ? "var(--pink)" : "white", color: form.experience === x ? "white" : "var(--navy)", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>{x}</button>
                   ))}
                 </div>
-                <label style={lbl}>Message</label>
-                <textarea style={{ ...field, minHeight: 90, resize: "vertical" }} required value={form.message} onChange={(e) => set("message", e.target.value)} />
-                {err && <p style={{ color: "#b91c1c", fontSize: "0.88rem", margin: "0.7rem 0 0" }}>{err}</p>}
+                <label style={lbl} htmlFor={`${uid}-message`}>Message</label>
+                <textarea id={`${uid}-message`} style={{ ...field, minHeight: 90, resize: "vertical" }} required value={form.message} onChange={(e) => set("message", e.target.value)} />
+                {err && <p role="alert" style={{ color: "#b91c1c", fontSize: "0.88rem", margin: "0.7rem 0 0" }}>{err}</p>}
                 <button type="submit" disabled={status === "submitting"} style={{ width: "100%", marginTop: "1rem", minHeight: 50, borderRadius: 12, background: "var(--pink)", color: "white", border: "none", fontWeight: 800, fontSize: "1.02rem", cursor: status === "submitting" ? "not-allowed" : "pointer", opacity: status === "submitting" ? 0.7 : 1, fontFamily: "'DM Sans', sans-serif" }}>{status === "submitting" ? "Sending..." : "Send request"}</button>
                 <p style={{ fontSize: "0.78rem", color: "var(--muted)", textAlign: "center", margin: "0.7rem 0 0" }}>Shared only with this teacher. Players never pay.</p>
               </form>

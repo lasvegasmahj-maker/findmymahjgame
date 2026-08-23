@@ -22,7 +22,7 @@ type Card = {
 
 type Status = "loading" | "ready" | "error";
 
-const cardStyle: React.CSSProperties = { position: "relative", background: "white", border: "1px solid var(--border)", borderRadius: 14, padding: "1.1rem 3rem 1.1rem 1.2rem" };
+const cardStyle: React.CSSProperties = { position: "relative", background: "white", border: "1px solid var(--border)", borderRadius: 14, padding: "1.1rem 3.7rem 1.1rem 1.2rem" };
 const gridStyle: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 300px), 1fr))", gap: "1rem" };
 
 export default function FavoritesClient() {

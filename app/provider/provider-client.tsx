@@ -221,8 +221,8 @@ export default function ProviderClient({ signedIn, gateOpen }: { signedIn: boole
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.6rem" }}>
-      {notice && <p style={{ color: "#1a6e3a", fontWeight: 700, margin: 0 }}>{notice}</p>}
-      {error && <p style={{ color: "#dc2626", fontWeight: 600, margin: 0 }}>{error}</p>}
+      {notice && <p role="status" style={{ color: "#1a6e3a", fontWeight: 700, margin: 0 }}>{notice}</p>}
+      {error && <p role="alert" style={{ color: "#dc2626", fontWeight: 600, margin: 0 }}>{error}</p>}
 
       <section>
         <h2 style={sectionTitle}>My listings</h2>
@@ -303,6 +303,7 @@ export default function ProviderClient({ signedIn, gateOpen }: { signedIn: boole
             <input
               style={{ ...input, flex: "1 1 220px" }}
               placeholder="Search by business name or city"
+              aria-label="Search by business name or city"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               maxLength={80}

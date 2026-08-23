@@ -104,6 +104,11 @@ export default async function Home() {
           {/* Full-width map */}
           <div className="map-wrapper">
             <USMap stateCounts={stateCounts} />
+            {/* The map itself is a mouse-only visual shortcut (aria-hidden); this
+                keeps "browse by state" reachable by keyboard and screen readers. */}
+            <p className="map-cta">
+              Prefer a list? <Link href="/states" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Browse all 50 states &rarr;</Link>
+            </p>
           </div>
 
         </div>

@@ -115,7 +115,7 @@
   transform: translateY(-50%);
   font-size: 1rem;
   font-family: var(--font-dm-sans), "DM Sans", sans-serif;
-  color: #9ca3af;
+  color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

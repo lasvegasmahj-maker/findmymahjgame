@@ -219,12 +219,12 @@ export default function StatePageClient({ stateData, players, events, venues, in
       {/* Hero */}
       <section className="page-hero" style={{ padding: "3.5rem 2rem" }}>
         <p style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.5)", marginBottom: "1.2rem" }}>
-          <Link href="/" style={{ color: "var(--pink-text)", textDecoration: "none" }}>Home</Link>
+          <Link href="/" style={{ color: "rgba(255,255,255,0.85)", textDecoration: "none" }}>Home</Link>
           {" "}&rsaquo;{" "}
-          <Link href="/#map" style={{ color: "var(--pink-text)", textDecoration: "none" }}>Find Players</Link>
+          <Link href="/#map" style={{ color: "rgba(255,255,255,0.85)", textDecoration: "none" }}>Find Players</Link>
           {" "}&rsaquo; {stateData.name}
         </p>
-        <h1 style={{ fontSize: "clamp(2.2rem, 5vw, 3.5rem)", marginBottom: "0.8rem" }}>Mahjong in <span style={{ color: "var(--pink-text)" }}>{stateData.name}</span>
+        <h1 style={{ fontSize: "clamp(2.2rem, 5vw, 3.5rem)", marginBottom: "0.8rem" }}>Mahjong in <span style={{ color: "white" }}>{stateData.name}</span>
         </h1>
         <p style={{ maxWidth: 520 }}>{stateData.desc}</p>
         {players.length + events.length + teacherVenues.length > 0 ? (
@@ -273,8 +273,8 @@ export default function StatePageClient({ stateData, players, events, venues, in
                     const checked = selectedCities.some((s) => s.toLowerCase() === city.toLowerCase());
                     return (
                       <label key={city} style={{ display: "flex", alignItems: "center", gap: "0.6rem", width: "100%", padding: "0.55rem 0.7rem", borderRadius: 8, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: "0.9rem", color: "var(--navy)" }}>
-                        <input type="checkbox" checked={checked} onChange={() => toggleCity(city)} style={{ position: "absolute", opacity: 0, width: 1, height: 1 }} />
-                        <span style={{ width: 18, height: 18, borderRadius: 4, border: "2px solid", borderColor: checked ? "var(--pink)" : "var(--border)", background: checked ? "var(--pink)" : "white", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "0.7rem", flexShrink: 0 }}>{checked ? "✓" : ""}</span>
+                        <input type="checkbox" className="vh-checkbox" checked={checked} onChange={() => toggleCity(city)} />
+                        <span className="vh-checkbox-box" style={{ width: 18, height: 18, borderRadius: 4, border: "2px solid", borderColor: checked ? "var(--pink)" : "var(--border)", background: checked ? "var(--pink)" : "white", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "0.7rem", flexShrink: 0 }}>{checked ? "✓" : ""}</span>
                         {city}
                       </label>
                     );
