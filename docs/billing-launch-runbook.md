@@ -23,7 +23,7 @@ records; our database only keeps a copy for the admin dashboard.
 
 1. In the Stripe dashboard, go to Product catalog, then click "Add product"
 2. Name: Directory Membership
-3. Price: 89.00 USD, Recurring, Yearly
+3. Price: 89.00 USD, Recurring, Yearly. Create only this one price. Do not create a monthly price; monthly pricing is a post-launch decision that depends on real provider feedback.
 4. Save, then click the price you just made and copy its ID. It looks like
    `price_1AbCdEfGh...`. You will paste this into Vercel in Step 4.
 
