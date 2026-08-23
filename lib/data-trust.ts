@@ -33,6 +33,8 @@ export async function readTruthMetrics(supabase: SupabaseClient): Promise<TruthM
     in: (c: string, v: unknown[]) => Filter & PromiseLike<CountQuery>;
     not: (c: string, op: string, v: unknown) => Filter & PromiseLike<CountQuery>;
     is: (c: string, v: unknown) => Filter & PromiseLike<CountQuery>;
+    gt: (c: string, v: unknown) => Filter & PromiseLike<CountQuery>;
+    lte: (c: string, v: unknown) => Filter & PromiseLike<CountQuery>;
   } & PromiseLike<CountQuery>;
   // The builder is typed structurally because the generated PostgREST generics fight any
   // generic wrapper, and every call site is a fixed, reviewed query.
@@ -303,4 +305,106 @@ export async function readDataQualityIssues(supabase: SupabaseClient): Promise<D
   }
 
   return issues;
+}
+
+export type MembershipBreakdown = {
+  basic: number;
+  complimentaryTrial: number;
+  paidPremium: number;
+  expiredReverted: number;
+  charter: number;
+};
+
+// The five membership states of the approved provider model, counted from entitlement
+// dates and payment records. A complimentary trial has an active premium_until and no
+// payment id, so it can never masquerade as revenue; Paid Premium requires a real
+// payment record; an expired entitlement is Basic again, kept distinct so conversion
+// can be measured. Charter is recognition, not a tier.
+export async function readMembershipBreakdown(supabase: SupabaseClient): Promise<MembershipBreakdown> {
+  const nowISO = new Date().toISOString();
+  type CountQuery = { count: number | null; error: { message: string } | null };
+  // Structural any for the same reason as readTruthMetrics: fixed, reviewed queries.
+  const count = async (table: string, build: (q: any) => PromiseLike<CountQuery>) => {
+    const { count: n, error } = await build(supabase.from(table).select("id", { count: "exact", head: true }));
+    if (error) throw new Error(`${table}: ${error.message}`);
+    return n ?? 0;
+  };
+
+  const tables = ["venue_listings", "event_listings"];
+  let published = 0, trial = 0, paid = 0, expired = 0, charter = 0;
+  for (const t of tables) {
+    const [pub, tr, pd, ex, ch] = await Promise.all([
+      count(t, (q: any) => q.eq("status", "published")),
+      count(t, (q: any) => q.eq("status", "published").gt("premium_until", nowISO).is("stripe_payment_id", null)),
+      count(t, (q: any) => q.eq("status", "published").gt("premium_until", nowISO).not("stripe_payment_id", "is", null)),
+      count(t, (q: any) => q.eq("status", "published").lte("premium_until", nowISO)),
+      count(t, (q: any) => q.eq("status", "published").eq("is_founding_member", true)),
+    ]);
+    published += pub; trial += tr; paid += pd; expired += ex; charter += ch;
+  }
+
+  return {
+    basic: Math.max(0, published - trial - paid),
+    complimentaryTrial: trial,
+    paidPremium: paid,
+    expiredReverted: expired,
+    charter,
+  };
+}
+
+export type PremiumLeadDiagnostic = {
+  premiumProviders: number;
+  buckets: { none: number; one: number; twoToThree: number; fourPlus: number };
+  providersWithRealLead: number;
+  providersWithRealLeadWhoPaid: number;
+};
+
+// The primary Premium diagnostic: among providers who received at least one qualified
+// (real, delivered) Find My Mahj lead during their entitlement, how many chose to pay?
+// Zero leads and zero conversions is a liquidity problem; plenty of leads and zero
+// conversions is a Premium value problem. Only record_class real_external, status sent
+// leads count, so QA traffic can never make Premium look like it is working.
+export async function readPremiumLeadDiagnostic(supabase: SupabaseClient): Promise<PremiumLeadDiagnostic> {
+  const providers: Array<{ id: string; paid: boolean; table: string }> = [];
+  for (const t of ["venue_listings", "event_listings"]) {
+    const { data, error } = await supabase
+      .from(t)
+      .select("id, stripe_payment_id")
+      .not("premium_until", "is", null);
+    if (error) throw new Error(`${t}: ${error.message}`);
+    for (const r of data || []) providers.push({ id: String(r.id), paid: r.stripe_payment_id != null, table: t });
+  }
+
+  const { data: leadRows, error: leadErr } = await supabase
+    .from("provider_leads")
+    .select("provider_table, provider_id")
+    .eq("record_class", "real_external")
+    .eq("status", "sent");
+  if (leadErr) throw new Error(`provider_leads: ${leadErr.message}`);
+  const leadCount = new Map<string, number>();
+  for (const r of leadRows || []) {
+    const k = `${r.provider_table}:${r.provider_id}`;
+    leadCount.set(k, (leadCount.get(k) ?? 0) + 1);
+  }
+
+  const buckets = { none: 0, one: 0, twoToThree: 0, fourPlus: 0 };
+  let withLead = 0, withLeadPaid = 0;
+  for (const p of providers) {
+    const n = leadCount.get(`${p.table}:${p.id}`) ?? 0;
+    if (n === 0) buckets.none += 1;
+    else if (n === 1) buckets.one += 1;
+    else if (n <= 3) buckets.twoToThree += 1;
+    else buckets.fourPlus += 1;
+    if (n > 0) {
+      withLead += 1;
+      if (p.paid) withLeadPaid += 1;
+    }
+  }
+
+  return {
+    premiumProviders: providers.length,
+    buckets,
+    providersWithRealLead: withLead,
+    providersWithRealLeadWhoPaid: withLeadPaid,
+  };
 }
