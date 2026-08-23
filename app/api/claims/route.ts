@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
 
   await track(supabase, "provider_claim_started", { recordClass });
 
-  const body = await req.json().catch(() => ({}));
+  const body = (await req.json().catch(() => null)) || {};
   const table = String(body?.listing_table || "");
   const id = String(body?.listing_id || "");
   if (!TABLES.includes(table as (typeof TABLES)[number]) || !UUID.test(id)) {

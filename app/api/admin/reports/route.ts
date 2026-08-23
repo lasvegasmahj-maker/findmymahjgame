@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await req.json().catch(() => ({}) as Record<string, unknown>);
+  const body = ((await req.json().catch(() => null)) || {}) as Record<string, unknown>;
   const id = String(body?.id || "");
   const decision = String(body?.decision || "");
   const triageNote = clampText(body?.triage_note, MAX_NOTE_LENGTH).trim();

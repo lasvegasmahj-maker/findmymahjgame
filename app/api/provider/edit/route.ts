@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Provider claims are not open yet." }, { status: 403 });
   }
 
-  const body = await req.json().catch(() => ({}));
+  const body = (await req.json().catch(() => null)) || {};
   const table = String(body?.listing_table || "");
   const id = String(body?.listing_id || "");
   const allowed = EDITABLE[table];

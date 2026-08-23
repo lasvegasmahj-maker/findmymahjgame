@@ -133,7 +133,7 @@ function buildApprovalEmail(data: Record<string, string>, submissionId: string):
 export async function POST(req: NextRequest) {
   if (!(await rateLimit(req, "advertise-submit", 3, 60))) return NextResponse.json({ error: "Too many requests. Please wait a minute and try again." }, { status: 429 });
   try {
-    const body = await req.json();
+    const body = (await req.json()) || {};
     const {
       listingType, contactName, contactEmail, displayName,
       city, stateName, address, hours, phone,

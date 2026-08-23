@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   if (!(await rateLimit(req, "notify-area", 5, 60))) {
     return NextResponse.json({ error: "Too many requests. Please wait a minute and try again." }, { status: 429 });
   }
-  const b = await req.json().catch(() => ({}));
+  const b = (await req.json().catch(() => null)) || {};
   const email = clampText(b.email, 254);
   if (!email || !isValidEmail(email)) {
     return NextResponse.json({ error: "Please enter a valid email." }, { status: 400 });

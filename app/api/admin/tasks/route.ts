@@ -57,7 +57,7 @@ function cleanBody(b: Record<string, unknown>) {
 
 export async function POST(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const b = await req.json().catch(() => ({}));
+  const b = (await req.json().catch(() => null)) || {};
 
   if (Array.isArray(b.bulk)) {
     const rows = b.bulk.slice(0, 50).map((x: Record<string, unknown>) => cleanBody(x)).filter((r: { task: string }) => r.task);
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const b = await req.json().catch(() => ({}));
+  const b = (await req.json().catch(() => null)) || {};
   const id = String(b.id || "");
   if (!UUID.test(id)) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
 

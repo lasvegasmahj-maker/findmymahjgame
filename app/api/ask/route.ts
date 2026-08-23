@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
   if (!(await rateLimit(req, "ask", 15, 60))) {
     return NextResponse.json({ error: "Too many questions at once. Give it a minute and ask again." }, { status: 429 });
   }
-  const body = await req.json().catch(() => ({}));
+  const body = (await req.json().catch(() => null)) || {};
   const question = typeof body?.q === "string" ? body.q.slice(0, 200) : "";
   const recordClass = await resolveAskRecordClass(req);
   try {

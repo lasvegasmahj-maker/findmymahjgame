@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const b = await req.json().catch(() => ({}));
+  const b = (await req.json().catch(() => null)) || {};
   const name = clampText(b.name, 120);
   if (!name) return NextResponse.json({ error: "Please add a name." }, { status: 400 });
   const type = String(b.contact_type || "teacher");
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const b = await req.json().catch(() => ({}));
+  const b = (await req.json().catch(() => null)) || {};
   const id = String(b.id || "");
   if (!UUID.test(id)) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
 

@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Too many requests. Please wait a minute and try again." }, { status: 429 });
   }
 
-  const body = await req.json().catch(() => ({}));
+  const body = (await req.json().catch(() => null)) || {};
   const code = (clampText(body.code, 40) || "").toUpperCase();
   if (!code) return NextResponse.json({ valid: false });
 

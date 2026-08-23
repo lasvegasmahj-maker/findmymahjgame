@@ -10,9 +10,8 @@ export async function POST(req: NextRequest) {
   if (!(await rateLimit(req, "notify", 10, 60))) {
     return NextResponse.json({ error: "Too many requests." }, { status: 429 });
   }
+  const raw = (await req.json().catch(() => null)) || {};
   try {
-    const raw = await req.json();
-
     if (!raw?.type || !raw?.subject || !raw?.body) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }

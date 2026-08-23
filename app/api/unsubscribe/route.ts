@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   if (!(await rateLimit(req, "unsubscribe", 10, 60))) {
     return NextResponse.json({ error: "Too many requests. Please try again in a minute." }, { status: 429 });
   }
-  const body = await req.json().catch(() => ({}));
+  const body = (await req.json().catch(() => null)) || {};
   const token = typeof body?.token === "string" ? body.token : "";
   const verified = verifyActionToken(token);
   if (!verified || verified.action !== "unsub") {

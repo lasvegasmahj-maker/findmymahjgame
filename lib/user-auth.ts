@@ -30,6 +30,12 @@ export function verifyUserSessionToken(token: string | undefined | null): UserSe
     const [label, userId, role, expiresStr, sig] = parts;
     if (label !== "user-session") return null;
     if (role !== "player" && role !== "provider") return null;
+    // Buffer.from(sig, "hex") stops decoding at the first non-hex character
+    // rather than rejecting the string, so garbage appended after a genuine
+    // signature (as long as it introduces no extra colon) can still decode
+    // to the real 32-byte digest and pass. Requiring the exact hex length
+    // closes that off before the lenient decode runs.
+    if (sig.length !== 64) return null;
     const expected = sign(`${label}:${userId}:${role}:${expiresStr}`);
     const a = Buffer.from(sig, "hex");
     const b = Buffer.from(expected, "hex");

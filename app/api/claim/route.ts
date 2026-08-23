@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   if (!(await rateLimit(req, "claim", 10, 60))) {
     return NextResponse.json({ error: "Too many requests. Please wait a minute." }, { status: 429 });
   }
-  const b = await req.json().catch(() => ({}));
+  const b = (await req.json().catch(() => null)) || {};
   const v = typeof b.token === "string" ? verifyActionToken(b.token) : null;
   if (!v || v.action !== "claim") {
     return NextResponse.json({ error: "That link has expired. Reply to our email and we will send a fresh one." }, { status: 401 });

@@ -12,9 +12,17 @@ const supabase = lazyServerClient();
 
 export type RateLimitMode = "open" | "strict";
 
-function ipOf(req: NextRequest): string {
+// Each hop that proxies a request is supposed to APPEND its own observed client IP
+// to x-forwarded-for, so the leftmost (first) entry is whatever the original caller
+// claimed to be, fully attacker-controlled, while the rightmost (last) entry is what
+// our own edge actually saw on the connection. Keying on the first value let a caller
+// mint an unlimited number of fresh rate-limit buckets just by sending a different
+// made-up IP on every request. Exported so tests can exercise it without a full
+// NextRequest or the local RATE_LIMIT_TEST_BYPASS escape hatch.
+export function ipOf(req: NextRequest): string {
   const fwd = req.headers.get("x-forwarded-for") || "";
-  return fwd.split(",")[0].trim() || req.headers.get("x-real-ip") || "unknown";
+  const hops = fwd.split(",").map((s) => s.trim()).filter(Boolean);
+  return hops[hops.length - 1] || req.headers.get("x-real-ip") || "unknown";
 }
 
 // The minimal query surface the limiter uses. Structural so tests can pass a

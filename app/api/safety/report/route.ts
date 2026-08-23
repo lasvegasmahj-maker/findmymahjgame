@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Mahj Match is not open yet." }, { status: 403 });
   }
 
-  const body = await req.json().catch(() => ({}) as Record<string, unknown>);
+  const body = ((await req.json().catch(() => null)) || {}) as Record<string, unknown>;
   const category = body?.category;
   if (!isReportCategory(category)) {
     return NextResponse.json({ error: "Choose a report category." }, { status: 400 });

@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Mahj Match is not open yet." }, { status: 403 });
   }
 
-  const body = await req.json().catch(() => ({}) as Record<string, unknown>);
+  const body = ((await req.json().catch(() => null)) || {}) as Record<string, unknown>;
   const action = String(body?.action || "");
   const userId = String(body?.user_id || "");
 

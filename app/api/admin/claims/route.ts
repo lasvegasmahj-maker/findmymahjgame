@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   if (!authed(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const b = await req.json().catch(() => ({}));
+  const b = (await req.json().catch(() => null)) || {};
   const id = String(b.id || "");
   const decision = String(b.decision || "");
   const reason = typeof b.reason === "string" ? clampText(b.reason, 300) : "";

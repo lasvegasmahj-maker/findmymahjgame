@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Too many requests. Please wait a minute and try again." }, { status: 429 });
   }
 
-  const b = await req.json().catch(() => ({}));
+  const b = (await req.json().catch(() => null)) || {};
   if (!b?.shareCode || !b?.name || (!b?.phone && !b?.email)) {
     return NextResponse.json({ error: "Please add your name and a phone or email." }, { status: 400 });
   }

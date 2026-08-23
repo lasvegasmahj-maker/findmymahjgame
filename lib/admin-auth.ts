@@ -22,6 +22,12 @@ export function verifyAdminSessionToken(token: string | undefined | null): boole
     if (parts.length !== 3) return false;
     const [label, expiresStr, sig] = parts;
     if (label !== "admin-session") return false;
+    // Buffer.from(sig, "hex") silently stops at the first non-hex character
+    // instead of failing, so a valid signature with attacker-chosen bytes
+    // appended after it (still landing on a 3-part split) would otherwise
+    // decode to the same 32 bytes as the real digest and pass. Pinning the
+    // exact hex length closes that off before the lenient decode ever runs.
+    if (sig.length !== 64) return false;
     const expected = sign(`${label}:${expiresStr}`);
     const a = Buffer.from(sig, "hex");
     const b = Buffer.from(expected, "hex");

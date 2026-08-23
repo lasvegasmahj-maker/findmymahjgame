@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Finish setting up Mahj Match in your account first." }, { status: 403 });
   }
 
-  const body = await req.json().catch(() => ({}));
+  const body = (await req.json().catch(() => null)) || {};
   const action = String(body?.action || "");
   const tableId = String(body?.tableId || "");
   if (!tableId || (action !== "accept" && action !== "decline" && action !== "leave")) {

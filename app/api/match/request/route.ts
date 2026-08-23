@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Finish setting up Mahj Match in your account before requesting a table." }, { status: 403 });
   }
 
-  const body = await req.json().catch(() => ({}));
+  const body = (await req.json().catch(() => null)) || {};
   const action = String(body?.action || "");
   if (action !== "create" && action !== "cancel") {
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });

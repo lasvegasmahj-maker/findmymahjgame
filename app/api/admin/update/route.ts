@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { table, id, ids, status } = await req.json().catch(() => ({}));
+  const { table, id, ids, status } = (await req.json().catch(() => null)) || {};
 
   const idList: string[] = Array.isArray(ids) ? ids : typeof id === "string" ? [id] : [];
   const idsValid = idList.length > 0 && idList.length <= 500 && idList.every((x) => typeof x === "string" && UUID.test(x));

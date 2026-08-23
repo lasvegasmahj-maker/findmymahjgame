@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     const form = await req.formData().catch(() => null);
     token = String(form?.get("token") || "");
   } else {
-    const b = await req.json().catch(() => ({}));
+    const b = (await req.json().catch(() => null)) || {};
     token = String(b?.token || "");
   }
   const v = verifyActionToken(token);
