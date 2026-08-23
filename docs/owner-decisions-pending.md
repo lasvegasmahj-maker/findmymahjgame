@@ -24,9 +24,10 @@ closed-gate default already in place; nothing blocks engineering.
    free. The owner flagged 16 on the directory (venue_listings); applying the same
    approved data-truth rule surfaced 35 more on event_listings with the identical
    issue, so all 51 were corrected. Prior tiers preserved in
-   listing_tier_corrections (16 venue + 35 event). Reconciliation guard now covers
-   both tables and excludes founding-member entitlements. Revenue and paying-member
-   counts unchanged at 0.
+   listing_tier_corrections; the per-table counts above (16 venue, 35 event) are
+   read back from that audit table after the migration was applied to production.
+   Reconciliation guard now covers both tables and excludes founding-member
+   entitlements. Revenue and paying-member counts verified unchanged at 0.
 
 8. The legacy "quick table" share-link feature (app/api/tables/create, claim,
    find, played, run-it-back) predates the account and consent system and has no
