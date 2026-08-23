@@ -5,7 +5,7 @@ import AskClient from "./ask-client";
 export const metadata: Metadata = {
   title: "Ask Find My Mahj",
   description:
-    "Ask where to play American mahjong in plain English. Answers come only from real listings reviewed by a real person: real games, real teachers, real schedules.",
+    "Find where to play, or ask how to play. Search reviewed listings for games, teachers, and events, or get straight answers to American Mahjong rules questions.",
   alternates: { canonical: "https://findmymahjgame.com/ask" },
 };
 
@@ -15,16 +15,21 @@ export default function AskPage() {
       <h1 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "2.2rem", color: "var(--navy)", textAlign: "center", margin: "0 0 0.4rem" }}>
         Ask Find My Mahj
       </h1>
-      <p style={{ fontSize: "1.15rem", color: "var(--muted)", textAlign: "center", lineHeight: 1.5, margin: "0 0 1.8rem" }}>
-        Ask in plain English. Every answer comes from reviewed listings, never a guess.
+      <p style={{ fontSize: "1.15rem", color: "var(--navy)", textAlign: "center", lineHeight: 1.5, margin: "0 0 0.3rem", fontWeight: 600 }}>
+        Find where to play, or ask how to play.
+      </p>
+      <p style={{ fontSize: "0.95rem", color: "var(--muted)", textAlign: "center", lineHeight: 1.5, margin: "0 auto 1.8rem", maxWidth: 620 }}>
+        Search our reviewed directory for games, teachers, and events, or get straight answers to
+        American Mahjong rules questions.
       </p>
       {/* Suspense lets AskClient read ?q= for prefill while the page stays static. */}
       <Suspense fallback={null}>
         <AskClient />
       </Suspense>
       <p style={{ fontSize: "0.85rem", color: "var(--muted)", textAlign: "center", marginTop: "2.5rem", maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
-        Ask searches the same reviewed directory as the Events and Teachers pages. If nothing is
-        listed, we say so instead of guessing, and you can ask to be notified when something is added.
+        Ask Find My Mahj can help you find where to play, learn, and connect, and can answer
+        American Mahjong rules questions using our reviewed rules knowledge. If we cannot verify
+        an answer, we tell you instead of guessing.
       </p>
     </main>
   );

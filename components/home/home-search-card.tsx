@@ -114,13 +114,13 @@ export default function HomeSearchCard() {
         <div role="tabpanel" id="home-panel-ask" aria-labelledby="home-tab-ask" hidden={mode !== "ask"}>
           <form onSubmit={ask} className={styles.askRow}>
             <label htmlFor="home-ask-q" className={styles.srOnly}>
-              Ask about mahjong, games, lessons, or rules
+              Ask where to play or how to play
             </label>
             <input
               id="home-ask-q"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Ask about mahjong, games, lessons, or rules..."
+              placeholder="Ask where to play or how to play..."
               maxLength={200}
               className={styles.askInput}
             />
