@@ -1,42 +1,25 @@
-# Find My Mahj: Launch Readiness Task Graph
+# Find My Mahj: Launch Readiness Task Graph (overnight run, live status)
 
-Overnight autonomous build, 2026-08-24. Lead: Fable 5. All four launch gates OFF and staying OFF.
-Recovery note: if a session dies, resume from this file plus `git branch -a` (worker branches) and the Launch Readiness Matrix in CEO OS Drive.
+Lead: Fable 5. All four launch gates OFF and staying OFF. Recovery: this file + `git branch -a` + CEO OS matrix.
 
-## Frozen contracts (b3488e0, do not redefine anywhere)
-identity (lib/user-auth, profiles), record_class, ownership = account_id on listings,
-claim states (lib/claims/contract), matching consent (lib/match/consent), matching states
-(lib/match/states), notification taxonomy (lib/notifications/notify), analytics taxonomy
-(lib/analytics/events), launch gates (lib/launch-gates), billing truth = Stripe only.
+## Shipped to production (merged to main, deployed, verified)
+- Contracts frozen (b3488e0); ownership migration (account_id) applied to prod.
+- Duplicate "Las Vegas Mahjong Studio" listing unpublished (admin API, audited).
+- Integration-1: indexation earned on value (no launch-metro bypass), sitemap/city/admin share one verdict, Search Console adapter (dark, NOT CONNECTED), Wave 2 data reconciliation, admin launch-gates panel, policy audit + drafts.
+- Integration-2: provider claims + dashboard, Mahj Match (engine/request/respond/matcher), safety (18+ consent, block, report, triage), notifications ledger, first-party analytics (host-classified), dual-card homepage hero + nav + discovery strip. match/decide retired (410).
+- Launch Simulator (/admin/control): full rehearsal, 14/14 PASS, self-healing, rate limited, gated.
+- Admin control center: launch simulation + claims + moderation + notifications + analytics panels.
+- notification-health cron scheduled.
 
-## Active worker lanes (worktree branches; exclusive file ownership stated in each prompt)
-| Lane | Branch | Scope | Status |
-|---|---|---|---|
-| A | wa-claims-provider | claims + provider dashboard + admin claims API | RUNNING |
-| B | wb-matching | engine, request/respond routes, matcher cron rewrite, mahj-match page | RUNNING |
-| C | wc-safety | consent routes+UI, block/report, triage, admin reports API | RUNNING |
-| D | wd-notifications | templates, prefs seam, admin notifications API, health cron | RUNNING |
-| E | we-analytics | /api/events, ask+teacher instrumentation, admin analytics API, Vercel analytics | RUNNING |
-| F | wf-policy | policy audit + drafts + policy launch-gate checklist | RUNNING |
-| H | wh-hero-ask | homepage two-card hero, rotating placeholder, chips, nav, discovery strip | RUNNING |
+## In flight
+- Security red-team (sec-redteam): attacking + fixing auth/IDOR/injection/consent/PII/classification. RUNNING.
+- Accessibility/mobile/performance (qa-a11y-perf): auditing + fixing WCAG/mobile/CWV. RUNNING.
 
-## Lead-owned in flight
-- lead-seo-health branch: GSC adapter (dark, NOT CONNECTED state), sitemap/noindex consistency,
-  wave2 data reconciliation checks, admin launch-gates panel.
-- Integration of each green lane: review, merge, reviewer gate, deploy, production verify.
+## Data truth (verified)
+0 real accounts, 0 real player signups, 0 real provider signups, 0 paying members, $0 revenue. 11 test profiles (QA), all classified. Contamination: 0.
 
-## Queued (assign as workers free up; dependencies noted)
-| Task | Depends on | Notes |
-|---|---|---|
-| Launch Simulator (/admin/simulator) | A+B+C+D+E merged | lead architecture; runs the full QA rehearsal, PASS/FAIL panel |
-| Admin completion (claims/matching/moderation/notifications/analytics/revenue/health sections on /admin) | worker APIs merged | lead owns app/admin/page.tsx |
-| Security red-team | first integration deploy | independent attacker agent; fixes land same night |
-| Accessibility + mobile QA sweep | hero merged | worker |
-| Performance audit (payloads, queries, CWV) | first integration deploy | worker |
-| UX consistency + empty/error states sweep | hero merged | worker |
-| SEO intelligence (indexability wiring, internal links, orphans, structured data QA) | lead SEO branch | worker after lead adapter lands |
-| Billing E2E in Stripe test mode | Stripe TEST keys creatable? No: needs owner account. Adapter+tests only | READY - AWAITING CREDENTIAL path |
-| Launch runbook + morning report + CEO OS record | everything | lead |
+## Awaiting owner only (never blocks engineering; see docs/owner-decisions-pending.md)
+Stripe account + env vars; Search Console credential; policy draft approvals; 2 rules entries; 16 paid-tier-no-payment listings (reset to free?); billing migration application (W3, at owner's Stripe step).
 
-## Owner-only (never blocks engineering; recorded in docs/owner-decisions-pending.md)
-Stripe account + env vars; Search Console credential; policy draft approvals; two rules entries pending instructor review.
+## Remaining after QA lanes land
+Integrate security + a11y/perf fixes, final full suite, final data-truth, CEO OS record, owner morning report.
