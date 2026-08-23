@@ -16,6 +16,9 @@ export async function GET(req: NextRequest) {
   const { data: rows } = await supabase
     .from("tables")
     .select("id, share_code, day_of_week, time_of_day, venue_name, city, state, skill, seats_total, status")
+    // QA and test-classified tables (Mahj Match's own E2E suite, admin dry runs) must never
+    // reach a real visitor's search results, so this is a hard filter, not a display choice.
+    .eq("record_class", "real_external")
     .neq("status", "full")
     .ilike("city", `%${city}%`)
     .order("created_at", { ascending: false })
