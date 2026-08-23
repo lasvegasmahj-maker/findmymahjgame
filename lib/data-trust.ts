@@ -151,5 +151,132 @@ export async function readDataQualityIssues(supabase: SupabaseClient): Promise<D
     });
   }
 
+
+  // ===== Wave 2 reconciliation: identity, ownership, matching, notifications =====
+  // Each check is a cross-system invariant; a hit means two sources of truth
+  // disagree and a person should look before any number is trusted.
+
+  const { data: authPage, error: eAuth } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  if (eAuth) throw new Error(eAuth.message);
+  const { data: profileRows, error: eProf } = await supabase.from("profiles").select("id");
+  if (eProf) throw new Error(eProf.message);
+  const authIds = new Set((authPage?.users ?? []).map((u) => u.id));
+  const profileIds = new Set((profileRows ?? []).map((r) => r.id));
+  const authWithoutProfile = [...authIds].filter((id) => !profileIds.has(id)).length;
+  const profileWithoutAuth = [...profileIds].filter((id) => !authIds.has(id)).length;
+  if (authWithoutProfile > 0) {
+    issues.push({
+      check: "Auth users with no profile",
+      count: authWithoutProfile,
+      detail: "auth.users rows without a profiles row. Sign-in verification should always create one.",
+    });
+  }
+  if (profileWithoutAuth > 0) {
+    issues.push({
+      check: "Profiles with no auth user",
+      count: profileWithoutAuth,
+      detail: "profiles rows whose auth user is gone. Cascade delete should prevent this.",
+    });
+  }
+
+  const { data: winningClaims, error: eClaims } = await supabase
+    .from("listing_claims")
+    .select("listing_table, listing_id, profile_id, status")
+    .in("status", ["approved", "auto_approved"])
+    .not("profile_id", "is", null);
+  if (eClaims) throw new Error(eClaims.message);
+  let claimOwnershipMismatch = 0;
+  for (const c of winningClaims ?? []) {
+    const { data: listing, error } = await supabase
+      .from(c.listing_table).select("account_id").eq("id", c.listing_id).maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!listing || listing.account_id !== c.profile_id) claimOwnershipMismatch++;
+  }
+  if (claimOwnershipMismatch > 0) {
+    issues.push({
+      check: "Approved claim without matching ownership",
+      count: claimOwnershipMismatch,
+      detail: "An account-flow claim was approved but the listing's account_id does not point at the claimant.",
+    });
+  }
+
+  const [{ data: seatRows, error: eSeats }, { data: blockRows, error: eBlocks }] = await Promise.all([
+    supabase.from("table_seats").select("table_id, user_id, status").not("user_id", "is", null).in("status", ["invited", "accepted"]),
+    supabase.from("user_blocks").select("blocker_user_id, blocked_user_id"),
+  ]);
+  if (eSeats) throw new Error(eSeats.message);
+  if (eBlocks) throw new Error(eBlocks.message);
+  const blocked = new Set((blockRows ?? []).map((b) => `${b.blocker_user_id}|${b.blocked_user_id}`));
+  const byTable = new Map<string, string[]>();
+  for (const s2 of seatRows ?? []) {
+    (byTable.get(s2.table_id) ?? byTable.set(s2.table_id, []).get(s2.table_id)!).push(s2.user_id);
+  }
+  let blockedPairsSeated = 0;
+  for (const members of byTable.values()) {
+    for (let i = 0; i < members.length; i++) {
+      for (let j = i + 1; j < members.length; j++) {
+        if (blocked.has(`${members[i]}|${members[j]}`) || blocked.has(`${members[j]}|${members[i]}`)) blockedPairsSeated++;
+      }
+    }
+  }
+  if (blockedPairsSeated > 0) {
+    issues.push({
+      check: "Blocked players seated together",
+      count: blockedPairsSeated,
+      detail: "A table holds two players where one has blocked the other. The matcher must never do this.",
+    });
+  }
+
+  const { data: openReqs, error: eReqs } = await supabase
+    .from("play_requests").select("user_id").eq("status", "open").not("user_id", "is", null);
+  if (eReqs) throw new Error(eReqs.message);
+  const reqUsers = [...new Set((openReqs ?? []).map((r) => r.user_id))];
+  let matchingWithoutConsent = 0;
+  if (reqUsers.length > 0) {
+    const { data: consents, error: eCons } = await supabase
+      .from("matching_profiles")
+      .select("user_id, adult_affirmed_at, matching_opt_in_at, matching_deactivated_at")
+      .in("user_id", reqUsers);
+    if (eCons) throw new Error(eCons.message);
+    const ok = new Set(
+      (consents ?? [])
+        .filter((c) => c.adult_affirmed_at && c.matching_opt_in_at && !c.matching_deactivated_at)
+        .map((c) => c.user_id)
+    );
+    matchingWithoutConsent = reqUsers.filter((u) => !ok.has(u)).length;
+  }
+  if (matchingWithoutConsent > 0) {
+    issues.push({
+      check: "Open match requests without valid consent",
+      count: matchingWithoutConsent,
+      detail: "play_requests marked open for users who are not fully consented (18+, opted in, active).",
+    });
+  }
+
+  const { count: publicTestTables, error: eTables } = await supabase
+    .from("tables").select("id", { count: "exact", head: true })
+    .in("status", ["forming", "confirmed"]).neq("record_class", "real_external");
+  if (eTables) throw new Error(eTables.message);
+  if ((publicTestTables ?? 0) > 0) {
+    issues.push({
+      check: "Test tables in public statuses",
+      count: publicTestTables ?? 0,
+      detail: "Non-real tables in forming or confirmed status. Public surfaces filter these out, but they should not linger.",
+    });
+  }
+
+  const dayAgo = new Date(Date.now() - 86400000).toISOString();
+  const { count: failedNotifs, error: eNotif } = await supabase
+    .from("notifications_log").select("id", { count: "exact", head: true })
+    .eq("status", "failed").gte("created_at", dayAgo);
+  if (eNotif) throw new Error(eNotif.message);
+  if ((failedNotifs ?? 0) > 0) {
+    issues.push({
+      check: "Failed notifications in the last 24 hours",
+      count: failedNotifs ?? 0,
+      detail: "Transactional emails that did not send. The platform may be silently failing to speak.",
+    });
+  }
+
   return issues;
 }

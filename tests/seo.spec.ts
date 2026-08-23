@@ -171,10 +171,11 @@ test.describe("Structured data", () => {
 test.describe("Indexability rule (ships dark, lib/seo/indexability.ts)", () => {
   const base = { published: 0, variantConfirmed: 0, currentEvidence: 0, isLaunchMetro: false };
 
-  test("launch metros are always indexable, even empty", () => {
+  test("launch metro status grants no index bypass (owner ruling 2026-08-24)", () => {
     const v = cityIndexability({ ...base, isLaunchMetro: true });
-    expect(v).toEqual({ indexable: true, disposition: "index", reason: "launch-metro" });
-    expect(belongsInSitemap(v)).toBe(true);
+    expect(v.indexable).toBe(false);
+    expect(v.disposition).toBe("noindex");
+    expect(belongsInSitemap(v)).toBe(false);
   });
 
   test("zero published listings is noindex", () => {

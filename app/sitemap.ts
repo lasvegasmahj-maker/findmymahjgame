@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { ALL_STATE_SLUGS, STATES } from "@/lib/states-data";
 import { createServerClient } from "@/lib/supabase-server";
+import { cityIndexability } from "@/lib/seo/indexability";
+import { buildCityCounts, type CityCountRow } from "@/lib/seo/city-counts";
 import { isFounderListing } from "@/lib/featured-listings";
 
 const BASE = "https://findmymahjgame.com";
@@ -34,7 +36,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Real listing timestamps drive lastmod. A sitemap that stamps every URL
   // with the request time teaches crawlers to distrust our lastmod entirely,
   // so entries without a known data timestamp simply omit it.
-  const cityKeys = new Set<string>(LAUNCH_CITY_KEYS);
+  // SITEMAP-1: cities enter only when cityIndexability passes; launch metros get
+  // no bypass (owner ruling 2026-08-24). LAUNCH_CITY_KEYS stays only as the
+  // no-database fallback so a transient outage never empties the sitemap.
+  const cityKeys = new Set<string>();
+  const cityRows = new Map<string, CityCountRow[]>();
   const cityLastmod = new Map<string, string>();
   const stateLastmod = new Map<string, string>();
   const teacherPages: MetadataRoute.Sitemap = [];
@@ -42,8 +48,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const supabase = createServerClient();
     const [ev, ve, pl] = await Promise.all([
-      supabase.from("event_listings").select("city, state, updated_at, created_at").eq("status", "published"),
-      supabase.from("venue_listings").select("id, city, state, venue_type, description, website, instagram, updated_at, created_at").eq("status", "published"),
+      supabase.from("event_listings").select("city, state, mahjong_variant, variant_confidence, confirmed_active_at, updated_at, created_at").eq("status", "published"),
+      supabase.from("venue_listings").select("id, city, state, venue_type, description, website, instagram, mahjong_variant, variant_confidence, confirmed_active_at, updated_at, created_at").eq("status", "published"),
       supabase.from("player_listings").select("city, state, updated_at, created_at").eq("status", "published"),
     ]);
     const bump = (map: Map<string, string>, key: string, ts: string | null | undefined) => {
@@ -69,8 +75,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const citySlug = SUBURB_TO_HUB[c] || (slugify(c).replace(/-/g, " ") === c ? slugify(c) : null);
       if (!citySlug) continue;
       const key = `${stateSlug}/${citySlug}`;
-      cityKeys.add(key);
+      (cityRows.get(key) ?? cityRows.set(key, []).get(key)!).push(r as CityCountRow);
       bump(cityLastmod, key, ts);
+    }
+    for (const [key, counts] of buildCityCounts(cityRows)) {
+      if (cityIndexability(counts).indexable) cityKeys.add(key);
     }
 
     // Teacher profiles mirror the gating in app/teachers/[id]/page.tsx:
@@ -87,7 +96,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.6,
       });
     }
-  } catch { /* keep the launch metros; skip teacher profiles */ }
+  } catch {
+    for (const k of LAUNCH_CITY_KEYS) cityKeys.add(k);
+  }
 
   // Listing-driven hub pages share the newest listing timestamp; brochure
   // pages omit lastmod rather than fake one.

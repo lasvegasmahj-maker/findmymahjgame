@@ -68,18 +68,15 @@ export const CATEGORY_THRESHOLDS = {
 } as const;
 
 /**
- * Rule CITY-1 and CITY-2: is a /states/[state]/[city] page indexable?
+ * Rule CITY-2: is a /states/[state]/[city] page indexable?
  *
- * CITY-1: launch metros are always indexable (business commitment, matches
- * shipped behavior). CITY-2: everything else must have at least 3 published
- * listings, 2 variant-confirmed, and 1 with current evidence. Failing pages
- * are noindex, never 404, because they still render real listings and state
- * navigation.
+ * Every city must earn indexation on marketplace value: at least 3 published
+ * listings, 2 variant-confirmed, and 1 with current evidence. Owner ruling
+ * 2026-08-24 removed the old launch-metro bypass: no page is indexed on a
+ * business commitment alone. Failing pages are noindex, never 404, because
+ * they still render real listings and state navigation.
  */
 export function cityIndexability(counts: MetroCounts): IndexabilityVerdict {
-  if (counts.isLaunchMetro) {
-    return { indexable: true, disposition: "index", reason: "launch-metro" };
-  }
   if (counts.published === 0) {
     return { indexable: false, disposition: "noindex", reason: "no-published-listings" };
   }

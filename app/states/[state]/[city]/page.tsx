@@ -3,6 +3,8 @@ import Link from "next/link";
 import NotifyMe from "@/components/notify-me";
 import { notFound } from "next/navigation";
 import { createServerClient } from "@/lib/supabase-server";
+import { cityIndexability } from "@/lib/seo/indexability";
+import { buildCityCounts } from "@/lib/seo/city-counts";
 import { STATES, type StateData } from "@/lib/states-data";
 import { safeHttpUrl } from "@/lib/sanitize";
 import { attendInfo } from "@/lib/event-level";
@@ -59,27 +61,26 @@ export async function generateMetadata({ params }: { params: Promise<{ state: st
     alternates: { canonical: `https://findmymahjgame.com/states/${st.slug}/${city.toLowerCase()}` },
   };
 
-  // Inventory-gated indexation: dynamicParams renders this route for ANY city
-  // slug, so a misspelled or junk URL would otherwise be an indexable empty
-  // shell. Pages with no published inventory are noindex (follow stays on),
-  // except the 8 prebuilt launch metros, which stay indexable by design. On a
-  // query error we default to indexable.
-  const isLaunchMetro = generateStaticParams().some((p) => p.state === st.slug && p.city === city);
-  if (!isLaunchMetro) {
-    try {
-      const aliases = METRO[city] || [cityName.toLowerCase()];
-      const inCity = (c: string | null | undefined) => !!c && aliases.includes(String(c).trim().toLowerCase());
-      const supabase = createServerClient();
-      const [ev, ve] = await Promise.all([
-        supabase.from("event_listings").select("city").eq("state", st.abbr).eq("status", "published"),
-        supabase.from("venue_listings").select("city").eq("state", st.abbr).eq("status", "published"),
-      ]);
-      if (!ev.error && !ve.error) {
-        const hasInventory = [...(ev.data || []), ...(ve.data || [])].some((r) => inCity(r.city));
-        if (!hasInventory) meta.robots = { index: false, follow: true };
-      }
-    } catch { /* default to indexable */ }
-  }
+  // Indexation is earned on marketplace value, launch metros included (owner
+  // ruling 2026-08-24, rule CITY-2): 3 published, 2 variant-confirmed, 1 with
+  // current evidence. dynamicParams renders this route for ANY slug, so junk
+  // URLs would otherwise be indexable empty shells. Failing pages are noindex
+  // with follow on. On a query error the page stays indexable rather than
+  // noindexing real inventory on a transient failure.
+  try {
+    const aliases = METRO[city] || [cityName.toLowerCase()];
+    const inCity = (c: string | null | undefined) => !!c && aliases.includes(String(c).trim().toLowerCase());
+    const supabase = createServerClient();
+    const [ev, ve] = await Promise.all([
+      supabase.from("event_listings").select("city, mahjong_variant, variant_confidence, confirmed_active_at").eq("state", st.abbr).eq("status", "published"),
+      supabase.from("venue_listings").select("city, mahjong_variant, variant_confidence, confirmed_active_at").eq("state", st.abbr).eq("status", "published"),
+    ]);
+    if (!ev.error && !ve.error) {
+      const rows = [...(ev.data || []), ...(ve.data || [])].filter((r) => inCity(r.city));
+      const counts = buildCityCounts(new Map([["k", rows]])).get("k");
+      if (counts && !cityIndexability(counts).indexable) meta.robots = { index: false, follow: true };
+    }
+  } catch { /* keep indexable on transient failure */ }
   return meta;
 }
 
