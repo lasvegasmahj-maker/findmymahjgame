@@ -35,7 +35,7 @@ test.describe("hero cards", () => {
     });
     await page.goto("/");
     const jokerChip = page.getByRole("button", { name: "Can I use a joker in a pair?" });
-    const instructorChip = page.getByRole("button", { name: "Find an instructor near me" });
+    const instructorChip = page.getByRole("button", { name: "Find an instructor near Phoenix" });
     const charlestonChip = page.getByRole("button", { name: "How does the Charleston work?" });
     await expect(jokerChip).toBeVisible();
     await expect(instructorChip).toBeVisible();
@@ -104,7 +104,7 @@ test.describe("hero cards", () => {
     await page.keyboard.press("Tab");
     await expect(page.getByRole("button", { name: "Can I use a joker in a pair?" })).toBeFocused();
     await page.keyboard.press("Tab");
-    await expect(page.getByRole("button", { name: "Find an instructor near me" })).toBeFocused();
+    await expect(page.getByRole("button", { name: "Find an instructor near Phoenix" })).toBeFocused();
     await page.keyboard.press("Tab");
     await expect(page.getByRole("button", { name: "How does the Charleston work?" })).toBeFocused();
   });

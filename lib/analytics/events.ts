@@ -65,11 +65,15 @@ export function hostRecordClass(host: string | null | undefined): RecordClass {
   return h === PRODUCTION_HOST || h === `www.${PRODUCTION_HOST}` ? "real_external" : "test";
 }
 
+const MAX_PROP_KEYS = 25;
+const MAX_PROP_KEY_LEN = 40;
+
 export function scrubProps(props: Record<string, unknown> | undefined): Record<string, string | number | boolean> {
   const out: Record<string, string | number | boolean> = {};
   if (!props) return out;
   for (const [k, v] of Object.entries(props)) {
-    if (FORBIDDEN_PROP_KEYS.test(k)) continue;
+    if (Object.keys(out).length >= MAX_PROP_KEYS) break;
+    if (k.length > MAX_PROP_KEY_LEN || FORBIDDEN_PROP_KEYS.test(k)) continue;
     if (typeof v === "number" || typeof v === "boolean") out[k] = v;
     else if (typeof v === "string") out[k] = v.slice(0, MAX_PROP_STRING);
   }

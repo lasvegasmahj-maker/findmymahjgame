@@ -36,7 +36,7 @@ const ROTATING_QUESTIONS = [
   "Find an instructor near Phoenix",
 ];
 
-const CHIPS = ["Can I use a joker in a pair?", "Find an instructor near me", "How does the Charleston work?"];
+const CHIPS = ["Can I use a joker in a pair?", "Find an instructor near Phoenix", "How does the Charleston work?"];
 
 const ROTATE_MS = 3500;
 const FADE_MS = 300;
