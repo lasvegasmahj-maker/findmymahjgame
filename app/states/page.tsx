@@ -54,7 +54,7 @@ export default async function StatesIndexPage() {
   return (
     <>
       <div className="page-hero">
-        <div className="eyebrow" style={{ color: "rgba(255,255,255,0.85)" }}>Player Directory</div>
+        <div className="eyebrow">Player Directory</div>
         <h1>Browse Mahjong Players by State</h1>
         <p>
           Find players, open play groups, instructors and events across all 50 states.

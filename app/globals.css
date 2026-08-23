@@ -706,6 +706,10 @@ body {
   letter-spacing: 0.2em; text-transform: uppercase;
   color: var(--pink); margin-bottom: 0.8rem;
 }
+/* Inside the navy page-hero, bright pink is only ~3.6:1 on the dark ground, so
+   hero eyebrows render in near-white for AA contrast. One rule keeps every hero
+   consistent instead of a per-page inline override. */
+.page-hero .eyebrow { color: rgba(255, 255, 255, 0.85); }
 .page-hero h1 {
   font-family: var(--font-playfair), "Playfair Display", serif;
   font-size: clamp(2rem, 4vw, 3rem);

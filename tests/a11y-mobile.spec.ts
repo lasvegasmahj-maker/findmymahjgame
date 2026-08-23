@@ -106,7 +106,7 @@ test.describe("keyboard operability: /ask", () => {
   test("example chip is operable with Enter/Space and meets the 44px touch target on mobile", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.route("**/api/ask", async (route) => {
-      await route.fulfill({ json: { ok: true, answer: "A joker can stand in for any tile in a pair.", results: [] } });
+      await route.fulfill({ json: { ok: true, answer: "No, a joker cannot be used in a pair. Jokers are only valid in a pung, kong, quint, or sextet.", results: [] } });
     });
     await page.goto("/ask");
     const chip = page.getByRole("button", { name: "Can I use a joker in a pair?" });
@@ -114,7 +114,7 @@ test.describe("keyboard operability: /ask", () => {
     expect(box?.height, "example chip height").toBeGreaterThanOrEqual(44);
     await chip.focus();
     await page.keyboard.press("Enter");
-    await expect(page.getByRole("status")).toContainText("A joker can stand in for any tile in a pair.");
+    await expect(page.getByRole("status")).toContainText("No, a joker cannot be used in a pair.");
   });
 
   test("an error response is announced via a live region, not just colored text", async ({ page }) => {
