@@ -72,6 +72,11 @@ export async function rateLimit(
   windowSec: number,
   mode: RateLimitMode = "open"
 ): Promise<boolean> {
+  // Local test escape hatch. Playwright suites share one production rate_hits table,
+  // so repeated runs exhaust real windows and fail tests that never test limiting.
+  // Set only in .env.local; production Vercel env never defines it, and the strict
+  // mode tests exercise rateLimitCheck directly so they bypass this bypass.
+  if (process.env.RATE_LIMIT_TEST_BYPASS === "1" && !process.env.VERCEL) return true;
   return rateLimitCheck(
     supabase as unknown as RateLimitStore,
     `${route}:${ipOf(req)}`,

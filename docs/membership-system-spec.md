@@ -2005,3 +2005,13 @@ Build Stripe Checkout writing back to `stripe_payment_id` and `memberships`, the
 Enable `tier='enterprise'` with the `org_id`/`parent_org_id` multi-listing grouping, bulk event upload, the organizer/brand dashboard, and the account-managed sales path via the extended `/advertise` inquiry flow. Widen `ad_listings` to the full `ad_tier` enum, publish the sponsorship rate card, and build the aggregate/opt-in data and lead products. This is monetization Phase 3, and it ships last, only once Find My Mahj Game is the default directory players use.
 
 Throughout: every privileged write logs to `audit_log`; every paid feature buys visibility/credibility/promotion and never rank or the right to exist; players never pay; and no step ever requires tearing down what came before.
+
+## Authorization rule for provider features (added 2026-08-22)
+
+The role on a profile (and inside the fmg_user session cookie) records what the person
+asked to be, not what they are entitled to. First sign-in accepts a self-chosen
+player or provider role, so session.role must NEVER gate a provider-only capability.
+Provider-only endpoints must verify an approved claim (behind launch_provider_claims)
+against the claims records, the same way admin access verifies the admin cookie and
+nothing else. A future endpoint that trusts session.role === "provider" would be a
+self-service privilege grant.
