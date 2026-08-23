@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
       // The reference rides on the SUBSCRIPTION metadata so every subscription
       // webhook event carries it and can extend this listing's premium_until.
       subscription_data: { metadata: { listing_table: "venue_listings", listing_id: listingId } },
-      success_url: `${SITE}/provider?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${SITE}/provider?checkout=success`,
       cancel_url: `${SITE}/provider?checkout=cancelled`,
     });
 

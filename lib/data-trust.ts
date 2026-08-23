@@ -309,7 +309,9 @@ export async function readDataQualityIssues(supabase: SupabaseClient): Promise<D
   // listing (its id stamped on that listing by the webhook). An unlinked active
   // subscription means someone paid and received nothing, the exact failure the
   // payer-bound checkout is built to prevent; it must land in front of a person,
-  // never hide inside a KPI.
+  // never hide inside a KPI. Venue listings only (the only table checkout and the
+  // webhook bind) and unpaginated on purpose: fine well past launch scale, union
+  // the tables and page the reads before subscriptions approach 1000.
   const { data: activeSubs, error: eSubs } = await supabase
     .from("billing_subscriptions").select("stripe_subscription_id").eq("status", "active");
   if (eSubs) throw new Error(eSubs.message);

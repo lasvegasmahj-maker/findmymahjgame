@@ -263,9 +263,11 @@ test.describe("old offers are retired", () => {
     expect(api).toContain("premium_until");
   });
 
-  test("live API: checkout stays dark right now", async ({ request }) => {
+  test("live API: no anonymous checkout, ever", async ({ request }) => {
+    // 503 while Stripe is unconfigured (today), 401 for anonymous callers once
+    // activation sets the Stripe env vars. Both refuse an anonymous checkout.
     const res = await request.post("/api/billing/checkout");
-    expect(res.status()).toBe(503);
+    expect([503, 401]).toContain(res.status());
   });
 
   test("an unreconciled paid subscription surfaces as a data-quality issue", () => {

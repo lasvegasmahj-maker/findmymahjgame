@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
   const [venuesRes, eventsRes, claimsRes] = await Promise.all([
     supabase
       .from("venue_listings")
-      .select("id, business_name, city, state, status, tier, premium_until, website, instagram, display_email, description")
+      .select("id, business_name, city, state, status, tier, premium_until, stripe_payment_id, website, instagram, display_email, description")
       .eq("account_id", session.userId),
     supabase
       .from("event_listings")
@@ -50,7 +50,9 @@ export async function GET(req: NextRequest) {
   if (eventsRes.error) console.error("provider dashboard: event listings read failed:", eventsRes.error.message);
   if (claimsRes.error) console.error("provider dashboard: claims read failed:", claimsRes.error.message);
 
-  const venues = (venuesRes.error ? [] : venuesRes.data || []).map((v) => ({ ...v, listing_table: "venue_listings" as const }));
+  // The raw payment id stays server-side; the dashboard only needs to know
+  // whether the entitlement is paid or the complimentary trial.
+  const venues = (venuesRes.error ? [] : venuesRes.data || []).map(({ stripe_payment_id, ...v }) => ({ ...v, premium_paid: Boolean(stripe_payment_id), listing_table: "venue_listings" as const }));
   const events = (eventsRes.error ? [] : eventsRes.data || []).map((e) => ({ ...e, listing_table: "event_listings" as const }));
 
   return NextResponse.json({
