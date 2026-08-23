@@ -6,7 +6,7 @@ every payment page politely says "Payments are not yet enabled" until you finish
 list. You can stop at any step and the site keeps working normally.
 
 What the money side looks like when you are done: directory members pay $89 per year.
-Teachers who enter the promo code FINDMYMAHJGAME get their first billing period free.
+There is no promo code. The complimentary period is the app-managed 90-day Premium trial that starts automatically when a provider claims a listing; it never creates a Stripe subscription. Stripe only appears when a provider voluntarily chooses $89/year.
 Players never pay anything, ever. Stripe (the payment company) holds the real financial
 records; our database only keeps a copy for the admin dashboard.
 
@@ -27,16 +27,9 @@ records; our database only keeps a copy for the admin dashboard.
 4. Save, then click the price you just made and copy its ID. It looks like
    `price_1AbCdEfGh...`. You will paste this into Vercel in Step 4.
 
-## Step 3: Create the FINDMYMAHJGAME promo code
+## Step 3: No promo code needed
 
-1. In Stripe, go to Product catalog, then Coupons, then "Create coupon"
-2. Type: Percentage discount, 100 percent off
-3. Duration: Once (this makes the first billing period free; regular $89 billing starts
-   automatically after that)
-4. Save the coupon, then on the coupon page click "Add promotion code"
-5. Set the code customers type to exactly: FINDMYMAHJGAME
-6. Save. Checkout already has promo codes turned on, so nothing else is needed for the
-   code to work.
+The old FINDMYMAHJGAME coupon is retired (superseded by the app-managed 90-day claim trial on 2026-08-23). Do not create any coupon or promotion code; checkout is the plain $89/year price.
 
 ## Step 4: Put the four secret values into Vercel
 
@@ -100,7 +93,7 @@ webhook secret), then repeat once with Live mode keys.
 - [ ] In Stripe, Developers, Webhooks: the endpoint shows recent deliveries with
       response 200
 - [ ] In Supabase: billing_subscriptions has one new row with status `active`
-- [ ] Enter promo code FINDMYMAHJGAME on the checkout page and confirm the total
+- [ ] Confirm checkout shows the plain $89/year total with no promotion code field
       becomes $0.00 for the first period
 - [ ] Cancel the test subscription in Stripe and confirm the row's status updates
 - [ ] Set `launch_payments` back to 'false' and confirm `/api/billing/checkout` says
