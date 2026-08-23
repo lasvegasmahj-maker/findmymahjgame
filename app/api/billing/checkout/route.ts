@@ -38,12 +38,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "A valid email is required to start checkout." }, { status: 400 });
   }
 
+  // Optional listing reference so payment can extend that listing's premium_until.
+  // Validated server-side against a real published listing; an invalid reference is
+  // dropped rather than failing checkout. The reference rides on the SUBSCRIPTION
+  // metadata (not just the session) so every subscription webhook event carries it.
+  let listingTable: string | null = null;
+  let listingId: string | null = null;
+  const rawTable = String(b?.listingTable || "");
+  const rawId = clampText(b?.listingId, 64);
+  if ((rawTable === "venue_listings" || rawTable === "event_listings") && /^[0-9a-f-]{36}$/i.test(rawId)) {
+    const { data: row } = await supabase.from(rawTable).select("id").eq("id", rawId).eq("status", "published").maybeSingle();
+    if (row) {
+      listingTable = rawTable;
+      listingId = rawId;
+    }
+  }
+
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
       customer_email: email,
       allow_promotion_codes: false,
+      subscription_data: listingTable && listingId ? { metadata: { listing_table: listingTable, listing_id: listingId } } : undefined,
       success_url: `${SITE}/join?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${SITE}/join?checkout=cancelled`,
     });

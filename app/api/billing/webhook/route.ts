@@ -56,6 +56,31 @@ async function upsertSubscription(supabase: SupabaseClient, sub: Stripe.Subscrip
     { onConflict: "stripe_subscription_id" }
   );
   if (error) throw new Error(`billing_subscriptions upsert failed: ${error.message}`);
+
+  await syncListingEntitlement(supabase, sub);
+}
+
+// Paid Premium completes and overrides the complimentary trial: an active
+// subscription moves the listing's premium_until forward to the PAID period end,
+// so entitlement survives the 90-day trial date lapsing. The listing reference
+// comes from subscription metadata written at checkout, and the payment id is
+// stamped only here, from a signature-verified event, never from client input.
+// Cancellations get no special handling: the entitlement simply lapses when the
+// last paid period ends, which is the approved auto-revert-to-Basic behavior.
+async function syncListingEntitlement(supabase: SupabaseClient, sub: Stripe.Subscription) {
+  const table = sub.metadata?.listing_table;
+  const listingId = sub.metadata?.listing_id;
+  if ((table !== "venue_listings" && table !== "event_listings") || !listingId) return;
+  if (sub.status !== "active") return;
+  const periodEnd = readPeriodEnd(sub);
+  if (!periodEnd) return;
+
+  const { error } = await supabase
+    .from(table)
+    .update({ premium_until: periodEnd, stripe_payment_id: sub.id })
+    .eq("id", listingId)
+    .or(`premium_until.is.null,premium_until.lt.${periodEnd}`);
+  if (error) throw new Error(`${table} entitlement sync failed: ${error.message}`);
 }
 
 async function recordCustomer(supabase: SupabaseClient, session: Stripe.Checkout.Session) {
