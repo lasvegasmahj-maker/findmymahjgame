@@ -70,7 +70,7 @@ async function upsertSubscription(supabase: SupabaseClient, sub: Stripe.Subscrip
 async function syncListingEntitlement(supabase: SupabaseClient, sub: Stripe.Subscription) {
   const table = sub.metadata?.listing_table;
   const listingId = sub.metadata?.listing_id;
-  if ((table !== "venue_listings" && table !== "event_listings") || !listingId) return;
+  if (table !== "venue_listings" || !listingId) return;
   if (sub.status !== "active") return;
   const periodEnd = readPeriodEnd(sub);
   if (!periodEnd) return;

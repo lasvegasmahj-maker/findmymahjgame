@@ -85,10 +85,12 @@ export async function POST(req: NextRequest) {
     if (usersErr) throw usersErr;
     const account = usersPage?.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
     if (account) {
-      const { error: trialErr } = await supabase.from(table).update({ premium_until: trialUntilFrom(new Date()) }).eq("id", id).is("premium_until", null);
-      if (trialErr) console.error("claim: trial start failed:", trialErr.message);
-      const { error: ownErr } = await supabase.from(table).update({ account_id: account.id }).eq("id", id).is("account_id", null);
+      const { data: owned, error: ownErr } = await supabase.from(table).update({ account_id: account.id }).eq("id", id).is("account_id", null).select("id");
       if (ownErr) console.error("claim: account_id backfill failed:", ownErr.message);
+      if (!ownErr && owned && owned.length > 0 && table === "venue_listings") {
+        const { error: trialErr } = await supabase.from(table).update({ premium_until: trialUntilFrom(new Date()) }).eq("id", id).is("premium_until", null);
+        if (trialErr) console.error("claim: trial start failed:", trialErr.message);
+      }
     }
   } catch (e) {
     console.error("claim: account lookup failed:", e instanceof Error ? e.message : e);

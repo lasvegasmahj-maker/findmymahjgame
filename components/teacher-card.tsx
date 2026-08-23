@@ -19,7 +19,7 @@ type TeacherLike = {
   tier?: string | null;
   charter?: boolean | null;
   advisor?: boolean | null;
-  account_id?: string | null;
+  verified?: boolean | null;
   premium_until?: string | null;
 };
 
@@ -46,9 +46,10 @@ export default function TeacherCard({ t, house }: { t: TeacherLike; house?: bool
   const site = t.website && /^https?:\/\//i.test(t.website) ? t.website : "";
   const desc = t.description ? String(t.description) : "";
   // Verified means an owner claimed this listing through the evidence-based claim
-  // process; it is a trust state, never bought. Premium is the commercial
+  // process; it is a trust state, never bought, derived server-side from ownership
+  // (the auth UUID itself never crosses to the client). Premium is the commercial
   // membership (paid or in the complimentary trial). They are independent.
-  const verified = Boolean(t.account_id);
+  const verified = Boolean(t.verified);
   const premium = isPremiumActive(t.premium_until);
   return (
     <div style={{ display: "flex", flexDirection: "column", background: "white", border: "2px solid var(--border)", borderRadius: 16, padding: "1.4rem", height: "100%" }}>

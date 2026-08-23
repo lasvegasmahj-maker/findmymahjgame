@@ -104,7 +104,11 @@ export default async function StatePage({ params, searchParams }: { params: Prom
 
   const players = playersRes.data || [];
   const events = (eventsRes.data || []).filter((e) => isUpcoming(e));
-  const venues = (venuesRes.data || []).filter((v) => !isFounderListing(v));
+  // account_id is an auth UUID and must never serialize into client props; the
+  // card only needs the derived verified boolean.
+  const venues = (venuesRes.data || [])
+    .filter((v) => !isFounderListing(v))
+    .map(({ account_id, ...v }) => ({ ...v, verified: Boolean(account_id) }));
 
   const STATE_CITIES: Record<string, [string, string][]> = {
     texas: [["dallas", "Dallas"], ["houston", "Houston"], ["austin", "Austin"], ["san-antonio", "San Antonio"]],

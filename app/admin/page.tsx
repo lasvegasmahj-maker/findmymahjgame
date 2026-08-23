@@ -144,11 +144,11 @@ export default async function AdminHome() {
             <Stat label="Seed, test and internal records" value={m.nonRealPlayers + m.testProviderSubmissions} sub="classified and excluded from every signup number" />
           </Section>
 
-          <Section title="Membership and money" source="premium_until entitlement dates + payment records; a trial never counts as paying">
+          <Section title="Membership and money" source="teacher listings: premium_until entitlement dates + payment records; a trial never counts as paying">
             <Stat label="Basic (free forever)" value={membership ? membership.basic : "?"} sub="published with no active Premium entitlement" />
             <Stat label="Complimentary Premium trial" value={membership ? membership.complimentaryTrial : "?"} sub="90 days from claim; no card, zero revenue" />
             <Stat label="Paid Premium" value={membership ? membership.paidPremium : "?"} sub="requires a real payment record" />
-            <Stat label="Expired trial, back to Basic" value={membership ? membership.expiredReverted : "?"} sub="entitlement lapsed without payment; listing stays live" />
+            <Stat label="Expired trial, back to Basic" value={membership ? membership.expiredReverted : "?"} sub="trial lapsed without payment; the listing stays live and is counted in Basic" />
             <Stat label="Charter recognition" value={m.foundingMembers} sub="recognition, not a tier; no ranking effect" />
             <Stat label="Verified paying customers" value={m.verifiedPayments} sub="rows with a real payment id" />
             <NotConnected label="Revenue and MRR" note="No payment provider is integrated. Money metrics appear here once Stripe (or equivalent) is connected and becomes the source of truth." />

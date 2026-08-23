@@ -86,8 +86,9 @@ export async function POST(req: NextRequest) {
   });
 
   // Record only structured metadata, never the message or the player's identity.
-  // record_class keeps QA traffic (non-production host, or the founder demo id) out
-  // of the real lead counts that feed the Premium conversion diagnostic.
+  // The founder demo card is skipped entirely (no row at all); record_class keeps
+  // non-production-host QA traffic out of the real lead counts that feed the
+  // Premium conversion diagnostic.
   if (teacherId !== LAS_VEGAS_MAHJONG.id) {
     const recordClass = hostRecordClass(req.headers.get("host")) === "test" ? "test" : "real_external";
     const { error: leadErr } = await createServerClient().from("provider_leads").insert({

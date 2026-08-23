@@ -39,18 +39,28 @@ export async function POST(req: NextRequest) {
   }
 
   // Optional listing reference so payment can extend that listing's premium_until.
-  // Validated server-side against a real published listing; an invalid reference is
-  // dropped rather than failing checkout. The reference rides on the SUBSCRIPTION
-  // metadata (not just the session) so every subscription webhook event carries it.
+  // Scoped to teacher (venue) listings, the only place Premium surfaces exist, and
+  // BOUND TO THE PAYER: the reference is kept only when the listing is claimed and
+  // the checkout email matches the owning account's email, so a stranger can never
+  // stamp a paid entitlement onto someone else's listing. An invalid or unowned
+  // reference is dropped rather than failing checkout. The reference rides on the
+  // SUBSCRIPTION metadata so every subscription webhook event carries it.
   let listingTable: string | null = null;
   let listingId: string | null = null;
   const rawTable = String(b?.listingTable || "");
   const rawId = clampText(b?.listingId, 64);
-  if ((rawTable === "venue_listings" || rawTable === "event_listings") && /^[0-9a-f-]{36}$/i.test(rawId)) {
-    const { data: row } = await supabase.from(rawTable).select("id").eq("id", rawId).eq("status", "published").maybeSingle();
-    if (row) {
-      listingTable = rawTable;
-      listingId = rawId;
+  if (rawTable === "venue_listings" && /^[0-9a-f-]{36}$/i.test(rawId)) {
+    const { data: row } = await supabase.from(rawTable).select("id, account_id").eq("id", rawId).eq("status", "published").maybeSingle();
+    if (row?.account_id) {
+      try {
+        const { data: owner } = await supabase.auth.admin.getUserById(String(row.account_id));
+        if (owner?.user?.email?.toLowerCase() === email) {
+          listingTable = rawTable;
+          listingId = rawId;
+        }
+      } catch (e) {
+        console.error("billing/checkout: owner lookup failed", e instanceof Error ? e.message : e);
+      }
     }
   }
 

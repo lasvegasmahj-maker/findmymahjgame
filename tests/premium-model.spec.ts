@@ -90,8 +90,20 @@ test.describe("claim starts the trial, payment is never faked", () => {
 test.describe("verification is never bought", () => {
   test("the Verified badge comes from a completed claim, never from tier or payment", () => {
     const card = srcOf("components", "teacher-card.tsx");
-    expect(card).toContain("const verified = Boolean(t.account_id)");
+    expect(card).toContain("const verified = Boolean(t.verified)");
     expect(card).not.toMatch(/verified\s*=.*tier/);
+  });
+
+  test("the owner's auth UUID never crosses to the client: pages derive a boolean", () => {
+    const card = srcOf("components", "teacher-card.tsx");
+    expect(card).not.toContain("account_id");
+    for (const page of [
+      ["app", "teachers", "page.tsx"],
+      ["app", "states", "[state]", "page.tsx"],
+    ]) {
+      const source = srcOf(...page);
+      expect(source, page.join("/")).toContain("verified: Boolean(account_id)");
+    }
   });
 
   test("Premium is a commercial badge, distinct from every trust badge", () => {

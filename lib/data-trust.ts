@@ -330,14 +330,19 @@ export async function readMembershipBreakdown(supabase: SupabaseClient): Promise
     return n ?? 0;
   };
 
-  const tables = ["venue_listings", "event_listings"];
+  // Scoped to venue (teacher) listings: they are the only listings where Premium
+  // surfaces exist today, and the only ones the trial and checkout apply to.
+  // expiredReverted excludes rows with a payment record so its label ("lapsed
+  // without payment") stays true; those rows also count in basic, by design,
+  // because an expired trial IS a Basic listing again.
+  const tables = ["venue_listings"];
   let published = 0, trial = 0, paid = 0, expired = 0, charter = 0;
   for (const t of tables) {
     const [pub, tr, pd, ex, ch] = await Promise.all([
       count(t, (q: any) => q.eq("status", "published")),
       count(t, (q: any) => q.eq("status", "published").gt("premium_until", nowISO).is("stripe_payment_id", null)),
       count(t, (q: any) => q.eq("status", "published").gt("premium_until", nowISO).not("stripe_payment_id", "is", null)),
-      count(t, (q: any) => q.eq("status", "published").lte("premium_until", nowISO)),
+      count(t, (q: any) => q.eq("status", "published").lte("premium_until", nowISO).is("stripe_payment_id", null)),
       count(t, (q: any) => q.eq("status", "published").eq("is_founding_member", true)),
     ]);
     published += pub; trial += tr; paid += pd; expired += ex; charter += ch;
@@ -369,7 +374,7 @@ export type PremiumLeadDiagnostic = {
 // scale; paginate before provider or lead counts approach 1000 rows.
 export async function readPremiumLeadDiagnostic(supabase: SupabaseClient): Promise<PremiumLeadDiagnostic> {
   const providers: Array<{ id: string; paid: boolean; table: string }> = [];
-  for (const t of ["venue_listings", "event_listings"]) {
+  for (const t of ["venue_listings"]) {
     const { data, error } = await supabase
       .from(t)
       .select("id, stripe_payment_id")

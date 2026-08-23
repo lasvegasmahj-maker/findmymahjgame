@@ -74,15 +74,6 @@ export async function POST(req: NextRequest) {
       await supabase.from("listing_claims").update({ status: "needs_review", decided_by: null, decided_at: null }).eq("id", id);
       return NextResponse.json({ error: "Invalid listing table on this claim." }, { status: 400 });
     }
-    // The 90-day trial starts the first time ownership is ever granted and never
-    // restarts: an ownership transfer keeps the original entitlement clock, so a
-    // re-claim can never be used to reset the trial.
-    const { error: trialErr } = await supabase
-      .from(claimRow.listing_table)
-      .update({ premium_until: trialUntilFrom(new Date()) })
-      .eq("id", claimRow.listing_id)
-      .is("premium_until", null);
-    if (trialErr) console.error("admin claims: trial start failed:", trialErr.message);
     const { data: updated, error: ownErr } = await supabase
       .from(claimRow.listing_table)
       .update({ account_id: claimRow.profile_id })
@@ -92,6 +83,18 @@ export async function POST(req: NextRequest) {
       console.error("admin claims approve: ownership write failed:", ownErr?.message);
       await supabase.from("listing_claims").update({ status: "needs_review", decided_by: null, decided_at: null }).eq("id", id);
       return NextResponse.json({ error: "Could not grant ownership. Please try again." }, { status: 500 });
+    }
+    // The 90-day trial starts only after ownership is actually granted, the first
+    // time ever: an ownership transfer keeps the original entitlement clock, the
+    // premium_until-null guard never overwrites an existing (possibly paid)
+    // entitlement, and Premium surfaces exist only on teacher listings today.
+    if (claimRow.listing_table === "venue_listings") {
+      const { error: trialErr } = await supabase
+        .from(claimRow.listing_table)
+        .update({ premium_until: trialUntilFrom(new Date()) })
+        .eq("id", claimRow.listing_id)
+        .is("premium_until", null);
+      if (trialErr) console.error("admin claims: trial start failed:", trialErr.message);
     }
   }
 

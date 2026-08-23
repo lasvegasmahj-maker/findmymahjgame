@@ -102,7 +102,7 @@ export default async function JoinPage({ searchParams }: { searchParams: Promise
           <div style={price}>$89/year <span style={{ fontSize: "1rem", color: "var(--muted)", fontWeight: 600 }}>90 days free when you claim</span></div>
           <p style={label}>Adds:</p>
           <ul style={list}>
-            <Check>On-platform lesson requests from players, sent straight to your inbox</Check>
+            <Check>On-platform lesson requests from players (teacher listings), sent straight to your inbox</Check>
             <Check>The Premium Provider badge on your listing</Check>
             <Check>Your free trial never turns into a charge on its own: paying is always your explicit choice</Check>
           </ul>
