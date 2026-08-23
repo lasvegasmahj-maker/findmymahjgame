@@ -5,12 +5,12 @@ import StatusBadge from "@/components/status-badge";
 export const metadata: Metadata = {
   title: "Join the Find My Mahj Game Directory",
   description:
-    "Teachers, organizers, and community leaders: list your profile, classes, and events on the national mahjong directory. 6 months free with code FINDMYMAHJGAME, then $89 a year. Charter Member recognition for early supporters.",
+    "Teachers and organizers: your listing on the national mahjong directory is free. Premium, $89 a year, adds on-platform lesson requests and a Premium Provider badge, with 90 days free when you claim your listing.",
   alternates: { canonical: "https://findmymahjgame.com/join" },
   openGraph: {
     title: "Join the Find My Mahj Game Directory",
     description:
-      "List your profile, classes, and events on the national mahjong directory. 6 months free with code FINDMYMAHJGAME, then $89 a year.",
+      "Your listing on the national mahjong directory is free. Premium adds on-platform lesson requests and a Premium Provider badge: $89 a year, 90 days free when you claim.",
     url: "https://findmymahjgame.com/join",
   },
 };
@@ -78,21 +78,33 @@ export default async function JoinPage({ searchParams }: { searchParams: Promise
       </section>
 
       <div className="page-body" style={{ maxWidth: 920 }}>
-        {/* Standard membership */}
-        <div style={{ ...cardFeatured, background: "#fff5fa", marginBottom: "1.8rem" }}>
-          <p className="eyebrow" style={{ marginBottom: "0.4rem" }}>Launch offer</p>
-          <h2 style={sectionH2}>Directory Membership</h2>
-          <p style={tierLead}>The standard membership. Everyone can join.</p>
-          <div style={price}>6 months free <span style={{ fontSize: "1rem", color: "var(--muted)", fontWeight: 600 }}>with code FINDMYMAHJGAME</span></div>
-          <p style={{ fontWeight: 700, color: "var(--navy)", margin: "0.2rem 0 1rem" }}>Then $89/year</p>
+        {/* Basic: free forever */}
+        <div style={{ ...cardFeatured, marginBottom: "1.8rem" }}>
+          <h2 style={sectionH2}>Basic listing</h2>
+          <p style={tierLead}>Free forever. Basic gets you found: a legitimate provider never pays just to be part of the marketplace.</p>
+          <div style={price}>Free</div>
           <p style={label}>Includes:</p>
           <ul style={list}>
-            <Check>Profile</Check>
-            <Check>Events</Check>
-            <Check>Classes</Check>
-            <Check>Website and social links</Check>
-            <Check>Search placement</Check>
-            <Check>State directory placement</Check>
+            <Check>Your profile on the national directory</Check>
+            <Check>Claim and control your listing</Check>
+            <Check>Your events, classes, and open plays</Check>
+            <Check>Website, email, and social links</Check>
+            <Check>The same fair search and state placement as everyone</Check>
+            <Check>Included in Ask Find My Mahj answers</Check>
+          </ul>
+        </div>
+
+        {/* Premium: $89/year with the 90-day claim trial */}
+        <div style={{ ...cardFeatured, background: "#fff5fa", marginBottom: "1.8rem" }}>
+          <p className="eyebrow" style={{ marginBottom: "0.4rem" }}>Founding launch offer</p>
+          <h2 style={sectionH2}>Premium</h2>
+          <p style={tierLead}>Premium helps turn discovery into customers. Try it free for 90 days when you claim your listing; no card needed to start. After the trial, choose $89 a year or stay on your free Basic listing.</p>
+          <div style={price}>$89/year <span style={{ fontSize: "1rem", color: "var(--muted)", fontWeight: 600 }}>90 days free when you claim</span></div>
+          <p style={label}>Adds:</p>
+          <ul style={list}>
+            <Check>On-platform lesson requests from players, sent straight to your inbox</Check>
+            <Check>The Premium Provider badge on your listing</Check>
+            <Check>Never billed automatically: paying is always your explicit choice</Check>
           </ul>
         </div>
 
@@ -106,16 +118,14 @@ export default async function JoinPage({ searchParams }: { searchParams: Promise
           <p style={tierLead}>A Charter Member is an early adopter who commits to helping build the directory. The badge stays on your profile permanently, our thank-you for being here first. It is recognition, not a tier above the others.</p>
           <p style={label}>To qualify:</p>
           <ul style={list}>
-            <Check>Join during the launch period</Check>
-            <Check>Use Find My Mahj Game as a primary directory listing</Check>
-            <Check>List your classes and events on the platform</Check>
+            <Check>Claim your listing during the launch period</Check>
+            <Check>Choose Premium during your 90-day trial</Check>
             <Check>Keep an active profile</Check>
           </ul>
           <p style={label}>Charter Members receive:</p>
           <ul style={list}>
             <Check>A permanent &#11088; Charter Member badge</Check>
             <Check>Locked-in $89/year renewal, as long as you stay active</Check>
-            <Check>Higher placement than standard listings</Check>
             <Check>Permanent recognition as an early supporter</Check>
           </ul>
         </div>
@@ -167,7 +177,7 @@ export default async function JoinPage({ searchParams }: { searchParams: Promise
         {/* CTA */}
         <div style={{ textAlign: "center", marginTop: "3rem", padding: "2.5rem 1.5rem", background: "var(--bg)", borderRadius: 20, border: "1px solid var(--border)" }}>
           <h2 style={{ border: "none", margin: "0 0 0.6rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.6rem" }}>Ready to join?</h2>
-          <p style={{ color: "var(--muted)", fontSize: "1.05rem", lineHeight: 1.6, maxWidth: 540, margin: "0 auto 1.5rem" }}>Submit your profile with code FINDMYMAHJGAME to claim your 6 months free and Charter Member status.</p>
+          <p style={{ color: "var(--muted)", fontSize: "1.05rem", lineHeight: 1.6, maxWidth: 540, margin: "0 auto 1.5rem" }}>List for free, claim your listing, and your 90 days of Premium start automatically. No card, no code.</p>
           <Link href="/get-listed" style={{ display: "inline-flex", minHeight: 56, alignItems: "center", justifyContent: "center", padding: "0 2.2rem", borderRadius: 14, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Submit My Profile &rarr;</Link>
         </div>
       </div>

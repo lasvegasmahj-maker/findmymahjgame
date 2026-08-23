@@ -106,7 +106,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
   } else if (activeSort === "city") {
     rows = [...rows].sort((a, b) => (a.city || "").localeCompare(b.city || "") || byDate(a, b));
   } else {
-    // "Featured" sort, preserved for the future paid (Verified Community Leader)
+    // "Featured" sort, preserved for a possible future clearly labeled paid placement
     // tier. Reachable now via ?sort=featured; re-add it to SORTS below to surface
     // it in the UI once paid listings exist. Today it ranks by event type, then
     // freshness; when the paid tier ships, sort verified/paid listings first here.
@@ -166,7 +166,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
   const SORTS: [string, string][] = [
     ["state", "By state"],
     ["date", "By date"],
-    // ["featured", "Featured"], // re-enable when the paid Verified Community Leader tier is live (sort logic above)
+    // ["featured", "Featured"], // a future labeled paid placement would need a separate owner decision (sort logic above)
   ];
 
   const renderCard = (e: typeof rows[number]) => {

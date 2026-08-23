@@ -27,13 +27,13 @@ export function normalizeMembershipTier(value: string | null | undefined): Membe
 
 export const MEMBERSHIP_TIER_LABEL: Record<MembershipTier, string> = {
   free: "Free",
-  pro: "Verified Community Leader",
+  pro: "Premium Provider",
   ambassador: "Ambassador",
   enterprise: "Enterprise",
 };
 
 // Prices in USD. Free is always 0; Ambassador is comped (earned, not bought).
-// The paid tier (labeled "Verified Community Leader") buys visibility,
+// The paid tier (labeled "Premium Provider") buys business conversion,
 // credibility, and promotion, never the listing itself.
 export const MEMBERSHIP_PRICE_MONTHLY: Record<MembershipTier, number> = {
   free: 0,

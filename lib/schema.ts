@@ -372,7 +372,7 @@ export function buildHowItWorksSchema() {
         name: "How much does it cost to get listed?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Players never pay to find a game. A basic Community Listing for teachers and organizers is free. The Directory Membership is $89 a year, with the first 6 months free during launch using code FINDMYMAHJGAME, and covers your profile, your classes, and your events.",
+          text: "Players never pay to find a game. A basic listing for teachers and organizers is free forever, including your profile, classes, and events. Premium is $89 a year and adds on-platform lesson requests and a Premium Provider badge, with 90 days free when you claim your listing.",
         },
       },
       {

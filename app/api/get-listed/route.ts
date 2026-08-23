@@ -45,12 +45,8 @@ export async function POST(req: NextRequest) {
   const code = clampText(b.promo_code, 40);
   if (code) {
     const up = code.toUpperCase();
-    if (up === "FINDMYMAHJGAME") {
-      promoValid = true;
-    } else {
-      const { data: promo } = await supabase.from("promo_codes").select("code").eq("code", up).eq("active", true).maybeSingle();
-      promoValid = !!promo;
-    }
+    const { data: promo } = await supabase.from("promo_codes").select("code").eq("code", up).eq("active", true).maybeSingle();
+    promoValid = !!promo;
     promoLine = promoValid ? `Promo code ${up} (valid)` : `Promo code ${code} (NOT valid)`;
   }
 
@@ -175,7 +171,6 @@ export async function POST(req: NextRequest) {
   const confirmHtml =
     `<p style="font-size:16px;line-height:1.7;">Thanks, ${esc(name)}! We received your ${esc(businessType || "listing")} for ${esc(city)}, ${esc(state)}.</p>` +
     `<p style="font-size:16px;line-height:1.7;">We review every listing by hand and will email you within 1-2 business days. Once it is approved it goes live on your state page, and we will send you the link plus how to make edits.</p>` +
-    (promoValid ? `<p style="font-size:16px;line-height:1.7;">As a Charter Member, your first 6 months are free. Nothing is charged today, we will email you to set up billing before the free period ends.</p>` : "") +
     `<p style="font-size:15px;line-height:1.7;">Questions? Just reply to this email.</p>`;
   await sendEmail({
     to: email,

@@ -7,8 +7,9 @@ import { clampText, isValidEmail } from "@/lib/sanitize";
 
 // Starts a Stripe Checkout Session for the $89/year directory membership.
 // Dark until launch: requires BOTH the launch_payments gate (fails closed) and a
-// configured Stripe account. Promotion codes are enabled so FINDMYMAHJGAME gives
-// teachers their first period free without a separate code path here.
+// configured Stripe account. No promotion codes: the old free-period coupon is
+// retired, and the complimentary period is the app-managed 90-day trial, which
+// never creates a Stripe subscription. Checkout is the plain $89/year price.
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://findmymahjgame.com";
 
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
       customer_email: email,
-      allow_promotion_codes: true,
+      allow_promotion_codes: false,
       success_url: `${SITE}/join?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${SITE}/join?checkout=cancelled`,
     });
