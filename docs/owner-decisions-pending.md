@@ -19,3 +19,12 @@ closed-gate default already in place; nothing blocks engineering.
    happens to already-onboarded Charter Members. Details: docs/policy/audit-2026-08.md.
 6. Advertiser terms page still describes the old $19-$79 pricing; the policy
    drafts propose replacements. Needs owner approval before publishing.
+
+7. Sixteen directory listings carry a paid tier (starter or featured) with no
+   payment record (they predate the Stripe billing system; the tier was set
+   during research import). The admin data-quality panel surfaces this as
+   "Paid-looking tier with no payment record." Since no one has paid, the honest
+   state is tier = free until a real Stripe payment exists. Recommend resetting
+   these 16 rows to free; not done autonomously because it changes real listing
+   placement. Owner to confirm. Rows include Jessica Gitlin, Honey Salt, several
+   Texas teachers; full list in the admin dashboard.

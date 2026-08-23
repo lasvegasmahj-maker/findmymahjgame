@@ -48,6 +48,7 @@ function NotConnected({ label, note }: { label: string; note: string }) {
 }
 
 const NAV: Array<[string, string, string]> = [
+  ["Control center", "/admin/control", "Launch simulation, claims, moderation, notifications, analytics"],
   ["Review queues", "/admin/review", "Approve or decline listings, players, inquiries"],
   ["Growth agents", "/admin/growth", "Coverage, digest, prospects, drafts, freshness"],
   ["Today", "/admin/today", "Roll-up of items awaiting action"],
