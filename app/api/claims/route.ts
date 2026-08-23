@@ -75,11 +75,17 @@ export async function POST(req: NextRequest) {
 
   const { data: winningClaim } = await supabase
     .from("listing_claims")
-    .select("id")
+    .select("id, profile_id, status, confidence, decision_reason, created_at")
     .eq("listing_table", table)
     .eq("listing_id", id)
     .in("status", WINNING_CLAIM_STATUSES)
     .maybeSingle();
+
+  // The owner (or the holder of the winning claim) resubmitting is idempotent, not
+  // a fresh takeover attempt: return the existing win rather than a new row.
+  if (listing.account_id === session.userId || winningClaim?.profile_id === session.userId) {
+    return NextResponse.json({ claim: winningClaim, alreadySubmitted: true });
+  }
 
   const { data: openClaims } = await supabase
     .from("listing_claims")
