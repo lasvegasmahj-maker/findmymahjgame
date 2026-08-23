@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { trialUntilFrom } from "@/lib/premium";
 import { verifyActionToken } from "@/lib/game-token";
 import { clampText, isValidEmail, safeHttpUrl, escapeHtml } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
@@ -84,7 +85,7 @@ export async function POST(req: NextRequest) {
     if (usersErr) throw usersErr;
     const account = usersPage?.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
     if (account) {
-      const { error: ownErr } = await supabase.from(table).update({ account_id: account.id }).eq("id", id).is("account_id", null);
+      const { error: ownErr } = await supabase.from(table).update({ account_id: account.id, premium_until: trialUntilFrom(new Date()) }).eq("id", id).is("account_id", null);
       if (ownErr) console.error("claim: account_id backfill failed:", ownErr.message);
     }
   } catch (e) {

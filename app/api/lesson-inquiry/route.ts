@@ -3,10 +3,17 @@ import { createServerClient } from "@/lib/supabase-server";
 import { sendEmail } from "@/lib/email";
 import { rateLimit } from "@/lib/rate-limit";
 import { LAS_VEGAS_MAHJONG } from "@/lib/featured-listings";
+import { isPremiumActive } from "@/lib/premium";
+import { hostRecordClass } from "@/lib/analytics/events";
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const esc = (s: string) => String(s || "").replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c] as string));
 
+// The structured lesson inquiry is a Premium conversion feature. It sends the lead
+// straight to the provider (reply-to the player), and records only minimal metadata,
+// no message content and no player name or email, enough to confirm delivery and to
+// measure whether Premium generated qualified leads. The founder is not copied on
+// routine inquiries; the platform is meant to run hands-off.
 export async function POST(req: NextRequest) {
   if (!(await rateLimit(req, "lesson-inquiry", 8, 60))) {
     return NextResponse.json({ error: "Please wait a moment and try again." }, { status: 429 });
@@ -27,27 +34,35 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Please add your name, a valid email, and a message." }, { status: 400 });
   }
 
-  // Resolve the teacher's email server-side; never trust a client-sent address.
+  // Resolve the teacher server-side (never trust a client-sent address) and confirm
+  // Premium is active: the structured inquiry is a Premium feature, so the API
+  // refuses it for a Basic or expired listing even if a request is crafted directly.
   let teacherEmail = "";
   let teacherName = "this teacher";
+  let premium = false;
   if (teacherId === LAS_VEGAS_MAHJONG.id) {
     teacherEmail = LAS_VEGAS_MAHJONG.display_email;
     teacherName = LAS_VEGAS_MAHJONG.business_name;
+    premium = true;
   } else {
     const supabase = createServerClient();
     const { data } = await supabase
       .from("venue_listings")
-      .select("business_name, display_email")
+      .select("business_name, display_email, premium_until")
       .eq("id", teacherId)
       .eq("status", "published")
       .maybeSingle();
     if (data?.display_email) {
       teacherEmail = String(data.display_email);
       teacherName = String(data.business_name || teacherName);
+      premium = isPremiumActive(data.premium_until);
     }
   }
   if (!teacherEmail || !EMAIL_RE.test(teacherEmail)) {
     return NextResponse.json({ error: "We could not reach this teacher right now." }, { status: 422 });
+  }
+  if (!premium) {
+    return NextResponse.json({ error: "This provider is not set up for lesson requests. Try their website or email instead." }, { status: 403 });
   }
 
   const html =
@@ -64,12 +79,28 @@ export async function POST(req: NextRequest) {
 
   const res = await sendEmail({
     to: teacherEmail,
-    bcc: "hello@findmymahjgame.com",
     subject: `New lesson request from ${name}`,
     html,
     replyTo: email,
     kind: "lesson-inquiry",
   });
+
+  // Record only structured metadata, never the message or the player's identity.
+  // record_class keeps QA traffic (non-production host, or the founder demo id) out
+  // of the real lead counts that feed the Premium conversion diagnostic.
+  const recordClass = hostRecordClass(req.headers.get("host")) === "test" || teacherId === LAS_VEGAS_MAHJONG.id ? "test" : "real_external";
+  if (teacherId !== LAS_VEGAS_MAHJONG.id) {
+    try {
+      await createServerClient().from("provider_leads").insert({
+        provider_table: "venue_listings",
+        provider_id: teacherId,
+        status: res.ok ? "sent" : "failed",
+        record_class: recordClass,
+      });
+    } catch (e) {
+      console.error("provider_leads insert failed:", e instanceof Error ? e.message : e);
+    }
+  }
 
   if (!res.ok) {
     return NextResponse.json({ error: "Something went wrong sending your request. Please try again." }, { status: 500 });

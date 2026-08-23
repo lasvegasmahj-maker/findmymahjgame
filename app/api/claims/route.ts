@@ -7,6 +7,7 @@ import { notify } from "@/lib/notifications/notify";
 import { track } from "@/lib/analytics/events";
 import type { RecordClass } from "@/lib/analytics/events";
 import { escapeHtml } from "@/lib/sanitize";
+import { trialUntilFrom } from "@/lib/premium";
 import { scoreClaimEvidence, WINNING_CLAIM_STATUSES, OPEN_CLAIM_STATUSES, type ClaimEvidence } from "@/lib/claims/contract";
 
 // Account-based claim flow. A claim row is only ever an audit entry; ownership is
@@ -127,7 +128,7 @@ export async function POST(req: NextRequest) {
     // reported as a win; it falls back to a human decision instead.
     const { data: updated, error: updateErr } = await supabase
       .from(table)
-      .update({ account_id: session.userId })
+      .update({ account_id: session.userId, premium_until: trialUntilFrom(new Date()) })
       .eq("id", id)
       .is("account_id", null)
       .select("id");

@@ -25,5 +25,7 @@ export const LAS_VEGAS_MAHJONG = {
   instructor: "Shauna Bruckman",
   tier: "pro",
   advisor: true,
+  account_id: "founder",
+  premium_until: "2099-01-01T00:00:00Z",
   created_at: "2026-01-01T00:00:00Z",
 };

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { trialUntilFrom } from "@/lib/premium";
 import { verifyAdminSessionToken, ADMIN_COOKIE } from "@/lib/admin-auth";
 import { lazyServerClient } from "@/lib/supabase-server";
 import { notify } from "@/lib/notifications/notify";
@@ -75,7 +76,7 @@ export async function POST(req: NextRequest) {
     }
     const { data: updated, error: ownErr } = await supabase
       .from(claimRow.listing_table)
-      .update({ account_id: claimRow.profile_id })
+      .update({ account_id: claimRow.profile_id, premium_until: trialUntilFrom(new Date()) })
       .eq("id", claimRow.listing_id)
       .select("id");
     if (ownErr || !updated || updated.length === 0) {

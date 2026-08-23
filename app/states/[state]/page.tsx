@@ -96,7 +96,7 @@ export default async function StatePage({ params, searchParams }: { params: Prom
       .order("event_date", { ascending: true }),
     supabase
       .from("venue_listings")
-      .select("id, business_name, venue_type, city, state, address, description, website, instagram, display_email, logo_url, tier, created_at")
+      .select("id, business_name, venue_type, city, state, address, description, website, instagram, display_email, logo_url, tier, account_id, premium_until, created_at")
       .eq("state", data.abbr)
       .eq("status", "published")
       .order("created_at", { ascending: false }),
