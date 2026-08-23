@@ -5,6 +5,7 @@ import { clampText, isValidEmail, safeHttpUrl, escapeHtml } from "@/lib/sanitize
 import { rateLimit } from "@/lib/rate-limit";
 import { sendEmail } from "@/lib/email";
 import { lazyServerClient } from "@/lib/supabase-server";
+import { WINNING_CLAIM_STATUSES } from "@/lib/claims/contract";
 
 // Claims MVP. The token subject is "<table>|<id>" signed server-side when the
 // founder (or a future drip) sends a claim invite. Submitting edits never
@@ -38,12 +39,15 @@ export async function POST(req: NextRequest) {
   const { data: listing } = await supabase.from(table).select("*").eq("id", id).single();
   if (!listing) return NextResponse.json({ error: "Listing not found." }, { status: 404 });
 
-  // Record (or refresh) the claim itself.
+  // Record (or refresh) the claim itself. Filtered to winning statuses because a
+  // listing can now also carry competing 'submitted'/'needs_review' rows from the
+  // account-based claim flow; without this filter a second open row breaks maybeSingle.
   const { data: priorClaim } = await supabase
     .from("listing_claims")
     .select("claimer_email")
     .eq("listing_table", table)
     .eq("listing_id", id)
+    .in("status", WINNING_CLAIM_STATUSES)
     .maybeSingle();
   if (priorClaim && priorClaim.claimer_email !== email.toLowerCase()) {
     return NextResponse.json({ error: "This listing is already claimed. If that is you under a different email, or something looks wrong, email hello@findmymahjgame.com and a real person will sort it out." }, { status: 409 });
@@ -56,7 +60,7 @@ export async function POST(req: NextRequest) {
     .insert({ listing_table: table, listing_id: id, claimer_email: email.toLowerCase(), status: "claimed" });
   if (claimErr) {
     if (claimErr.code === "23505") {
-      const { data: winner } = await supabase.from("listing_claims").select("claimer_email").eq("listing_table", table).eq("listing_id", id).maybeSingle();
+      const { data: winner } = await supabase.from("listing_claims").select("claimer_email").eq("listing_table", table).eq("listing_id", id).in("status", WINNING_CLAIM_STATUSES).maybeSingle();
       const mine = winner?.claimer_email === email.toLowerCase();
       if (!mine) return NextResponse.json({ error: "This listing is already claimed. If that is you under a different email, or something looks wrong, email hello@findmymahjgame.com and a real person will sort it out." }, { status: 409 });
     } else if (claimErr.code === "42P01" || claimErr.code === "PGRST205") {
@@ -69,6 +73,24 @@ export async function POST(req: NextRequest) {
 
   // A claim alone also confirms the listing is alive.
   await supabase.from(table).update({ confirmed_active_at: new Date().toISOString() }).eq("id", id);
+
+  // Account bridge: if this email already has an account, the token claim also grants
+  // ownership immediately, so someone who signed in first never has to claim twice.
+  // Best-effort only: this SDK's listUsers has no server-side email filter, so this
+  // scans one page of accounts, which is more than enough while accounts are
+  // pre-launch. account_id may not exist on every deployment yet either, so a write
+  // failure here is logged and never blocks the claim itself.
+  try {
+    const { data: usersPage, error: usersErr } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    if (usersErr) throw usersErr;
+    const account = usersPage?.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+    if (account) {
+      const { error: ownErr } = await supabase.from(table).update({ account_id: account.id }).eq("id", id).is("account_id", null);
+      if (ownErr) console.error("claim: account_id backfill failed:", ownErr.message);
+    }
+  } catch (e) {
+    console.error("claim: account lookup failed:", e instanceof Error ? e.message : e);
+  }
 
   // Collect proposed edits, allowlisted per table, only changed fields.
   const allowed = EDITABLE[table];
