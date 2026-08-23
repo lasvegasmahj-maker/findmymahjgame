@@ -9,6 +9,8 @@ import { formatDistance } from "@/lib/geo";
 import { whenLabel } from "@/lib/event-display";
 import { safeHttpUrl } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
+import { track, type RecordClass } from "@/lib/analytics/events";
+import { verifyUserSessionToken, USER_COOKIE } from "@/lib/user-auth";
 
 // Ask Find My Mahj. The question is interpreted into filters, deterministic search runs
 // against published reviewed listings, and the answer sentence is composed from the real
@@ -54,6 +56,39 @@ async function composeRulesAnswer(rules: RulesLookupResult, question: string): P
   return rephraseApprovedAnswer(approved, question);
 }
 
+// Anonymous asks count as real usage unless the request carries a session cookie whose
+// profile is classified test (the admin-driven QA walkthrough), so QA traffic run against
+// this route in production never inflates real ask numbers.
+async function resolveAskRecordClass(req: NextRequest): Promise<RecordClass> {
+  const session = verifyUserSessionToken(req.cookies.get(USER_COOKIE)?.value);
+  if (!session) return "real_external";
+  try {
+    const { data } = await lazyServerClient()
+      .from("profiles")
+      .select("record_class")
+      .eq("id", session.userId)
+      .maybeSingle();
+    return data?.record_class === "test" ? "test" : "real_external";
+  } catch {
+    return "real_external";
+  }
+}
+
+function trackAskOutcome(
+  recordClass: RecordClass,
+  topic: "directory" | "rules" | "mixed",
+  results: number,
+  matched: boolean
+) {
+  const supabase = lazyServerClient();
+  const props = { topic, results, matched };
+  void track(supabase, "ask_submitted", { props, recordClass });
+  const intentName =
+    topic === "directory" ? "ask_intent_directory" : topic === "rules" ? "ask_intent_rules" : "ask_intent_mixed";
+  void track(supabase, intentName, { props, recordClass });
+  if (!matched) void track(supabase, "ask_unverified", { props, recordClass });
+}
+
 export const maxDuration = 30;
 
 export async function POST(req: NextRequest) {
@@ -62,6 +97,7 @@ export async function POST(req: NextRequest) {
   }
   const body = await req.json().catch(() => ({}));
   const question = typeof body?.q === "string" ? body.q.slice(0, 200) : "";
+  const recordClass = await resolveAskRecordClass(req);
   try {
   const topic = detectAskTopic(question);
   let rules: RulesLookupResult | null = null;
@@ -72,6 +108,7 @@ export async function POST(req: NextRequest) {
 
   if (topic === "rules" && rules) {
     const answer = await composeRulesAnswer(rules, question);
+    trackAskOutcome(recordClass, topic, 0, rules.matched);
     return NextResponse.json({
       ok: true,
       answer,
@@ -97,6 +134,7 @@ export async function POST(req: NextRequest) {
   const extras = rules ? { topic, rules } : { topic };
 
   if (!intent.recognized) {
+    trackAskOutcome(recordClass, topic, 0, Boolean(rules?.matched));
     return NextResponse.json({
       ok: true,
       answer: withRulesLead(
@@ -148,6 +186,7 @@ export async function POST(req: NextRequest) {
       suggestions.push({ label: "Browse all teachers", href: "/teachers" });
       if (intent.location) suggestions.push({ label: "Get notified when one is added", href: `/teachers?near=${encodeURIComponent(intent.location)}` });
     }
+    trackAskOutcome(recordClass, topic, cards.length, cards.length > 0 || Boolean(rules?.matched));
     return NextResponse.json({ ok: true, answer: withRulesLead(answer), results: cards, suggestions, intent, via, ...extras });
   }
 
@@ -201,6 +240,7 @@ export async function POST(req: NextRequest) {
     suggestions.push({ label: bq ? "See these on the Events page" : "Browse the Events page", href: `/events${bq ? `?${bq}` : ""}` });
   }
 
+  trackAskOutcome(recordClass, topic, cards.length, cards.length > 0 || Boolean(rules?.matched));
   return NextResponse.json({
     ok: true,
     answer: withRulesLead(answer),

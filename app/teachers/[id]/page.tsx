@@ -5,6 +5,7 @@ import { createServerClient } from "@/lib/supabase-server";
 import { isFounderListing } from "@/lib/featured-listings";
 import { safeHttpUrl } from "@/lib/sanitize";
 import { schemaScriptProps } from "@/lib/schema";
+import { track } from "@/lib/analytics/events";
 
 export const revalidate = 600;
 export const dynamicParams = true;
@@ -71,6 +72,8 @@ export default async function TeacherProfilePage({ params }: { params: Promise<{
   const { id } = await params;
   const t = await getTeacher(id);
   if (!t) notFound();
+
+  void track(createServerClient(), "listing_viewed", { props: { kind: "teacher" }, recordClass: "real_external" });
 
   const name = t.business_name || "Mahjong teacher";
   const location = [t.city, t.state].filter(Boolean).join(", ");
