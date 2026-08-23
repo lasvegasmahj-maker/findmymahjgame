@@ -3,7 +3,7 @@ import { createAdminSessionToken, passwordMatches, ADMIN_COOKIE, ADMIN_COOKIE_MA
 import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
-  if (!(await rateLimit(req, "admin-login", 5, 300))) {
+  if (!(await rateLimit(req, "admin-login", 5, 300, "strict"))) {
     return NextResponse.json({ error: "Too many attempts. Try again in a few minutes." }, { status: 429 });
   }
   const body = await req.json().catch(() => ({}));
