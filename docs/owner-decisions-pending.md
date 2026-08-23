@@ -12,3 +12,10 @@ closed-gate default already in place; nothing blocks engineering.
    launch gate flips. See docs/policy/launch-gate.md for which gate needs which.
 4. Two rules entries stay unpublished pending instructor review: closed-hand
    final tile exception, Charleston blind pass.
+5. Free-period conflict found by the policy audit: the live teacher path gives
+   6 months free with no card (FINDMYMAHJGAME manual onboarding) while the dark
+   Stripe path waives a full year via a 100 percent once coupon and collects a
+   card. Decide which model is real before the payments gate flips, and what
+   happens to already-onboarded Charter Members. Details: docs/policy/audit-2026-08.md.
+6. Advertiser terms page still describes the old $19-$79 pricing; the policy
+   drafts propose replacements. Needs owner approval before publishing.
