@@ -23,7 +23,9 @@ test.describe("launch simulator", () => {
 
   test("the whole product passes the rehearsal on test identities", async ({ baseURL }) => {
     const password = adminPassword();
-    test.skip(!password, "ADMIN_PASSWORD not available");
+    // The rehearsal creates and deletes real auth users in the shared Supabase
+    // project, so it runs only on explicit opt-in, never by default in CI.
+    test.skip(!password || process.env.RUN_SIMULATOR !== "1", "set RUN_SIMULATOR=1 and provide ADMIN_PASSWORD to run the full rehearsal");
     const admin = await pwRequest.newContext({ baseURL: baseURL || "http://localhost:3000" });
     const login = await admin.post("/api/admin/login", { data: { password } });
     expect(login.ok()).toBeTruthy();

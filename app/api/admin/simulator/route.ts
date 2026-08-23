@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   // This job creates auth users and runs for up to a minute; cap re-triggers so a
   // stray double-click or a stolen session cannot spawn many accounts at once.
   if (!(await rateLimit(req, "admin-simulator", 3, 300, "strict"))) {
-    return NextResponse.json({ error: "The simulation is rate limited. Wait a few minutes between runs." }, { status: 429 });
+    return NextResponse.json({ error: "You have run the simulation too many times. Wait a few minutes between runs." }, { status: 429 });
   }
   try {
     const report = await runLaunchSimulation(supabase);

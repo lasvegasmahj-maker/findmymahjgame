@@ -181,7 +181,7 @@ function ModerationPanel() {
   );
 }
 
-type NotifWindow = Record<string, { sent: number; failed: number; skipped_qa: number }>;
+type NotifWindow = { total: number; byKind: Record<string, number>; byStatus: Record<string, number> };
 
 function NotificationsPanel() {
   const [data, setData] = useState<{ windows: { last7Days: NotifWindow; last30Days: NotifWindow }; failures: Array<{ kind: string; email: string; error: string | null }> } | null>(null);
@@ -189,38 +189,42 @@ function NotificationsPanel() {
     void fetch("/api/admin/notifications", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then(setData).catch(() => {});
   }, []);
   if (!data) return <Section title="Notifications"><p style={{ color: "var(--muted)" }}>Loading...</p></Section>;
-  const kinds = Object.keys(data.windows.last7Days || {});
+  const w = data.windows.last7Days;
+  const status = w?.byStatus || {};
+  const kinds = Object.entries(w?.byKind || {}).sort((a, b) => b[1] - a[1]);
   return (
     <Section title="Notifications (last 7 days)">
+      <div style={{ ...card, marginBottom: "0.6rem" }}>
+        <div style={{ fontSize: "0.85rem", color: "var(--navy)", fontWeight: 700 }}>
+          {w?.total || 0} sent total · delivered {status.sent || 0} · failed {status.failed || 0} · test {status.skipped_qa || 0}
+        </div>
+      </div>
       {kinds.length === 0 ? (
-        <p style={{ color: "var(--muted)" }}>No transactional emails have been sent yet.</p>
+        <p style={{ color: "var(--muted)" }}>No transactional emails in the window. This is expected before launch.</p>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 220px), 1fr))", gap: "0.5rem" }}>
-          {kinds.map((k) => {
-            const w = data.windows.last7Days[k];
-            return (
-              <div key={k} style={card}>
-                <div style={{ fontWeight: 700, color: "var(--navy)", fontSize: "0.85rem" }}>{k}</div>
-                <div style={{ fontSize: "0.8rem", color: "var(--muted)" }}>sent {w.sent} · failed {w.failed} · qa {w.skipped_qa}</div>
-              </div>
-            );
-          })}
+          {kinds.map(([k, n]) => (
+            <div key={k} style={card}>
+              <div style={{ fontWeight: 700, color: "var(--navy)", fontSize: "0.85rem" }}>{k}</div>
+              <div style={{ fontSize: "0.8rem", color: "var(--muted)" }}>{n} in 7 days</div>
+            </div>
+          ))}
         </div>
       )}
       {data.failures.length > 0 && (
-        <p style={{ color: red, fontWeight: 700, marginTop: "0.8rem", fontSize: "0.9rem" }}>{data.failures.length} failed sends in the window. Investigate the notification cron.</p>
+        <p style={{ color: red, fontWeight: 700, marginTop: "0.8rem", fontSize: "0.9rem" }}>{data.failures.length} failed sends in the window. Check the notification health cron.</p>
       )}
     </Section>
   );
 }
 
 function AnalyticsPanel() {
-  const [data, setData] = useState<{ windows: { "7d": { real: { byName: Record<string, number> }; test: { byName: Record<string, number> } } }; dataHealth: { totalEvents: number } } | null>(null);
+  const [data, setData] = useState<{ windows: { "7d": { real: { eventCounts: Record<string, number> }; test: { eventCounts: Record<string, number> } } }; dataHealth: { totalEvents: number } } | null>(null);
   useEffect(() => {
     void fetch("/api/admin/analytics", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then(setData).catch(() => {});
   }, []);
   if (!data) return <Section title="Analytics"><p style={{ color: "var(--muted)" }}>Loading...</p></Section>;
-  const real = data.windows["7d"].real.byName || {};
+  const real = data.windows["7d"].real.eventCounts || {};
   const names = Object.keys(real).sort((a, b) => real[b] - real[a]).slice(0, 12);
   return (
     <Section title="First-party analytics (real, last 7 days)">

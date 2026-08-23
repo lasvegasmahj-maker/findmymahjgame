@@ -71,6 +71,23 @@ async function candidateFor(supabase: SupabaseClient, userId: string, requestId:
   };
 }
 
+async function sweepStragglers(supabase: SupabaseClient): Promise<void> {
+  try {
+    await supabase.from("venue_listings").delete().eq("state", SIM_STATE).eq("business_name", "QA SIM Studio");
+    const { data } = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 });
+    for (const u of data?.users ?? []) {
+      if (u.email && u.email.startsWith("sim-") && u.email.endsWith(`@${QA_DOMAIN}`)) {
+        await supabase.from("play_requests").delete().eq("user_id", u.id);
+        await supabase.from("matching_profiles").delete().eq("user_id", u.id);
+        await supabase.from("profiles").delete().eq("id", u.id);
+        await supabase.auth.admin.deleteUser(u.id).catch(() => {});
+      }
+    }
+  } catch (e) {
+    console.error("sim sweep failed:", e instanceof Error ? e.message : e);
+  }
+}
+
 export async function runLaunchSimulation(supabase: SupabaseClient): Promise<SimReport> {
   const results: SimResult[] = [];
   const cleanup: Cleanup = { userIds: [], listingIds: [], tableIds: [] };
@@ -84,6 +101,11 @@ export async function runLaunchSimulation(supabase: SupabaseClient): Promise<Sim
   try {
     baselineChecks = new Set((await readDataQualityIssues(supabase)).map((i) => i.check));
   } catch { /* if this read fails, the final check will catch it */ }
+
+  // Self-heal: reap any stragglers a prior run left behind if it was killed mid-flight
+  // (the route has a 60s ceiling). Only touches simulator-created data: state 'ZZ'
+  // listings and sim- auth users. Never touches a real record.
+  await sweepStragglers(supabase);
 
   try {
     // 1. Identity
