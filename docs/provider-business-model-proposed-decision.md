@@ -44,3 +44,9 @@ APPROVED and implemented 2026-08-23 (see the implementation record below). Launc
 - FINDMYMAHJGAME retired everywhere (validate-promo, get-listed form and route, join, how-it-works, FAQ schema); the Stripe checkout takes no promotion codes and the runbook coupon step is replaced.
 - Join and pricing copy rewritten to the Basic free forever / Premium $89 truth with the false higher-placement promise removed.
 
+## Pricing options decision (owner, 2026-08-23)
+
+Provider Premium launches with ONE paid option: $89/year. No monthly Stripe price is created before launch. Reasons: keep launch pricing simple, preserve the completed billing architecture (one price id, one checkout path), avoid pre-launch billing complexity, and collect real provider feedback before adding another billing option.
+
+Monthly pricing is POST-LAUNCH and DATA-DEPENDENT. Revisit only if meaningful provider feedback shows that annual payment is a conversion barrier. Initial hypothesis if that happens: approximately $9.99/month, with $89/year retained as the better-value annual option. Nothing is implemented for this now; do not add a monthly price, a second price env var, or plan-selection UI under the build freeze.
+
