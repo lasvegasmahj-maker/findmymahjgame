@@ -3,7 +3,8 @@
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import type { StateData } from "@/lib/states-data";
-import TeacherCard from "@/components/teacher-card";
+import TeacherCard, { FounderSpotlight } from "@/components/teacher-card";
+import { LAS_VEGAS_MAHJONG } from "@/lib/featured-listings";
 import FindGameFallback from "@/components/find-game-fallback";
 
 interface Player {
@@ -53,29 +54,6 @@ interface Props {
   venues: Venue[];
   initialCity?: string;
   initialTab?: string;
-}
-
-function SponsorLogo({ src, name }: { src: string | null; name: string }) {
-  const [failed, setFailed] = useState(false);
-  if (src && !failed) {
-    return (
-      // Plain img: logo_url is an arbitrary advertiser host, which next/image
-      // rejects unless every host is whitelisted in next.config.
-      <div style={{ width: 48, height: 48, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border)", flexShrink: 0, background: "white", position: "relative" }}>
-        <img
-          src={src}
-          alt={name}
-          loading="lazy"
-          onError={() => setFailed(true)}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        />
-      </div>
-    );
-  }
-  const initial = name.trim().charAt(0).toUpperCase();
-  return (
-    <div style={{ width: 48, height: 48, borderRadius: 10, background: "var(--navy)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.25rem", fontWeight: 700, color: "white", flexShrink: 0 }}>{initial}</div>
-  );
 }
 
 function LevelBadge({ level }: { level: string }) {
@@ -373,23 +351,9 @@ export default function StatePageClient({ stateData, players, events, venues, in
               </div>
             )}
 
-            {/* Las Vegas Mahjong — sponsored only on Nevada */}
+            {/* The founder's own business, clearly labelled, Nevada only. */}
             {stateData.abbr === "NV" && (
-              <div style={{ background: "linear-gradient(135deg, rgba(233,30,140,0.04), rgba(233,30,140,0.08))", border: "1px solid rgba(233,30,140,0.18)", borderRadius: 16, padding: "1.5rem 2rem", marginBottom: "2rem" }}>
-                <span style={{ fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--pink-text)", display: "block", marginBottom: "0.8rem" }}>Sponsored</span>
-                <div style={{ display: "flex", alignItems: "flex-start", gap: "1.2rem", flexWrap: "wrap" }}>
-                  <SponsorLogo src={null} name="Las Vegas Mahjong" />
-                  <div style={{ flex: 1, minWidth: 200 }}>
-                    <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--navy)", marginBottom: "0.3rem" }}>Las Vegas Mahjong</div>
-                    <div style={{ fontSize: "0.82rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "0.6rem" }}>Lessons, open play and events with certified instructor Shauna in Las Vegas. All levels welcome.</div>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem" }}>
-                      <a href="https://lasvegasmahj.com" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", color: "var(--pink-text)", textDecoration: "none", fontWeight: 600 }}>lasvegasmahj.com</a>
-                      <a href="mailto:lasvegasmahj@gmail.com" style={{ fontSize: "0.8rem", color: "var(--pink-text)", textDecoration: "none", fontWeight: 600 }}>lasvegasmahj@gmail.com</a>
-                      <a href="https://instagram.com/lasvegasmahjong" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.8rem", color: "var(--pink-text)", textDecoration: "none", fontWeight: 600 }}>@lasvegasmahjong</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <div style={{ marginBottom: "2rem" }}><FounderSpotlight t={LAS_VEGAS_MAHJONG} /></div>
             )}
 
             <div style={{ background: "var(--navy)", borderRadius: 16, padding: "2.5rem", textAlign: "center" }}>
@@ -458,6 +422,10 @@ export default function StatePageClient({ stateData, players, events, venues, in
             <h2 className="section-title" style={{ marginBottom: "0.5rem" }}>Teachers in {stateData.name}</h2>
             <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", lineHeight: 1.7 }}>American Mahjong instructors offering lessons in {stateData.name}. You contact them directly.
             </p>
+
+            {/* The founder's own business, clearly labelled, Nevada only. It
+                sits above the organic list and is never counted in it. */}
+            {stateData.abbr === "NV" && <FounderSpotlight t={LAS_VEGAS_MAHJONG} />}
 
             {filteredTeachers.length > 0 ? (
               <>

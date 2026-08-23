@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createServerClient } from "@/lib/supabase-server";
-import TeacherCard from "@/components/teacher-card";
 import StatusBadge from "@/components/status-badge";
+import { FounderSpotlight } from "@/components/teacher-card";
 import { LAS_VEGAS_MAHJONG } from "@/lib/featured-listings";
 
 export const metadata: Metadata = {
@@ -19,44 +18,9 @@ export const metadata: Metadata = {
   },
 };
 
-export const revalidate = 3600;
-
-type Advisor = {
-  id: string;
-  business_name: string | null;
-  venue_type: string | null;
-  city: string | null;
-  state: string | null;
-  description: string | null;
-  website: string | null;
-  instagram: string | null;
-  display_email: string | null;
-};
-
 const liStyle: React.CSSProperties = { fontSize: "1rem", color: "var(--navy)", lineHeight: 1.7, paddingLeft: "1.5rem", position: "relative", marginBottom: "0.3rem" };
 
-export default async function FoundingAdvisorsPage() {
-  let dbAdvisors: Advisor[] = [];
-  try {
-    const supabase = createServerClient();
-    const { data } = await supabase
-      .from("venue_listings")
-      .select("id, business_name, venue_type, city, state, description, website, instagram, display_email")
-      .eq("status", "published")
-      .eq("founding_advisor", true)
-      .order("business_name", { ascending: true });
-    dbAdvisors = (data || []) as Advisor[];
-  } catch {
-    // The founding_advisor column ships with the admin assign/remove build.
-    // Until then this page shows Las Vegas Mahjong plus any flagged advisors.
-  }
-  // Las Vegas Mahjong is a Founding Advisor (the flagship example), shown
-  // alongside any advisors flagged in the database.
-  const advisors: Advisor[] = [
-    LAS_VEGAS_MAHJONG as unknown as Advisor,
-    ...dbAdvisors.filter((a) => a.id !== LAS_VEGAS_MAHJONG.id),
-  ];
-
+export default function FoundingAdvisorsPage() {
   return (
     <main style={{ maxWidth: 1000, margin: "0 auto", padding: "2.5rem 1.2rem 4rem" }}>
       <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
@@ -65,18 +29,16 @@ export default async function FoundingAdvisorsPage() {
         <p style={{ fontSize: "1.15rem", color: "var(--muted)", lineHeight: 1.6, maxWidth: 640, margin: "0 auto" }}>A small group of respected teachers, organizers, and community leaders, personally invited by Find My Mahj Game, who help establish the directory during launch. Founding Advisors are invited, not applied for.</p>
       </div>
 
-      {advisors.length > 0 ? (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 300px), 1fr))", gap: "1.4rem", marginBottom: "3rem" }}>
-          {advisors.map((a) => (
-            <TeacherCard key={a.id} t={{ ...a, advisor: true }} />
-          ))}
+      {/* Honest roster: invitations are underway and no outside advisor has
+          accepted yet, so the only card here today is the founder's own
+          business, labelled as exactly that. */}
+      <div style={{ maxWidth: 640, margin: "0 auto 3rem" }}>
+        <FounderSpotlight t={LAS_VEGAS_MAHJONG} />
+        <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 18, padding: "2rem 1.6rem", textAlign: "center" }}>
+          <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.5rem" }}>We are inviting our first Founding Advisors now.</div>
+          <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.6, margin: 0 }}>As advisors accept, we will feature them here. Founding Advisors are personally invited by Find My Mahj Game.</p>
         </div>
-      ) : (
-        <div style={{ background: "var(--bg)", border: "2px dashed var(--border)", borderRadius: 18, padding: "2.6rem 1.6rem", textAlign: "center", maxWidth: 600, margin: "0 auto 3rem" }}>
-          <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--navy)", marginBottom: "0.5rem" }}>We&rsquo;re welcoming our first Founding Advisors now.</div>
-          <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.6, margin: 0 }}>This page will feature them as we welcome them. Founding Advisors are personally invited by Find My Mahj Game.</p>
-        </div>
-      )}
+      </div>
 
       <div style={{ background: "var(--navy)", borderRadius: 18, padding: "2.2rem", maxWidth: 720, margin: "0 auto" }}>
         <h2 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.5rem", color: "white", margin: "0 0 1rem" }}>What Founding Advisors receive</h2>

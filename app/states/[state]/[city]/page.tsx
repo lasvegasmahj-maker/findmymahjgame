@@ -7,6 +7,8 @@ import { STATES, type StateData } from "@/lib/states-data";
 import { safeHttpUrl } from "@/lib/sanitize";
 import { attendInfo } from "@/lib/event-level";
 import { schemaScriptProps } from "@/lib/schema";
+import { FounderSpotlight } from "@/components/teacher-card";
+import { LAS_VEGAS_MAHJONG, isFounderListing } from "@/lib/featured-listings";
 
 export const revalidate = 600;
 export const dynamicParams = true;
@@ -109,8 +111,9 @@ export default async function CityPage({ params }: { params: Promise<{ state: st
     supabase.from("venue_listings").select("id, business_name, venue_type, city, state, description, website, instagram, display_email").eq("state", st.abbr).eq("status", "published"),
   ]);
   const events = (eventsRes.data || []).filter((e) => inCity(e.city));
-  const allVenues = (venuesRes.data || []).filter((v) => inCity(v.city));
-  const teachers = isNevada ? [] : allVenues.filter((v) => TEACHER_TYPE.test(`${v.venue_type || ""} ${v.description || ""}`));
+  const allVenues = (venuesRes.data || []).filter((v) => inCity(v.city) && !isFounderListing(v));
+  // Nevada teachers list from the database exactly like every other state's.
+  const teachers = allVenues.filter((v) => TEACHER_TYPE.test(`${v.venue_type || ""} ${v.description || ""}`));
   const venues = allVenues.filter((v) => !TEACHER_TYPE.test(`${v.venue_type || ""} ${v.description || ""}`));
 
   const breadcrumb = {
@@ -163,11 +166,10 @@ export default async function CityPage({ params }: { params: Promise<{ state: st
       ) : <EmptyCta what="an open play or event" />}
 
       <h2 style={sectionH2}>Teachers</h2>
-      {isNevada ? (
-        <div style={{ ...card, textAlign: "center" }}>
-          <p style={{ fontSize: "1.05rem", color: "var(--navy)", lineHeight: 1.5, margin: 0 }}>For lessons in {cityName}, visit <a href="https://lasvegasmahj.com" target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink-text)", fontWeight: 800 }}>Las Vegas Mahjong</a>.</p>
-        </div>
-      ) : teachers.length > 0 ? (
+      {/* The founder's own business, clearly labelled, Nevada only. It is an
+          addition above the organic list and never replaces it. */}
+      {isNevada && <FounderSpotlight t={LAS_VEGAS_MAHJONG} />}
+      {teachers.length > 0 ? (
         <div style={cardWrap}>
           {teachers.map((t) => {
             const site = safeHttpUrl(t.website);

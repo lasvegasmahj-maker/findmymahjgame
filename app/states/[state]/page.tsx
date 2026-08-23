@@ -3,8 +3,8 @@ import { createServerClient } from "@/lib/supabase-server";
 import { notFound } from "next/navigation";
 import StatePageClient from "./client";
 import { buildStatePageSchema, schemaScriptProps } from "@/lib/schema";
-import { LAS_VEGAS_MAHJONG } from "@/lib/featured-listings";
 import { isUpcoming } from "@/lib/schedule";
+import { isFounderListing } from "@/lib/featured-listings";
 
 export const revalidate = 3600; // revalidate every hour
 
@@ -104,10 +104,7 @@ export default async function StatePage({ params, searchParams }: { params: Prom
 
   const players = playersRes.data || [];
   const events = (eventsRes.data || []).filter((e) => isUpcoming(e));
-  let venues = venuesRes.data || [];
-  // Always feature Las Vegas Mahjong (the founder's own business) on Nevada,
-  // so it appears in the Nevada Teachers tab alongside the Sponsored block.
-  if (data.abbr === "NV") venues = [LAS_VEGAS_MAHJONG, ...venues] as unknown as typeof venues;
+  const venues = (venuesRes.data || []).filter((v) => !isFounderListing(v));
 
   const STATE_CITIES: Record<string, [string, string][]> = {
     texas: [["dallas", "Dallas"], ["houston", "Houston"], ["austin", "Austin"], ["san-antonio", "San Antonio"]],
