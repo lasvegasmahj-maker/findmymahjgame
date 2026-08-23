@@ -74,9 +74,17 @@ export async function POST(req: NextRequest) {
       await supabase.from("listing_claims").update({ status: "needs_review", decided_by: null, decided_at: null }).eq("id", id);
       return NextResponse.json({ error: "Invalid listing table on this claim." }, { status: 400 });
     }
+    // The 90-day trial starts the first time ownership is ever granted and never
+    // restarts: an ownership transfer keeps the original entitlement clock, so a
+    // re-claim can never be used to reset the trial.
+    await supabase
+      .from(claimRow.listing_table)
+      .update({ premium_until: trialUntilFrom(new Date()) })
+      .eq("id", claimRow.listing_id)
+      .is("premium_until", null);
     const { data: updated, error: ownErr } = await supabase
       .from(claimRow.listing_table)
-      .update({ account_id: claimRow.profile_id, premium_until: trialUntilFrom(new Date()) })
+      .update({ account_id: claimRow.profile_id })
       .eq("id", claimRow.listing_id)
       .select("id");
     if (ownErr || !updated || updated.length === 0) {

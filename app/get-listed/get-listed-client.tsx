@@ -152,7 +152,7 @@ export default function GetListedClient({ defaultType = "" }: { defaultType?: st
       <div className="page-body" style={{ maxWidth: 680 }}>
         <div style={{ background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 20, padding: "2.5rem" }}>
           <h2 style={{ border: "none", marginTop: 0, marginBottom: "0.3rem" }}>Tell us about what you offer</h2>
-          <p style={{ color: "var(--muted)", fontSize: "16px", marginBottom: "2rem" }}>We review every listing by hand and email you within 1-2 business days. Have a promo code? Enter it below.</p>
+          <p style={{ color: "var(--muted)", fontSize: "16px", marginBottom: "2rem" }}>We review every listing by hand and email you within 1-2 business days.</p>
 
           <form onSubmit={handleSubmit}>
             {/* Type first, so the form adapts */}
