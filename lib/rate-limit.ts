@@ -20,9 +20,16 @@ export type RateLimitMode = "open" | "strict";
 // made-up IP on every request. Exported so tests can exercise it without a full
 // NextRequest or the local RATE_LIMIT_TEST_BYPASS escape hatch.
 export function ipOf(req: NextRequest): string {
+  // On Vercel, x-real-ip is the true client IP set by the platform from the TCP
+  // connection; a client cannot spoof it. Prefer it over x-forwarded-for, whose
+  // first entry is client-controllable (spoofable to mint fresh buckets) and whose
+  // last entry is Vercel's own edge IP (shared, which would bucket everyone
+  // together). Fall back to the first forwarded hop only when x-real-ip is absent.
+  const realIp = req.headers.get("x-real-ip");
+  if (realIp) return realIp.trim();
   const fwd = req.headers.get("x-forwarded-for") || "";
-  const hops = fwd.split(",").map((s) => s.trim()).filter(Boolean);
-  return hops[hops.length - 1] || req.headers.get("x-real-ip") || "unknown";
+  const first = fwd.split(",").map((v) => v.trim()).filter(Boolean)[0];
+  return first || "unknown";
 }
 
 // The minimal query surface the limiter uses. Structural so tests can pass a

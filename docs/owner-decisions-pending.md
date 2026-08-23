@@ -28,3 +28,11 @@ closed-gate default already in place; nothing blocks engineering.
    these 16 rows to free; not done autonomously because it changes real listing
    placement. Owner to confirm. Rows include Jessica Gitlin, Honey Salt, several
    Texas teachers; full list in the admin dashboard.
+
+8. The legacy "quick table" share-link feature (app/api/tables/create, claim,
+   find, played, run-it-back) predates the account and consent system and has no
+   launch gate; it is reachable by real traffic today, unlike gated Mahj Match.
+   The public find endpoint already filters to real_external rows. This appears
+   intentional (it is the existing "tables forming" feature, not algorithmic
+   matching), but confirm whether it should stay live at launch or move behind a
+   gate. No change made autonomously.

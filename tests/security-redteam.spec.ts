@@ -139,24 +139,26 @@ test.describe("enforcePublicName: PII cannot be smuggled through the account/pla
   });
 });
 
-test.describe("rate limiting: x-forwarded-for keys on the trusted last hop, not the spoofable first", () => {
-  function fakeReq(xff: string | null): NextRequest {
-    return { headers: { get: (name: string) => (name.toLowerCase() === "x-forwarded-for" ? xff : null) } } as unknown as NextRequest;
+test.describe("rate limiting: keys on the unspoofable x-real-ip on Vercel", () => {
+  function fakeReq(headers: Record<string, string | null>): NextRequest {
+    return { headers: { get: (name: string) => headers[name.toLowerCase()] ?? null } } as unknown as NextRequest;
   }
 
-  test("keys on the last entry in the chain", () => {
-    expect(ipOf(fakeReq("1.2.3.4, 203.0.113.7"))).toBe("203.0.113.7");
+  test("prefers x-real-ip, which Vercel sets from the real connection", () => {
+    // Even when a caller injects a fake x-forwarded-for, the unspoofable x-real-ip wins.
+    expect(ipOf(fakeReq({ "x-real-ip": "203.0.113.7", "x-forwarded-for": "9.9.9.9, 10.0.0.1" }))).toBe("203.0.113.7");
   });
 
-  test("a caller minting a fresh fake first hop on every request does not change the key", () => {
-    const a = ipOf(fakeReq("9.9.9.9, 203.0.113.7"));
-    const b = ipOf(fakeReq("6.6.6.6, 203.0.113.7"));
+  test("a caller spoofing x-forwarded-for cannot change the key when x-real-ip is present", () => {
+    const a = ipOf(fakeReq({ "x-real-ip": "203.0.113.7", "x-forwarded-for": "9.9.9.9" }));
+    const b = ipOf(fakeReq({ "x-real-ip": "203.0.113.7", "x-forwarded-for": "6.6.6.6" }));
     expect(a).toBe(b);
     expect(a).toBe("203.0.113.7");
   });
 
-  test("a single-hop header still resolves (no proxy in front)", () => {
-    expect(ipOf(fakeReq("203.0.113.7"))).toBe("203.0.113.7");
+  test("falls back to the first forwarded hop only when x-real-ip is absent", () => {
+    expect(ipOf(fakeReq({ "x-forwarded-for": "203.0.113.7, 10.0.0.1" }))).toBe("203.0.113.7");
+    expect(ipOf(fakeReq({ "x-forwarded-for": "203.0.113.7" }))).toBe("203.0.113.7");
   });
 });
 
