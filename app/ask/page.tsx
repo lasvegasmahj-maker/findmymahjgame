@@ -5,7 +5,7 @@ import AskClient from "./ask-client";
 export const metadata: Metadata = {
   title: "Ask Find My Mahj",
   description:
-    "Find where to play, or ask how to play. Search reviewed listings for games, teachers, and events, or get grounded answers to American Mahjong rules questions.",
+    "Find where to play, or ask how to play. Search reviewed listings for games, teachers, and events, or get straight answers to American Mahjong rules questions.",
   alternates: { canonical: "https://findmymahjgame.com/ask" },
 };
 
@@ -19,7 +19,7 @@ export default function AskPage() {
         Find where to play, or ask how to play.
       </p>
       <p style={{ fontSize: "0.95rem", color: "var(--muted)", textAlign: "center", lineHeight: 1.5, margin: "0 auto 1.8rem", maxWidth: 620 }}>
-        Search our reviewed directory for games, teachers, and events, or get grounded answers to
+        Search our reviewed directory for games, teachers, and events, or get straight answers to
         American Mahjong rules questions.
       </p>
       {/* Suspense lets AskClient read ?q= for prefill while the page stays static. */}

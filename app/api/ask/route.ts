@@ -11,7 +11,7 @@ import { safeHttpUrl } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
 
 // Ask Find My Mahj. The question is interpreted into filters, deterministic search runs
-// against published verified listings, and the answer sentence is composed from the real
+// against published reviewed listings, and the answer sentence is composed from the real
 // parameters and counts. No model writes factual text and no model sees a database row.
 
 type Card = {
@@ -190,7 +190,7 @@ export async function POST(req: NextRequest) {
   if (cards.length === 0) {
     answer = askedTournaments
       ? `No tournaments are listed${where} yet, and we never relabel casual games as tournaments to fill the page.`
-      : `Nothing verified matches${where}${dayPart}${todPart} yet.`;
+      : `Nothing reviewed matches${where}${dayPart}${todPart} yet.`;
     suggestions.push({ label: "Browse all events", href: `/events${intent.location ? `?near=${encodeURIComponent(intent.location)}` : ""}` });
     if (located) suggestions.push({ label: "Widen to 50 miles", href: `/events?near=${encodeURIComponent(intent.location!)}&radius=50` });
     if (intent.location) suggestions.push({ label: "Get notified when something is added", href: `/events?near=${encodeURIComponent(intent.location)}` });

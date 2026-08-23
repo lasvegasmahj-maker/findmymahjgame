@@ -63,7 +63,7 @@ export default function AskClient() {
         style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center", maxWidth: 560, margin: "0 auto 1rem" }}
       >
         <label htmlFor="ask-q" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>
-          Ask about mahjong near you
+          Ask where to play or how to play
         </label>
         <input
           id="ask-q"
