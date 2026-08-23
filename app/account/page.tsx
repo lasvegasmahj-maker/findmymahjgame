@@ -5,7 +5,7 @@ import { isLaunched } from "@/lib/launch-gates";
 
 export const metadata: Metadata = {
   title: "Your Account",
-  description: "Sign in to Find My Mahj Game and manage your account.",
+  description: "Sign in to Find My Mahj Game and manage your account and Mahj Match preferences.",
   robots: { index: false },
 };
 
