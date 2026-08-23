@@ -171,7 +171,7 @@ test.describe("Structured data", () => {
 test.describe("Indexability rule (ships dark, lib/seo/indexability.ts)", () => {
   const base = { published: 0, variantConfirmed: 0, currentEvidence: 0, isLaunchMetro: false };
 
-  test("launch metro status grants no index bypass (owner ruling 2026-08-24)", () => {
+  test("launch metro status grants no index bypass (owner ruling)", () => {
     const v = cityIndexability({ ...base, isLaunchMetro: true });
     expect(v.indexable).toBe(false);
     expect(v.disposition).toBe("noindex");

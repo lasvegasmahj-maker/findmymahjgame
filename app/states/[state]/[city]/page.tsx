@@ -62,7 +62,7 @@ export async function generateMetadata({ params }: { params: Promise<{ state: st
   };
 
   // Indexation is earned on marketplace value, launch metros included (owner
-  // ruling 2026-08-24, rule CITY-2): 3 published, 2 variant-confirmed, 1 with
+  // ruling, rule CITY-2): 3 published, 2 variant-confirmed, 1 with
   // current evidence. dynamicParams renders this route for ANY slug, so junk
   // URLs would otherwise be indexable empty shells. Failing pages are noindex
   // with follow on. On a query error the page stays indexable rather than

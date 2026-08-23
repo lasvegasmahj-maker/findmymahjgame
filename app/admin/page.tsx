@@ -63,16 +63,19 @@ export default async function AdminHome() {
   let metrics: TruthMetrics | null = null;
   let issues: DataQualityIssue[] = [];
   let loadError: string | null = null;
-  let gates: Array<{ label: string; key: string; on: boolean }> = [];
+  let gates: Array<{ label: string; key: string; on: boolean | null }> = [];
   try {
-    const { data: gateRows } = await supabase
+    const { data: gateRows, error: gateErr } = await supabase
       .from("app_settings").select("key, value").in("key", Object.values(LAUNCH_GATES));
     const gateMap = new Map((gateRows || []).map((r) => [r.key, r.value]));
+    // A failed read is unknown, never a silent OFF: this is the most safety
+    // critical panel, so it must never claim closed when it cannot see the value.
+    const readGate = (key: string): boolean | null => (gateErr ? null : gateMap.get(key) === "true");
     gates = [
-      { label: "Public signup", key: LAUNCH_GATES.publicSignup, on: gateMap.get(LAUNCH_GATES.publicSignup) === "true" },
-      { label: "Provider claims", key: LAUNCH_GATES.providerClaims, on: gateMap.get(LAUNCH_GATES.providerClaims) === "true" },
-      { label: "Payments", key: LAUNCH_GATES.payments, on: gateMap.get(LAUNCH_GATES.payments) === "true" },
-      { label: "Player matching", key: LAUNCH_GATES.playerMatching, on: gateMap.get(LAUNCH_GATES.playerMatching) === "true" },
+      { label: "Public signup", key: LAUNCH_GATES.publicSignup, on: readGate(LAUNCH_GATES.publicSignup) },
+      { label: "Provider claims", key: LAUNCH_GATES.providerClaims, on: readGate(LAUNCH_GATES.providerClaims) },
+      { label: "Payments", key: LAUNCH_GATES.payments, on: readGate(LAUNCH_GATES.payments) },
+      { label: "Player matching", key: LAUNCH_GATES.playerMatching, on: readGate(LAUNCH_GATES.playerMatching) },
     ];
     [metrics, issues] = await Promise.all([readTruthMetrics(supabase), readDataQualityIssues(supabase)]);
   } catch (err) {
@@ -112,12 +115,12 @@ export default async function AdminHome() {
       <Section title="Launch readiness" source="app_settings launch gates, read live">
         {gates.map((g) => (
           <div key={g.key} style={{ ...card }}>
-            <div style={{ fontSize: "1.1rem", fontWeight: 800, color: g.on ? "#b3261e" : "var(--green-dark)" }}>
-              {g.on ? "ON" : "OFF"}
+            <div style={{ fontSize: "1.1rem", fontWeight: 800, color: g.on === null ? "var(--muted)" : g.on ? "#b3261e" : "var(--green-dark)" }}>
+              {g.on === null ? "UNKNOWN" : g.on ? "ON" : "OFF"}
             </div>
             <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--navy)" }}>{g.label}</div>
             <div style={{ fontSize: "0.76rem", color: "var(--muted)", marginTop: "0.2rem" }}>
-              {g.on ? "Live to the public." : "Closed. Correct before launch; only you flip this."}
+              {g.on === null ? "Could not read the setting. State unknown." : g.on ? "Live to the public." : "Closed. This is the right state before launch. Only you flip it."}
             </div>
           </div>
         ))}

@@ -2,29 +2,15 @@ import type { MetadataRoute } from "next";
 import { ALL_STATE_SLUGS, STATES } from "@/lib/states-data";
 import { createServerClient } from "@/lib/supabase-server";
 import { cityIndexability } from "@/lib/seo/indexability";
-import { buildCityCounts, type CityCountRow } from "@/lib/seo/city-counts";
+import { buildCityCounts, groupRowsByCity, citySlugOf, type CityCountRow } from "@/lib/seo/city-counts";
 import { isFounderListing } from "@/lib/featured-listings";
 
 const BASE = "https://findmymahjgame.com";
-const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const ABBR_TO_SLUG: Record<string, string> = Object.fromEntries(Object.values(STATES).map((s) => [s.abbr, s.slug]));
 
-// Suburbs fold into their metro hub so we never publish thin duplicate city
-// pages (a Plano listing strengthens /states/texas/dallas, not a separate page).
-const METROS: Record<string, string[]> = {
-  dallas: ["plano", "frisco", "richardson", "irving", "arlington", "mckinney", "allen", "garland", "fort worth", "addison"],
-  houston: ["katy", "sugar land", "the woodlands", "cypress", "pearland"],
-  "san-antonio": ["new braunfels", "boerne"],
-  austin: ["round rock", "cedar park", "georgetown"],
-  "las-vegas": ["summerlin", "henderson", "north las vegas", "boulder city"],
-  scottsdale: ["phoenix", "tempe", "mesa", "chandler", "paradise valley"],
-  "boca-raton": ["delray beach", "boynton beach", "deerfield beach"],
-  naples: ["bonita springs", "marco island", "estero"],
-};
-const SUBURB_TO_HUB: Record<string, string> = {};
-for (const [hub, subs] of Object.entries(METROS)) for (const s of subs) SUBURB_TO_HUB[s] = hub;
-
-// The 8 launch metros are always listed even before inventory lands.
+// Suburb folding and slug-safety now live in lib/seo/city-counts.ts (citySlugOf /
+// groupRowsByCity) so the sitemap, the city page, and the admin panel group cities
+// identically. LAUNCH_CITY_KEYS remains only as the outage fallback below.
 const LAUNCH_CITY_KEYS = [
   "texas/dallas", "texas/houston", "texas/austin", "texas/san-antonio",
   "nevada/las-vegas", "arizona/scottsdale", "florida/boca-raton", "florida/naples",
@@ -36,11 +22,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Real listing timestamps drive lastmod. A sitemap that stamps every URL
   // with the request time teaches crawlers to distrust our lastmod entirely,
   // so entries without a known data timestamp simply omit it.
-  // SITEMAP-1: cities enter only when cityIndexability passes; launch metros get
-  // no bypass (owner ruling 2026-08-24). LAUNCH_CITY_KEYS stays only as the
-  // no-database fallback so a transient outage never empties the sitemap.
+  // SITEMAP-1: cities enter only when cityIndexability passes; no launch-metro
+  // bypass. LAUNCH_CITY_KEYS is the outage fallback only, so a transient DB
+  // failure lists the known hubs rather than emptying the sitemap.
   const cityKeys = new Set<string>();
-  const cityRows = new Map<string, CityCountRow[]>();
   const cityLastmod = new Map<string, string>();
   const stateLastmod = new Map<string, string>();
   const teacherPages: MetadataRoute.Sitemap = [];
@@ -58,6 +43,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       if (!cur || ts > cur) map.set(key, ts);
     };
 
+    // supabase-js reports query failures in .error without throwing; surface them
+    // so a DB failure reaches the catch and the outage fallback runs, instead of
+    // silently emptying every city and teacher URL from the sitemap.
+    if (ev.error || ve.error || pl.error) {
+      throw new Error(ev.error?.message || ve.error?.message || pl.error?.message || "sitemap query failed");
+    }
     const rows: ListingRow[] = [...(ev.data || []), ...(ve.data || []), ...(pl.data || [])];
     for (const r of rows) {
       if (!r.city || !r.state) continue;
@@ -65,19 +56,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       if (!stateSlug) continue;
       const ts = r.updated_at || r.created_at;
       bump(stateLastmod, stateSlug, ts);
-      const c = String(r.city).trim().toLowerCase();
-      // A city page only matches listings whose raw city value equals the slug
-      // with hyphens read as spaces (see app/states/[state]/[city]/page.tsx),
-      // so punctuated values like "Chicago (Clearing)" or "Los Angeles /
-      // Nashville" can never populate the page their slug points to. Skip them
-      // here instead of publishing an empty page; those listings still appear
-      // on their state page.
-      const citySlug = SUBURB_TO_HUB[c] || (slugify(c).replace(/-/g, " ") === c ? slugify(c) : null);
-      if (!citySlug) continue;
-      const key = `${stateSlug}/${citySlug}`;
-      (cityRows.get(key) ?? cityRows.set(key, []).get(key)!).push(r as CityCountRow);
-      bump(cityLastmod, key, ts);
+      const citySlug = citySlugOf(String(r.city));
+      if (citySlug) bump(cityLastmod, `${stateSlug}/${citySlug}`, ts);
     }
+    // SITEMAP-1: a city is listed only when its verdict is indexable, computed by
+    // the same functions the city page and admin panel use so nothing drifts.
+    const cityRows = groupRowsByCity(rows as Array<CityCountRow & { state?: string | null }>, ABBR_TO_SLUG);
     for (const [key, counts] of buildCityCounts(cityRows)) {
       if (cityIndexability(counts).indexable) cityKeys.add(key);
     }

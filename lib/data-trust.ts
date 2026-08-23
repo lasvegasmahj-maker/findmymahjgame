@@ -101,7 +101,7 @@ export async function readDataQualityIssues(supabase: SupabaseClient): Promise<D
 
   // Fairness regression guard: the founder's business lives only in the labelled
   // card. A published organic copy (like the Summerlin duplicate unpublished on
-  // 2026-08-24) must never quietly return.
+  // by the owner) must never quietly return.
   const { data: founderRows, error: e0 } = await supabase
     .from("venue_listings").select("id, website, instagram").eq("status", "published");
   if (e0) throw new Error(e0.message);
@@ -156,11 +156,16 @@ export async function readDataQualityIssues(supabase: SupabaseClient): Promise<D
   // Each check is a cross-system invariant; a hit means two sources of truth
   // disagree and a person should look before any number is trusted.
 
-  const { data: authPage, error: eAuth } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
-  if (eAuth) throw new Error(eAuth.message);
+  const authIds = new Set<string>();
+  for (let page = 1; page <= 100; page++) {
+    const { data: authPage, error: eAuth } = await supabase.auth.admin.listUsers({ page, perPage: 1000 });
+    if (eAuth) throw new Error(eAuth.message);
+    const users = authPage?.users ?? [];
+    for (const u of users) authIds.add(u.id);
+    if (users.length < 1000) break;
+  }
   const { data: profileRows, error: eProf } = await supabase.from("profiles").select("id");
   if (eProf) throw new Error(eProf.message);
-  const authIds = new Set((authPage?.users ?? []).map((u) => u.id));
   const profileIds = new Set((profileRows ?? []).map((r) => r.id));
   const authWithoutProfile = [...authIds].filter((id) => !profileIds.has(id)).length;
   const profileWithoutAuth = [...profileIds].filter((id) => !authIds.has(id)).length;
@@ -186,11 +191,18 @@ export async function readDataQualityIssues(supabase: SupabaseClient): Promise<D
     .not("profile_id", "is", null);
   if (eClaims) throw new Error(eClaims.message);
   let claimOwnershipMismatch = 0;
+  const claimsByTable = new Map<string, typeof winningClaims>();
   for (const c of winningClaims ?? []) {
-    const { data: listing, error } = await supabase
-      .from(c.listing_table).select("account_id").eq("id", c.listing_id).maybeSingle();
+    (claimsByTable.get(c.listing_table) ?? claimsByTable.set(c.listing_table, []).get(c.listing_table)!).push(c);
+  }
+  for (const [table, claims] of claimsByTable) {
+    const ids = (claims ?? []).map((c) => c.listing_id);
+    const { data: listings, error } = await supabase.from(table).select("id, account_id").in("id", ids);
     if (error) throw new Error(error.message);
-    if (!listing || listing.account_id !== c.profile_id) claimOwnershipMismatch++;
+    const ownerById = new Map((listings ?? []).map((l) => [l.id, l.account_id]));
+    for (const c of claims ?? []) {
+      if (ownerById.get(c.listing_id) !== c.profile_id) claimOwnershipMismatch++;
+    }
   }
   if (claimOwnershipMismatch > 0) {
     issues.push({

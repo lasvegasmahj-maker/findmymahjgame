@@ -3,7 +3,7 @@ import { verifyAdminSessionToken, ADMIN_COOKIE } from "@/lib/admin-auth";
 import { lazyServerClient } from "@/lib/supabase-server";
 import { gscStatus, gscSearchAnalytics } from "@/lib/seo/gsc";
 import { cityIndexability } from "@/lib/seo/indexability";
-import { buildCityCounts, type CityCountRow } from "@/lib/seo/city-counts";
+import { buildCityCounts, groupRowsByCity } from "@/lib/seo/city-counts";
 import { STATES } from "@/lib/states-data";
 
 const supabase = lazyServerClient();
@@ -27,14 +27,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Indexability data unavailable" }, { status: 500 });
   }
 
-  const byCity = new Map<string, CityCountRow[]>();
-  for (const r of [...(ev.data || []), ...(ve.data || [])]) {
-    if (!r.city || !r.state) continue;
-    const slug = ABBR_TO_SLUG[String(r.state).toUpperCase()];
-    if (!slug) continue;
-    const key = `${slug}/${String(r.city).trim().toLowerCase()}`;
-    (byCity.get(key) ?? byCity.set(key, []).get(key)!).push(r);
-  }
+  const byCity = groupRowsByCity([...(ev.data || []), ...(ve.data || [])], ABBR_TO_SLUG);
   const cities = [...buildCityCounts(byCity)].map(([key, counts]) => {
     const v = cityIndexability(counts);
     return { key, ...counts, indexable: v.indexable, reason: v.reason };

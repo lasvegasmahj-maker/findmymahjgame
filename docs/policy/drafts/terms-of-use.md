@@ -52,7 +52,7 @@ that works.
 
 Teachers, organizers, and businesses can create a free listing. Some features (visibility,
 badges, and other promotion) are part of paid Directory Membership; see
-`docs/policy/drafts/billing-disclosures.md` and `docs/policy/drafts/provider-terms.md` for how
+our Billing Disclosures at [OWNER TO CONFIRM final URL] and our Provider Terms at /provider-terms for how
 claiming a listing, ownership, and membership work. Being listed is always free. Money never
 buys the right to exist in the directory, only visibility and promotion on top of it.
 
@@ -73,13 +73,13 @@ preference) with the other people on that proposed table. Nothing more is shared
 say yes.
 
 Full detail on how matching works, and the community standards that apply to it, live in a
-separate document: `docs/policy/drafts/matching-community-standards.md`.
+separate document, our Matching Community Standards at [OWNER TO CONFIRM final URL].
 
 ## Blocking and reporting
 
 You can block another user, and you can report a user or a listing. Reports are reviewed, and
 serious reports (harassment, safety concerns, and similar) are reviewed by a person, not decided
-automatically. See `docs/policy/drafts/matching-community-standards.md` for detail on how this
+automatically. See our Matching Community Standards at [OWNER TO CONFIRM final URL] for detail on how this
 works today.
 
 ## Meeting other players in person: your safety

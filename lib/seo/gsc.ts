@@ -34,8 +34,11 @@ function b64url(input: Buffer | string): string {
   return Buffer.from(input).toString("base64url");
 }
 
+let tokenCache: { token: string; exp: number } | null = null;
+
 async function accessToken(sa: ServiceAccount): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
+  if (tokenCache && tokenCache.exp - 60 > now) return tokenCache.token;
   const header = b64url(JSON.stringify({ alg: "RS256", typ: "JWT" }));
   const claims = b64url(JSON.stringify({
     iss: sa.client_email,
@@ -54,6 +57,7 @@ async function accessToken(sa: ServiceAccount): Promise<string> {
   if (!res.ok) throw new Error(`token exchange failed: ${res.status}`);
   const j = await res.json();
   if (!j.access_token) throw new Error("token exchange returned no access_token");
+  tokenCache = { token: j.access_token, exp: now + 3600 };
   return j.access_token;
 }
 
