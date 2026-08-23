@@ -34,9 +34,9 @@ export default async function Home() {
   const supabase = createServerClient();
 
   const [playersRes, eventsRes, venuesRes] = await Promise.all([
-    supabase.from("player_listings").select("state").eq("status", "published"),
-    supabase.from("event_listings").select("id, state, city, event_type, event_name, event_date, registration_url").eq("status", "published"),
-    supabase.from("venue_listings").select("id, state, city, business_name, venue_type, description, website").eq("status", "published"),
+    supabase.from("player_listings").select("state").eq("status", "published").neq("state", "ZZ"),
+    supabase.from("event_listings").select("id, state, city, event_type, event_name, event_date, registration_url").eq("status", "published").neq("state", "ZZ"),
+    supabase.from("venue_listings").select("id, state, city, business_name, venue_type, description, website").eq("status", "published").neq("state", "ZZ"),
   ]);
 
   const players = playersRes.data || [];

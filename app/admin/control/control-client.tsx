@@ -8,7 +8,7 @@ type SimReport = { results: SimResult[]; overall: "PASS" | "FAIL"; ranAt: string
 const heading: React.CSSProperties = { fontFamily: "var(--font-playfair), 'Playfair Display', serif", color: "var(--navy)" };
 const card: React.CSSProperties = { background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 10, padding: "0.9rem 1.1rem" };
 const btn = (bg: string): React.CSSProperties => ({ background: bg, color: "white", border: "none", borderRadius: 8, padding: "0.6rem 1.2rem", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" });
-const green = "#1a6e3a";
+const green = "var(--green-dark)";
 const red = "#b3261e";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -166,7 +166,7 @@ function ModerationPanel() {
           {items.map((r) => (
             <div key={r.id} style={{ ...card, display: "flex", flexWrap: "wrap", gap: "0.8rem", alignItems: "center", justifyContent: "space-between" }}>
               <div>
-                <div style={{ fontWeight: 700, color: "var(--navy)", textTransform: "capitalize" }}>{r.category.replace("_", " and ")}</div>
+                <div style={{ fontWeight: 700, color: "var(--navy)", textTransform: "capitalize" }}>{r.category.replace(/_/g, " ")}</div>
                 <div style={{ fontSize: "0.8rem", color: "var(--muted)" }}>{r.detail || "No detail provided."}</div>
               </div>
               <div style={{ display: "flex", gap: "0.5rem" }}>

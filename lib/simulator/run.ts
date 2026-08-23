@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@supabase/supabase-js";
 import { scoreClaimEvidence } from "@/lib/claims/contract";
 import { readMatchingConsent, CONSENT_VERSION } from "@/lib/match/consent";
-import { buildGroups, type MatchCandidate } from "@/lib/match/engine";
+import { buildGroups, blockKey, type MatchCandidate } from "@/lib/match/engine";
 import { triageReport } from "@/lib/safety/triage";
 import { notify } from "@/lib/notifications/notify";
 import { track, hostRecordClass } from "@/lib/analytics/events";
@@ -109,7 +109,7 @@ export async function runLaunchSimulation(supabase: SupabaseClient): Promise<Sim
       const claimEmail = `sim-claim-${Date.now()}@${QA_DOMAIN}`;
       const { data: listing, error: lErr } = await supabase
         .from("venue_listings")
-        .insert({ business_name: "QA SIM Studio", venue_type: "Mahjong Instructor", city: "Sim City", state: SIM_STATE, status: "published", contact_email: claimEmail })
+        .insert({ business_name: "QA SIM Studio", venue_type: "Mahjong Instructor", city: "Sim City", state: SIM_STATE, status: "pending_review", contact_email: claimEmail })
         .select("id, contact_email, website, business_name, account_id")
         .single();
       if (lErr) throw new Error(`listing insert: ${lErr.message}`);
@@ -225,16 +225,16 @@ export async function runLaunchSimulation(supabase: SupabaseClient): Promise<Sim
       if (harass !== "needs_human") throw new Error("harassment not escalated to a human");
       if (!["triaged_low", "needs_human"].includes(spam)) throw new Error("spam triage produced an invalid status");
 
-      // A blocked pair is never seated: put two blocked players in a pool and confirm
-      // the engine never groups them together.
-      const [x, y] = playerIds.slice(0, 2);
-      const blocked = new Set([`${x}|${y}`]);
-      const pair: MatchCandidate[] = [
-        await candidateFor(supabase, x, "b1", { consentEligible: true }),
-        await candidateFor(supabase, y, "b2", { consentEligible: true }),
-      ];
-      const g = buildGroups(pair, blocked);
-      const seatedTogether = g.groups.some((grp) => grp.some((c) => c.userId === x) && grp.some((c) => c.userId === y));
+      // A blocked pair is never seated together. Use a pool of 5 compatible consented
+      // candidates (a table needs 4) so a group actually forms, block the first two
+      // with the engine's own sorted key, and assert they never share a group.
+      const [bx, by] = [playerIds[0], playerIds[1]];
+      const blocked = new Set([blockKey(bx, by)]);
+      const pool: MatchCandidate[] = [];
+      for (let i = 0; i < 5; i++) pool.push(await candidateFor(supabase, playerIds[i], `blk-${i}`, { consentEligible: true }));
+      const g = buildGroups(pool, blocked);
+      if (g.groups.length < 1) throw new Error("no group formed, cannot verify blocking");
+      const seatedTogether = g.groups.some((grp) => grp.some((c) => c.userId === bx) && grp.some((c) => c.userId === by));
       if (seatedTogether) throw new Error("engine seated a blocked pair together");
 
       push("Moderation", "PASS", "serious reports escalate to a human; low-risk triaged deterministically");
@@ -296,10 +296,11 @@ export async function runLaunchSimulation(supabase: SupabaseClient): Promise<Sim
       await supabase.from("matching_profiles").delete().eq("user_id", uid);
       await supabase.from("user_blocks").delete().eq("blocker_user_id", uid);
       await supabase.from("profiles").delete().eq("id", uid);
-      await supabase.auth.admin.deleteUser(uid).catch(() => {});
+      await supabase.auth.admin.deleteUser(uid).catch((e) => console.error(`sim cleanup: deleteUser ${uid} failed:`, e instanceof Error ? e.message : e));
     }
     for (const id of cleanup.listingIds) await supabase.from("venue_listings").delete().eq("id", id);
     await supabase.from("analytics_events").delete().eq("record_class", "test").eq("name", "ask_submitted").gte("created_at", new Date(Date.now() - 300000).toISOString());
+    await supabase.from("notifications_log").delete().eq("record_class", "test").like("email", "sim-notify-%@fmg-qa.test").gte("created_at", new Date(Date.now() - 300000).toISOString());
   }
 
   // 10. Reconciliation after cleanup: the sim must introduce no NEW issue.

@@ -28,7 +28,7 @@ const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border:
 export default async function TeachersPage({ searchParams }: { searchParams: Promise<{ near?: string }> }) {
   const { near } = await searchParams;
   const supabase = createServerClient();
-  const { data } = await supabase.from("venue_listings").select("id, business_name, venue_type, city, state, description, website, instagram, display_email, logo_url, tier, created_at").eq("status", "published");
+  const { data } = await supabase.from("venue_listings").select("id, business_name, venue_type, city, state, description, website, instagram, display_email, logo_url, tier, created_at").eq("status", "published").neq("state", "ZZ");
 
   let rows = (data || [])
     .filter((r) => TEACHER_TYPE.test(`${r.venue_type || ""} ${r.description || ""}`) && !isFounderListing(r));
