@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import { clampText, isValidEmail } from "@/lib/sanitize";
+import { clampText, enforcePublicName, isValidEmail } from "@/lib/sanitize";
+import { detectPrivateLocation } from "@/lib/private-location";
 import { rateLimit } from "@/lib/rate-limit";
 import { sendEmail } from "@/lib/email";
 import { lazyServerClient } from "@/lib/supabase-server";
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
   const skill = String(b.skill_level || "").toLowerCase();
   const row = {
-    name: clampText(b.name, 80),
+    name: enforcePublicName(b.name),
     city: clampText(b.city, 80),
     state: clampText(b.state, 60),
     skill_level: SKILLS.includes(skill) ? skill : "any",
@@ -37,6 +37,16 @@ export async function POST(req: NextRequest) {
     contact_email: clampText(b.email, 254) || null,
     status: "pending_review",
   };
+
+  // Bio and availability appear on a public state page; nothing narrower than a
+  // city may pass, or a home game listing pinpoints someone's home.
+  const privacy = detectPrivateLocation({ description: row.bio, day_time: row.availability });
+  if (privacy.hasStreetDetail) {
+    return NextResponse.json(
+      { error: "Please leave street addresses out of your listing. We only show city and state to keep hosts safe; you can share exact locations privately once you connect with a player." },
+      { status: 400 }
+    );
+  }
 
   const { error } = await supabase.from("player_listings").insert(row);
   if (error) {
