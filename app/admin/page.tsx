@@ -151,7 +151,7 @@ export default async function AdminHome() {
             <Stat label="Expired trial, back to Basic" value={membership ? membership.expiredReverted : "?"} sub="trial lapsed without payment; the listing stays live and is counted in Basic" />
             <Stat label="Charter recognition" value={m.foundingMembers} sub="recognition, not a tier; no ranking effect" />
             <Stat label="Verified paying customers" value={m.verifiedPayments} sub="rows with a real payment id" />
-            <NotConnected label="Revenue and MRR" note="No payment provider is integrated. Money metrics appear here once Stripe (or equivalent) is connected and becomes the source of truth." />
+            <NotConnected label="Revenue and MRR" note="Stripe is integrated but the payments gate is OFF. Revenue and MRR appear here once payments open, computed from real subscriptions only." />
           </Section>
 
           <Section title="Premium conversion diagnostic" source="provider_leads metadata, real_external delivered leads only">

@@ -38,10 +38,9 @@ type Filter = {
   lte: (c: string, v: unknown) => Filter & PromiseLike<CountQuery>;
 } & PromiseLike<CountQuery>;
 
-// Payment ids whose mirrored subscription is not real (QA, internal, seed, or any
-// sandbox purchase). A listing stamped with one of these has a payment record, but
-// not a real one, so it never counts as a paying provider. The classification is
-// set once, at webhook ingestion, from trusted server-side context.
+// A listing stamped with a non-real subscription id (QA, internal, seed, or any
+// sandbox purchase) has a payment record, but not a real one, so it never counts
+// as a paying provider.
 async function readNonRealPaymentIds(supabase: SupabaseClient): Promise<Set<string>> {
   const { data, error } = await supabase
     .from("billing_subscriptions").select("stripe_subscription_id").neq("record_class", "real_external");
@@ -104,8 +103,9 @@ export async function readTruthMetrics(supabase: SupabaseClient): Promise<TruthM
     testProviderSubmissions,
     claimedListings,
     foundingMembers: foundingVenues + foundingEvents,
-    // A plan or status field is not money. Paid requires a payment record, and none exists
-    // until a payment provider is integrated.
+    // A plan or status field is not money. Stripe is integrated but gated OFF; this
+    // figure is reserved for a Stripe-derived number once payments open, and stays 0
+    // rather than guessing from any local field.
     paidMembers: 0,
     publishedListings: publishedVenues + publishedEvents,
     importedListings: importedVenues + importedEvents,
@@ -381,20 +381,24 @@ export async function readMembershipBreakdown(supabase: SupabaseClient): Promise
   // without payment") stays true; those rows also count in basic, by design,
   // because an expired trial IS a Basic listing again.
   const tables = ["venue_listings"];
-  let published = 0, trial = 0, paid = 0, expired = 0, charter = 0;
+  let published = 0, entitled = 0, trial = 0, paid = 0, expired = 0, charter = 0;
   for (const t of tables) {
-    const [pub, tr, pd, ex, ch] = await Promise.all([
+    const [pub, en, tr, pd, ex, ch] = await Promise.all([
       count(t, (q) => q.eq("status", "published")),
+      count(t, (q) => q.eq("status", "published").gt("premium_until", nowISO)),
       count(t, (q) => q.eq("status", "published").gt("premium_until", nowISO).is("stripe_payment_id", null)),
       countRealPaid(supabase, t, nonReal, (q) => q.eq("status", "published").gt("premium_until", nowISO) as unknown as Filter),
       count(t, (q) => q.eq("status", "published").lte("premium_until", nowISO).is("stripe_payment_id", null)),
       count(t, (q) => q.eq("status", "published").eq("is_founding_member", true)),
     ]);
-    published += pub; trial += tr; paid += pd; expired += ex; charter += ch;
+    published += pub; entitled += en; trial += tr; paid += pd; expired += ex; charter += ch;
   }
 
+  // Basic is derived from entitlement dates alone, so the dashboard label ("no
+  // active Premium entitlement") stays true even for a QA listing entitled through
+  // a non-real subscription, which is neither trial nor real paid.
   return {
-    basic: Math.max(0, published - trial - paid),
+    basic: Math.max(0, published - entitled),
     complimentaryTrial: trial,
     paidPremium: paid,
     expiredReverted: expired,

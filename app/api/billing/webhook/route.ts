@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getStripe, PAYMENTS_DISABLED_MESSAGE } from "@/lib/billing/stripe";
 import { lazyServerClient } from "@/lib/supabase-server";
+import type { RecordClass } from "@/lib/data-trust";
 
 // Stripe webhook receiver. This is the ONLY writer of billing_subscriptions, and it
 // trusts nothing from the request except what survives signature verification: every
@@ -25,13 +26,13 @@ function refId(ref: string | { id?: string } | null | undefined): string | null 
   return ref?.id ?? null;
 }
 
-// Data truth at ingestion. A mirrored subscription is classified the moment it is
-// written, from two trusted server-side facts and nothing the client can supply:
-// the signature-verified event's livemode flag (a sandbox or test-mode subscription
-// is never real money), and the record_class of the account that owns the listing
-// the subscription pays for (a QA provider's purchase is QA activity). Only a
-// live-mode subscription bought by a real_external owner is real revenue.
-async function classifySubscription(supabase: SupabaseClient, sub: Stripe.Subscription, livemode: boolean): Promise<string> {
+// Data truth at ingestion. The webhook classifies each mirrored subscription as it
+// writes it, from two server-side facts the client cannot supply: the
+// signature-verified event's livemode flag (a sandbox or test-mode subscription is
+// never real money), and the record_class of the account that owns the listing the
+// subscription pays for (a QA provider's purchase is QA activity). Only a live-mode
+// subscription bought by a real_external owner is real revenue.
+async function classifySubscription(supabase: SupabaseClient, sub: Stripe.Subscription, livemode: boolean): Promise<RecordClass> {
   if (!livemode) return "test";
   const table = sub.metadata?.listing_table;
   const listingId = sub.metadata?.listing_id;
@@ -43,7 +44,7 @@ async function classifySubscription(supabase: SupabaseClient, sub: Stripe.Subscr
   const { data: profile, error: profileErr } = await supabase
     .from("profiles").select("record_class").eq("id", listing.account_id).maybeSingle();
   if (profileErr) throw new Error(`classify: profile read failed: ${profileErr.message}`);
-  return profile?.record_class || "real_external";
+  return (profile?.record_class as RecordClass | undefined) || "real_external";
 }
 
 async function upsertSubscription(supabase: SupabaseClient, sub: Stripe.Subscription, eventCreated: number, livemode: boolean) {
