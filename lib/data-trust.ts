@@ -38,7 +38,27 @@ type Filter = {
   lte: (c: string, v: unknown) => Filter & PromiseLike<CountQuery>;
 } & PromiseLike<CountQuery>;
 
+// A listing stamped with a non-real subscription id (QA, internal, seed, or any
+// sandbox purchase) has a payment record, but not a real one, so it never counts
+// as a paying provider. Unpaginated on purpose: page these reads before
+// subscriptions or paid listings approach 1000 rows.
+async function readNonRealPaymentIds(supabase: SupabaseClient): Promise<Set<string>> {
+  const { data, error } = await supabase
+    .from("billing_subscriptions").select("stripe_subscription_id").neq("record_class", "real_external");
+  if (error) throw new Error(`billing_subscriptions: ${error.message}`);
+  return new Set((data || []).map((r) => String(r.stripe_subscription_id)));
+}
+
+async function countRealPaid(supabase: SupabaseClient, table: string, nonReal: Set<string>, extra?: (q: Filter) => Filter): Promise<number> {
+  let q = supabase.from(table).select("stripe_payment_id").not("stripe_payment_id", "is", null) as unknown as Filter;
+  if (extra) q = extra(q);
+  const { data, error } = await (q as unknown as PromiseLike<{ data: Array<{ stripe_payment_id: string }> | null; error: { message: string } | null }>);
+  if (error) throw new Error(`${table}: ${error.message}`);
+  return (data || []).filter((r) => !nonReal.has(String(r.stripe_payment_id))).length;
+}
+
 export async function readTruthMetrics(supabase: SupabaseClient): Promise<TruthMetrics> {
+  const nonReal = await readNonRealPaymentIds(supabase);
   const count = async (table: string, build: (q: Filter) => PromiseLike<CountQuery>) => {
     const { count: n, error } = await build(supabase.from(table).select("id", { count: "exact", head: true }) as unknown as Filter);
     if (error) throw new Error(`${table}: ${error.message}`);
@@ -64,8 +84,8 @@ export async function readTruthMetrics(supabase: SupabaseClient): Promise<TruthM
     count("listing_claims", (q) => q),
     count("venue_listings", (q) => q.eq("is_founding_member", true)),
     count("event_listings", (q) => q.eq("is_founding_member", true)),
-    count("venue_listings", (q) => q.not("stripe_payment_id", "is", null)),
-    count("event_listings", (q) => q.not("stripe_payment_id", "is", null)),
+    countRealPaid(supabase, "venue_listings", nonReal),
+    countRealPaid(supabase, "event_listings", nonReal),
     count("venue_listings", (q) => q.eq("status", "published")),
     count("event_listings", (q) => q.eq("status", "published")),
     count("venue_listings", (q) => q.eq("status", "published").eq("source_type", "imported")),
@@ -84,8 +104,9 @@ export async function readTruthMetrics(supabase: SupabaseClient): Promise<TruthM
     testProviderSubmissions,
     claimedListings,
     foundingMembers: foundingVenues + foundingEvents,
-    // A plan or status field is not money. Paid requires a payment record, and none exists
-    // until a payment provider is integrated.
+    // A plan or status field is not money. paidMembers is the pinned 0 the data-truth
+    // spec and simulator assert on; verifiedPayments below is the live count of
+    // listings paid through a real, webhook-mirrored subscription.
     paidMembers: 0,
     publishedListings: publishedVenues + publishedEvents,
     importedListings: importedVenues + importedEvents,
@@ -313,7 +334,7 @@ export async function readDataQualityIssues(supabase: SupabaseClient): Promise<D
   // webhook bind) and unpaginated on purpose: fine well past launch scale, union
   // the tables and page the reads before subscriptions approach 1000.
   const { data: activeSubs, error: eSubs } = await supabase
-    .from("billing_subscriptions").select("stripe_subscription_id").eq("status", "active");
+    .from("billing_subscriptions").select("stripe_subscription_id").eq("status", "active").eq("record_class", "real_external");
   if (eSubs) throw new Error(eSubs.message);
   if ((activeSubs || []).length > 0) {
     const { data: linkedRows, error: eLinked } = await supabase
@@ -348,6 +369,7 @@ export type MembershipBreakdown = {
 // can be measured. Charter is recognition, not a tier.
 export async function readMembershipBreakdown(supabase: SupabaseClient): Promise<MembershipBreakdown> {
   const nowISO = new Date().toISOString();
+  const nonReal = await readNonRealPaymentIds(supabase);
   const count = async (table: string, build: (q: Filter) => PromiseLike<CountQuery>) => {
     const { count: n, error } = await build(supabase.from(table).select("id", { count: "exact", head: true }) as unknown as Filter);
     if (error) throw new Error(`${table}: ${error.message}`);
@@ -360,20 +382,24 @@ export async function readMembershipBreakdown(supabase: SupabaseClient): Promise
   // without payment") stays true; those rows also count in basic, by design,
   // because an expired trial IS a Basic listing again.
   const tables = ["venue_listings"];
-  let published = 0, trial = 0, paid = 0, expired = 0, charter = 0;
+  let published = 0, entitled = 0, trial = 0, paid = 0, expired = 0, charter = 0;
   for (const t of tables) {
-    const [pub, tr, pd, ex, ch] = await Promise.all([
+    const [pub, en, tr, pd, ex, ch] = await Promise.all([
       count(t, (q) => q.eq("status", "published")),
+      count(t, (q) => q.eq("status", "published").gt("premium_until", nowISO)),
       count(t, (q) => q.eq("status", "published").gt("premium_until", nowISO).is("stripe_payment_id", null)),
-      count(t, (q) => q.eq("status", "published").gt("premium_until", nowISO).not("stripe_payment_id", "is", null)),
+      countRealPaid(supabase, t, nonReal, (q) => q.eq("status", "published").gt("premium_until", nowISO)),
       count(t, (q) => q.eq("status", "published").lte("premium_until", nowISO).is("stripe_payment_id", null)),
       count(t, (q) => q.eq("status", "published").eq("is_founding_member", true)),
     ]);
-    published += pub; trial += tr; paid += pd; expired += ex; charter += ch;
+    published += pub; entitled += en; trial += tr; paid += pd; expired += ex; charter += ch;
   }
 
+  // Basic is derived from entitlement dates alone, so the dashboard label ("no
+  // active Premium entitlement") stays true even for a QA listing entitled through
+  // a non-real subscription, which is neither trial nor real paid.
   return {
-    basic: Math.max(0, published - trial - paid),
+    basic: Math.max(0, published - entitled),
     complimentaryTrial: trial,
     paidPremium: paid,
     expiredReverted: expired,
@@ -397,6 +423,7 @@ export type PremiumLeadDiagnostic = {
 // Premium look like it is working. Queries are unpaginated, which is fine at launch
 // scale; paginate before provider or lead counts approach 1000 rows.
 export async function readPremiumLeadDiagnostic(supabase: SupabaseClient): Promise<PremiumLeadDiagnostic> {
+  const nonReal = await readNonRealPaymentIds(supabase);
   const providers: Array<{ id: string; paid: boolean; table: string }> = [];
   for (const t of ["venue_listings"]) {
     const { data, error } = await supabase
@@ -404,7 +431,7 @@ export async function readPremiumLeadDiagnostic(supabase: SupabaseClient): Promi
       .select("id, stripe_payment_id")
       .not("premium_until", "is", null);
     if (error) throw new Error(`${t}: ${error.message}`);
-    for (const r of data || []) providers.push({ id: String(r.id), paid: r.stripe_payment_id != null, table: t });
+    for (const r of data || []) providers.push({ id: String(r.id), paid: r.stripe_payment_id != null && !nonReal.has(String(r.stripe_payment_id)), table: t });
   }
 
   const { data: leadRows, error: leadErr } = await supabase

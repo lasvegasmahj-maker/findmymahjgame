@@ -37,10 +37,10 @@ function Section({ title, source, children }: { title: string; source: string; c
   );
 }
 
-function NotConnected({ label, note }: { label: string; note: string }) {
+function NotConnected({ label, note, headline = "Not connected" }: { label: string; note: string; headline?: string }) {
   return (
     <div style={{ ...card, borderStyle: "dashed" }}>
-      <div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--muted)" }}>Not connected</div>
+      <div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--muted)" }}>{headline}</div>
       <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--navy)" }}>{label}</div>
       <div style={{ fontSize: "0.76rem", color: "var(--muted)", marginTop: "0.2rem" }}>{note}</div>
     </div>
@@ -151,7 +151,7 @@ export default async function AdminHome() {
             <Stat label="Expired trial, back to Basic" value={membership ? membership.expiredReverted : "?"} sub="trial lapsed without payment; the listing stays live and is counted in Basic" />
             <Stat label="Charter recognition" value={m.foundingMembers} sub="recognition, not a tier; no ranking effect" />
             <Stat label="Verified paying customers" value={m.verifiedPayments} sub="rows with a real payment id" />
-            <NotConnected label="Revenue and MRR" note="No payment provider is integrated. Money metrics appear here once Stripe (or equivalent) is connected and becomes the source of truth." />
+            <NotConnected label="Revenue and MRR" headline="Not live yet" note="Stripe is wired up, but the payments gate is OFF. Once payments open, this card shows revenue and MRR and counts real subscriptions only." />
           </Section>
 
           <Section title="Premium conversion diagnostic" source="provider_leads metadata, real_external delivered leads only">

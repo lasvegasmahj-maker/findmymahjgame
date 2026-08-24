@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getStripe, PAYMENTS_DISABLED_MESSAGE } from "@/lib/billing/stripe";
 import { lazyServerClient } from "@/lib/supabase-server";
+import type { RecordClass } from "@/lib/data-trust";
 
 // Stripe webhook receiver. This is the ONLY writer of billing_subscriptions, and it
 // trusts nothing from the request except what survives signature verification: every
@@ -25,7 +26,28 @@ function refId(ref: string | { id?: string } | null | undefined): string | null 
   return ref?.id ?? null;
 }
 
-async function upsertSubscription(supabase: SupabaseClient, sub: Stripe.Subscription, eventCreated: number) {
+// Data truth at ingestion. The webhook classifies each mirrored subscription as it
+// writes it, from two server-side facts the client cannot supply: the
+// signature-verified event's livemode flag (a sandbox or test-mode subscription is
+// never real money), and the record_class of the account that owns the listing the
+// subscription pays for (a QA provider's purchase is QA activity). Only a live-mode
+// subscription bought by a real_external owner is real revenue.
+async function classifySubscription(supabase: SupabaseClient, sub: Stripe.Subscription, livemode: boolean): Promise<RecordClass> {
+  if (!livemode) return "test";
+  const table = sub.metadata?.listing_table;
+  const listingId = sub.metadata?.listing_id;
+  if (table !== "venue_listings" || !listingId) return "real_external";
+  const { data: listing, error: listingErr } = await supabase
+    .from(table).select("account_id").eq("id", listingId).maybeSingle();
+  if (listingErr) throw new Error(`classify: listing read failed: ${listingErr.message}`);
+  if (!listing?.account_id) return "real_external";
+  const { data: profile, error: profileErr } = await supabase
+    .from("profiles").select("record_class").eq("id", listing.account_id).maybeSingle();
+  if (profileErr) throw new Error(`classify: profile read failed: ${profileErr.message}`);
+  return (profile?.record_class as RecordClass | undefined) || "real_external";
+}
+
+async function upsertSubscription(supabase: SupabaseClient, sub: Stripe.Subscription, eventCreated: number, livemode: boolean) {
   const customerId = refId(sub.customer);
   // A subscription event without a customer is malformed; fail loudly so Stripe
   // retries instead of writing a mirror row that joins to nothing.
@@ -42,6 +64,9 @@ async function upsertSubscription(supabase: SupabaseClient, sub: Stripe.Subscrip
   if (readError) throw new Error(`billing_subscriptions read failed: ${readError.message}`);
   if (existing?.last_event_at && existing.last_event_at >= eventAt) return;
 
+  const recordClass = await classifySubscription(supabase, sub, livemode);
+  const boundTable = sub.metadata?.listing_table === "venue_listings" ? "venue_listings" : null;
+  const boundListing = boundTable && sub.metadata?.listing_id ? sub.metadata.listing_id : null;
   const { error } = await supabase.from("billing_subscriptions").upsert(
     {
       stripe_subscription_id: sub.id,
@@ -51,6 +76,9 @@ async function upsertSubscription(supabase: SupabaseClient, sub: Stripe.Subscrip
       current_period_end: readPeriodEnd(sub),
       cancel_at_period_end: Boolean(sub.cancel_at_period_end),
       last_event_at: eventAt,
+      listing_table: boundTable,
+      listing_id: boundListing,
+      record_class: recordClass,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "stripe_subscription_id" }
@@ -167,7 +195,7 @@ export async function POST(req: Request) {
       case "customer.subscription.created":
       case "customer.subscription.updated":
       case "customer.subscription.deleted":
-        await upsertSubscription(supabase, event.data.object as Stripe.Subscription, event.created);
+        await upsertSubscription(supabase, event.data.object as Stripe.Subscription, event.created, event.livemode);
         break;
       case "invoice.payment_failed": {
         // Mark the failure immediately; the authoritative status still arrives via
