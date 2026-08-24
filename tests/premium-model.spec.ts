@@ -319,6 +319,31 @@ test.describe("data truth", () => {
     expect(source).toContain('.not("stripe_payment_id", "is", null)');
   });
 
+  test("billing rows are classified at ingestion from trusted server context, never the client", () => {
+    // Data truth invariant: QA activity never counts as real business activity, even
+    // temporarily. The webhook classifies the mirrored subscription the moment it is
+    // written, from the signature-verified event's livemode flag and the owning
+    // account's record_class. Nothing in Stripe metadata can set the class.
+    const webhook = srcOf("app", "api", "billing", "webhook", "route.ts");
+    expect(webhook).toContain("classifySubscription");
+    expect(webhook).toContain('if (!livemode) return "test"');
+    expect(webhook).toContain('.from("profiles").select("record_class")');
+    expect(webhook).toContain("record_class: recordClass");
+    expect(webhook).toContain("event.livemode");
+    expect(webhook).not.toMatch(/metadata\??\.record_class/);
+  });
+
+  test("paid-provider metrics read classification through the payment relationship", () => {
+    // A listing stamped with a non-real subscription id has a payment record, not a
+    // real one. Every paid count consults the subscription's record_class so a QA
+    // purchase never appears as a paying provider anywhere on the admin dashboard.
+    const source = srcOf("lib", "data-trust.ts");
+    expect(source).toContain("readNonRealPaymentIds");
+    expect(source).toMatch(/verifiedPayments[\s\S]{0,120}stripeVenues \+ stripeEvents/);
+    expect((source.match(/countRealPaid\(/g) || []).length).toBeGreaterThanOrEqual(3);
+    expect(source).toContain('.neq("record_class", "real_external")');
+  });
+
   test("the conversion diagnostic counts only real delivered leads", () => {
     const source = srcOf("lib", "data-trust.ts");
     expect(source).toMatch(/provider_leads[\s\S]{0,300}real_external/);
