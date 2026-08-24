@@ -40,7 +40,8 @@ type Filter = {
 
 // A listing stamped with a non-real subscription id (QA, internal, seed, or any
 // sandbox purchase) has a payment record, but not a real one, so it never counts
-// as a paying provider.
+// as a paying provider. Unpaginated on purpose: page these reads before
+// subscriptions or paid listings approach 1000 rows.
 async function readNonRealPaymentIds(supabase: SupabaseClient): Promise<Set<string>> {
   const { data, error } = await supabase
     .from("billing_subscriptions").select("stripe_subscription_id").neq("record_class", "real_external");
@@ -103,9 +104,9 @@ export async function readTruthMetrics(supabase: SupabaseClient): Promise<TruthM
     testProviderSubmissions,
     claimedListings,
     foundingMembers: foundingVenues + foundingEvents,
-    // A plan or status field is not money. Stripe is integrated but gated OFF; this
-    // figure is reserved for a Stripe-derived number once payments open, and stays 0
-    // rather than guessing from any local field.
+    // A plan or status field is not money. paidMembers is the pinned 0 the data-truth
+    // spec and simulator assert on; verifiedPayments below is the live count of
+    // listings paid through a real, webhook-mirrored subscription.
     paidMembers: 0,
     publishedListings: publishedVenues + publishedEvents,
     importedListings: importedVenues + importedEvents,
@@ -333,7 +334,7 @@ export async function readDataQualityIssues(supabase: SupabaseClient): Promise<D
   // webhook bind) and unpaginated on purpose: fine well past launch scale, union
   // the tables and page the reads before subscriptions approach 1000.
   const { data: activeSubs, error: eSubs } = await supabase
-    .from("billing_subscriptions").select("stripe_subscription_id").eq("status", "active");
+    .from("billing_subscriptions").select("stripe_subscription_id").eq("status", "active").eq("record_class", "real_external");
   if (eSubs) throw new Error(eSubs.message);
   if ((activeSubs || []).length > 0) {
     const { data: linkedRows, error: eLinked } = await supabase
@@ -387,7 +388,7 @@ export async function readMembershipBreakdown(supabase: SupabaseClient): Promise
       count(t, (q) => q.eq("status", "published")),
       count(t, (q) => q.eq("status", "published").gt("premium_until", nowISO)),
       count(t, (q) => q.eq("status", "published").gt("premium_until", nowISO).is("stripe_payment_id", null)),
-      countRealPaid(supabase, t, nonReal, (q) => q.eq("status", "published").gt("premium_until", nowISO) as unknown as Filter),
+      countRealPaid(supabase, t, nonReal, (q) => q.eq("status", "published").gt("premium_until", nowISO)),
       count(t, (q) => q.eq("status", "published").lte("premium_until", nowISO).is("stripe_payment_id", null)),
       count(t, (q) => q.eq("status", "published").eq("is_founding_member", true)),
     ]);
