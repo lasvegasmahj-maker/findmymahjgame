@@ -33,6 +33,9 @@ test.describe("knowledge base fact checks", () => {
       expect(new Date(e.last_verified).getTime()).toBeLessThanOrEqual(Date.now());
       expect(["high", "medium"]).toContain(e.confidence);
       expect(e.question_patterns.length).toBeGreaterThan(0);
+      // A gated entry must be able to score on the concept that gates it, or
+      // specificity would select an entry with no matched text and refuse.
+      if (e.requires) expect(e.requires.some((re) => e.question_patterns.includes(re)), e.id).toBe(true);
       expect(e.approved_answer.length).toBeGreaterThan(20);
       if (e.house_note) expect(e.varies_by_house).toBe(true);
     }
@@ -208,6 +211,8 @@ test.describe("retrieval precedence: specific beats generic", () => {
     "Can a concealed hand claim the winning discard?",
     "My hand is concealed, can I call the last tile I need?",
     "Can a closed hand pick up a discard for the last tile to win?",
+    "Can a closed hand call a discard, or do I have to trade?",
+    "Can a closed hand exchange a discard?",
   ];
   for (const seed of closedHand) {
     test(`closed hand claim question, all variants: ${seed}`, () => {
@@ -301,6 +306,7 @@ test.describe("retrieval precedence: specific beats generic", () => {
       "Can a closed hand exchange a joker from an exposure?",
       "Can I claim a joker from an exposure with a concealed hand?",
       "Can I pick up a joker from an exposure if my hand is closed?",
+      "What do you call a closed hand?",
     ];
     for (const seed of notClosedHand) {
       for (const q of variants(seed)) {

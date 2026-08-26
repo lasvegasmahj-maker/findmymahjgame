@@ -12,9 +12,9 @@ closed-gate default already in place; nothing blocks engineering.
    launch gate flips. See docs/policy/launch-gate.md for which gate needs which.
 4. RESOLVED 2026-08-26: both rules entries passed instructor review and are
    published (closed-hand-final-tile as written; charleston-blind-pass with the
-   owner's wording plus her joker clarification). Their implementation exposed a
-   retrieval defect (specific entries losing to broad ones), fixed as an
-   authorized launch bug with structural precedence in lib/rules/lookup.ts.
+   owner's wording plus her joker clarification). While adding them we found the
+   answer engine sometimes returned a general answer instead of the specific
+   one. That is fixed under the build-freeze bugfix allowance.
 5. RESOLVED 2026-08-23: the free-period conflict (6-month code vs 12-month
    coupon) is closed by the owner-approved business model. Both mechanics are
    retired; the complimentary period is the app-managed 90-day Premium trial

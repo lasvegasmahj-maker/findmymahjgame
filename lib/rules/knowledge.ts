@@ -9,11 +9,10 @@ export type KnowledgeEntry = {
   id: string;
   topic: string;
   question_patterns: RegExp[];
-  // Structural specificity. Every concept in `requires` must be present for this
-  // entry to be eligible, and an entry requiring more concepts outranks one
-  // requiring fewer, ahead of any keyword score. That is what makes a narrow
-  // intent beat a broad one without listing phrasings. `blocks` disqualifies an
-  // entry outright for a context its approved text does not cover.
+  // An entry requiring more concepts outranks one requiring fewer, ahead of any
+  // keyword score: that is what makes a narrow intent beat a broad one without
+  // listing phrasings. `blocks` disqualifies an entry for a context its approved
+  // text does not cover.
   requires?: RegExp[];
   blocks?: Array<RegExp | ((question: string) => boolean)>;
   keywords: string[];
@@ -31,8 +30,8 @@ const SOURCE = "owner_approved" as const;
 const VERIFIED = "2026-08-22" as const;
 const VERIFIED_REVIEW = "2026-08-26" as const;
 
-// Reusable concept matchers. These describe ideas, not phrasings, so word order,
-// punctuation, and paraphrase all resolve to the same concept.
+// Concept matchers describe ideas, not phrasings, so word order, punctuation, and
+// paraphrase all resolve to the same concept.
 const HAND_CLOSED =
   /\b(closed|concealed)\b[^.?!]{0,40}\bhands?\b|\bhands?\b[^.?!]{0,40}\b(closed|concealed)\b/i;
 const CLAIM_VERB = /\b(call|calls|calling|claim|claims|claiming|pick(ing)? up|takes? from the discard)\b/i;
@@ -44,7 +43,7 @@ const JOKER = /\bjokers?\b/i;
 // friend passed one" is still a joker definition.
 export const BLIND_PASS = new RegExp(
   `${BLIND.source}[^.?!,;]{0,30}${PASS_VERB.source}|${PASS_VERB.source}[^.?!,;]{0,30}${BLIND.source}`, "i");
-export const JOKER_PASS = new RegExp(
+const JOKER_PASS = new RegExp(
   `${JOKER.source}[^.?!,;]{0,30}${PASS_VERB.source}(?!\\s+(for|as)\\b)|${PASS_VERB.source}(?!\\s+(for|as)\\b)[^.?!,;]{0,30}${JOKER.source}`, "i");
 // Joker exchange from an exposure is allowed for any hand; that question belongs
 // on the exchange answer, whatever verb the player uses.
@@ -281,7 +280,9 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [HAND_CLOSED],
     keywords: ["closed hand", "concealed"],
     requires: [HAND_CLOSED, CLAIM_VERB],
-    blocks: [JOKER_EXCHANGE],
+    // "call" also has a naming sense ("what do you call a closed hand?"); that is
+    // a definition question, not a claim.
+    blocks: [(q: string) => JOKER.test(q) && JOKER_EXCHANGE.test(q), /\bwhat (do|would) (you|we|they) call\b/i],
     approved_answer:
       "A closed (concealed) hand may not call any discard to build a group. The one exception: you may claim a discard when it is the single tile that completes your mahjong.",
     ruleset: RULESET,
