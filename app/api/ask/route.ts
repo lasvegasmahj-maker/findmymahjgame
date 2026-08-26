@@ -100,7 +100,10 @@ export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => null)) || {};
   // Cap first, then collapse whitespace, so topic detection and rules retrieval see
   // one string: bounded patterns cannot cross a newline.
-  const question = typeof body?.q === "string" ? body.q.slice(0, 200).replace(/\s+/g, " ").trim() : "";
+  const question =
+    typeof body?.q === "string"
+      ? body.q.slice(0, 200).replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/\s+/g, " ").trim()
+      : "";
   const recordClass = await resolveAskRecordClass(req);
   try {
   const topic = detectAskTopic(question);

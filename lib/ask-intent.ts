@@ -1,3 +1,4 @@
+import { blindReadsAsPlace } from "@/lib/rules/knowledge";
 import { DAY_NAMES, type DayName, type TimeOfDay } from "@/lib/schedule";
 import { RADIUS_OPTIONS, type RadiusMiles } from "@/lib/geo";
 
@@ -140,18 +141,13 @@ const RULES_SIGNAL_RES: RegExp[] = [
 const VARIANT_QUESTION_RE =
   /\b(riichi|japanese|chinese|hong ?kong|cantonese|sichuan|taiwanese|korean|filipino|singapor(e|ean)|mcr|zung ?jung)\b/i;
 
-// "Blind Pass", "Blind River", and "Blind Bay" are real places. "Blind" introduced
-// by a location preposition, or followed by a capitalized word, is a place name and
-// never a rules signal; the place is removed before the question is classified.
-const BLIND_AS_PLACE_PREP = /\b(near|nearby|in|at|around|off|to|from)\s+blind\b/i;
-const BLIND_AS_PROPER_NOUN = /\bBlind\s+[A-Z]/;
-
 export function detectAskTopic(raw: string): AskTopic {
   const q = String(raw || "").slice(0, 300).replace(/\s+/g, " ").trim();
   if (!q) return "directory";
-  if (BLIND_AS_PLACE_PREP.test(q) || BLIND_AS_PROPER_NOUN.test(q)) {
-    const withoutPlace = q.replace(/\bblind(\s+[A-Za-z]+)?\b/gi, "");
-    return detectAskTopic(withoutPlace) === "directory" ? "directory" : "mixed";
+  // A place called Blind Pass (or Blind River, Blind Bay) is removed before the
+  // question is classified, so the place name alone never makes it a rules question.
+  if (blindReadsAsPlace(q)) {
+    return detectAskTopic(q.replace(/\bblind(\s+[A-Za-z]+)?\b/gi, ""));
   }
 
   const questionForm = /\b(what|how|why|when|can|could|should|is|are|do|does|work|mean)\b/i.test(q);

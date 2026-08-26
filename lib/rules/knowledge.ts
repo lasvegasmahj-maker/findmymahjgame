@@ -15,7 +15,7 @@ export type KnowledgeEntry = {
   // intent beat a broad one without listing phrasings. `blocks` disqualifies an
   // entry outright for a context its approved text does not cover.
   requires?: RegExp[];
-  blocks?: RegExp[];
+  blocks?: Array<RegExp | ((question: string) => boolean)>;
   keywords: string[];
   approved_answer: string;
   ruleset: "american_nmjl";
@@ -39,11 +39,28 @@ const CLAIM_VERB = /\b(call|calls|calling|claim|claims|claiming|pick(ing)? up|ta
 const BLIND = /\bblind(ly)?\b/i;
 const PASS_VERB = /\bpass(es|ed|ing)?\b/i;
 const JOKER = /\bjokers?\b/i;
+
 // "Blind Pass", "Blind River", and "Blind Bay" are real places. "Blind" reads as a
-// place name when a location preposition introduces it, or when it is followed by
-// a capitalized word, which is why the second pattern has no case-insensitive flag.
-const BLIND_AS_PLACE_PREP = /\b(near|nearby|in|at|around|off|to|from)\s+blind\b/i;
-const BLIND_AS_PROPER_NOUN = /\bBlind\s+[A-Z]/;
+// place name when a location word introduces it, when a geographic suffix follows
+// it in any casing, or when it is Title Cased inside something that is not a
+// question. "to" and "at" are deliberately absent: "allowed to blind pass" is the
+// natural verb form of the rule question.
+const BLIND_PLACE_PREP = /\b(near|nearby|in|around|from|where)\s+blind\b/i;
+const BLIND_PLACE_SUFFIX =
+  /\bblind\s+(pass|river|bay)\s+(road|rd|beach|key|keys|fl|florida|estero|sanibel|captiva|island|drive|dr|lane|blvd|park)\b/i;
+// Only "Blind Pass" is ambiguous between the rules term and a place; any other
+// Title Cased "Blind <Name>" (Blind River, Blind Bay) is always a place.
+const BLIND_PROPER_OTHER = /\bBlind\s+(?!Pass\b)[A-Z][a-z]+/;
+const BLIND_PROPER_PASS = /\bBlind\s+Pass\b/;
+const QUESTION_FORM = /\b(can|could|may|do|does|is|are|should|when|how|what|why|allowed)\b/i;
+export function blindReadsAsPlace(question: string): boolean {
+  return (
+    BLIND_PLACE_PREP.test(question) ||
+    BLIND_PLACE_SUFFIX.test(question) ||
+    BLIND_PROPER_OTHER.test(question) ||
+    (BLIND_PROPER_PASS.test(question) && !QUESTION_FORM.test(question))
+  );
+}
 
 export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
   {
@@ -213,7 +230,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
       /(?<!(?:near|in|around|at|visiting|by|to|from)\s)\bcharleston\b/i,
       /pass(ing|es)? tiles/i,
       /\bcourtesy pass\b/i,
-      /\bjokers?\b[^.?!]{0,30}\bpass(es|ed|ing)?\b|\bpass(es|ed|ing)?\b[^.?!]{0,30}\bjokers?\b/i,
+      new RegExp(`${JOKER.source}[^.?!]{0,30}${PASS_VERB.source}|${PASS_VERB.source}[^.?!]{0,30}${JOKER.source}`, "i"),
     ],
     keywords: ["charleston", "passing"],
     approved_answer:
@@ -247,9 +264,10 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     topic: "Closed hand final tile",
     question_patterns: [HAND_CLOSED],
     keywords: ["closed hand", "concealed"],
-    // Eligible only when the question names a closed hand AND a claim verb, and
-    // that two-concept requirement is what outranks the generic calling entry.
     requires: [HAND_CLOSED, CLAIM_VERB],
+    // Joker exchange from an exposure is allowed for any hand; that question
+    // belongs on the exchange answer.
+    blocks: [/\bexchange\b/i],
     approved_answer:
       "A closed (concealed) hand may not call any discard to build a group. The one exception: you may claim a discard when it is the single tile that completes your mahjong.",
     ruleset: RULESET,
@@ -263,10 +281,8 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     topic: "Charleston blind pass",
     question_patterns: [BLIND],
     keywords: ["blind pass"],
-    // Blind plus a passing verb, in any order. Blocked when "Blind Pass" reads as
-    // the Florida place, so a directory search never gets a rules answer.
     requires: [BLIND, PASS_VERB],
-    blocks: [BLIND_AS_PLACE_PREP, BLIND_AS_PROPER_NOUN],
+    blocks: [blindReadsAsPlace],
     approved_answer:
       "A blind pass is allowed only on the last pass of each Charleston: First Left and, if a second Charleston is played, Last Right. If you do not want to pass three tiles from your own hand, you may take one, two, or all three tiles being passed to you and pass them onward without looking at them. You still pass three tiles total. A blind pass does not override the rule against passing jokers. Do not knowingly include a joker from your own hand. Tiles you pass on blindly must remain unseen.",
     ruleset: RULESET,

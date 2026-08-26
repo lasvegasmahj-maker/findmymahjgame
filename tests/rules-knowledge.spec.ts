@@ -229,6 +229,11 @@ test.describe("retrieval precedence: specific beats generic", () => {
     "Is passing blind legal?",
     "Am I allowed to pass tiles blindly?",
     "Blind passing, when can we do it?",
+    "Am I allowed to blind pass?",
+    "Do I have to blind pass?",
+    "Do I need to blind pass on the last pass?",
+    "Can I Blind Pass?",
+    "Is a Blind Pass allowed in the Charleston?",
   ];
   for (const seed of blindPass) {
     test(`blind pass question, all variants: ${seed}`, () => {
@@ -287,6 +292,8 @@ test.describe("retrieval precedence: specific beats generic", () => {
       "Can I still call once the window is closed?",
       "How do I discard from a concealed hand?",
       "Can the final tile give someone mahjong?",
+      "Can a concealed hand call a joker exchange?",
+      "Can a closed hand exchange a joker from an exposure?",
     ];
     for (const seed of notClosedHand) {
       for (const q of variants(seed)) {
@@ -314,6 +321,11 @@ test.describe("retrieval precedence: specific beats generic", () => {
       "Are there passes Blind Bay?",
       "Any groups in Blind Pass?",
       "Teachers around Blind Pass, FL",
+      "mahjong blind pass sanibel",
+      "groups blind pass fl",
+      "blind pass road mahjong",
+      "blind pass beach",
+      "Blind Pass Road",
     ];
     for (const seed of places) {
       for (const q of [seed, seed.replace(/ /g, "\n"), seed + "??"]) {
