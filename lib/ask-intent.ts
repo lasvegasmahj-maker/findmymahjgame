@@ -1,4 +1,5 @@
-import { blindReadsAsPlace } from "@/lib/rules/knowledge";
+import { blindReadsAsPlace, BLIND_PASS } from "@/lib/rules/knowledge";
+import { normalizeQuestion } from "@/lib/rules/lookup";
 import { DAY_NAMES, type DayName, type TimeOfDay } from "@/lib/schedule";
 import { RADIUS_OPTIONS, type RadiusMiles } from "@/lib/geo";
 
@@ -134,7 +135,7 @@ const RULES_SIGNAL_RES: RegExp[] = [
   /\bstart with\b.{0,20}\btiles?\b|\btiles?\b.{0,30}\bstart\b/i,
   /\bpenalt(y|ies)\b/i,
   /\bcourtesy pass\b/i,
-  /\bblind(ly)?\b[^.?!]{0,30}\bpass(es|ed|ing)?\b|\bpass(es|ed|ing)?\b[^.?!]{0,30}\bblind(ly)?\b/i,
+  BLIND_PASS,
   /\bwild tiles?\b/i,
 ];
 
@@ -142,7 +143,7 @@ const VARIANT_QUESTION_RE =
   /\b(riichi|japanese|chinese|hong ?kong|cantonese|sichuan|taiwanese|korean|filipino|singapor(e|ean)|mcr|zung ?jung)\b/i;
 
 export function detectAskTopic(raw: string): AskTopic {
-  const q = String(raw || "").slice(0, 300).replace(/\s+/g, " ").trim();
+  const q = normalizeQuestion(raw);
   if (!q) return "directory";
   // A place called Blind Pass (or Blind River, Blind Bay) is removed before the
   // question is classified, so the place name alone never makes it a rules question.

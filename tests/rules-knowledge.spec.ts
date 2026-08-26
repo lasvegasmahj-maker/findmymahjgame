@@ -234,6 +234,8 @@ test.describe("retrieval precedence: specific beats generic", () => {
     "Do I need to blind pass on the last pass?",
     "Can I Blind Pass?",
     "Is a Blind Pass allowed in the Charleston?",
+    "Are Blind Passes allowed?",
+    "Is Blind Passing legal?",
   ];
   for (const seed of blindPass) {
     test(`blind pass question, all variants: ${seed}`, () => {
@@ -276,6 +278,9 @@ test.describe("retrieval precedence: specific beats generic", () => {
     expect(lookupRule({ question: "How does the Charleston work?" }).entry_id).toBe("charleston");
     expect(lookupRule({ question: "Can I do a courtesy pass?" }).entry_id).toBe("charleston");
     expect(lookupRule({ question: "What is a joker?" }).entry_id).toBe("jokers-basics");
+    expect(lookupRule({ question: "What is a joker? My friend passed one to me." }).entry_id).toBe("jokers-basics");
+    expect(lookupRule({ question: "Can a joker pass for any tile?" }).entry_id).toBe("jokers-basics");
+    expect(lookupRule({ question: "Can I claim a joker from an exposure with a concealed hand?" }).entry_id).toBe("joker-exchange");
     expect(lookupRule({ question: "Can I use a joker in a pair?" }).entry_id).toBe("joker-in-pair");
     expect(lookupRule({ question: "Can I exchange a joker from an exposure?" }).entry_id).toBe("joker-exchange");
   });
@@ -294,13 +299,21 @@ test.describe("retrieval precedence: specific beats generic", () => {
       "Can the final tile give someone mahjong?",
       "Can a concealed hand call a joker exchange?",
       "Can a closed hand exchange a joker from an exposure?",
+      "Can I claim a joker from an exposure with a concealed hand?",
+      "Can I pick up a joker from an exposure if my hand is closed?",
     ];
     for (const seed of notClosedHand) {
       for (const q of variants(seed)) {
         expect(lookupRule({ question: q }).entry_id, JSON.stringify(q)).not.toBe("closed-hand-final-tile");
       }
     }
-    const notBlind = ["What is a blind spot in strategy?", "Passing tiles right, then across, then left?", "Who passes first in the Charleston?"];
+    const notBlind = [
+      "What is a blind spot in strategy?",
+      "Passing tiles right, then across, then left?",
+      "Who passes first in the Charleston?",
+      "My mother is legally blind, can she still pass tiles in the Charleston?",
+      "I am color blind, can I pass on the red dragon?",
+    ];
     for (const seed of notBlind) {
       for (const q of variants(seed)) {
         expect(lookupRule({ question: q }).entry_id, JSON.stringify(q)).not.toBe("charleston-blind-pass");
@@ -326,6 +339,9 @@ test.describe("retrieval precedence: specific beats generic", () => {
       "blind pass road mahjong",
       "blind pass beach",
       "Blind Pass Road",
+      "Are there mahjong groups at Blind Pass?",
+      "Is there a teacher by Blind Pass?",
+      "Visiting Blind Pass next week, are there any games?",
     ];
     for (const seed of places) {
       for (const q of [seed, seed.replace(/ /g, "\n"), seed + "??"]) {

@@ -41,15 +41,21 @@ const CARD_REFUSAL =
 const CANNOT_VERIFY =
   "I cannot verify that rule from my approved American mahjong knowledge, so I will not guess. Ask your table or check the official National Mah Jongg League rules, and we will work on adding a verified answer.";
 
-export function lookupRule(input: RulesLookupInput): RulesLookupResult {
-  // Cap first so no regex runs over an unbounded body, then normalize: bounded
-  // patterns cannot cross a newline, and curly quotes must read as plain ones.
-  const question = String(input?.question || "")
-    .slice(0, 300)
+// One normalization for every consumer (route, topic detection, retrieval), so
+// they can never disagree about a question. Cap first so no regex runs over an
+// unbounded body; bounded patterns cannot cross a newline; curly quotes must read
+// as plain ones or the copyright guard misses a phone keyboard.
+export function normalizeQuestion(raw: unknown, cap = 300): string {
+  return String(raw || "")
+    .slice(0, cap)
     .replace(/[\u2018\u2019]/g, "'")
     .replace(/[\u201c\u201d]/g, '"')
     .replace(/\s+/g, " ")
     .trim();
+}
+
+export function lookupRule(input: RulesLookupInput): RulesLookupResult {
+  const question = normalizeQuestion(input?.question);
   if (!question) {
     return { matched: false, ruleset: "american_nmjl", confidence: "low", source: "none", answer: CANNOT_VERIFY };
   }

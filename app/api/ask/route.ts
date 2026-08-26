@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extractIntent, rephraseApprovedAnswer } from "@/lib/ask-llm";
 import { parseAskIntent, detectAskTopic } from "@/lib/ask-intent";
-import { lookupRule, summarizeRulesGap, type RulesLookupResult } from "@/lib/rules/lookup";
+import { normalizeQuestion, lookupRule, summarizeRulesGap, type RulesLookupResult } from "@/lib/rules/lookup";
 import { lazyServerClient } from "@/lib/supabase-server";
 import { searchEventsWithRelaxation, searchVenues, describeRelaxations } from "@/lib/search";
 import { resolveLocation } from "@/lib/resolve-location";
@@ -98,12 +98,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Too many questions at once. Give it a minute and ask again." }, { status: 429 });
   }
   const body = (await req.json().catch(() => null)) || {};
-  // Cap first, then collapse whitespace, so topic detection and rules retrieval see
-  // one string: bounded patterns cannot cross a newline.
-  const question =
-    typeof body?.q === "string"
-      ? body.q.slice(0, 200).replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/\s+/g, " ").trim()
-      : "";
+  const question = typeof body?.q === "string" ? normalizeQuestion(body.q, 200) : "";
   const recordClass = await resolveAskRecordClass(req);
   try {
   const topic = detectAskTopic(question);
