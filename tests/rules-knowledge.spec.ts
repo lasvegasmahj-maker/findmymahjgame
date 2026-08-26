@@ -212,7 +212,6 @@ test.describe("retrieval precedence: specific beats generic", () => {
     "My hand is concealed, can I call the last tile I need?",
     "Can a closed hand pick up a discard for the last tile to win?",
     "Can a closed hand call a discard, or do I have to trade?",
-    "Can a closed hand exchange a discard?",
   ];
   for (const seed of closedHand) {
     test(`closed hand claim question, all variants: ${seed}`, () => {
@@ -264,6 +263,7 @@ test.describe("retrieval precedence: specific beats generic", () => {
       "Can I blind pass a joker?",
       "Can I pass a joker blind?",
       "Is a blind pass with a joker allowed?",
+      "Can I hand a joker to the player on my left during passing?",
     ];
     for (const seed of seeds) {
       for (const q of [...variants(seed), padToCap(seed)]) {

@@ -52,7 +52,7 @@ function extractLocation(q: string): string | null {
 }
 
 export function parseAskIntent(raw: string): AskIntent {
-  const q = String(raw || "").trim().slice(0, 200);
+  const q = normalizeQuestion(raw, 200);
   const empty: AskIntent = {
     kind: "events",
     types: null,

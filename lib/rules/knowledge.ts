@@ -44,7 +44,7 @@ const JOKER = /\bjokers?\b/i;
 export const BLIND_PASS = new RegExp(
   `${BLIND.source}[^.?!,;]{0,30}${PASS_VERB.source}|${PASS_VERB.source}[^.?!,;]{0,30}${BLIND.source}`, "i");
 const JOKER_PASS = new RegExp(
-  `${JOKER.source}[^.?!,;]{0,30}${PASS_VERB.source}(?!\\s+(for|as)\\b)|${PASS_VERB.source}(?!\\s+(for|as)\\b)[^.?!,;]{0,30}${JOKER.source}`, "i");
+  `${JOKER.source}[^.?!,;]{0,45}${PASS_VERB.source}(?!\\s+(for|as)\\b)|${PASS_VERB.source}(?!\\s+(for|as)\\b)[^.?!,;]{0,45}${JOKER.source}`, "i");
 // Joker exchange from an exposure is allowed for any hand; that question belongs
 // on the exchange answer, whatever verb the player uses.
 const JOKER_EXCHANGE = /\b(exchange|redeem|swap|trade)\b|\bjokers?\b[^.?!]{0,30}\b(exposure|exposed|rack)\b/i;
@@ -294,7 +294,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
   {
     id: "charleston-blind-pass",
     topic: "Charleston blind pass",
-    question_patterns: [BLIND],
+    question_patterns: [BLIND_PASS],
     keywords: ["blind pass"],
     requires: [BLIND_PASS, PASS_VERB],
     blocks: [blindReadsAsPlace],
