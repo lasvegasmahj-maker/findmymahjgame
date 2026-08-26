@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { RULES_KNOWLEDGE } from "../lib/rules/knowledge";
 import { lookupRule, summarizeRulesGap, synthesisDigitGuard } from "../lib/rules/lookup";
+import { detectAskTopic } from "../lib/ask-intent";
 
 // The rules knowledge base ships owner-approved text only, so these checks encode the
 // hard mahjong facts from CLAUDE.md as assertions. Pure logic, no browser.
@@ -17,7 +18,7 @@ function allText(entry: (typeof RULES_KNOWLEDGE)[number]): string {
 test.describe("knowledge base fact checks", () => {
   test("entry count stays in the seeded range", () => {
     expect(RULES_KNOWLEDGE.length).toBeGreaterThanOrEqual(12);
-    expect(RULES_KNOWLEDGE.length).toBeLessThanOrEqual(20);
+    expect(RULES_KNOWLEDGE.length).toBeLessThanOrEqual(25);
   });
 
   test("every entry is well formed and owner approved", () => {
@@ -28,9 +29,13 @@ test.describe("knowledge base fact checks", () => {
       seen.add(e.id);
       expect(e.ruleset).toBe("american_nmjl");
       expect(e.source).toBe("owner_approved");
-      expect(e.last_verified).toBe("2026-08-22");
+      expect(e.last_verified).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(e.last_verified <= new Date().toISOString().slice(0, 10)).toBe(true);
       expect(["high", "medium"]).toContain(e.confidence);
       expect(e.question_patterns.length).toBeGreaterThan(0);
+      // A gated entry must be able to score on the concept that gates it, or
+      // specificity would select an entry with no matched text and refuse.
+      if (e.requires) expect(e.requires.some((re) => e.question_patterns.includes(re)), e.id).toBe(true);
       expect(e.approved_answer.length).toBeGreaterThan(20);
       if (e.house_note) expect(e.varies_by_house).toBe(true);
     }
@@ -167,6 +172,224 @@ test.describe("rules lookup", () => {
   test("specific entries beat broad ones", () => {
     const r = lookupRule({ question: "What is a wall game?" });
     expect(r.entry_id).toBe("wall-game");
+  });
+});
+
+// Behavior-class tests for retrieval precedence. Each block generates variants
+// (word order, punctuation, casing, line breaks, truncation) from a few seeds so the
+// assertions cover a class of phrasings rather than the examples already known.
+function variants(seed: string): string[] {
+  const out = new Set<string>([seed]);
+  out.add(seed.toUpperCase());
+  out.add(seed.toLowerCase());
+  out.add(seed.replace(/\?$/, "").replace(/\s+/g, "  ") + "??");
+  out.add(seed.replace(/ /g, "\n"));
+  out.add("Quick question. " + seed);
+  out.add(seed + " Thanks!");
+  out.add(seed.replace(/'/g, "\u2019").replace(/"/g, "\u201c"));
+  return [...out];
+}
+
+// The route caps questions at 200 characters before retrieval; a seed padded up to
+// that cap still carries its whole meaning and must route the same way.
+function padToCap(seed: string): string {
+  const filler = "Hi, we are new and my table cannot agree. ";
+  let q = seed;
+  while ((filler + q).length <= 200) q = filler + q;
+  return q;
+}
+
+test.describe("retrieval precedence: specific beats generic", () => {
+  const closedHand = [
+    "Can a closed hand call a discard?",
+    "Can I call a discard if I have a closed hand?",
+    "Can I call a discard with a closed hand for mahjong?",
+    "Can I claim a discard to finish a concealed hand?",
+    "Can I pick up a discard with a concealed hand?",
+    "Am I allowed to call a discard on a closed hand?",
+    "Is claiming a discard allowed for a closed hand?",
+    "Can a concealed hand claim the winning discard?",
+    "My hand is concealed, can I call the last tile I need?",
+    "hand is closed... can I claim?",
+    "If my hand is closed, is calling allowed?",
+    "Can a closed hand pick up a discard for the last tile to win?",
+    "Can a closed hand call a discard, or do I have to trade?",
+  ];
+  for (const seed of closedHand) {
+    test(`closed hand claim question, all variants: ${seed}`, () => {
+      for (const q of [...variants(seed), padToCap(seed)]) {
+        const r = lookupRule({ question: q });
+        expect(r.entry_id, JSON.stringify(q)).toBe("closed-hand-final-tile");
+        expect(r.answer, q).toContain("single tile that completes your mahjong");
+        expect(detectAskTopic(q.slice(0, 200)), q).not.toBe("directory");
+      }
+    });
+  }
+
+  const blindPass = [
+    "Can I do a blind pass?",
+    "What is a blind pass?",
+    "When is a blind pass allowed?",
+    "How does the blind pass work in the Charleston?",
+    "Can I pass blind?",
+    "Is passing blind legal?",
+    "Am I allowed to pass tiles blindly?",
+    "Blind passing, when can we do it?",
+    "Am I allowed to blind pass?",
+    "Do I have to blind pass?",
+    "Do I need to blind pass on the last pass?",
+    "Can I Blind Pass?",
+    "Is a Blind Pass allowed in the Charleston?",
+    "Are Blind Passes allowed?",
+    "Is Blind Passing legal?",
+    "What happens in blind pass?",
+    "Can I look at the tiles in blind pass?",
+  ];
+  for (const seed of blindPass) {
+    test(`blind pass question, all variants: ${seed}`, () => {
+      for (const q of [...variants(seed), padToCap(seed)]) {
+        const r = lookupRule({ question: q });
+        expect(r.entry_id, JSON.stringify(q)).toBe("charleston-blind-pass");
+        expect(r.answer, q).toContain("does not override the rule against passing jokers");
+        expect(detectAskTopic(q.slice(0, 200)), q).not.toBe("directory");
+      }
+    });
+  }
+
+  test("a joker question reaches an answer that states the prohibition, never the bare definition", () => {
+    const seeds = [
+      "Can I pass a joker?",
+      "Can you pass jokers?",
+      "Am I allowed to pass a joker?",
+      "Is it legal to pass jokers?",
+      "Can I pass a joker left?",
+      "What if someone passes me a joker?",
+      "Can I blind pass a joker?",
+      "Can I pass a joker blind?",
+      "Is a blind pass with a joker allowed?",
+      "Can I hand a joker to the player on my left during passing?",
+    ];
+    for (const seed of seeds) {
+      for (const q of [...variants(seed), padToCap(seed)]) {
+        const r = lookupRule({ question: q });
+        expect(r.entry_id, JSON.stringify(q)).not.toBe("jokers-basics");
+        expect(String(r.answer), q).toMatch(/never pass a joker|rule against passing jokers/i);
+      }
+    }
+  });
+
+  test("the generic entries still win their own broad questions", () => {
+    expect(lookupRule({ question: "When can I call a discard?" }).entry_id).toBe("calling-discard");
+    expect(lookupRule({ question: "What is the difference between open and closed hands?" }).entry_id).toBe("open-vs-closed");
+    expect(lookupRule({ question: "What is a closed hand in mahjong?" }).entry_id).toBe("open-vs-closed");
+    expect(lookupRule({ question: "What does concealed mean in mahjong?" }).entry_id).toBe("open-vs-closed");
+    expect(lookupRule({ question: "What is the Charleston?" }).entry_id).toBe("charleston");
+    expect(lookupRule({ question: "How does the Charleston work?" }).entry_id).toBe("charleston");
+    expect(lookupRule({ question: "Can I do a courtesy pass?" }).entry_id).toBe("charleston");
+    expect(lookupRule({ question: "What is a joker?" }).entry_id).toBe("jokers-basics");
+    expect(lookupRule({ question: "What is a joker? My friend passed one to me." }).entry_id).toBe("jokers-basics");
+    expect(lookupRule({ question: "Can a joker pass for any tile?" }).entry_id).toBe("jokers-basics");
+    expect(lookupRule({ question: "Can I claim a joker from an exposure with a concealed hand?" }).entry_id).toBe("joker-exchange");
+    expect(lookupRule({ question: "Can I use a joker in a pair?" }).entry_id).toBe("joker-in-pair");
+    expect(lookupRule({ question: "Can I put a joker in a pair on my rack?" }).entry_id).toBe("joker-in-pair");
+    expect(lookupRule({ question: "My friend wants to trade cards. Can I use a joker in a pair?" }).entry_id).toBe("joker-in-pair");
+    expect(lookupRule({ question: "We swap seats each game, can I use a joker in a pair?" }).entry_id).toBe("joker-in-pair");
+    expect(lookupRule({ question: "Can a joker on my rack be used as a single?" }).entry_id).not.toBe("joker-exchange");
+    expect(lookupRule({ question: "Do jokers count in an exposed kong on the rack?" }).entry_id).not.toBe("joker-exchange");
+    expect(lookupRule({ question: "Can I exchange a joker from an exposure?" }).entry_id).toBe("joker-exchange");
+  });
+
+  test("unrelated questions with overlapping keywords do not reach the specific entries", () => {
+    const notClosedHand = [
+      "Do I take the final tile from the wall?",
+      "When do I take the final tile from the wall?",
+      "Is the final tile from the wall a draw?",
+      "Can a closed hand take a joker?",
+      "Can I take a joker from a closed hand?",
+      "When is calling closed?",
+      "Is the calling window closed once the next player draws?",
+      "Can I still call once the window is closed?",
+      "How do I discard from a concealed hand?",
+      "Can the final tile give someone mahjong?",
+      "Can a concealed hand call a joker exchange?",
+      "Can a closed hand exchange a joker from an exposure?",
+      "Can I claim a joker from an exposure with a concealed hand?",
+      "Can I pick up a joker from an exposure if my hand is closed?",
+      "What do you call a closed hand?",
+    ];
+    for (const seed of notClosedHand) {
+      for (const q of variants(seed)) {
+        expect(lookupRule({ question: q }).entry_id, JSON.stringify(q)).not.toBe("closed-hand-final-tile");
+      }
+    }
+    const notBlind = [
+      "What is a blind spot in strategy?",
+      "Passing tiles right, then across, then left?",
+      "Who passes first in the Charleston?",
+      "My mother is legally blind, can she still pass tiles in the Charleston?",
+      "I am color blind, can I pass on the red dragon?",
+    ];
+    for (const seed of notBlind) {
+      for (const q of variants(seed)) {
+        expect(lookupRule({ question: q }).entry_id, JSON.stringify(q)).not.toBe("charleston-blind-pass");
+      }
+    }
+  });
+
+  test("Blind Pass the Florida place is a directory search, in every form", () => {
+    const places = [
+      "Where is Blind Pass Road?",
+      "Any mahjong games near Blind Pass Road in Sanibel?",
+      "Blind Pass Beach parking?",
+      "Blind Pass Estero mahjong",
+      "Blind Pass Sanibel",
+      "games near Blind Pass",
+      "Are there passes near Blind River?",
+      "Any day passes Blind River this Saturday?",
+      "Are there passes Blind Bay?",
+      "Which studios offer hands on lessons, or are they closed for summer?",
+      "Are hands-on lessons closed for the holidays in Naples?",
+      "second hand set for sale, shop closed",
+      "Any groups in Blind Pass?",
+      "Teachers around Blind Pass, FL",
+      "mahjong blind pass sanibel",
+      "groups blind pass fl",
+      "blind pass road mahjong",
+      "blind pass beach",
+      "Blind Pass Road",
+      "Are there mahjong groups at Blind Pass?",
+      "Is there a teacher by Blind Pass?",
+      "Visiting Blind Pass next week, are there any games?",
+    ];
+    for (const seed of places) {
+      for (const q of [seed, seed.replace(/ /g, "\n"), seed + "??"]) {
+        expect(detectAskTopic(q.slice(0, 200)), JSON.stringify(q)).toBe("directory");
+        expect(lookupRule({ question: q }).entry_id, JSON.stringify(q)).not.toBe("charleston-blind-pass");
+      }
+    }
+  });
+
+  test("ambiguous questions where both broad and narrow match go to the narrow answer", () => {
+    for (const q of [
+      "When can I call a discard, and does that change with a closed hand?",
+      "Explain the Charleston and whether I can pass blind on the last pass.",
+      "Jokers are wild, so can I pass one blind?",
+    ]) {
+      const id = lookupRule({ question: q }).entry_id;
+      expect(["closed-hand-final-tile", "charleston-blind-pass"], q).toContain(id);
+    }
+  });
+
+  test("the generic calling answer and the closed-hand answer cannot contradict each other", () => {
+    const calling = RULES_KNOWLEDGE.find((e) => e.id === "calling-discard")!.approved_answer;
+    const closed = RULES_KNOWLEDGE.find((e) => e.id === "closed-hand-final-tile")!.approved_answer;
+    const openClosed = RULES_KNOWLEDGE.find((e) => e.id === "open-vs-closed")!.approved_answer;
+    // The generic answer describes calling for an exposed group or for mahjong and
+    // never says a closed hand may call to build a group; both closed-hand texts
+    // state the same single exception.
+    expect(calling).not.toMatch(/closed|concealed/i);
+    expect(closed).toContain("single tile that completes your mahjong");
+    expect(openClosed).toContain("single tile that completes your mahjong");
   });
 });
 

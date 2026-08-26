@@ -20,9 +20,8 @@ What: review the five drafts in docs/policy/drafts (terms, privacy, provider ter
 When done: I publish exactly what you approve. I will not mark them approved on my own.
 
 ### Rules
-Status: 2 ENTRIES, AWAITING OWNER INSTRUCTOR REVIEW
-What: confirm or correct two entries as an instructor: the closed-hand final-tile question and the Charleston blind-pass question.
-When done: I enable exactly what you approve. They stay unavailable until then and do not affect the working rules system.
+Status: RESOLVED 2026-08-26
+You reviewed both entries as an instructor: the closed hand final tile answer as written, and the Charleston blind pass answer with your wording and joker clarification. Both are published in the rules knowledge base. Nothing further needed.
 
 ### Real Safari device QA
 Status: AWAITING FINAL MANUAL DEVICE VERIFICATION

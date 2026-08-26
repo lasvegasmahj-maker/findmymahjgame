@@ -1,4 +1,4 @@
-# CLAUDE.md — Find My Mahj Game
+# CLAUDE.md: Find My Mahj Game
 
 ## Hard Rules (read first, these override everything below)
 
@@ -19,7 +19,7 @@ Non-negotiable. When any other instruction conflicts with this section, this sec
 - The NMJL card releases every spring. Never say "March" or name a specific month.
 - Each player starts with 13 tiles, except East (the dealer), who starts with 14.
 - Set sizes are written as numbers: 2 = Pair, 3 = Pung, 4 = Kong, 5 = Quint, 6 = Sextet. Never use letter codes (no P, K, N).
-- Open hands can call discards to build exposed sets. Closed hands must be built from your own draws, with no calling.
+- Open hands can call discards to build exposed groups. Closed hands must be built from your own draws, with no calling to build a group; the one discard a closed hand may claim is the single tile that completes mahjong.
 
 ### Data honesty
 - lib/states-data.ts is seed data. Never describe listings sourced from it as real players, groups, venues, or events. Do not state or imply counts ("47 players in Texas") drawn from seed data as if they were real.

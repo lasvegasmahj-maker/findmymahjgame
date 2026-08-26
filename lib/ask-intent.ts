@@ -1,3 +1,5 @@
+import { blindReadsAsPlace, BLIND_PASS, HAND_CLOSED } from "@/lib/rules/knowledge";
+import { normalizeQuestion } from "@/lib/rules/lookup";
 import { DAY_NAMES, type DayName, type TimeOfDay } from "@/lib/schedule";
 import { RADIUS_OPTIONS, type RadiusMiles } from "@/lib/geo";
 
@@ -50,7 +52,7 @@ function extractLocation(q: string): string | null {
 }
 
 export function parseAskIntent(raw: string): AskIntent {
-  const q = String(raw || "").trim().slice(0, 200);
+  const q = normalizeQuestion(raw, 200);
   const empty: AskIntent = {
     kind: "events",
     types: null,
@@ -117,7 +119,8 @@ const RULES_SIGNAL_RES: RegExp[] = [
   /\btile count\b/i,
   /\b152\b/,
   /\b(concealed|exposed|exposure)\b/i,
-  /\b(open|closed) hands?\b/i,
+  /\bopen hands?\b/i,
+  HAND_CLOSED,
   /\b(call|calling|claim)\b.{0,20}\bdiscards?\b/i,
   /\bwall game\b/i,
   /\bthe wall\b/i,
@@ -132,7 +135,8 @@ const RULES_SIGNAL_RES: RegExp[] = [
   /\bdeclar(e|ing) mahjong\b/i,
   /\bstart with\b.{0,20}\btiles?\b|\btiles?\b.{0,30}\bstart\b/i,
   /\bpenalt(y|ies)\b/i,
-  /\b(blind|courtesy) pass\b/i,
+  /\bcourtesy pass\b/i,
+  BLIND_PASS,
   /\bwild tiles?\b/i,
 ];
 
@@ -140,8 +144,13 @@ const VARIANT_QUESTION_RE =
   /\b(riichi|japanese|chinese|hong ?kong|cantonese|sichuan|taiwanese|korean|filipino|singapor(e|ean)|mcr|zung ?jung)\b/i;
 
 export function detectAskTopic(raw: string): AskTopic {
-  const q = String(raw || "").trim().slice(0, 300);
+  const q = normalizeQuestion(raw);
   if (!q) return "directory";
+  // Blind Pass, Blind River, and Blind Bay are real places; the name alone must
+  // not read as a rules question.
+  if (blindReadsAsPlace(q)) {
+    return detectAskTopic(q.replace(/\bblind(\s+[A-Za-z]+)?\b/gi, ""));
+  }
 
   const questionForm = /\b(what|how|why|when|can|could|should|is|are|do|does|work|mean)\b/i.test(q);
   // The weak nouns (rules, rack, discard, deal) only signal a rules question when the

@@ -9,19 +9,73 @@ export type KnowledgeEntry = {
   id: string;
   topic: string;
   question_patterns: RegExp[];
+  // An entry requiring more concepts outranks one requiring fewer, ahead of any
+  // keyword score: that is what makes a narrow intent beat a broad one without
+  // listing phrasings. `blocks` disqualifies an entry for a context its approved
+  // text does not cover.
+  requires?: RegExp[];
+  blocks?: Array<RegExp | ((question: string) => boolean)>;
   keywords: string[];
   approved_answer: string;
   ruleset: "american_nmjl";
   varies_by_house: boolean;
   house_note?: string;
   source: "owner_approved";
-  last_verified: "2026-08-22";
+  last_verified: `${number}-${number}-${number}`;
   confidence: RulesConfidence;
 };
 
 const RULESET = "american_nmjl" as const;
 const SOURCE = "owner_approved" as const;
 const VERIFIED = "2026-08-22" as const;
+const VERIFIED_REVIEW = "2026-08-26" as const;
+
+// Concept matchers describe ideas, not phrasings, so word order, punctuation, and
+// paraphrase all resolve to the same concept.
+// "hands on lessons" and "second hand set" are directory phrases, not hands.
+export const HAND_CLOSED =
+  /(?<!second[- ])\b(closed|concealed)\b[^.?!]{0,40}\bhands?\b(?![- ]on\b)|(?<!second[- ])\bhands?\b(?![- ]on\b)[^.?!]{0,40}\b(closed|concealed)\b/i;
+const CLAIM_VERB = /\b(call|calls|calling|claim|claims|claiming|pick(ing)? up|takes? from the discard)\b/i;
+const BLIND = /\bblind(ly)?\b/i;
+const PASS_VERB = /\bpass(es|ed|ing)?\b/i;
+const JOKER = /\bjokers?\b/i;
+// Proximity concepts: the two words must sit within one clause of each other, so
+// "legally blind, can she pass tiles" is not a blind pass and "what is a joker? my
+// friend passed one" is still a joker definition.
+export const BLIND_PASS = new RegExp(
+  `${BLIND.source}[^.?!,;]{0,30}${PASS_VERB.source}|${PASS_VERB.source}[^.?!,;]{0,30}${BLIND.source}`, "i");
+const JOKER_PASS = new RegExp(
+  `${JOKER.source}[^.?!,;]{0,45}${PASS_VERB.source}(?!\\s+(for|as)\\b)|${PASS_VERB.source}(?!\\s+(for|as)\\b)[^.?!,;]{0,45}${JOKER.source}`, "i");
+// Joker exchange from an exposure is allowed for any hand; that question belongs
+// on the exchange answer, whatever verb the player uses.
+const JOKER_EXCHANGE =
+  /\b(exchange|redeem|swap|trade)\b[^.?!,;]{0,30}\bjokers?\b|\bjokers?\b[^.?!,;]{0,30}\b(exchange|redeem|swap|trade)\b|\b(take|get|pull|grab|claim|pick(ing)? up)\b[^.?!,;]{0,20}\bjokers?\b[^.?!,;]{0,30}\b(exposure|exposed|rack)\b/i;
+
+// "Blind Pass", "Blind River", and "Blind Bay" are real places. "Blind" reads as a
+// place name when a location word introduces it, when a geographic suffix follows
+// it in any casing, or when it is Title Cased inside something that is not a
+// question. "to" and "at" are deliberately absent: "allowed to blind pass" is the
+// natural verb form of the rule question.
+const BLIND_PLACE_PREP = /\b(near|nearby|around|from|where)\s+blind\b/i;
+// "at", "by", and "visiting" are place prepositions only when the place is Title
+// Cased: "at blind pass" in lowercase is the rules question ("look at blind pass tiles").
+const BLIND_PLACE_PREP_PROPER = /\b([Aa]t|[Bb]y|[Ii]n|[Vv]isiting)\s+Blind\s+(Pass|River|Bay)\b/;
+const BLIND_PLACE_SUFFIX =
+  /\bblind\s+(pass|river|bay)\s+(road|rd|beach|key|keys|fl|florida|estero|sanibel|captiva|island|drive|dr|lane|blvd|park)\b/i;
+// Only "Blind Pass" is ambiguous between the rules term and a place; any other
+// Title Cased "Blind <Name>" (Blind River, Blind Bay) is always a place.
+const BLIND_PROPER_OTHER = /\bBlind\s+(?!Pass(es|ed|ing)?\b)[A-Z][a-z]+/;
+const BLIND_PROPER_PASS = /\bBlind\s+Pass\b/;
+const QUESTION_FORM = /\b(can|could|may|do|does|is|are|should|when|how|what|why|allowed)\b/i;
+export function blindReadsAsPlace(question: string): boolean {
+  return (
+    BLIND_PLACE_PREP.test(question) ||
+    BLIND_PLACE_PREP_PROPER.test(question) ||
+    BLIND_PLACE_SUFFIX.test(question) ||
+    BLIND_PROPER_OTHER.test(question) ||
+    (BLIND_PROPER_PASS.test(question) && !QUESTION_FORM.test(question))
+  );
+}
 
 export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
   {
@@ -121,6 +175,9 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
       /\bjokers?\b/i,
     ],
     keywords: ["joker", "jokers", "wild"],
+    // This definition never mentions passing. A joker-passing question belongs on
+    // the Charleston answer, which carries "You may never pass a joker in the Charleston."
+    blocks: [JOKER_PASS],
     approved_answer:
       "Jokers are wild tiles, and they are unique to American mahjong. A joker can stand in for any tile inside a group of 3 or more, meaning a Pung, Kong, Quint, or Sextet. An American set has 8 jokers.",
     ruleset: RULESET,
@@ -149,11 +206,13 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     id: "joker-exchange",
     topic: "Joker exchange",
     question_patterns: [
+      JOKER_EXCHANGE,
       /(exchange|redeem|swap|trade).{0,30}jokers?/i,
       /jokers?.{0,30}(exchange|redeem|swap|trade)/i,
       /take.{0,20}jokers?.{0,30}(exposure|exposed|rack)/i,
     ],
     keywords: ["joker", "exchange", "redeem", "swap"],
+    requires: [JOKER, JOKER_EXCHANGE],
     approved_answer:
       "Yes, joker exchange is allowed. When any player has an exposed group on the table that contains a joker, you may, on your own turn, hand over the real tile that joker stands for and take the joker into your hand. You can only redeem a joker from an exposure, never from tiles hidden in another player's hand.",
     ruleset: RULESET,
@@ -187,6 +246,8 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [
       /(?<!(?:near|in|around|at|visiting|by|to|from)\s)\bcharleston\b/i,
       /pass(ing|es)? tiles/i,
+      /\bcourtesy pass\b/i,
+      JOKER_PASS,
     ],
     keywords: ["charleston", "passing"],
     approved_answer:
@@ -213,6 +274,38 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     varies_by_house: false,
     source: SOURCE,
     last_verified: VERIFIED,
+    confidence: "high",
+  },
+  {
+    id: "closed-hand-final-tile",
+    topic: "Closed hand final tile",
+    question_patterns: [HAND_CLOSED],
+    keywords: ["closed hand", "concealed"],
+    requires: [HAND_CLOSED, CLAIM_VERB],
+    // "call" also has a naming sense ("what do you call a closed hand?"); that is
+    // a definition question, not a claim.
+    blocks: [(q: string) => JOKER.test(q) && JOKER_EXCHANGE.test(q), /\bwhat (do|would) (you|we|they) call\b/i],
+    approved_answer:
+      "A closed (concealed) hand may not call any discard to build a group. The one exception: you may claim a discard when it is the single tile that completes your mahjong.",
+    ruleset: RULESET,
+    varies_by_house: false,
+    source: SOURCE,
+    last_verified: VERIFIED_REVIEW,
+    confidence: "high",
+  },
+  {
+    id: "charleston-blind-pass",
+    topic: "Charleston blind pass",
+    question_patterns: [BLIND_PASS],
+    keywords: ["blind pass"],
+    requires: [BLIND_PASS, PASS_VERB],
+    blocks: [blindReadsAsPlace],
+    approved_answer:
+      "A blind pass is allowed only on the last pass of each Charleston: First Left and, if a second Charleston is played, Last Right. If you do not want to pass three tiles from your own hand, you may take one, two, or all three tiles being passed to you and pass them onward without looking at them. You still pass three tiles total. A blind pass does not override the rule against passing jokers. Do not knowingly include a joker from your own hand. Tiles you pass on blindly must remain unseen.",
+    ruleset: RULESET,
+    varies_by_house: false,
+    source: SOURCE,
+    last_verified: VERIFIED_REVIEW,
     confidence: "high",
   },
   {
@@ -338,6 +431,8 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
       /rules? (vs|versus|or) (courtes|custom)/i,
     ],
     keywords: ["etiquette", "courtesy", "house rules", "table rules"],
+    // The courtesy pass itself is described on the Charleston answer.
+    blocks: [/\bcourtesy pass\b/i],
     approved_answer:
       "It helps to separate official rules from table courtesies. Official rules come from the National Mah Jongg League and apply everywhere, such as the tile count and how calling works. Courtesies are local customs a table agrees on, such as whether to make the courtesy pass in the Charleston or how strictly discards are announced. Agree on courtesies before the first hand so no one is surprised.",
     ruleset: RULESET,
