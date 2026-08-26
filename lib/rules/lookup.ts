@@ -42,7 +42,14 @@ const CANNOT_VERIFY =
   "I cannot verify that rule from my approved American mahjong knowledge, so I will not guess. Ask your table or check the official National Mah Jongg League rules, and we will work on adding a verified answer.";
 
 export function lookupRule(input: RulesLookupInput): RulesLookupResult {
-  const question = String(input?.question || "").trim().slice(0, 300);
+  // Cap first so no regex runs over an unbounded body, then normalize: bounded
+  // patterns cannot cross a newline, and curly quotes must read as plain ones.
+  const question = String(input?.question || "")
+    .slice(0, 300)
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201c\u201d]/g, '"')
+    .replace(/\s+/g, " ")
+    .trim();
   if (!question) {
     return { matched: false, ruleset: "american_nmjl", confidence: "low", source: "none", answer: CANNOT_VERIFY };
   }
@@ -72,8 +79,14 @@ export function lookupRule(input: RulesLookupInput): RulesLookupResult {
   }
 
   const lower = question.toLowerCase();
-  let best: { entry: KnowledgeEntry; score: number; matchLength: number } | null = null;
+  // Precedence is structural. An entry that requires more concepts is more
+  // specific, and specificity ranks ahead of the keyword score, so a narrow
+  // answer beats a broad one whenever both match, in any phrasing.
+  let best: { entry: KnowledgeEntry; specificity: number; score: number; matchLength: number } | null = null;
   for (const entry of RULES_KNOWLEDGE) {
+    if (entry.blocks?.some((re) => re.test(question))) continue;
+    if (entry.requires && !entry.requires.every((re) => re.test(question))) continue;
+    const specificity = entry.requires?.length ?? 0;
     let score = 0;
     let matchLength = 0;
     for (const re of entry.question_patterns) {
@@ -87,10 +100,13 @@ export function lookupRule(input: RulesLookupInput): RulesLookupResult {
       if (lower.includes(kw)) score += 1;
     }
     if (score === 0) continue;
-    // Longer matched text breaks ties toward the more specific entry ("wall game" beats "wall").
-    if (!best || score > best.score || (score === best.score && matchLength > best.matchLength)) {
-      best = { entry, score, matchLength };
-    }
+    // Longer matched text breaks the last tie ("wall game" beats "wall").
+    const better =
+      !best ||
+      specificity > best.specificity ||
+      (specificity === best.specificity &&
+        (score > best.score || (score === best.score && matchLength > best.matchLength)));
+    if (better) best = { entry, specificity, score, matchLength };
   }
 
   if (!best || best.matchLength === 0) {

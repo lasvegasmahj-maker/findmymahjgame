@@ -9,19 +9,41 @@ export type KnowledgeEntry = {
   id: string;
   topic: string;
   question_patterns: RegExp[];
+  // Structural specificity. Every concept in `requires` must be present for this
+  // entry to be eligible, and an entry requiring more concepts outranks one
+  // requiring fewer, ahead of any keyword score. That is what makes a narrow
+  // intent beat a broad one without listing phrasings. `blocks` disqualifies an
+  // entry outright for a context its approved text does not cover.
+  requires?: RegExp[];
+  blocks?: RegExp[];
   keywords: string[];
   approved_answer: string;
   ruleset: "american_nmjl";
   varies_by_house: boolean;
   house_note?: string;
   source: "owner_approved";
-  last_verified: "2026-08-22";
+  last_verified: "2026-08-22" | "2026-08-26";
   confidence: RulesConfidence;
 };
 
 const RULESET = "american_nmjl" as const;
 const SOURCE = "owner_approved" as const;
 const VERIFIED = "2026-08-22" as const;
+const VERIFIED_REVIEW = "2026-08-26" as const;
+
+// Reusable concept matchers. These describe ideas, not phrasings, so word order,
+// punctuation, and paraphrase all resolve to the same concept.
+const HAND_CLOSED =
+  /\b(closed|concealed)\b[^.?!]{0,40}\bhands?\b|\bhands?\b[^.?!]{0,40}\b(closed|concealed)\b/i;
+const CLAIM_VERB = /\b(call|calls|calling|claim|claims|claiming|pick(ing)? up|takes? from the discard)\b/i;
+const BLIND = /\bblind(ly)?\b/i;
+const PASS_VERB = /\bpass(es|ed|ing)?\b/i;
+const JOKER = /\bjokers?\b/i;
+// "Blind Pass", "Blind River", and "Blind Bay" are real places. "Blind" reads as a
+// place name when a location preposition introduces it, or when it is followed by
+// a capitalized word, which is why the second pattern has no case-insensitive flag.
+const BLIND_AS_PLACE_PREP = /\b(near|nearby|in|at|around|off|to|from)\s+blind\b/i;
+const BLIND_AS_PROPER_NOUN = /\bBlind\s+[A-Z]/;
 
 export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
   {
@@ -121,6 +143,9 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
       /\bjokers?\b/i,
     ],
     keywords: ["joker", "jokers", "wild"],
+    // This definition never mentions passing. A passing question belongs on the
+    // Charleston answer, which carries "You may never pass a joker in the Charleston."
+    blocks: [PASS_VERB],
     approved_answer:
       "Jokers are wild tiles, and they are unique to American mahjong. A joker can stand in for any tile inside a group of 3 or more, meaning a Pung, Kong, Quint, or Sextet. An American set has 8 jokers.",
     ruleset: RULESET,
@@ -187,6 +212,8 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [
       /(?<!(?:near|in|around|at|visiting|by|to|from)\s)\bcharleston\b/i,
       /pass(ing|es)? tiles/i,
+      /\bcourtesy pass\b/i,
+      /\bjokers?\b[^.?!]{0,30}\bpass(es|ed|ing)?\b|\bpass(es|ed|ing)?\b[^.?!]{0,30}\bjokers?\b/i,
     ],
     keywords: ["charleston", "passing"],
     approved_answer:
@@ -213,6 +240,39 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     varies_by_house: false,
     source: SOURCE,
     last_verified: VERIFIED,
+    confidence: "high",
+  },
+  {
+    id: "closed-hand-final-tile",
+    topic: "Closed hand final tile",
+    question_patterns: [HAND_CLOSED],
+    keywords: ["closed hand", "concealed"],
+    // Eligible only when the question names a closed hand AND a claim verb, and
+    // that two-concept requirement is what outranks the generic calling entry.
+    requires: [HAND_CLOSED, CLAIM_VERB],
+    approved_answer:
+      "A closed (concealed) hand may not call any discard to build a group. The one exception: you may claim a discard when it is the single tile that completes your mahjong.",
+    ruleset: RULESET,
+    varies_by_house: false,
+    source: SOURCE,
+    last_verified: VERIFIED_REVIEW,
+    confidence: "high",
+  },
+  {
+    id: "charleston-blind-pass",
+    topic: "Charleston blind pass",
+    question_patterns: [BLIND],
+    keywords: ["blind pass"],
+    // Blind plus a passing verb, in any order. Blocked when "Blind Pass" reads as
+    // the Florida place, so a directory search never gets a rules answer.
+    requires: [BLIND, PASS_VERB],
+    blocks: [BLIND_AS_PLACE_PREP, BLIND_AS_PROPER_NOUN],
+    approved_answer:
+      "A blind pass is allowed only on the last pass of each Charleston: First Left and, if a second Charleston is played, Last Right. If you do not want to pass three tiles from your own hand, you may take one, two, or all three tiles being passed to you and pass them onward without looking at them. You still pass three tiles total. A blind pass does not override the rule against passing jokers. Do not knowingly include a joker from your own hand. Tiles you pass on blindly must remain unseen.",
+    ruleset: RULESET,
+    varies_by_house: false,
+    source: SOURCE,
+    last_verified: VERIFIED_REVIEW,
     confidence: "high",
   },
   {
@@ -338,6 +398,8 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
       /rules? (vs|versus|or) (courtes|custom)/i,
     ],
     keywords: ["etiquette", "courtesy", "house rules", "table rules"],
+    // The courtesy pass itself is described on the Charleston answer.
+    blocks: [/\bcourtesy pass\b/i],
     approved_answer:
       "It helps to separate official rules from table courtesies. Official rules come from the National Mah Jongg League and apply everywhere, such as the tile count and how calling works. Courtesies are local customs a table agrees on, such as whether to make the courtesy pass in the Charleston or how strictly discards are announced. Agree on courtesies before the first hand so no one is surprised.",
     ruleset: RULESET,

@@ -98,7 +98,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Too many questions at once. Give it a minute and ask again." }, { status: 429 });
   }
   const body = (await req.json().catch(() => null)) || {};
-  const question = typeof body?.q === "string" ? body.q.slice(0, 200) : "";
+  // Cap first, then collapse whitespace, so topic detection and rules retrieval see
+  // one string: bounded patterns cannot cross a newline.
+  const question = typeof body?.q === "string" ? body.q.slice(0, 200).replace(/\s+/g, " ").trim() : "";
   const recordClass = await resolveAskRecordClass(req);
   try {
   const topic = detectAskTopic(question);

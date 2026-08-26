@@ -132,16 +132,27 @@ const RULES_SIGNAL_RES: RegExp[] = [
   /\bdeclar(e|ing) mahjong\b/i,
   /\bstart with\b.{0,20}\btiles?\b|\btiles?\b.{0,30}\bstart\b/i,
   /\bpenalt(y|ies)\b/i,
-  /\b(blind|courtesy) pass\b/i,
+  /\bcourtesy pass\b/i,
+  /\bblind(ly)?\b[^.?!]{0,30}\bpass(es|ed|ing)?\b|\bpass(es|ed|ing)?\b[^.?!]{0,30}\bblind(ly)?\b/i,
   /\bwild tiles?\b/i,
 ];
 
 const VARIANT_QUESTION_RE =
   /\b(riichi|japanese|chinese|hong ?kong|cantonese|sichuan|taiwanese|korean|filipino|singapor(e|ean)|mcr|zung ?jung)\b/i;
 
+// "Blind Pass", "Blind River", and "Blind Bay" are real places. "Blind" introduced
+// by a location preposition, or followed by a capitalized word, is a place name and
+// never a rules signal; the place is removed before the question is classified.
+const BLIND_AS_PLACE_PREP = /\b(near|nearby|in|at|around|off|to|from)\s+blind\b/i;
+const BLIND_AS_PROPER_NOUN = /\bBlind\s+[A-Z]/;
+
 export function detectAskTopic(raw: string): AskTopic {
-  const q = String(raw || "").trim().slice(0, 300);
+  const q = String(raw || "").slice(0, 300).replace(/\s+/g, " ").trim();
   if (!q) return "directory";
+  if (BLIND_AS_PLACE_PREP.test(q) || BLIND_AS_PROPER_NOUN.test(q)) {
+    const withoutPlace = q.replace(/\bblind(\s+[A-Za-z]+)?\b/gi, "");
+    return detectAskTopic(withoutPlace) === "directory" ? "directory" : "mixed";
+  }
 
   const questionForm = /\b(what|how|why|when|can|could|should|is|are|do|does|work|mean)\b/i.test(q);
   // The weak nouns (rules, rack, discard, deal) only signal a rules question when the

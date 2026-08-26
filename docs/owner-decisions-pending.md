@@ -10,8 +10,11 @@ closed-gate default already in place; nothing blocks engineering.
    panel says NOT CONNECTED.
 3. Policy drafts in docs/policy/drafts/ need owner or legal review before any
    launch gate flips. See docs/policy/launch-gate.md for which gate needs which.
-4. Two rules entries stay unpublished pending instructor review: closed-hand
-   final tile exception, Charleston blind pass.
+4. RESOLVED 2026-08-26: both rules entries passed instructor review and are
+   published (closed-hand-final-tile as written; charleston-blind-pass with the
+   owner's wording plus her joker clarification). Their implementation exposed a
+   retrieval defect (specific entries losing to broad ones), fixed as an
+   authorized launch bug with structural precedence in lib/rules/lookup.ts.
 5. RESOLVED 2026-08-23: the free-period conflict (6-month code vs 12-month
    coupon) is closed by the owner-approved business model. Both mechanics are
    retired; the complimentary period is the app-managed 90-day Premium trial
