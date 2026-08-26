@@ -32,7 +32,7 @@ const VERIFIED_REVIEW = "2026-08-26" as const;
 
 // Concept matchers describe ideas, not phrasings, so word order, punctuation, and
 // paraphrase all resolve to the same concept.
-const HAND_CLOSED =
+export const HAND_CLOSED =
   /\b(closed|concealed)\b[^.?!]{0,40}\bhands?\b|\bhands?\b[^.?!]{0,40}\b(closed|concealed)\b/i;
 const CLAIM_VERB = /\b(call|calls|calling|claim|claims|claiming|pick(ing)? up|takes? from the discard)\b/i;
 const BLIND = /\bblind(ly)?\b/i;
@@ -47,17 +47,18 @@ const JOKER_PASS = new RegExp(
   `${JOKER.source}[^.?!,;]{0,45}${PASS_VERB.source}(?!\\s+(for|as)\\b)|${PASS_VERB.source}(?!\\s+(for|as)\\b)[^.?!,;]{0,45}${JOKER.source}`, "i");
 // Joker exchange from an exposure is allowed for any hand; that question belongs
 // on the exchange answer, whatever verb the player uses.
-const JOKER_EXCHANGE = /\b(exchange|redeem|swap|trade)\b|\bjokers?\b[^.?!]{0,30}\b(exposure|exposed|rack)\b/i;
+const JOKER_EXCHANGE =
+  /\b(exchange|redeem|swap|trade)\b|\b(take|get|pull|grab|claim|pick(ing)? up)\b[^.?!,;]{0,20}\bjokers?\b[^.?!,;]{0,30}\b(exposure|exposed|rack)\b/i;
 
 // "Blind Pass", "Blind River", and "Blind Bay" are real places. "Blind" reads as a
 // place name when a location word introduces it, when a geographic suffix follows
 // it in any casing, or when it is Title Cased inside something that is not a
 // question. "to" and "at" are deliberately absent: "allowed to blind pass" is the
 // natural verb form of the rule question.
-const BLIND_PLACE_PREP = /\b(near|nearby|in|around|from|where)\s+blind\b/i;
+const BLIND_PLACE_PREP = /\b(near|nearby|around|from|where)\s+blind\b/i;
 // "at", "by", and "visiting" are place prepositions only when the place is Title
 // Cased: "at blind pass" in lowercase is the rules question ("look at blind pass tiles").
-const BLIND_PLACE_PREP_PROPER = /\b([Aa]t|[Bb]y|[Vv]isiting)\s+Blind\s+(Pass|River|Bay)\b/;
+const BLIND_PLACE_PREP_PROPER = /\b([Aa]t|[Bb]y|[Ii]n|[Vv]isiting)\s+Blind\s+(Pass|River|Bay)\b/;
 const BLIND_PLACE_SUFFIX =
   /\bblind\s+(pass|river|bay)\s+(road|rd|beach|key|keys|fl|florida|estero|sanibel|captiva|island|drive|dr|lane|blvd|park)\b/i;
 // Only "Blind Pass" is ambiguous between the rules term and a place; any other

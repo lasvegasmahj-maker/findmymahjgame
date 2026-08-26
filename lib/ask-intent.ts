@@ -1,4 +1,4 @@
-import { blindReadsAsPlace, BLIND_PASS } from "@/lib/rules/knowledge";
+import { blindReadsAsPlace, BLIND_PASS, HAND_CLOSED } from "@/lib/rules/knowledge";
 import { normalizeQuestion } from "@/lib/rules/lookup";
 import { DAY_NAMES, type DayName, type TimeOfDay } from "@/lib/schedule";
 import { RADIUS_OPTIONS, type RadiusMiles } from "@/lib/geo";
@@ -119,7 +119,8 @@ const RULES_SIGNAL_RES: RegExp[] = [
   /\btile count\b/i,
   /\b152\b/,
   /\b(concealed|exposed|exposure)\b/i,
-  /\b(open|closed) hands?\b/i,
+  /\bopen hands?\b/i,
+  HAND_CLOSED,
   /\b(call|calling|claim)\b.{0,20}\bdiscards?\b/i,
   /\bwall game\b/i,
   /\bthe wall\b/i,
@@ -145,8 +146,8 @@ const VARIANT_QUESTION_RE =
 export function detectAskTopic(raw: string): AskTopic {
   const q = normalizeQuestion(raw);
   if (!q) return "directory";
-  // A place called Blind Pass (or Blind River, Blind Bay) is removed before the
-  // question is classified, so the place name alone never makes it a rules question.
+  // Blind Pass, Blind River, and Blind Bay are real places; the name alone must
+  // not read as a rules question.
   if (blindReadsAsPlace(q)) {
     return detectAskTopic(q.replace(/\bblind(\s+[A-Za-z]+)?\b/gi, ""));
   }

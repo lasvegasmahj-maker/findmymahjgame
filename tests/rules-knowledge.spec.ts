@@ -210,6 +210,8 @@ test.describe("retrieval precedence: specific beats generic", () => {
     "Is claiming a discard allowed for a closed hand?",
     "Can a concealed hand claim the winning discard?",
     "My hand is concealed, can I call the last tile I need?",
+    "hand is closed... can I claim?",
+    "If my hand is closed, is calling allowed?",
     "Can a closed hand pick up a discard for the last tile to win?",
     "Can a closed hand call a discard, or do I have to trade?",
   ];
@@ -240,6 +242,8 @@ test.describe("retrieval precedence: specific beats generic", () => {
     "Is a Blind Pass allowed in the Charleston?",
     "Are Blind Passes allowed?",
     "Is Blind Passing legal?",
+    "What happens in blind pass?",
+    "Can I look at the tiles in blind pass?",
   ];
   for (const seed of blindPass) {
     test(`blind pass question, all variants: ${seed}`, () => {
@@ -287,6 +291,9 @@ test.describe("retrieval precedence: specific beats generic", () => {
     expect(lookupRule({ question: "Can a joker pass for any tile?" }).entry_id).toBe("jokers-basics");
     expect(lookupRule({ question: "Can I claim a joker from an exposure with a concealed hand?" }).entry_id).toBe("joker-exchange");
     expect(lookupRule({ question: "Can I use a joker in a pair?" }).entry_id).toBe("joker-in-pair");
+    expect(lookupRule({ question: "Can I put a joker in a pair on my rack?" }).entry_id).toBe("joker-in-pair");
+    expect(lookupRule({ question: "Can a joker on my rack be used as a single?" }).entry_id).not.toBe("joker-exchange");
+    expect(lookupRule({ question: "Do jokers count in an exposed kong on the rack?" }).entry_id).not.toBe("joker-exchange");
     expect(lookupRule({ question: "Can I exchange a joker from an exposure?" }).entry_id).toBe("joker-exchange");
   });
 

@@ -85,9 +85,6 @@ export function lookupRule(input: RulesLookupInput): RulesLookupResult {
   }
 
   const lower = question.toLowerCase();
-  // Precedence is structural. An entry that requires more concepts is more
-  // specific, and specificity ranks ahead of the keyword score, so a narrow
-  // answer beats a broad one whenever both match, in any phrasing.
   let best: { entry: KnowledgeEntry; specificity: number; score: number; matchLength: number } | null = null;
   for (const entry of RULES_KNOWLEDGE) {
     if (entry.blocks?.some((b) => (typeof b === "function" ? b(question) : b.test(question)))) continue;
