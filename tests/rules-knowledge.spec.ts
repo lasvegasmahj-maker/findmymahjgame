@@ -30,7 +30,7 @@ test.describe("knowledge base fact checks", () => {
       expect(e.ruleset).toBe("american_nmjl");
       expect(e.source).toBe("owner_approved");
       expect(e.last_verified).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      expect(new Date(e.last_verified).getTime()).toBeLessThanOrEqual(Date.now());
+      expect(e.last_verified <= new Date().toISOString().slice(0, 10)).toBe(true);
       expect(["high", "medium"]).toContain(e.confidence);
       expect(e.question_patterns.length).toBeGreaterThan(0);
       // A gated entry must be able to score on the concept that gates it, or
@@ -292,6 +292,8 @@ test.describe("retrieval precedence: specific beats generic", () => {
     expect(lookupRule({ question: "Can I claim a joker from an exposure with a concealed hand?" }).entry_id).toBe("joker-exchange");
     expect(lookupRule({ question: "Can I use a joker in a pair?" }).entry_id).toBe("joker-in-pair");
     expect(lookupRule({ question: "Can I put a joker in a pair on my rack?" }).entry_id).toBe("joker-in-pair");
+    expect(lookupRule({ question: "My friend wants to trade cards. Can I use a joker in a pair?" }).entry_id).toBe("joker-in-pair");
+    expect(lookupRule({ question: "We swap seats each game, can I use a joker in a pair?" }).entry_id).toBe("joker-in-pair");
     expect(lookupRule({ question: "Can a joker on my rack be used as a single?" }).entry_id).not.toBe("joker-exchange");
     expect(lookupRule({ question: "Do jokers count in an exposed kong on the rack?" }).entry_id).not.toBe("joker-exchange");
     expect(lookupRule({ question: "Can I exchange a joker from an exposure?" }).entry_id).toBe("joker-exchange");
@@ -345,6 +347,9 @@ test.describe("retrieval precedence: specific beats generic", () => {
       "Are there passes near Blind River?",
       "Any day passes Blind River this Saturday?",
       "Are there passes Blind Bay?",
+      "Which studios offer hands on lessons, or are they closed for summer?",
+      "Are hands-on lessons closed for the holidays in Naples?",
+      "second hand set for sale, shop closed",
       "Any groups in Blind Pass?",
       "Teachers around Blind Pass, FL",
       "mahjong blind pass sanibel",

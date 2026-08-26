@@ -32,8 +32,9 @@ const VERIFIED_REVIEW = "2026-08-26" as const;
 
 // Concept matchers describe ideas, not phrasings, so word order, punctuation, and
 // paraphrase all resolve to the same concept.
+// "hands on lessons" and "second hand set" are directory phrases, not hands.
 export const HAND_CLOSED =
-  /\b(closed|concealed)\b[^.?!]{0,40}\bhands?\b|\bhands?\b[^.?!]{0,40}\b(closed|concealed)\b/i;
+  /(?<!second[- ])\b(closed|concealed)\b[^.?!]{0,40}\bhands?\b(?![- ]on\b)|(?<!second[- ])\bhands?\b(?![- ]on\b)[^.?!]{0,40}\b(closed|concealed)\b/i;
 const CLAIM_VERB = /\b(call|calls|calling|claim|claims|claiming|pick(ing)? up|takes? from the discard)\b/i;
 const BLIND = /\bblind(ly)?\b/i;
 const PASS_VERB = /\bpass(es|ed|ing)?\b/i;
@@ -48,7 +49,7 @@ const JOKER_PASS = new RegExp(
 // Joker exchange from an exposure is allowed for any hand; that question belongs
 // on the exchange answer, whatever verb the player uses.
 const JOKER_EXCHANGE =
-  /\b(exchange|redeem|swap|trade)\b|\b(take|get|pull|grab|claim|pick(ing)? up)\b[^.?!,;]{0,20}\bjokers?\b[^.?!,;]{0,30}\b(exposure|exposed|rack)\b/i;
+  /\b(exchange|redeem|swap|trade)\b[^.?!,;]{0,30}\bjokers?\b|\bjokers?\b[^.?!,;]{0,30}\b(exchange|redeem|swap|trade)\b|\b(take|get|pull|grab|claim|pick(ing)? up)\b[^.?!,;]{0,20}\bjokers?\b[^.?!,;]{0,30}\b(exposure|exposed|rack)\b/i;
 
 // "Blind Pass", "Blind River", and "Blind Bay" are real places. "Blind" reads as a
 // place name when a location word introduces it, when a geographic suffix follows
