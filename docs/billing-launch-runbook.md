@@ -10,6 +10,47 @@ There is no promo code. The complimentary period is the app-managed 90-day Premi
 Players never pay anything, ever. Stripe (the payment company) holds the real financial
 records; our database only keeps a copy for the admin dashboard.
 
+Status 2026-08-29: Steps 1 through 6 are DONE in Stripe sandbox mode and the Step 8 test-mode checklist passed on production with a QA account, except the cancel step: no sandbox subscription has been cancelled yet, so the customer.subscription.deleted path is unexercised. The owner cancels the leftover QA sandbox subscriptions in the Stripe dashboard (Test mode, Subscriptions, cancel immediately) before the live-mode run; Claude then confirms the mirrored rows show status canceled and removes them. Terms used here:
+test-classified means marked as a QA account so it never counts as revenue;
+entitlement means the Premium date on a listing; dedupe means the webhook ignores an
+event it already processed; residue means leftover QA rows that the admin
+data-quality panel counts; the dark-launch rule means QA accounts may use features
+that are still switched off for everyone else; real_external means counted as a real,
+paying provider.
+
+What remains for real money:
+
+1. Turn Stripe's Live toggle on and repeat Step 2 (price) and Step 5 (webhook) there.
+2. Replace STRIPE_SECRET_KEY, STRIPE_PRICE_MEMBERSHIP_ANNUAL, and STRIPE_WEBHOOK_SECRET in Vercel Production with the live values (Step 4).
+3. Redeploy.
+4. Run Step 8 in live mode, in these sub-steps:
+   a. Run the checklist as a QA provider account (an fmg-qa.test address that owns
+      one published listing), paying with the owner's real card instead of the
+      4242 test card. The gate stays OFF.
+   b. Expected: the paid entitlement lands on the QA listing; billing_subscriptions
+      shows the row as active and classified test; on /admin, Membership and money, Paid
+      Premium stays 0 and Verified paying customers stays 0 throughout because the QA
+      payer is test-classified, and the Revenue and MRR card reads Not live yet while
+      the gate is OFF. Those zeros are the correct result, not a failure.
+   c. Refund the $89.00 charge AND cancel the subscription immediately (not at
+      period end) in the Stripe dashboard.
+   d. Confirm billing_subscriptions shows status canceled via the
+      customer.subscription.deleted event. The refund itself never appears in
+      billing_events because the webhook is not subscribed to refund events.
+   e. Leave the QA account, its listing, and its billing rows in place for 3 days.
+      Stripe retries late deliveries for up to 3 days. A redelivered event dedupes
+      (200, duplicate: true) as long as its billing_events ledger row still exists; a
+      late event with a new id, or a redelivery after the ledger rows were deleted,
+      is classified again, and if the QA listing and owner are already gone it
+      classifies real_external and admin would show a phantom paying provider.
+   f. After 3 days, remove the QA account, its listing, and its billing rows (delete
+      the billing_events rows last, or keep them), the same cleanup as the sandbox
+      run, and confirm the admin data-quality residue is 0, Paid Premium is 0, and
+      Verified paying customers is 0. If a row for that subscription ever reappears
+      after cleanup, delete it from billing_subscriptions by stripe_subscription_id
+      and confirm those tiles return to 0.
+5. Step 7 when launch is authorized.
+
 ## Step 1: Create the Stripe account
 
 1. Go to https://dashboard.stripe.com/register
@@ -40,7 +81,7 @@ The old FINDMYMAHJGAME coupon is retired (superseded by the app-managed 90-day c
 | Name | Where to find the value |
 | --- | --- |
 | STRIPE_SECRET_KEY | Stripe dashboard, Developers, API keys, "Secret key" (starts with sk_) |
-| STRIPE_PUBLISHABLE_KEY | Same page, "Publishable key" (starts with pk_) |
+| STRIPE_PUBLISHABLE_KEY | Same page, "Publishable key" (starts with pk_). Not read by the app today; set for completeness only |
 | STRIPE_PRICE_MEMBERSHIP_ANNUAL | The price ID you copied in Step 2 (starts with price_) |
 | STRIPE_WEBHOOK_SECRET | You get this in Step 5 below (starts with whsec_) |
 
@@ -58,16 +99,23 @@ This is how our database stays in sync with Stripe automatically.
    - invoice.payment_failed
 4. Save, then click "Reveal" under Signing secret and copy the whsec_ value
 5. Paste it into Vercel as STRIPE_WEBHOOK_SECRET (Step 4 table)
-6. Back in Vercel, redeploy the site so it picks up all four new values (Deployments,
+6. Back in Vercel, redeploy the site so it picks up the values from Step 4 (Deployments,
    three-dot menu on the latest deployment, Redeploy)
 
 ## Step 6: Run the database migration
 
-Ask Jason (or whoever is running migrations) to apply this file to the production
-Supabase project: `supabase/migrations/2026-08-23-billing.sql`
+DONE 2026-08-24: all three billing migrations are applied to production:
+`supabase/migrations/2026-08-23-billing.sql`,
+`supabase/migrations/2026-08-24-billing-classification-backfill.sql`, and
+`supabase/migrations/2026-08-24-premium-entitlement.sql`.
 
-It only creates three new tables (billing_customers, billing_subscriptions,
-billing_events). It does not touch any existing table.
+The billing migration creates three new tables (billing_customers,
+billing_subscriptions, billing_events) and touches no existing table. The backfill
+is a one-time UPDATE that reclassifies any billing rows written before
+classification-at-ingestion existed. The entitlement migration adds premium_until to venue_listings and event_listings and
+creates the provider_leads table that Premium lesson inquiries write to; the webhook
+writes premium_until, so a rebuild without this migration has no paid entitlement and
+inquiries fail as well.
 
 ## Step 7: Flip the launch gate
 
@@ -86,8 +134,10 @@ gracefully; no deploy needed.
 Do this checklist in Stripe Test mode first (test keys in Vercel, test price, test
 webhook secret), then repeat once with Live mode keys.
 
-- [ ] Start a checkout: POST to `/api/billing/checkout` with a JSON body like
-      `{"email": "you@example.com"}` and confirm you get back a Stripe checkout URL
+- [ ] Start a checkout as a signed-in provider who owns one published teacher listing
+      (the "Choose Premium: $89/year" button in the Membership section of the
+      /provider dashboard does this; the route reads the session, never a request
+      body) and confirm you get back a Stripe checkout URL
 - [ ] Open that URL and pay with Stripe's test card 4242 4242 4242 4242, any future
       expiry date, any CVC
 - [ ] In Stripe, Developers, Webhooks: the endpoint shows recent deliveries with
@@ -98,10 +148,19 @@ Note (2026-08-23): the checkout entry point is built. It is the signed-in provid
 
 - [ ] At activation, confirm in Stripe TEST MODE with a QA test account (test accounts pass the payments gate while it is OFF): claim a listing, choose Premium from the dashboard, complete test checkout, and verify the webhook stamps premium_until = the paid period end on that listing and billing_subscriptions shows the active subscription. The admin Data quality panel flags any active subscription not linked to a listing
 - [ ] Cancel the test subscription in Stripe and confirm the row's status updates
-- [ ] Set `launch_payments` back to 'false' and confirm `/api/billing/checkout` says
-      "Payments are not yet enabled" again
+- [ ] Confirm `launch_payments` is still 'false' in app_settings. Do not create a real
+      account to probe the 503. tests/billing.spec.ts pins the unconfigured 503 path
+      only; the gate branch for non-test accounts is the canUseDarkFeature check in
+      app/api/billing/checkout/route.ts, reviewed in code and not yet covered by an
+      automated test. A QA account still gets a checkout URL, which is the
+      dark-launch rule, not a failure
+- [ ] Remove the QA account, its listing, and its billing rows (in live mode only
+      after the 3-day wait in Status item 4e; the webhook never rolls premium_until
+      back on cancel, so the QA listing would otherwise keep a paid date) and confirm
+      the admin data-quality residue is 0
 
-When the live-mode run of this checklist passes, payments are launched.
+When the live-mode run of this checklist passes, payments are ready. They launch only
+at Step 7, when the owner authorizes.
 
 ## If something goes wrong
 

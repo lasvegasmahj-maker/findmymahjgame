@@ -1,4 +1,7 @@
-# Find My Mahj: Launch Readiness Task Graph (overnight run, live status)
+# Find My Mahj Game: Launch Readiness Task Graph (2026-08-23 snapshot; superseded by docs/launch-readiness-2026-08-29.md)
+
+docs/owner-activation-checklist.md (Completed section) records every item below that
+still reads as awaiting or remaining as done. Read this file as history only.
 
 Lead: Fable 5. All four launch gates OFF and staying OFF. Recovery: this file + `git branch -a` + CEO OS matrix.
 
@@ -11,9 +14,9 @@ Lead: Fable 5. All four launch gates OFF and staying OFF. Recovery: this file + 
 - Admin control center: launch simulation + claims + moderation + notifications + analytics panels.
 - notification-health cron scheduled.
 
-## In flight
-- Security red-team (sec-redteam): attacking + fixing auth/IDOR/injection/consent/PII/classification. RUNNING.
-- Accessibility/mobile/performance (qa-a11y-perf): auditing + fixing WCAG/mobile/CWV. RUNNING.
+## Merged after this snapshot
+- Security red-team: merged 2026-08-23 (e24c0dd).
+- Accessibility/mobile/performance: merged 2026-08-23 (05403fd).
 
 ## Data truth (verified)
 0 real accounts, 0 real player signups, 0 real provider signups, 0 paying members, $0 revenue. 11 test profiles (QA), all classified. Contamination: 0.

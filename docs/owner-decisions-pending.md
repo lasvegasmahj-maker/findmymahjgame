@@ -3,9 +3,11 @@
 Recorded during the overnight autonomous build. Every item here has a safe
 closed-gate default already in place; nothing blocks engineering.
 
-1. Stripe account creation plus the four env vars (STRIPE_SECRET_KEY,
-   STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_MEMBERSHIP_ANNUAL, STRIPE_PUBLISHABLE_KEY).
-   Runbook: docs/billing-launch-runbook.md. Until then billing answers 503.
+1. UPDATED 2026-08-29: Stripe sandbox is configured and verified end to end. For
+   real payments the three STRIPE_* Vercel values the app reads (STRIPE_SECRET_KEY,
+   STRIPE_PRICE_MEMBERSHIP_ANNUAL, STRIPE_WEBHOOK_SECRET) must become their live
+   equivalents, then a redeploy and the live-mode runbook Step 8. Until launch_payments flips, only
+   test-classified accounts can check out.
 2. Google Search Console API credential for the admin SEO panel. Until then the
    panel says NOT CONNECTED.
 3. Policy drafts in docs/policy/drafts/ need owner or legal review before any
@@ -19,8 +21,9 @@ closed-gate default already in place; nothing blocks engineering.
    coupon) is closed by the owner-approved business model. Both mechanics are
    retired; the complimentary period is the app-managed 90-day Premium trial
    starting at claim. See docs/provider-business-model-proposed-decision.md.
-6. Advertiser terms page still describes the old $19-$79 pricing; the policy
-   drafts propose replacements. Needs owner approval before publishing.
+6. Advertiser terms page (unlinked, noindex, advertising deferred to Year 2)
+   still describes generic monthly and annual advertiser plans; the policy drafts
+   propose replacements. Owner decision: retire or rescope before Year 2.
 
 7. RESOLVED 2026-08-23 (owner-approved): unsupported paid-tier listings reset to
    free. The owner flagged 16 on the directory (venue_listings); applying the same
