@@ -169,7 +169,6 @@ rulebook summary; that entry now states only the supported core and carries ques
 7. Wording flag: annual-card says players buy the card "directly from the League"; retailers
    also sell it. Keep or soften?
 8. Mahjong declared in error: is the hand dead outright once tiles are exposed, or may the declaration be retracted with the exposed tiles staying committed (League rulebook 2024, p. 21 as quoted by Mahj Life article 189), and what happens when no tiles were exposed? Secondary summaries disagree, so entry mahjong-in-error now claims no rule at all and defers entirely to the instructor.
-
 9. Picking ahead: what is the League's consequence when a player draws before the previous
    player has discarded (is the hand dead, does the tile go back)? Entries picking-ahead and
    dead-hand-details now state only that picking ahead is against League rules and the table
@@ -178,20 +177,16 @@ rulebook summary; that entry now states only the supported core and carries ques
    League rulebook sets who pays and how much (the same neutral approach you chose for Las Vegas
    Mahjong). Should Find My Mahj state the League amounts (discarder pays double, self-pick all pay
    double, jokerless doubles, both can stack), or keep the neutral wording?
-
 11. Wrong tile count noticed before East's first discard: what is the League's remedy (start the
    deal over, or correct the hand)? Entry dead-hand-details now says only that a wrong count
    cannot be fixed once play has begun.
-12. Wrong joker exchange: the entry joker-exchange-timing now states, from the League rulebook
-   and 2024 bulletin as cross-checked, that after the next discard the hand holding the incorrect
-   exposure is dead while the redeemer plays on; please confirm.
-
+12. Wrong joker exchange: after a wrong tile goes into an exposure and the next discard is made,
+   what is the League's consequence (secondary sources say the hand holding the incorrect exposure
+   is dead and the redeemer plays on)? Entry joker-exchange-timing now defers this to you and
+   states only the correction window before the discard.
 13. Hold or wait: does saying hold or wait count as a call for priority, or only pause play
    until the player says call or mahjong? Entry two-players-same-tile now says the instructor
    is confirming this point; the settled priority rules stay.
-14. Wrong joker exchange, consequence after the next discard: entry joker-exchange-timing now
-   defers this to you (question 12 covers the same ruling); the correction window before the
-   discard stays.
 
 ## Reviewer gate history (2026-08-30)
 
@@ -204,9 +199,10 @@ rulebook summary; that entry now states only the supported core and carries ques
 - Round 7: PASS, no blockers; warnings fixed (passing questions reach the Charleston answer; a bare parsed location no longer ejects a reply from its clarification; research entries record evidence owner_review_pending until approved).
 - Round 8: PASS, no blockers; warnings fixed (the homepage Ask card answers a clarification in place; an open clarification turn is not counted as unanswered; audit tables regenerated from the corpus).
 - Round 9: FAIL on the home-card chips being white on white (invisible); fixed with a navy pill style and a computed-color assertion on both viewports; negated replies never resolve to the option they refuse; a mixed question no longer echoes its rules half as a place name.
+- Round 10: PASS, no blockers; warnings fixed (a negation in a topic reply keeps the named topic; the pending-review note claims no provenance; the hold-or-wait sentence became owner question 13 and the wrong-exchange consequence was folded into question 12; the calling window wording matches the owner-approved house note in every research entry).
 - Round 11: PASS, no blockers; warnings fixed (tournament, rulebook, suit, and blank signals vocabulary-gated; a rate limit mid-clarification keeps the pending question).
 - Round 12: PASS, no blockers; warnings fixed (a capitalized style word after a preposition is never a place; a statement-form variant question reaches the style clarification; the Charleston-stop entry states only the settled rule).
-- Round 10: PASS, no blockers; warnings fixed (a negation in a topic reply keeps the named topic; the pending-review note claims no provenance; the hold-or-wait sentence and the wrong-exchange consequence became owner questions 13 and 14; the calling window wording matches the owner-approved house note in every research entry).
+- Round 13: PASS, no blockers; warning fixed (the mixed-question location repair no longer strips a long place name from a plain search); this record was tidied for the owner.
 
 ## Independent truth-verification panel (2026-08-30)
 
@@ -232,6 +228,9 @@ nothing; the blind-pass sentence tracks the League's own phrasing closely; the L
 an official three-handed procedure (no Charleston) that players-count does not mention. Full
 per-entry list (first finding per entry, in the reviewer's own words; the full panel transcripts
 are filed with the CEO OS Drive report):
+
+Quoted clauses come from the corpus snapshot the panel reviewed; where the gate history below
+says an item was fixed, the shipped wording in lib/rules/knowledge.ts differs.
 
 | Entry or theme | Findings | Clause the reviewer questioned | Reviewer's suggested change (owner's call; nothing applied to owner wording) |
 | --- | --- | --- | --- |

@@ -197,7 +197,7 @@ export async function POST(req: NextRequest) {
 
   // "can I use a joker in a pair and where can I play near Naples": the extractor swallows the
   // rules half as a place, so a too-long location is re-parsed from the last "and" clause.
-  if (intent.location && intent.location.split(/\s+/).length > 4) {
+  if (topic === "mixed" && intent.location && intent.location.split(/\s+/).length > 4 && /\band\b/i.test(question)) {
     const tail = question.split(/\band\b/i).pop() ?? "";
     const again = parseAskIntent(tail);
     intent.location = again.location && again.location.split(/\s+/).length <= 4 ? again.location : null;

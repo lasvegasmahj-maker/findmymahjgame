@@ -19,6 +19,12 @@ test.describe("Ask route: rules clarification turns", () => {
   // The API turns need no second viewport; the UI blocks below run on both.
   test.skip(({ isMobile }) => !!isMobile, "one browser project is enough for the API turns");
 
+  test("a long place name on a plain search is kept", async ({ request }) => {
+    const r = await ask(request, "where can I play near Lake of the Ozarks Missouri");
+    expect(r.topic).toBe("directory");
+    expect(r.intent.location?.toLowerCase()).toContain("lake of the ozarks");
+  });
+
   test("a mixed question never swallows the rules half as a place name", async ({ request }) => {
     const r = await ask(request, "can I use a joker in a pair and where can I play near Naples");
     expect(r.topic).toBe("mixed");
