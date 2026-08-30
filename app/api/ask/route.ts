@@ -103,19 +103,24 @@ export async function POST(req: NextRequest) {
   // A reply to a pending clarification carries the clarification id and the original
   // question back; the server keeps no conversation state.
   const clarifyRaw = body?.clarify;
-  const clarify =
+  let clarify =
     clarifyRaw && typeof clarifyRaw.id === "string" && typeof clarifyRaw.question === "string"
       ? { id: clarifyRaw.id.slice(0, 40), question: normalizeQuestion(clarifyRaw.question, 200) }
       : null;
+  // A player who changes their mind mid-clarification and types a directory question gets
+  // the search, not a forced rules reply.
+  if (clarify && question.split(/\s+/).length >= 4 && detectAskTopic(question) === "directory") clarify = null;
   const recordClass = await resolveAskRecordClass(req);
   try {
   const topic = clarify ? "rules" : detectAskTopic(question);
   let rules: RulesLookupResult | null = null;
   if (topic !== "directory") {
     rules = lookupRule({ question, clarify });
+    // Logged once per unmatched question: at the first topic clarification (reason no_entry),
+    // never for a re-ask, a reply, or the empty question.
     const unmatchedFinal =
-      !rules.matched && !rules.needs_clarification && !["empty", "rules_gap"].includes(rules.unsupported_reason ?? "");
-    if (unmatchedFinal || rules.clarify?.id === "topic") void logRulesGap(rules.clarify?.question ?? question, rules);
+      !rules.matched && !rules.needs_clarification && !["empty", "rules_gap", "variant_scope"].includes(rules.unsupported_reason ?? "");
+    if (unmatchedFinal || rules.unsupported_reason === "no_entry") void logRulesGap(rules.clarify?.question ?? question, rules);
   }
 
   if (topic === "rules" && rules) {
@@ -145,7 +150,7 @@ export async function POST(req: NextRequest) {
   const withRulesLead = (answer: string) => (rulesLead ? `${rulesLead} ${answer}` : answer);
   // A mixed answer never shows a clarifying question, so it must not ship one for the
   // client to act on; the directory half is the answer here.
-  const rulesForMixed = rules ? (({ clarify: _c, needs_clarification: _n, ...rest }) => rest)(rules) : null;
+  const rulesForMixed = rules ? { ...rules, clarify: undefined, needs_clarification: undefined } : null;
   const extras = rulesForMixed ? { topic, rules: rulesForMixed } : { topic };
 
   if (!intent.recognized) {

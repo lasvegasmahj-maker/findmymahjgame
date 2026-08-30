@@ -77,6 +77,20 @@ test.describe("Ask route: rules clarification turns", () => {
     expect(r.answer).not.toMatch(/Did you mean American mahjong/);
   });
 
+  test("a directory question typed while a clarification is pending gets the search, not a forced rule", async ({ request }) => {
+    const ctx = { id: "call-purpose", question: "Can I call that tile?" };
+    const teachers = await ask(request, "mahjong teachers near Naples FL", ctx);
+    expect(teachers.topic).toBe("directory");
+    expect(teachers.intent.kind).toBe("teachers");
+    expect(teachers.rules).toBeUndefined();
+    const find = await ask(request, "Find an instructor near Phoenix", { id: "pass-context", question: "Can I pass?" });
+    expect(find.topic).toBe("directory");
+    expect(find.rules?.clarify).toBeUndefined();
+    const play = await ask(request, "Where can I play Saturday morning near Naples?", { id: "pass-context", question: "Can I pass?" });
+    expect(play.topic).toBe("directory");
+    expect(play.intent.days).toContain("saturday");
+  });
+
   test("a malformed clarification object is ignored and the text is answered as a question", async ({ request }) => {
     const r = await ask(request, "Can I use a joker in a pair?", { id: 42 as unknown as string, question: "x" });
     expect(r.rules.entry_id).toBe("joker-in-pair");

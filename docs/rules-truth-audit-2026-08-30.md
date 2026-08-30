@@ -8,15 +8,15 @@ remain for the owner. Source policy: docs/rules-sources.md.
 
 ## Summary
 
-- Canonical rules audited: 49 entries in lib/rules/knowledge.ts (21 owner-approved, unchanged
-  in wording; 24 written for this audit and research-verified against League rules; 4 open
-  owner questions whose answers claim nothing beyond the supported core and say the instructor is confirming).
-- Classification: 38 STANDARD NMJL RULE, 7 NMJL CLARIFICATION, 1 TOURNAMENT RULE,
+- Canonical rules audited: 50 entries in lib/rules/knowledge.ts (21 owner-approved, unchanged
+  in wording; 26 written for this audit and research-verified against League rules; 3 open
+  owner questions whose answers state only the supported core and say the instructor is confirming the rest).
+- Classification: 40 STANDARD NMJL RULE, 6 NMJL CLARIFICATION, 1 TOURNAMENT RULE,
   1 HOUSE/OPTIONAL RULE, 1 ETIQUETTE, 1 STRATEGY.
-- Provenance coverage: 49/49 entries carry ruleset, topic, classification, source type,
+- Provenance coverage: 50/50 entries carry ruleset, topic, classification, source type,
   source title, cross-check reference, year where relevant, last-verified date, owner-review
   flag, and evidence status. No source text is stored.
-- Owner review required: 28 entries (every entry the owner has not yet approved).
+- Owner review required: 29 entries (every entry the owner has not yet approved).
 - Owner-approved wording: preserved verbatim; no credible source conflict required a change.
   Items flagged for the owner are listed below, not edited in.
 
@@ -74,6 +74,7 @@ remain for the owner. Source policy: docs/rules-sources.md.
 | `calling-for-mahjong` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | League rule on calling any tile for mahjong; cross-checked via Mahj Life wiki article 178 and the owner-approved calling and closed-hand entries | 2026-08-30 |
 | `calling-for-exposure` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | League rules on exposures and commitment to a called discard; cross-checked via Mahj Life wiki articles 177, 178, and 289 | 2026-08-30 |
 | `calling-for-pair` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | League rule that a call is never made for a single or pair except for mahjong; cross-checked via Mahj Life wiki article 178 | 2026-08-30 |
+| `joker-in-mixed-groups` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | League rulebook rule that jokers are never used in a block of single tiles; follows from the owner-approved joker entries; cross-checked via Mahj Life wiki article 221 | 2026-08-30 |
 | `joker-discarded` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | League rule that a discarded joker may not be taken for any purpose; cross-checked via Mahj Life wiki articles 178 and 221 | 2026-08-30 |
 | `joker-exchange-timing` | NMJL CLARIFICATION | research-verified (secondary_research), owner review pending | League rulings on joker exchange timing and correction; cross-checked via Mahj Life wiki articles 172, 221, and 224 citing NMJL bulletin Q&A | 2026-08-30 |
 | `two-players-same-tile` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | League rule on concurrent claims (mahjong first, then next in turn); cross-checked via Mahj Life wiki articles 264 and 281 and the owner-approved calling entry | 2026-08-30 |
@@ -91,7 +92,7 @@ remain for the owner. Source policy: docs/rules-sources.md.
 | `passing-on-a-discard` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | Follows from the owner-approved calling entry (calling is a choice; the window closes when the next player racks) | 2026-08-30 |
 | `payments-basics` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | League payment rules (discarder pays double, self-pick all pay double, jokerless doubles, wall game pays nothing); cross-checked via Mahj Life wiki articles 98 and 208 | 2026-08-30 |
 | `quints-sextets` | STANDARD NMJL RULE | research-verified (arithmetic), owner review pending | Follows from the owner-approved tile counts | 2026-08-30 |
-| `calling-quints-sextets` | NMJL CLARIFICATION | OPEN QUESTION for owner | May a discard be called to complete a quint or a sextet, or only a pung or kong | 2026-08-30 |
+| `calling-quints-sextets` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | League rulebook and bulletin rule that a discard may be claimed to expose a pung, kong, quint, or sextet; consistent with the owner-approved calling entry (3 or more identical tiles); cross-checked via Mahj Life wiki articles 146 and 221 | 2026-08-30 |
 | `exposures-basics` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | League rules on exposures, modifying an exposure before discarding, and dead hands; cross-checked via Mahj Life wiki articles 177, 189, and 254 | 2026-08-30 |
 | `card-notation` | NMJL CLARIFICATION | research-verified (secondary_research), owner review pending | Card legend conventions (colors as suits, C and X, F and D, Soap as zero); cross-checked via Mahj Life wiki articles 162, 254, and 269 | 2026-08-30 |
 | `tournament-rules` | TOURNAMENT RULE | research-verified (secondary_research), owner review pending | Tournament conventions layered on League rules; cross-checked via Mahj Life wiki article 186 | 2026-08-30 |
@@ -124,11 +125,11 @@ prompt and options; the page renders the options as buttons and also accepts a t
 
 - tests/rules-knowledge.spec.ts: hard mahjong facts, provenance rules, precedence classes.
 - tests/rules-clarify.spec.ts: triggers, non-interrogation, multi-turn resolution.
-- tests/rules-truth-benchmark.spec.ts: 123 classified cases, each run through casing,
+- tests/rules-truth-benchmark.spec.ts: 128 classified cases, each run through casing,
   punctuation, newline, smart-quote, and truncation variants; every entry reachable; corpus
   invariants (no source name, month, dash, or letter code; no conflicting rules; tournament,
   house, and strategy entries labeled as such; owner wording pinned).
-- tests/rules-heldout.spec.ts: 76 blind cases written after the routing logic and the
+- tests/rules-heldout.spec.ts: 77 blind cases written after the routing logic and the
   benchmark were finished. First, tuning-free run: 60 passed, 16 failed. Of the 16: 0 stated
   a wrong rule; 3 answered a related entry that did not address the asked point
   (joker-exchange question answered by the exposure entry, dealer's extra tile answered by
@@ -169,6 +170,14 @@ rulebook summary; that entry now states only the supported core and carries ques
    also sell it. Keep or soften?
 8. Mahjong declared in error with tiles exposed: is the hand dead outright, or may the declaration be retracted with the exposed tiles staying committed (League rulebook 2024, p. 21)? Secondary summaries disagree, so entry mahjong-in-error now states only the supported core (no exposure means no penalty; play continues to the right) and says the instructor is confirming the rest.
 
+9. Picking ahead: what is the League's consequence when a player draws before the previous
+   player has discarded (is the hand dead, does the tile go back)? Entries picking-ahead and
+   dead-hand-details now state only that picking ahead is against League rules and the table
+   stops to sort it out.
+10. Payments: entry payments-basics states the League payment rules (discarder pays double,
+   self-pick all pay double, jokerless doubles, both can stack). For Las Vegas Mahjong you chose
+   neutral payment wording; should Find My Mahj state the amounts, or use the same neutral wording?
+
 ## Independent truth-verification panel (2026-08-30)
 
 A 21-agent adversarial panel (correctness refutation, conflation and classification, and
@@ -186,7 +195,7 @@ year, or a run) and the resolution of calling-quints-sextets above.
 
 ## Review needed
 
-The 24 research-verified entries and 4 owner-question entries carry
+The 26 research-verified entries and 3 owner-question entries carry
 `owner_review_required: true`. Approving one means setting `source: "owner_approved"`,
 `provenance.source_type: "owner_approved"`, `owner_review_required: false`, and updating
 `last_verified`.

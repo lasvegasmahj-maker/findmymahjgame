@@ -119,14 +119,15 @@ export default function AskClient() {
           </p>
 
           {pending && (
-            <div data-testid="ask-clarify" style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center", marginTop: "1rem" }}>
+            <div data-testid="ask-clarify" role="group" aria-label={pending.prompt} style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center", marginTop: "1rem" }}>
               {pending.options.map((o) => (
                 <button
                   key={o.key}
                   type="button"
                   disabled={busy}
                   onClick={() => ask(o.label, pending)}
-                  style={{ minHeight: 44, padding: "0.5rem 1.1rem", borderRadius: 50, fontSize: "0.95rem", fontWeight: 800, border: "2px solid var(--navy)", background: "white", color: "var(--navy)", cursor: "pointer", fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif" }}
+                  className="btn-cta-outline"
+                  style={{ minHeight: 44, borderRadius: 50, fontSize: "0.95rem" }}
                 >
                   {o.label}
                 </button>

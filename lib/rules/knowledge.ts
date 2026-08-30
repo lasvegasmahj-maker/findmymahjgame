@@ -200,27 +200,36 @@ export function blindReadsAsPlace(question: string): boolean {
   );
 }
 
-// Concept matchers that are safe as standalone rules signals for the shared Ask box.
+// Concept matchers the shared Ask box may treat as rules signals on their own: each one
+// names a mahjong-only idea, so a directory question cannot trip it.
 export const RULES_TOPIC_SIGNALS: RegExp[] = [
-  MISNAMED,
   OWN_DISCARD,
-  ORDER,
   BLANK,
   QUINT_SEXTET,
-  EXPOSURE_WORD,
+  /\b(expos(e|ed|es|ure|ures|ing)|melds?)\b/i,
+  JOKER_EXCHANGE,
+  AGREE_SECOND,
+  CX_LETTERS,
+  new RegExp(`${DEAD.source}[^.?!]{0,20}\\b(hand|hands|tiles?|jokers?)\\b|\\b(hand|hands)\\b[^.?!]{0,20}${DEAD.source}`, "i"),
+  SCORING_ASK,
+  new RegExp(`${NAMING.source}[^.?!]{0,30}${DISCARDED.source}|${DISCARDED.source}[^.?!]{0,30}${NAMING.source}|\\bsay same\\b`, "i"),
+];
+
+// Matchers built from everyday words (tips, direction, authority, out of, don't want). They
+// count as rules signals only when the sentence also carries mahjong vocabulary and no
+// directory or commerce wording; otherwise "any tips for finding a game in Naples" would be
+// answered with hand strategy instead of a search.
+export const RULES_TOPIC_SIGNALS_CONDITIONAL: RegExp[] = [
+  MISNAMED,
+  ORDER,
   LAST_OF_WALL,
   OFFICIAL,
   STRATEGY,
   HAND_SIZE,
   DECLINE_CALL,
-  JOKER_EXCHANGE,
-  AGREE_SECOND,
-  CX_LETTERS,
+  EXPOSURE_WORD,
   new RegExp(`${PICK_VERB.source}[^.?!]{0,20}${AHEAD.source}`, "i"),
   new RegExp(`${MAHJONG_CUE.source}[^.?!]{0,40}${ERROR_CUE.source}|${ERROR_CUE.source}[^.?!]{0,40}${MAHJONG_CUE.source}`, "i"),
-  new RegExp(`${DEAD.source}[^.?!]{0,20}\\b(hand|hands|tiles?|jokers?)\\b|\\b(hand|hands)\\b[^.?!]{0,20}${DEAD.source}`, "i"),
-  SCORING_ASK,
-  new RegExp(`${NAMING.source}[^.?!]{0,30}${DISCARDED.source}|${DISCARDED.source}[^.?!]{0,30}${NAMING.source}|\\bsay same\\b`, "i"),
   new RegExp(`${TWO_PLAYERS.source}[^.?!]{0,30}\\b(tile|discard|call|calls|mahjong|maj)\\b|\\b(tile|discard)\\b[^.?!]{0,30}${TWO_PLAYERS.source}`, "i"),
 ];
 
@@ -860,7 +869,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [DEAD, DEAD_DETAIL],
     blocks: [JOKER_EXCHANGE, ERROR_CUE],
     approved_answer:
-      "A hand goes dead when it can no longer win: holding the wrong number of tiles once play has begun, making an exposure that fits no hand on the card, exposing tiles for a hand marked concealed, or drawing out of turn. A dead player stops drawing and discarding but still pays the winner of that deal. You do not declare your own hand dead; the other players do. A short or long hand can be fixed only during the Charleston, before East's first discard.",
+      "A hand goes dead when it can no longer win: holding the wrong number of tiles once play has begun, making an exposure that fits no hand on the card, or exposing tiles for a hand marked concealed. A dead player stops drawing and discarding but still pays the winner of that deal. You do not declare your own hand dead; the other players do. A short or long hand can be fixed only during the Charleston, before East's first discard.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note:
@@ -878,7 +887,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     keywords: ["dead", "joker", "exchange"],
     requires: [DEAD, JOKER],
     approved_answer:
-      "Whether a joker sitting in a dead player's exposure can still be redeemed depends on which exposure it is in, and the League's guidance draws that line carefully. Our instructor is confirming the exact ruling before we publish it here. Until then, ask your table to follow the League's rulebook for that deal.",
+      "Whether a joker sitting in a dead player's exposure can still be redeemed is a point our instructor is confirming against the League's rulebook before we publish it here. Until then, ask your table to follow the League's rulebook for that deal.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "owner_question",
@@ -895,7 +904,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [PICK_VERB, AHEAD],
     blocks: [CHARLESTON_WORD, BLIND_PASS],
     approved_answer:
-      "Wait your turn. You may not draw your tile from the wall until the player before you has discarded, and picking ahead is against League rules. Drawing out of turn can make your hand dead, so if a tile was picked too early, stop and let the table sort it out before anyone else plays.",
+      "Wait your turn. You may not draw your tile from the wall until the player before you has discarded; picking ahead is against League rules. If a tile was picked too early, stop and let the table sort it out before anyone else plays.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",

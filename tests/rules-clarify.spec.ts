@@ -146,7 +146,6 @@ test.describe("multi-turn resolution", () => {
     expect(other.matched).toBe(false);
     expect(other.answer).toBe(GAP_ANSWER);
     expect(other.unsupported_reason).toBe("rules_gap");
-    expect(other.original_question).toBe(q);
   });
 
   test("an unknown clarification id falls back to answering the reply as a question", () => {

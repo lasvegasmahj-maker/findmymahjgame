@@ -1,4 +1,4 @@
-import { blindReadsAsPlace, BLIND_PASS, HAND_CLOSED, RULES_TOPIC_SIGNALS } from "@/lib/rules/knowledge";
+import { blindReadsAsPlace, BLIND_PASS, HAND_CLOSED, RULES_TOPIC_SIGNALS, RULES_TOPIC_SIGNALS_CONDITIONAL } from "@/lib/rules/knowledge";
 import { normalizeQuestion, spellfix } from "@/lib/rules/lookup";
 import { DAY_NAMES, type DayName, type TimeOfDay } from "@/lib/schedule";
 import { RADIUS_OPTIONS, type RadiusMiles } from "@/lib/geo";
@@ -156,7 +156,7 @@ const RULES_SIGNAL_RES: RegExp[] = [
   /\bmelds?\b|\b(quints?|sextets?)\b/i,
   /\b(call|calling|claim|claiming) (that|this|it|the tile|a tile)\b|\bcall it\b/i,
   /\b(can|may|do|should|must) (i|we|you) (have to |need to )?pass[?!. ]*$/i,
-  /\bthe tile (i|you|she|he|they) (need|want|threw|discarded|put down)\b|\b(call|claim|take) it\b/i,
+  /\bthe tile (i|you|she|he|they) (need|want|threw|discarded|put down)\b/i,
   /\bwho (is|goes|deals|starts|plays|becomes) (east|first|the dealer)\b|\b(which player|who) (should |will )?(be|become)s? east\b|\b(am i|will i be|do i become|when am i) east\b/i,
   /\b(have|holding|got|hold) \d+ tiles\b|\b(what|which) tiles\b/i,
   /\b(allowed|able|permitted|ok|okay) to call\b|\b(calling|calls?) work\b|\bhow (does|do) (calling|a call)\b/i,
@@ -169,19 +169,32 @@ const RULES_SIGNAL_RES: RegExp[] = [
   /\bcall(ing)? for (a |an )?(pair|pung|kong|quint|sextet|single|exposure)\b/i,
   /\brules? (for|of|about|on) (calling|discards?|jokers?|the charleston|passing|exposures?|dead hands?|payments?|winning|the wall|dealing)\b/i,
   /\b(nobody|no one) (wins|won)\b/i,
-  /\b(suits?)\b.{0,20}\b(mahjong|mah ?jong+|set|game)\b|\b(mahjong|mah ?jong+|set) suits?\b|\bwhat suits\b/i,
+  /\b(suits?)\b.{0,20}\b(mahjong|mah ?jong+|set|game)\b|\b(mahjong|mah ?jong+|set) suits?\b/i,
   /\b(first|second|last) (left|right|across)\b/i,
   /\b(call|claim)\b.{0,25}\bfor (mahjong|maj|mah ?jong+)\b|\bany tile\b/i,
   /\bwhat (she|he|they|someone) (just )?(threw|discarded|put down|tossed)\b|\bpick up\b.{0,20}\b(discard|tile|what)\b/i,
-  /\b(call|claim|take) (that|this)\b[?!. ]*$/i,
-  /\bhow many of each\b/i,
-  /\bthe passing\b|\bpassing (before|round|phase|tiles|rules?)\b|\bbefore the game (starts|begins)\b/i,
-  /\b(skip|stop|decline|refuse|refuses|end)\b.{0,30}\b(passing|charleston|pass|passes)\b|\bround of passing\b/i,
-  /\bhow (do|does|can) (i|you|we|someone|a player) (actually |even |really )?win\b|\bwin the game\b/i,
+  /\b(call|claim) (that|this|it)\b[?!. ]*$/i,
+  /\b(skip|stop|decline|refuse|refuses|end)\b.{0,30}\b(passing|charleston|passes)\b|\bround of passing\b/i,
   ...RULES_TOPIC_SIGNALS,
   /\b(exchange|redeem|swap|trade)\b.{0,30}\bjokers?\b/i,
   /\bjokers?\b.{0,30}\b(exchange|redeem|swap|trade|discard|discarded|thrown|throw)\b/i,
 ];
+
+// Everyday-word signals need mahjong vocabulary in the sentence and no directory or
+// commerce wording before they count.
+const CONDITIONAL_RULES_SIGNALS: RegExp[] = [
+  ...RULES_TOPIC_SIGNALS_CONDITIONAL,
+  /\bhow many of each\b/i,
+  /\bthe passing\b|\bpassing (before|round|phase|tiles|rules?)\b|\bbefore the game (starts|begins)\b/i,
+  /\bhow (do|does|can) (i|you|we|someone|a player) (actually |even |really )?win\b|\bwin the game\b/i,
+  /\b(call|claim|take) it\b/i,
+];
+const MAHJ_VOCAB =
+  /\b(tiles?|hands?|discards?|discarded|discarding|walls?|card|charleston|jokers?|mahjong|mahj|maj|pungs?|kongs?|quints?|sextets?|expos\w*|melds?|racks?|deal|dealer|dealt|east|turns?|passing|win|wins|winning|won|bams?|craks?|dots?|winds?|dragons?|flowers?|soap|rules?|rule ?book|scoring|pays?|paid|dead|called|calling)\b/i;
+const DIRECTORY_NOUNS =
+  /\b(groups|games|clubs|teachers?|instructors?|lessons?|classes|events|tournaments|venues|studios|meetups|leagues|retreats|cruises|directory|listings?|website|near|nearby|zip|miles?|downtown)\b/i;
+const COMMERCE_RE =
+  /\b(buy|buying|purchase|store|shop|for sale|price|prices|cost|costs|sell|sells|order|amazon|membership|fee|fees|sets? for)\b/i;
 
 const VARIANT_QUESTION_RE =
   /\b(riichi|japanese|chinese|hong ?kong|cantonese|sichuan|taiwanese|korean|filipino|singapor(e|ean)|mcr|zung ?jung)\b/i;
@@ -199,7 +212,9 @@ export function detectAskTopic(raw: string): AskTopic {
   // The weak nouns (rules, rack, discard, deal) only signal a rules question when the
   // sentence actually asks something. "Any good deal on lessons in Naples" is commerce.
   const weakRulesNoun = /\b(rules?|racks?|discard(s|ing)?|deal(t|ing)?|dealer)\b/i.test(q);
-  const strongRules = RULES_SIGNAL_RES.some((re) => re.test(q));
+  const conditional =
+    CONDITIONAL_RULES_SIGNALS.some((re) => re.test(q)) && MAHJ_VOCAB.test(q) && !DIRECTORY_NOUNS.test(q) && !COMMERCE_RE.test(q);
+  const strongRules = RULES_SIGNAL_RES.some((re) => re.test(q)) || conditional;
   const rulesAsk = strongRules || (weakRulesNoun && questionForm) || (VARIANT_QUESTION_RE.test(q) && questionForm);
   if (!rulesAsk) return "directory";
 

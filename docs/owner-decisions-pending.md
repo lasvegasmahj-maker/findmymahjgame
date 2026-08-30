@@ -63,4 +63,4 @@ closed-gate default already in place; nothing blocks engineering.
     All applied and published, including the Terms of Use naming Mahjong Collective, LLC
     as the operating entity (owner confirmation 2026-08-29).
 
-11. Rules truth layer (2026-08-30): seven rules questions and wording flags for Shauna are listed in docs/rules-truth-audit-2026-08-30.md (misnamed discards, jokers in a dead hand, calling for a quint or sextet, the last discard of the deal, settlement after a false mahjong, the official three-player procedure, annual-card wording). 28 new or research-verified Ask entries await owner review; nothing owner-approved was changed.
+11. Rules truth layer (2026-08-30): ten rules questions and wording flags for Shauna are listed in docs/rules-truth-audit-2026-08-30.md (misnamed discards, jokers in a dead hand, confirming the quint and sextet call, the last discard of the deal, settlement after a false mahjong, the official three-player procedure, annual-card wording, false mahjong with tiles exposed, picking ahead, payment wording). 29 new or research-verified Ask entries await owner review; nothing owner-approved was changed.

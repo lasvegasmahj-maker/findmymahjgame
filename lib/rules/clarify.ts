@@ -19,12 +19,9 @@ import {
 export type ClarifyOption = {
   key: string;
   label: string;
-  // Free-text replies match here; a clicked option sends its label, which matches too.
   match: RegExp;
   entry?: string;
-  // Re-run retrieval on a rewritten question instead of jumping to one entry.
   rewrite?: (original: string) => string;
-  // A final scoped answer with no entry behind it.
   answer?: string;
 };
 
@@ -54,7 +51,7 @@ const DEMONSTRATIVE_TILE =
   /\b(that|this) (tile|discard|one)\b|\b(call|claim|take|grab|have) (it|that|this)\b|\bwhat (she|he|they|someone) (just )?(threw|discarded|put down|tossed)\b|\b(her|his|their|the) (last |latest |most recent )?discard\b|\bwhat (she|he|they|someone) (just )?(threw|discarded|put down|tossed)\b|\bthe tile (she|he|they|someone) (just )?(threw|discarded|put down|tossed)\b|\bthe tile (i|you) (need|want)\b/i;
 const OWN_HAND = /\b(my|this|our|the) hand\b/i;
 const HAND_TYPE_WORD = /\b(open|closed|concealed|exposed)\b/i;
-const HAND_TYPE_LETTER = /\b[CX]\b/;
+const HAND_TYPE_LETTER = /\b[CX]\b/i;
 const PURPOSE_CUE = new RegExp(`${MAHJONG_CUE.source}|${EXPOSURE_CUE.source}|\\bpairs?\\b|\\bsingles?\\b`, "i");
 const OTHER_SPECIFIC = /\b(own discard|call back|take back|both|two (players|people|of us)|same (tile|discard)|hold|wait|blind|charleston|courtesy|wall|dead|error|mistake|wrong|misnam)\b/i;
 
@@ -247,6 +244,9 @@ export function resolveReply(ctx: ClarifyContext, reply: string): { option: Clar
   const trimmed = reply.trim();
   const exact = clarification.options.find((o) => o.label.toLowerCase() === trimmed.toLowerCase() || o.key.toLowerCase() === trimmed.toLowerCase());
   if (exact) return { option: exact, clarification };
+  // Option words are loose on purpose ("mahjong", "play"), so only a short reply may match
+  // them; a whole new question typed mid-clarification is handled as a question.
+  if (trimmed.split(/\s+/).length > 6) return { clarification };
   const matches = clarification.options.filter((o) => o.match.test(trimmed));
   // Both options matching means the reply restated the whole question; ask again.
   if (matches.length === 1) return { option: matches[0], clarification };
