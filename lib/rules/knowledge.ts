@@ -29,6 +29,7 @@ const RULESET = "american_nmjl" as const;
 const SOURCE = "owner_approved" as const;
 const VERIFIED = "2026-08-22" as const;
 const VERIFIED_REVIEW = "2026-08-26" as const;
+const VERIFIED_WORDING = "2026-08-29" as const;
 
 // Concept matchers describe ideas, not phrasings, so word order, punctuation, and
 // paraphrase all resolve to the same concept.
@@ -323,9 +324,9 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     ruleset: RULESET,
     varies_by_house: true,
     house_note:
-      "Tables differ on exactly when the calling window closes after the next player draws, so agree on it before you start.",
+      "The card closes the calling window once the player next in turn has picked and racked, or discarded; some tables police that moment loosely, so confirm your table follows the card.",
     source: SOURCE,
-    last_verified: VERIFIED,
+    last_verified: VERIFIED_WORDING,
     confidence: "high",
   },
   {
@@ -434,12 +435,12 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     // The courtesy pass itself is described on the Charleston answer.
     blocks: [/\bcourtesy pass\b/i],
     approved_answer:
-      "It helps to separate official rules from table courtesies. Official rules come from the National Mah Jongg League and apply everywhere, such as the tile count and how calling works. Courtesies are local customs a table agrees on, such as whether to make the courtesy pass in the Charleston or how strictly discards are announced. Agree on courtesies before the first hand so no one is surprised.",
+      "It helps to separate official rules from table courtesies. Official rules come from the National Mah Jongg League and apply everywhere, such as the tile count, how calling works, and the courtesy pass, which is an optional League rule any player may decline. Courtesies are local customs a table agrees on, such as how a wall game is paid or whether the same dealer deals again. Agree on courtesies before the first hand so no one is surprised.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note: "Courtesies differ from table to table by design.",
     source: SOURCE,
-    last_verified: VERIFIED,
+    last_verified: VERIFIED_WORDING,
     confidence: "high",
   },
   {
