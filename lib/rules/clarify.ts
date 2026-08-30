@@ -158,7 +158,7 @@ export const CLARIFICATIONS: Clarification[] = [
   },
 ];
 
-export const TOPIC_GROUPS: Array<{ key: string; label: string; match: RegExp; entry: string }> = [
+const TOPIC_GROUPS: Array<{ key: string; label: string; match: RegExp; entry: string }> = [
   { key: "charleston", label: "The Charleston and passing", match: /\b(charleston|pass|passing)\b/i, entry: "charleston" },
   { key: "calling", label: "Calling discards and exposures", match: /\b(call|calling|discards?|expos|exposure)\b/i, entry: "calling-discard" },
   { key: "jokers", label: "Jokers", match: /\bjokers?\b/i, entry: "jokers-basics" },
@@ -232,8 +232,12 @@ function escapeRe(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-// "in a tournament" answers the tournament clarification even though a search parser would
-// read it as a place, so the route must ask the engine before treating a reply as a search.
+export function isExactOption(ctx: ClarifyContext, reply: string): boolean {
+  const c = ctx.id === "topic" ? topicClarification(ctx.question) : CLARIFICATIONS.find((x) => x.id === ctx.id);
+  const t = reply.trim().toLowerCase();
+  return !!c && c.options.some((o) => o.label.toLowerCase() === t || o.key.toLowerCase() === t);
+}
+
 export function answersOption(ctx: ClarifyContext, reply: string): boolean {
   const r = resolveReply(ctx, reply);
   return !!r && "option" in r;

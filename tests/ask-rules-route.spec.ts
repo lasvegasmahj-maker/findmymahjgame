@@ -58,6 +58,8 @@ test.describe("Ask route: rules clarification turns", () => {
     expect(std.rules.entry_id).toBe("charleston-blind-pass");
     const typed = await ask(request, "in a tournament", { id: "tournament", question: q });
     expect(typed.rules.entry_id).toBe("tournament-rules");
+    const typed2 = await ask(request, "a tournament", { id: "tournament", question: q });
+    expect(typed2.rules.entry_id).toBe("tournament-rules");
   });
 
   test("an unmatched rules question offers topics; a reply that matches none re-asks", async ({ request }) => {
@@ -104,6 +106,8 @@ test.describe("Ask route: rules clarification turns", () => {
   test("responses carry provenance status but never source text or private fields", async ({ request }) => {
     const r = await ask(request, "Can a discarded joker be called?");
     expect(r.rules.entry_id).toBe("joker-discarded");
+    const echoed = await ask(request, "Can I call that tile?");
+    expect(echoed.rules.clarify.question).toBe("Can I call that tile?");
     expect(r.rules.classification).toBe("standard_nmjl_rule");
     expect(["verified", "owner_review_pending", "owner_question_pending"]).toContain(r.rules.evidence);
     const raw = JSON.stringify(r);

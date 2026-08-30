@@ -117,10 +117,8 @@ const EXCHANGE_VERB = "(exchange[sd]?|exchanging|redeem(s|ed|ing)?|swap(s|ped|pi
 export const JOKER_EXCHANGE = new RegExp(
   `\\b${EXCHANGE_VERB}\\b[^.?!,;]{0,30}\\bjokers?\\b|\\bjokers?\\b[^.?!,;]{0,30}\\b${EXCHANGE_VERB}\\b|\\b(take|get|pull|grab|claim|pick(ing)? up)\\b[^.?!,;]{0,20}\\bjokers?\\b[^.?!,;]{0,30}\\b(exposure|exposed|rack)\\b|\\b(grab|take|get|claim|pick up|have)\\b[^.?!,;]{0,12}\\b(the|that|this|a|her|his|their|someone's) jokers?\\b`, "i");
 
-// Winning intent: the tile would finish the hand.
 export const MAHJONG_CUE =
   /\b(mah ?jong+|mahj|maj|win|wins|winning|won|go out|(last|final) tile (i|you|she|he|they|we) need|complete[sd]? (my|your|the|her|his) (hand|mahjong)|finish(es|ed)? (my|your|the|her|his) hand)\b/i;
-// Building intent: the tile would join a face-up group.
 export const EXPOSURE_CUE = /\b(expos(e|ed|es|ure|ures|ing)|pungs?|kongs?|quints?|sextets?|meld|build(ing)?|group)\b/i;
 const DISCARDED = /\b(discard|discards|discarded|discarding|thrown|throw|throws|threw|toss|tossed|put down)\b/i;
 const ERROR_CUE =
@@ -152,7 +150,6 @@ const STOP_OR_AGREE = new RegExp(`${STOP.source}|${AGREE_SECOND.source}`, "i");
 const PAYMENT =
   /\b(pay|pays|paid|paying|payment|payments|payout|score|scores|scoring|scored|points|value|worth|double|doubled|doubles|owe|owes|money|bet|bets|stakes|quarters|dollars|coins|chips|settle|settles|jokerless|self[- ]?pick(ed)?|picked it (myself|yourself|herself|himself))\b/i;
 const QUINT_SEXTET = /\b(quints?|sextets?|five of a kind|six of a kind)\b/i;
-// Card groupings built from different tiles: a joker never fills these.
 const MIXED_GROUP =
   /\b(news|n ?e ?w ?s|runs?|sequences?|consecutive|straight|year|years|20[0-9]{2} hand|1 ?2 ?3|2 ?4 ?6|3 ?6 ?9|369|246|different tiles|mixed group|line of singles)\b/i;
 // Scoring vocabulary only: "do I have to pay to play mahjong in Naples" is a directory question.

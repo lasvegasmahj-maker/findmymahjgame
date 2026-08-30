@@ -152,7 +152,12 @@ test.describe("multi-turn resolution", () => {
     expect(answersOption({ id: "call-purpose", question: CALL }, "It would complete mahjong")).toBe(true);
     expect(answersOption({ id: "call-purpose", question: CALL }, "mahjong")).toBe(true);
     expect(answersOption({ id: "tournament", question: "Can I blind pass in a tournament?" }, "in a tournament")).toBe(true);
-    expect(answersOption({ id: "call-purpose", question: CALL }, "mahjong teacher near Naples FL")).toBe(false);
+    expect(answersOption({ id: "call-purpose", question: CALL }, "Find an instructor near Phoenix")).toBe(false);
+    for (const reply of ["tournaments", "a tournament", "the tournament", "event", "league", "standard league", "not a tournament"]) {
+      expect(answersOption({ id: "tournament", question: "Can I blind pass in a tournament?" }, reply), reply).toBe(true);
+    }
+    expect(answersOption({ id: "pass-context", question: "Can I pass?" }, "before the game")).toBe(true);
+    expect(answersOption({ id: "call-purpose", question: CALL }, "group")).toBe(true);
     const q = "What happens if my elbow knocks over the rack?";
     const first = lookupRule({ question: q });
     expect(answersOption({ id: "topic", question: q }, first.clarify!.options[0].label)).toBe(true);

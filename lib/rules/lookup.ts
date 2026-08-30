@@ -30,7 +30,6 @@ export type RulesLookupResult = {
   evidence?: string;
   needs_clarification?: string;
   clarify?: ClarifyPayload;
-  // The clarification the answer came through, for telemetry.
   clarified_by?: string;
   unsupported_reason?: string;
 };
@@ -195,7 +194,7 @@ function handleReply(ctx: ClarifyContext, reply: string): RulesLookupResult {
   const c = resolved.clarification;
   const prompt = c.prompt || needsClarification(spellfix(original), () => true)?.prompt || "Did you mean American mahjong?";
   const labels = c.options.map((o) => `"${o.label}"`).join(" or ");
-  const payload = toPayload(c, spellfix(original));
+  const payload = toPayload(c, original);
   return clarificationResult({ ...payload, prompt: `${prompt} You can answer with ${labels}.` });
 }
 
@@ -226,12 +225,12 @@ export function lookupRule(input: RulesLookupInput): RulesLookupResult {
   }
 
   const clarification = needsClarification(fixed, (q) => retrieve(q) !== null);
-  if (clarification) return clarificationResult(toPayload(clarification, fixed));
+  if (clarification) return clarificationResult(toPayload(clarification, question));
 
   const entry = retrieve(fixed);
   if (entry) return entryResult(entry);
 
-  return clarificationResult(toPayload(topicClarification(fixed), fixed), "no_entry");
+  return clarificationResult(toPayload(topicClarification(fixed), question), "no_entry");
 }
 
 // Synthesis guard: a model may only rephrase approved text, so any digit in its output

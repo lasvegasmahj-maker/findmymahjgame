@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { extractIntent, rephraseApprovedAnswer } from "@/lib/ask-llm";
 import { parseAskIntent, detectAskTopic } from "@/lib/ask-intent";
 import { normalizeQuestion, lookupRule, summarizeRulesGap, type RulesLookupResult } from "@/lib/rules/lookup";
-import { answersOption } from "@/lib/rules/clarify";
+import { answersOption, isExactOption } from "@/lib/rules/clarify";
 import { lazyServerClient } from "@/lib/supabase-server";
 import { searchEventsWithRelaxation, searchVenues, describeRelaxations } from "@/lib/search";
 import { resolveLocation } from "@/lib/resolve-location";
@@ -111,18 +111,21 @@ export async function POST(req: NextRequest) {
   const question = typeof body?.q === "string" ? normalizeQuestion(body.q, 200) : "";
   // A reply to a pending clarification carries the clarification id and the original
   // question back; the server keeps no conversation state.
+  const recordClass = await resolveAskRecordClass(req);
+  try {
   const clarifyRaw = body?.clarify;
   let clarify =
     clarifyRaw && typeof clarifyRaw.id === "string" && typeof clarifyRaw.question === "string"
-      ? { id: clarifyRaw.id.slice(0, 40), question: normalizeQuestion(clarifyRaw.question, 200) }
+      ? { id: clarifyRaw.id.slice(0, 40), question: normalizeQuestion(clarifyRaw.question, 300) }
       : null;
   // A player who changes their mind mid-clarification and types a directory question gets
-  // the search, not a forced rules reply. A clicked option label is never a new question.
-  if (clarify && !answersOption(clarify, question) && looksLikeDirectorySearch(question) && detectAskTopic(question) === "directory") {
-    clarify = null;
+  // the search, not a forced rules reply. A clicked label, or a short reply that answers an
+  // option ("in a tournament" reads as a place to the search parser), stays a reply.
+  if (clarify) {
+    const shortReply = question.split(/\s+/).length <= 3;
+    const keep = isExactOption(clarify, question) || (shortReply && answersOption(clarify, question));
+    if (!keep && looksLikeDirectorySearch(question) && detectAskTopic(question) === "directory") clarify = null;
   }
-  const recordClass = await resolveAskRecordClass(req);
-  try {
   const topic = clarify ? "rules" : detectAskTopic(question);
   let rules: RulesLookupResult | null = null;
   if (topic !== "directory") {
@@ -136,7 +139,8 @@ export async function POST(req: NextRequest) {
 
   if (topic === "rules" && rules) {
     const answer = await composeRulesAnswer(rules, question);
-    trackAskOutcome(recordClass, topic, 0, rules.matched, rules.clarify ? `${rules.clarify.id}:asked` : rules.clarified_by ? `${rules.clarified_by}:resolved` : null);
+    // An owner-question answer is honest but unverified; it must count that way.
+    trackAskOutcome(recordClass, topic, 0, rules.matched && rules.evidence === "verified", rules.clarify ? `${rules.clarify.id}:asked` : rules.clarified_by ? `${rules.clarified_by}:resolved` : null);
     return NextResponse.json({
       ok: true,
       answer,
