@@ -268,12 +268,13 @@ export function resolveReply(ctx: ClarifyContext, reply: string): { option: Clar
   // A negated reply ("no, not American") belongs to the "other" option even though the word
   // it negates matches the other side; otherwise the longer, more specific match wins, and a
   // tie means the reply restated the whole question, so ask again.
-  const neg = trimmed.match(NEGATION);
-  if (neg) {
+  const negs = [...trimmed.matchAll(new RegExp(NEGATION.source, "gi"))];
+  if (negs.length) {
     const other = clarification.options.find((o) => o.key === "other");
     if (other) return { option: other, clarification };
-    // "no, not concealed": whatever is named right after the negation, up to the next comma
-    // or "but", is the option being refused; "not exposure, mahjong" still picks mahjong.
+    // "no, not concealed": whatever is named right after the last negation, up to the next
+    // comma or "but", is the option being refused; "not exposure, mahjong" still picks mahjong.
+    const neg = negs[negs.length - 1];
     const negated = trimmed.slice((neg.index ?? 0) + neg[0].length).split(/[,;.]|\bbut\b|\bjust\b/)[0];
     const remaining = clarification.options.filter((o) => !o.match.test(negated) && o.match.test(trimmed));
     if (remaining.length === 1) return { option: remaining[0], clarification };
