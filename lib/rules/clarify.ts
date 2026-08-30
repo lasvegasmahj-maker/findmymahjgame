@@ -232,6 +232,13 @@ function escapeRe(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+// A clicked option arrives as its label; it is never a new question.
+export function isExactOption(ctx: ClarifyContext, reply: string): boolean {
+  const c = ctx.id === "topic" ? topicClarification(ctx.question) : CLARIFICATIONS.find((x) => x.id === ctx.id);
+  const t = reply.trim().toLowerCase();
+  return !!c && c.options.some((o) => o.label.toLowerCase() === t || o.key.toLowerCase() === t);
+}
+
 export function toPayload(c: Clarification, question: string): ClarifyPayload {
   return { id: c.id, prompt: c.prompt, question, options: c.options.map((o) => ({ key: o.key, label: o.label })) };
 }

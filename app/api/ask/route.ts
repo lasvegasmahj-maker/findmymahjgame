@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { extractIntent, rephraseApprovedAnswer } from "@/lib/ask-llm";
 import { parseAskIntent, detectAskTopic } from "@/lib/ask-intent";
 import { normalizeQuestion, lookupRule, summarizeRulesGap, type RulesLookupResult } from "@/lib/rules/lookup";
+import { isExactOption } from "@/lib/rules/clarify";
 import { lazyServerClient } from "@/lib/supabase-server";
 import { searchEventsWithRelaxation, searchVenues, describeRelaxations } from "@/lib/search";
 import { resolveLocation } from "@/lib/resolve-location";
@@ -92,6 +93,14 @@ function trackAskOutcome(
   if (!matched) void track(supabase, "ask_unverified", { props, recordClass });
 }
 
+function looksLikeDirectorySearch(q: string): boolean {
+  const intent = parseAskIntent(q);
+  return (
+    intent.location !== null || intent.days.length > 0 || intent.timeOfDay !== null || intent.types !== null ||
+    intent.kind === "teachers" || /\b(where|near|nearby|find|looking for|events?|games?|groups?|clubs?|meetups?)\b/i.test(q)
+  );
+}
+
 export const maxDuration = 30;
 
 export async function POST(req: NextRequest) {
@@ -108,8 +117,10 @@ export async function POST(req: NextRequest) {
       ? { id: clarifyRaw.id.slice(0, 40), question: normalizeQuestion(clarifyRaw.question, 200) }
       : null;
   // A player who changes their mind mid-clarification and types a directory question gets
-  // the search, not a forced rules reply.
-  if (clarify && question.split(/\s+/).length >= 4 && detectAskTopic(question) === "directory") clarify = null;
+  // the search, not a forced rules reply. A clicked option label is never a new question.
+  if (clarify && !isExactOption(clarify, question) && looksLikeDirectorySearch(question) && detectAskTopic(question) === "directory") {
+    clarify = null;
+  }
   const recordClass = await resolveAskRecordClass(req);
   try {
   const topic = clarify ? "rules" : detectAskTopic(question);
