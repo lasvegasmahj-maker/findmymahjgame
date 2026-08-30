@@ -138,8 +138,7 @@ const RULES_SIGNAL_RES: RegExp[] = [
   /\bcourtesy pass\b/i,
   BLIND_PASS,
   /\bwild tiles?\b/i,
-  /\bblanks?\b(?! (check|page|space|form))/i,
-  /\btournament (rules?|play|director)\b/i,
+
   /\b(same tile|same discard|two players (call|want)|both (call|want)|who gets the tile|who gets it)\b/i,
   /\b(pick|picking|picked|draw|drawing|drew) (ahead|out of turn|early|too soon|before (my|her|his|their) turn)\b/i,
   /\b(my own discard|own discard|call back|take back|take it back)\b/i,
@@ -152,7 +151,7 @@ const RULES_SIGNAL_RES: RegExp[] = [
   /\b(order of play|turn order|whose turn|which way (do|does) (play|the turns?|it) go)\b/i,
   /\b(colou?rs?|letters?) on the card\b|\bwhat does (c|x|f|d) (mean|stand for)\b|\bsoap\b.{0,20}\bzero\b/i,
   /\b(last|final) (tile|discard)\b/i,
-  /\brule ?book\b|\bmade easy\b|\bwho (makes|writes|sets) the rules\b/i,
+  /\bwho (makes|writes|sets) the rules\b/i,
   /\bmelds?\b|\b(quints?|sextets?)\b/i,
   /\b(can|may|could|should|am i allowed to) (i |we )?(call|claim) (that|this|it)[?!. ]*$/i,
   /\b(call|calling|claim|claiming) (a |the |that |this |any )?(tile|discard)s?\b/i,
@@ -169,7 +168,7 @@ const RULES_SIGNAL_RES: RegExp[] = [
   /\bcall(ing)? for (a |an )?(pair|pung|kong|quint|sextet|single|exposure)\b/i,
   /\brules? (for|of|about|on) (calling|discards?|jokers?|the charleston|passing|exposures?|dead hands?|payments?|winning|the wall|dealing)\b/i,
   /\b(nobody|no one) (wins|won)\b/i,
-  /\b(suits?)\b.{0,20}\b(mahjong|mah ?jong+|set|game)\b|\b(mahjong|mah ?jong+|set) suits?\b/i,
+
   /\b(first|second|last) (left|right|across)\b/i,
   /\b(call|claim)\b.{0,25}\bfor (mahjong|maj|mah ?jong+)\b|\bany tile\b/i,
   /\bwhat (she|he|they|someone) (just )?(threw|discarded|put down|tossed)\b|\bpick up\b.{0,20}\b(discard|tile|what)\b/i,
@@ -185,6 +184,10 @@ const RULES_SIGNAL_RES: RegExp[] = [
 const CONDITIONAL_RULES_SIGNALS: RegExp[] = [
   ...RULES_TOPIC_SIGNALS_CONDITIONAL,
   /\bhow many of each\b/i,
+  /\bblanks?\b(?! (check|page|space|form))/i,
+  /\btournament (rules?|play|director)\b/i,
+  /\brule ?book\b|\bmade easy\b/i,
+  /\b(what|which|how many|name|the) suits?\b|\bsuits? (in|of) (american )?mahjong\b/i,
   /\bthe passing\b|\bpassing (before|round|phase|tiles|rules?)\b|\bbefore the game (starts|begins)\b/i,
   /\bhow (do|does|can) (i|you|we|someone|a player) (actually |even |really )?win\b|\bwin the game\b/i,
   /\b(call|claim|take) (it|that|this)\b/i,
@@ -195,9 +198,9 @@ const CONDITIONAL_RULES_SIGNALS: RegExp[] = [
   /\bon the card\b|\bwhat does (the )?(little |letter |a |an )?[cx] (mean|stand for)\b|\b[cx] (after|next to|beside|behind) (a|the) hand\b/i,
 ];
 const MAHJ_VOCAB =
-  /\b(tiles?|hands?|discards?|discarded|discarding|walls?|card|charleston|jokers?|mahjong|mahj|maj|pungs?|kongs?|quints?|sextets?|expos\w*|melds?|racks?|deal|dealer|dealt|east|turns?|passing|win|wins|winning|won|bams?|craks?|dots?|winds?|dragons?|flowers?|soap|rules?|rule ?book|scoring|pays?|paid|dead|call|calls|called|calling|play|playing|players?|three[- ]handed|on the card)\b/i;
+  /\b(tiles?|hands?|discards?|discarded|discarding|walls?|card|charleston|jokers?|mahjong|mahj|maj|pungs?|kongs?|quints?|sextets?|expos\w*|melds?|racks?|deal|dealer|dealt|east|turns?|passing|win|wins|winning|won|bams?|craks?|dots?|winds?|dragons?|flowers?|soap|rules?|rule ?book|scoring|pays?|paid|dead|call|calls|called|calling|play|playing|players?|three[- ]handed|on the card|blanks?)\b/i;
 const DIRECTORY_NOUNS =
-  /\b(groups?|games|clubs|teachers?|instructors?|lessons?|classes|events|tournaments|venues|studios|meetups?|leagues|retreats|cruises|directory|listings?|website|near|nearby|zip|miles?|downtown|fourth|seat|spot|waitlist|reserve|reservation|show up|looking for|sign up|register)\b/i;
+  /\b(groups|games|clubs|teachers?|instructors?|lessons?|classes|events|tournaments|venues|studios|meetups?|leagues|retreats|cruises|directory|listings?|website|near|nearby|zip|miles?|downtown|fourth|seat|spot|waitlist|reserve|reservation|show up|looking for|sign up|register)\b/i;
 // A capitalized place after in/near/at is a search, never a rules context.
 const PLACE_HINT = /\b(in|near|around|at|to) [A-Z][a-z]+/;
 const COMMERCE_RE =

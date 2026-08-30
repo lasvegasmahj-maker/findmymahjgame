@@ -52,7 +52,8 @@ export default function AskClient() {
         body: JSON.stringify(clarify ? { q: query, clarify: { id: clarify.id, question: clarify.question } } : { q: query }),
       });
       const j = await r.json();
-      const next: Clarify | null = j?.topic === "rules" && j?.rules?.clarify?.id ? j.rules.clarify : null;
+      // A rate limit or server error keeps the pending clarification instead of stranding the player.
+      const next: Clarify | null = j?.ok ? (j?.topic === "rules" && j?.rules?.clarify?.id ? j.rules.clarify : null) : clarify;
       setResp({ ok: !!j.ok, answer: j.answer || "", results: j.results ?? [], suggestions: j.suggestions ?? [], error: j.error, clarify: next, pendingReview: j?.rules?.evidence === "owner_review_pending" });
       if (next) setQ("");
     } catch {

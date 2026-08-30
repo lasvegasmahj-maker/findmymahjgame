@@ -4,7 +4,6 @@ import { test, expect, type APIRequestContext, type Page } from "@playwright/tes
 // unit-level retrieval. The server keeps no state: the clarification id and the original
 // question ride along with each reply. The API tests fire well over the 15-per-minute limit,
 // so they run serially and rely on RATE_LIMIT_TEST_BYPASS=1 from .env.local (local only).
-test.describe.configure({ mode: "serial" });
 // Local only: the API block needs RATE_LIMIT_TEST_BYPASS and one browser project.
 test.skip(!/localhost|127\.0\.0\.1/.test(process.env.PLAYWRIGHT_BASE_URL ?? "localhost"), "needs the local rate-limit bypass");
 
@@ -16,6 +15,7 @@ async function ask(request: APIRequestContext, q: string, clarify?: { id: string
 }
 
 test.describe("Ask route: rules clarification turns", () => {
+  test.describe.configure({ mode: "serial" });
   // The API turns need no second viewport; the UI blocks below run on both.
   test.skip(({ isMobile }) => !!isMobile, "one browser project is enough for the API turns");
 

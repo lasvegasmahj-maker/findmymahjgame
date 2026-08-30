@@ -201,7 +201,6 @@ export function blindReadsAsPlace(question: string): boolean {
 // names a mahjong-only idea, so a directory question cannot trip it.
 export const RULES_TOPIC_SIGNALS: RegExp[] = [
   OWN_DISCARD,
-  BLANK,
   QUINT_SEXTET,
   /\b(expos(e|ed|es|ure|ures|ing)|melds?)\b/i,
   JOKER_EXCHANGE,
@@ -218,6 +217,7 @@ export const RULES_TOPIC_SIGNALS: RegExp[] = [
 // answered with hand strategy instead of a search.
 export const RULES_TOPIC_SIGNALS_CONDITIONAL: RegExp[] = [
   MISNAMED,
+  BLANK,
   ORDER,
   LAST_OF_WALL,
   OFFICIAL,
@@ -262,7 +262,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
       /\b(bams?|craks?|dots?)\b.{0,30}\bsuits?\b/i,
       /\bsuits?\b.{0,30}\b(bams?|craks?|dots?)\b/i,
       /how many suits/i,
-      /\bsuits?\b/i,
+      /\b(what|which|name|the) suits?\b/i,
     ],
     keywords: ["suits", "bams", "craks", "dots"],
     approved_answer:
@@ -1084,7 +1084,8 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     topic: "Tournament rules versus standard play",
     question_patterns: [TOURNAMENT],
     keywords: ["tournament", "director"],
-    requires: [TOURNAMENT],
+    requires: [TOURNAMENT, /\b(rules?|differ|different|differs|standard|league play|director'?s?|penalt(y|ies)|scoring|time limit|timed)\b/i],
+    blocks: [/\b(near|nearby|in my area|\d{5}|looking for|find|register|sign up)\b/i, /\b(in|near|around|at|to) [A-Z][a-z]+/],
     approved_answer:
       "Tournaments play by National Mah Jongg League rules as the foundation, but each tournament director adds procedures of their own: timed rounds, a point system, and penalties for things like misnamed discards. Those rules apply only at that event and never change the League's rules for regular play. At a tournament, the director's rule governs; away from it, the League rule does.",
     ruleset: RULESET,
@@ -1101,6 +1102,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [BLANK],
     keywords: ["blank", "blanks"],
     requires: [BLANK],
+    blocks: [/\b(buy|buying|purchase|store|shop|for sale|price|prices|cost|costs|sell|sells|order|amazon)\b/i],
     approved_answer:
       "Blank tiles are not part of League play. They come with many sets as spares to replace a lost tile. Some tables use them as a house rule, usually letting a player trade a blank for a tile in the discard area. If your table plays with blanks, agree on the details before the first hand, and remember that a table using them is not playing standard League rules.",
     ruleset: RULESET,

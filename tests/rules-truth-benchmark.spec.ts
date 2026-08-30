@@ -269,6 +269,13 @@ test.describe("directory questions stay directory questions", () => {
       "Charlestown mahjong groups?",
       "Charlton games on Tuesday?",
       "never mind, where can I play in Boca?",
+      "Is there tournament play near Naples?",
+      "tournament play near Naples FL",
+      "Is there a tournament director near me?",
+      "Mahjong Made Easy classes near Naples",
+      "does mahjong suit beginners",
+      "which club suits my game night in Naples",
+      "where can I buy a set with blanks",
     ]) {
       expect(detectAskTopic(q), q).toBe("directory");
     }

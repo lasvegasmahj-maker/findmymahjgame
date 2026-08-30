@@ -105,7 +105,7 @@ export default function HomeSearchCard() {
         body: JSON.stringify(clarify ? { q: query, clarify: { id: clarify.id, question: clarify.question } } : { q: query }),
       });
       const j = await r.json();
-      const next: ClarifyPayload | null = j?.topic === "rules" && j?.rules?.clarify?.id ? j.rules.clarify : null;
+      const next: ClarifyPayload | null = j?.ok ? (j?.topic === "rules" && j?.rules?.clarify?.id ? j.rules.clarify : null) : clarify;
       setResp({ ok: !!j.ok, answer: j.answer || "", results: j.results ?? [], error: j.error, clarify: next, pendingReview: j?.rules?.evidence === "owner_review_pending" });
     } catch {
       // Never invent an answer: a failed request shows only this fixed message.
