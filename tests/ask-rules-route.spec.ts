@@ -11,6 +11,7 @@ test.skip(({ isMobile }) => !!isMobile, "one browser project is enough for the A
 
 async function ask(request: APIRequestContext, q: string, clarify?: { id: string; question: string }) {
   const res = await request.post("/api/ask", { data: clarify ? { q, clarify } : { q } });
+  if (res.status() === 429) throw new Error("rate limited: set RATE_LIMIT_TEST_BYPASS=1 in .env.local for the local server");
   expect(res.ok()).toBeTruthy();
   return res.json();
 }
@@ -151,6 +152,20 @@ test.describe("/ask page: clarification UI", () => {
     await expect(page.getByRole("button", { name: "Reply" })).toBeVisible();
     await askOnPage(page, "for an exposure");
     await expect(page.getByRole("status")).toContainText("group of 3 or more identical tiles");
+  });
+
+  test("the homepage Ask card lets the player answer a clarification in place", async ({ page }) => {
+    await page.goto("/");
+    await page.getByLabel("Ask where to play or how to play").fill("Can I call that tile?");
+    await page.getByRole("button", { name: "Ask", exact: true }).click();
+    const status = page.getByRole("status");
+    await expect(status).toContainText("Are you calling it to make an exposure, or would it complete mahjong?");
+    const options = page.getByTestId("home-ask-clarify").getByRole("button");
+    await expect(options).toHaveCount(2);
+    await options.filter({ hasText: "It would complete mahjong" }).click();
+    await expect(status).toContainText("Any discard that completes your mahjong may be called");
+    await expect(page.getByTestId("home-ask-clarify")).toHaveCount(0);
+    await expect(status.getByRole("link", { name: "Continue on the Ask page" })).toHaveAttribute("href", "/ask?q=Can%20I%20call%20that%20tile%3F");
   });
 
   test("Never mind cancels a pending clarification", async ({ page }) => {

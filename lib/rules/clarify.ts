@@ -54,7 +54,7 @@ const TOURNAMENT_PHRASE = /\b(in|at|during|for|under|with) (a |the |our |my )?to
 const PASS_VERB = /\bpass(es|ed|ing)?\b/i;
 const PASS_CONTEXT = /\b(charleston|blind|courtesy|jokers?|tiles?|right|left|across|discards?|first|second|last|round|before|start|starts|begins?|the game|explain|how|rules?|passing)\b/i;
 const DEMONSTRATIVE_TILE =
-  /\b(that|this) (tile|discard|one)\b|\b(call|claim|take|grab|have) (it|that|this)\b|\bwhat (she|he|they|someone) (just )?(threw|discarded|put down|tossed)\b|\b(her|his|their|the) (last |latest |most recent )?discard\b|\bwhat (she|he|they|someone) (just )?(threw|discarded|put down|tossed)\b|\bthe tile (she|he|they|someone) (just )?(threw|discarded|put down|tossed)\b|\bthe tile (i|you) (need|want)\b/i;
+  /\b(that|this) (tile|discard|one)\b|\b(call|claim|take|grab|have) (it|that|this)\b|\bwhat (she|he|they|someone) (just )?(threw|discarded|put down|tossed)\b|\b(her|his|their|the) (last |latest |most recent )?discard\b|\bthe tile (she|he|they|someone) (just )?(threw|discarded|put down|tossed)\b|\bthe tile (i|you) (need|want)\b/i;
 const OWN_HAND = /\b(my|this|our|the) hand\b/i;
 const HAND_TYPE_WORD = /\b(open|closed|concealed|exposed)\b/i;
 const HAND_TYPE_LETTER = /\b[CX]\b/i;
@@ -214,8 +214,8 @@ export function needsClarification(question: string, matchesAfterTournamentStrip
   return null;
 }
 
-// The fallback for a rules question that matched nothing: offer the closest topics,
-// never a bare refusal. Keyword hits rank first; the broad topic groups fill in.
+// Never a bare refusal: a rules question that matched nothing is offered the closest
+// topics, keyword hits first, broad groups filling in.
 export function topicClarification(question: string): Clarification {
   const lower = question.toLowerCase();
   const hits = RULES_KNOWLEDGE.filter((e) => e.source !== "owner_question" && e.keywords.some((k) => lower.includes(k)))
@@ -254,8 +254,8 @@ export function toPayload(c: Clarification, question: string): ClarifyPayload {
   return { id: c.id, prompt: c.prompt, question, options: c.options.map((o) => ({ key: o.key, label: o.label })) };
 }
 
-// Resolve a reply against a pending clarification. The topic clarification is rebuilt
-// from the original question so its options are identical to the ones the player saw.
+// The topic clarification is rebuilt from the original question so its options are
+// identical to the ones the player saw; the server stores nothing between turns.
 export function resolveReply(ctx: ClarifyContext, reply: string): { option: ClarifyOption; clarification: Clarification } | { clarification: Clarification } | null {
   const clarification = ctx.id === "topic" ? topicClarification(ctx.question) : CLARIFICATIONS.find((c) => c.id === ctx.id);
   if (!clarification) return null;

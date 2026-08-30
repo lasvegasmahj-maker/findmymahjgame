@@ -25,7 +25,9 @@ rule. Each entry is classified so the site can say which kind of rule it is givi
 
 Mahj Life publishes its educational material under
 Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 (CC BY-NC-ND 4.0)
-and marks its names as trademarks. Find My Mahj is a
+and marks its names as trademarks. Its Terms of Use page says CC BY-NC 4.0 "unless otherwise
+noted" while the site footer says CC BY-NC-ND 4.0; this policy follows the stricter footer
+license either way. Find My Mahj is a
 commercial site, so:
 
 - Mahj Life is used for research, verification, source discovery, and cross-checking only.
@@ -71,8 +73,9 @@ through the real Ask route and the real /ask page).
 - `ruleset`: a question naming another mahjong style asks whether the player means American mahjong.
 - `tournament`: a rules question set inside a tournament asks whether standard League play or the tournament's rules are meant.
 - `pass-context`: a bare "Can I pass?" asks whether it is Charleston passing or passing on a discard.
-- `topic`: a rules question that matches no entry is offered the closest topics; only after
-  "Something else" does the player get the honest gap answer, and the topic is logged for the owner.
+- `topic`: a rules question that matches no entry is offered the closest topics; the scrubbed
+  topic is logged for the owner the moment that clarification is shown, and a "Something else"
+  reply gets the honest gap answer without a second log entry.
 
 The server keeps no state. The response carries the clarification id and the original
 question; the client sends both back with the reply (typed or clicked). Obvious questions

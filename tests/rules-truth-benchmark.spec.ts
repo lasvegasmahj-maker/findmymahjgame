@@ -16,7 +16,7 @@ type Expect =
   | { kind: "clarify"; id: string }
   | { kind: "refuse" };
 
-type Case = { q: string; expect: Expect; topic?: "any" };
+type Case = { q: string; expect: Expect };
 
 const A = (q: string, entry: string | string[]): Case => ({ q, expect: { kind: "answer", entry } });
 const C = (q: string, id: string): Case => ({ q, expect: { kind: "clarify", id } });

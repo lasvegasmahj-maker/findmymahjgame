@@ -23,6 +23,7 @@ type AskResponse = {
   suggestions?: Array<{ label: string; href: string }>;
   error?: string;
   clarify?: Clarify | null;
+  pendingReview?: boolean;
 };
 
 const EXAMPLES = [
@@ -52,7 +53,7 @@ export default function AskClient() {
       });
       const j = await r.json();
       const next: Clarify | null = j?.topic === "rules" && j?.rules?.clarify?.id ? j.rules.clarify : null;
-      setResp({ ok: !!j.ok, answer: j.answer || "", results: j.results ?? [], suggestions: j.suggestions ?? [], error: j.error, clarify: next });
+      setResp({ ok: !!j.ok, answer: j.answer || "", results: j.results ?? [], suggestions: j.suggestions ?? [], error: j.error, clarify: next, pendingReview: j?.rules?.evidence === "owner_review_pending" });
       if (next) setQ("");
     } catch {
       setResp({ ok: false, answer: "", results: [], error: "Something went wrong. The Events page search still works." });
@@ -110,6 +111,12 @@ export default function AskClient() {
             {resp.error || resp.answer}
           </p>
 
+          {resp.pendingReview && (
+            <p data-testid="ask-pending-review" style={{ fontSize: "0.85rem", color: "var(--muted)", textAlign: "center", marginTop: "0.6rem" }}>
+              Written from National Mah Jongg League rules and awaiting our instructor&apos;s review.
+            </p>
+          )}
+
           {pending && (
             <div data-testid="ask-clarify" role="group" aria-label={pending.prompt} style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center", marginTop: "1rem" }}>
               {pending.options.map((o) => (
@@ -119,7 +126,7 @@ export default function AskClient() {
                   disabled={busy}
                   onClick={() => ask(o.label, pending)}
                   className="btn-cta-outline"
-                  style={{ minHeight: 44, borderRadius: 50, fontSize: "0.95rem", padding: "0.5rem 1.1rem" }}
+                  style={{ minHeight: 44, borderRadius: 50, fontSize: "0.95rem", padding: "0.5rem 1.1rem", cursor: "pointer" }}
                 >
                   {o.label}
                 </button>
@@ -127,7 +134,7 @@ export default function AskClient() {
               <button
                 type="button"
                 onClick={() => { setResp(null); setQ(""); }}
-                style={{ minHeight: 44, background: "none", border: "none", color: "var(--muted)", fontWeight: 700, cursor: "pointer", fontSize: "0.9rem", fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif" }}
+                style={{ flexBasis: "100%", minHeight: 44, background: "none", border: "none", color: "var(--muted)", fontWeight: 700, cursor: "pointer", fontSize: "0.9rem", fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif" }}
               >
                 Never mind
               </button>

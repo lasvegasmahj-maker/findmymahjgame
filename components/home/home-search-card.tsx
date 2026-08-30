@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Search, Sparkles } from "lucide-react";
 import SearchBox from "@/components/home/search-box";
+import type { ClarifyPayload } from "@/lib/rules/clarify";
 import styles from "./home-search-card.module.css";
 
 // Same shape the /ask page consumes from POST /api/ask. Additive-only contract;
@@ -24,6 +25,7 @@ type AskResponse = {
   answer: string;
   results: Card[];
   error?: string;
+  clarify?: ClarifyPayload | null;
 };
 
 // Verified against production /api/ask: rules questions with a high-confidence
@@ -87,20 +89,23 @@ export default function HomeSearchCard() {
     if (!rotationStopped) setRotationStopped(true);
   }
 
-  async function submitAsk(question: string) {
+  // A rules question that needs one more fact comes back as a clarification; its options
+  // post back with the clarification so the player is never stranded on the home card.
+  async function submitAsk(question: string, clarify: ClarifyPayload | null = null) {
     const query = question.trim();
     if (!query || busy) return;
     setBusy(true);
     setResp(null);
-    setAskedQ(query);
+    if (!clarify) setAskedQ(query);
     try {
       const r = await fetch("/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ q: query }),
+        body: JSON.stringify(clarify ? { q: query, clarify: { id: clarify.id, question: clarify.question } } : { q: query }),
       });
       const j = await r.json();
-      setResp({ ok: !!j.ok, answer: j.answer || "", results: j.results ?? [], error: j.error });
+      const next: ClarifyPayload | null = j?.topic === "rules" && j?.rules?.clarify?.id ? j.rules.clarify : null;
+      setResp({ ok: !!j.ok, answer: j.answer || "", results: j.results ?? [], error: j.error, clarify: next });
     } catch {
       // Never invent an answer: a failed request shows only this fixed message.
       setResp({ ok: false, answer: "", results: [], error: "Something went wrong. Try again, or browse the Events page." });
@@ -200,6 +205,15 @@ export default function HomeSearchCard() {
         {!busy && resp && (
           <div className={styles.answer}>
             <p className={styles.answerText}>{resp.error || resp.answer}</p>
+            {resp.clarify && (
+              <div data-testid="home-ask-clarify" role="group" aria-label={resp.clarify.prompt} className={styles.chips}>
+                {resp.clarify.options.map((o) => (
+                  <button key={o.key} type="button" disabled={busy} onClick={() => submitAsk(o.label, resp.clarify ?? null)} className={styles.chip}>
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            )}
             {resp.results.length > 0 && (
               <ul className={styles.answerList}>
                 {resp.results.slice(0, 3).map((c) => {

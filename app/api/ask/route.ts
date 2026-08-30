@@ -86,11 +86,13 @@ function trackAskOutcome(
 ) {
   const supabase = lazyServerClient();
   const props = { topic, results, matched, ...(clarify ? { clarify } : {}) };
+  // An open clarification turn is not an unanswered question yet.
+  const turnOpen = Boolean(clarify?.endsWith(":asked"));
   void track(supabase, "ask_submitted", { props, recordClass });
   const intentName =
     topic === "directory" ? "ask_intent_directory" : topic === "rules" ? "ask_intent_rules" : "ask_intent_mixed";
   void track(supabase, intentName, { props, recordClass });
-  if (!matched) void track(supabase, "ask_unverified", { props, recordClass });
+  if (!matched && !turnOpen) void track(supabase, "ask_unverified", { props, recordClass });
 }
 
 const STRONG_SEARCH_CUE = /\b(where|near|nearby|find|looking for|teachers?|instructors?|lessons?|class|classes|zip)\b/i;
