@@ -9,8 +9,8 @@ remain for the owner. Source policy: docs/rules-sources.md.
 ## Summary
 
 - Canonical rules audited: 49 entries in lib/rules/knowledge.ts (21 owner-approved, unchanged
-  in wording; 25 written for this audit and research-verified against League rules; 3 open
-  owner questions whose answers claim nothing and say the instructor is confirming).
+  in wording; 24 written for this audit and research-verified against League rules; 4 open
+  owner questions whose answers claim nothing beyond the supported core and say the instructor is confirming).
 - Classification: 38 STANDARD NMJL RULE, 7 NMJL CLARIFICATION, 1 TOURNAMENT RULE,
   1 HOUSE/OPTIONAL RULE, 1 ETIQUETTE, 1 STRATEGY.
 - Provenance coverage: 49/49 entries carry ruleset, topic, classification, source type,
@@ -80,7 +80,7 @@ remain for the owner. Source policy: docs/rules-sources.md.
 | `own-discard` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | League ruling that a player cannot claim their own discard; cross-checked via Mahj Life wiki article 245 | 2026-08-30 |
 | `naming-discards` | NMJL CLARIFICATION | research-verified (secondary_research), owner review pending | League rule that discards are named; 2024 bulletin ruling accepting 'same' for a repeat discard, cross-checked via Mahj Life wiki article 242 | 2026-08-30 |
 | `misnamed-discard` | NMJL CLARIFICATION | OPEN QUESTION for owner | Exact League penalty for a misnamed discard (corrected before or after another player acts on it) | 2026-08-30 |
-| `mahjong-in-error` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | League rule on mahjong declared in error and the 2024 League clarification on who plays next; cross-checked via Mahj Life wiki articles 189, 197, and 216 | 2026-08-30 |
+| `mahjong-in-error` | STANDARD NMJL RULE | OPEN QUESTION for owner | Mahjong declared in error with tiles exposed: is the hand dead outright, or may the declaration be retracted with the exposed tiles staying committed (League rulebook 2024); secondary summaries disagree (Mahj Life wiki articles 189, 197, 216) | 2026-08-30 |
 | `dead-hand-details` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | League rules on dead hands and the wrong number of tiles; cross-checked via Mahj Life wiki articles 189 and 205 and the owner-approved dead hand entry | 2026-08-30 |
 | `dead-hand-jokers` | NMJL CLARIFICATION | OPEN QUESTION for owner | May a joker in a dead player's exposure be exchanged, and does it matter whether that exposure is the one that made the hand dead | 2026-08-30 |
 | `picking-ahead` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | League rule against picking ahead; cross-checked via Mahj Life wiki articles 59, 189, and 209 | 2026-08-30 |
@@ -90,15 +90,16 @@ remain for the owner. Source policy: docs/rules-sources.md.
 | `charleston-stop` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | League rule on stopping the Charleston (bulletins and the League rulebook); cross-checked via Mahj Life wiki articles 179 and 193 | 2026-08-30 |
 | `passing-on-a-discard` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | Follows from the owner-approved calling entry (calling is a choice; the window closes when the next player racks) | 2026-08-30 |
 | `payments-basics` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | League payment rules (discarder pays double, self-pick all pay double, jokerless doubles, wall game pays nothing); cross-checked via Mahj Life wiki articles 98 and 208 | 2026-08-30 |
-| `quints-sextets` | STANDARD NMJL RULE | research-verified (arithmetic), owner review pending | Owner approval | 2026-08-30 |
+| `quints-sextets` | STANDARD NMJL RULE | research-verified (arithmetic), owner review pending | Follows from the owner-approved tile counts | 2026-08-30 |
 | `calling-quints-sextets` | NMJL CLARIFICATION | OPEN QUESTION for owner | May a discard be called to complete a quint or a sextet, or only a pung or kong | 2026-08-30 |
 | `exposures-basics` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | League rules on exposures, modifying an exposure before discarding, and dead hands; cross-checked via Mahj Life wiki articles 177, 189, and 254 | 2026-08-30 |
 | `card-notation` | NMJL CLARIFICATION | research-verified (secondary_research), owner review pending | Card legend conventions (colors as suits, C and X, F and D, Soap as zero); cross-checked via Mahj Life wiki articles 162, 254, and 269 | 2026-08-30 |
 | `tournament-rules` | TOURNAMENT RULE | research-verified (secondary_research), owner review pending | Tournament conventions layered on League rules; cross-checked via Mahj Life wiki article 186 | 2026-08-30 |
 | `blank-tiles` | HOUSE/OPTIONAL RULE | research-verified (secondary_research), owner review pending | Blanks as a house variation outside League rules; cross-checked via Mahj Life wiki article 279 | 2026-08-30 |
-| `last-tile-of-wall` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | Follows from the owner-approved wall game and winning entries; cross-checked via Mahj Life wiki articles 189 and 235 | 2026-08-30 |
+| `last-tile-of-wall` | STANDARD NMJL RULE | research-verified (secondary_research), owner review pending | Follows from the owner-approved wall game and winning entries; the mahjong call on the last discard is the League's any-tile-for-mahjong rule, cross-checked via Mahj Life wiki articles 178 and 189 | 2026-08-30 |
 | `rules-source` | NMJL CLARIFICATION | research-verified (secondary_research), owner review pending | The League's own description of its role and publications (nationalmahjonggleague.org) | 2026-08-30 |
 | `hand-choice-strategy` | STRATEGY | research-verified (secondary_research), owner review pending | General instructional strategy, not a League rule; cross-checked via Mahj Life wiki article 183 | 2026-08-30 |
+
 ## Mahj Life research integration and copyright boundary
 
 Mahj Life (https://mahjlife.com/, CC BY-NC-ND 4.0) was used to locate and cross-check League
@@ -140,6 +141,11 @@ prompt and options; the page renders the options as buttons and also accepts a t
 
 ## Questions for the owner (exact wording)
 
+Reviewer gate round 1 (2026-08-30) found one blocker, fixed before merge: naming-discards had
+claimed a discarded joker is always named joker, which its cited sources do not support; the
+clause was removed. It also flagged mahjong-in-error as overstated against the 2024 League
+rulebook summary; that entry now states only the supported core and carries question 8 below.
+
 1. Misnamed discard: what is the League's exact consequence when a discard is misnamed, and
    does it differ if the name is corrected before anyone acts on it versus after another player
    calls it or declares mahjong on it? (Entry misnamed-discard says the instructor is confirming.)
@@ -160,10 +166,11 @@ prompt and options; the page renders the options as buttons and also accepts a t
    current wording.)
 7. Wording flag: annual-card says players buy the card "directly from the League"; retailers
    also sell it. Keep or soften?
+8. Mahjong declared in error with tiles exposed: is the hand dead outright, or may the declaration be retracted with the exposed tiles staying committed (League rulebook 2024, p. 21)? Secondary summaries disagree, so entry mahjong-in-error now states only the supported core (no exposure means no penalty; play continues to the right) and says the instructor is confirming the rest.
 
 ## Review needed
 
-The 25 research-verified entries and 3 owner-question entries carry
+The 24 research-verified entries and 4 owner-question entries carry
 `owner_review_required: true`. Approving one means setting `source: "owner_approved"`,
 `provenance.source_type: "owner_approved"`, `owner_review_required: false`, and updating
 `last_verified`.

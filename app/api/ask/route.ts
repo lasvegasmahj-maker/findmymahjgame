@@ -113,9 +113,9 @@ export async function POST(req: NextRequest) {
   let rules: RulesLookupResult | null = null;
   if (topic !== "directory") {
     rules = lookupRule({ question, clarify });
-    if (!rules.matched && !rules.needs_clarification && rules.unsupported_reason !== "empty") {
-      void logRulesGap(rules.original_question ?? question, rules);
-    }
+    const unmatchedFinal =
+      !rules.matched && !rules.needs_clarification && !["empty", "rules_gap"].includes(rules.unsupported_reason ?? "");
+    if (unmatchedFinal || rules.clarify?.id === "topic") void logRulesGap(rules.clarify?.question ?? question, rules);
   }
 
   if (topic === "rules" && rules) {
@@ -143,7 +143,10 @@ export async function POST(req: NextRequest) {
     rules && rules.matched ? composeRulesAnswer(rules, question) : Promise.resolve(""),
   ]);
   const withRulesLead = (answer: string) => (rulesLead ? `${rulesLead} ${answer}` : answer);
-  const extras = rules ? { topic, rules } : { topic };
+  // A mixed answer never shows a clarifying question, so it must not ship one for the
+  // client to act on; the directory half is the answer here.
+  const rulesForMixed = rules ? (({ clarify: _c, needs_clarification: _n, ...rest }) => rest)(rules) : null;
+  const extras = rulesForMixed ? { topic, rules: rulesForMixed } : { topic };
 
   if (!intent.recognized) {
     trackAskOutcome(recordClass, topic, 0, Boolean(rules?.matched));

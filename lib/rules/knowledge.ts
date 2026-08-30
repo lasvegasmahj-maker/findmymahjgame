@@ -139,7 +139,7 @@ const DEAD = /\bdead\b/i;
 const DEAD_DETAIL =
   /\b(too many|too few|wrong number|how many|count|thirteen|fifteen|twelve|1[0-9]|out of turn|expos(e|ed|ure|ures)|pay|pays|payment|who (can|may|gets to) (declare|call|say)|declare (my|your|his|her|their) own|self|myself|what makes|why|when|causes?|reasons?)\b/i;
 const HAND_SIZE =
-  /\b((should|do|must|can|am|are) (i|you|we) (supposed to )?(have|hold|holding|keep)|in (my|your|our) hand|on (my|your) rack|between turns|after (i|you) discard|during (my|your) turn|correct number|right number|count my tiles|i have (\d+|too many|too few|an extra|one too many|one less) tiles?|one short|short a tile|missing a tile|extra tile)\b/i;
+  /\b((should|do|must|can|am|are) (i|you|we) (supposed to )?(have|hold|be holding|keep) [^.?!]{0,20}\btiles?\b|how many tiles (should|do|must|can) (i|you|we) (have|hold|keep|be holding)|how many tiles (should|must) (be )?in (my|your|our) hand|tiles? in (my|your|our) hand|tiles? (should|must) (be )?in (my|your) hand|between turns|after (i|you) discard|during (my|your) turn|correct number of tiles|right number of tiles|count (my|your) tiles|i have (\d+|too many|too few|an extra|one too many|one less) tiles?|one short|short a tile|missing a tile|extra tile)\b/i;
 const PICK_VERB = /\b(pick|picks|picked|picking|draw|draws|drew|drawing|take|takes|took|taking|grab)\b/i;
 const AHEAD = /\b(ahead|early|before (my|your|their|her|his) turn|out of turn|not (my|your|their) turn|too soon|in advance|before (she|he|they|someone) (has )?(discards?|discarded|throws?|thrown)|while (she|he|they|someone) (is|are) (still )?(deciding|thinking|looking|discarding|choosing))\b/i;
 const ORDER = /\b(order of play|turn order|direction|which way|clockwise|counterclockwise|counter-clockwise|whose turn|who goes (next|first|after)|next player|after east|goes next|turns? (go|pass|move|rotate)|to the (right|left)|when (do|can|am) i (get to )?(pick|draw)|how (does|do) (a|my|the) turns? (work|go))\b/i;
@@ -152,6 +152,9 @@ const STOP_OR_AGREE = new RegExp(`${STOP.source}|${AGREE_SECOND.source}`, "i");
 const PAYMENT =
   /\b(pay|pays|paid|paying|payment|payments|payout|score|scores|scoring|scored|points|value|worth|double|doubled|doubles|owe|owes|money|bet|bets|stakes|quarters|dollars|coins|chips|settle|settles|jokerless|self[- ]?pick(ed)?|picked it (myself|yourself|herself|himself))\b/i;
 const QUINT_SEXTET = /\b(quints?|sextets?|five of a kind|six of a kind)\b/i;
+// Scoring vocabulary only: "do I have to pay to play mahjong in Naples" is a directory question.
+export const SCORING_ASK =
+  /\b(who|how much) (pays|do (i|we|you) pay|does (everyone|each player|the discarder|the winner) pay)\b|\bpay(s|ing)? (the )?(winner|double|value|more|less|twice)\b|\bjokerless\b|\bpayout\b|\bself[- ]?pick(ed)?\b|\bdiscarder pays?\b|\b(pay|pays|paid|payment|payments|score|scoring|worth|value|double) (for|on|in|after|with|of) (a |the |my )?(wall game|self[- ]?pick|jokerless|win|winning|mahjong|maj|discard|hand)\b|\bhand (value|worth|is worth|pays)\b|\bvalue of (a |the |my )?hand\b|\b(win|wins|won) on a discard\b|\bworth double\b|\bdouble the value\b|\bscoring\b/i;
 const EXPOSURE_WORD = /\b(expos(e|ed|es|ure|ures|ing)|melds?|lay (it |them )?down|put (it |them )?down|on top of (my|the|your) rack|face up)\b/i;
 const CARD_WORD = /\bcards?\b/i;
 export const CX_LETTERS = /\bC and X\b|\bX and C\b|\bC or X\b|\bX or C\b|\b[CX] hands?\b|\bmarked [CX]\b/i;
@@ -213,7 +216,7 @@ export const RULES_TOPIC_SIGNALS: RegExp[] = [
   new RegExp(`${PICK_VERB.source}[^.?!]{0,20}${AHEAD.source}`, "i"),
   new RegExp(`${MAHJONG_CUE.source}[^.?!]{0,40}${ERROR_CUE.source}|${ERROR_CUE.source}[^.?!]{0,40}${MAHJONG_CUE.source}`, "i"),
   new RegExp(`${DEAD.source}[^.?!]{0,20}\\b(hand|hands|tiles?|jokers?)\\b|\\b(hand|hands)\\b[^.?!]{0,20}${DEAD.source}`, "i"),
-  new RegExp(`${PAYMENT.source}[^.?!]{0,40}\\b(hand|win|winner|winning|mahjong|maj|discard|discarder|wall game|tile)\\b|\\b(hand|win|winner|winning|mahjong|maj|discard|discarder|wall game)\\b[^.?!]{0,40}${PAYMENT.source}`, "i"),
+  SCORING_ASK,
   new RegExp(`${NAMING.source}[^.?!]{0,30}${DISCARDED.source}|${DISCARDED.source}[^.?!]{0,30}${NAMING.source}|\\bsay same\\b`, "i"),
   new RegExp(`${TWO_PLAYERS.source}[^.?!]{0,30}\\b(tile|discard|call|calls|mahjong|maj)\\b|\\b(tile|discard)\\b[^.?!]{0,30}${TWO_PLAYERS.source}`, "i"),
 ];
@@ -684,7 +687,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [CLAIM_VERB, EXPOSURE_CUE],
     blocks: [HAND_CLOSED, TWO_PLAYERS, OWN_DISCARD, JOKER_EXCHANGE, /\bpairs?\b/i, QUINT_SEXTET, MISNAMED],
     approved_answer:
-      "You may call a discard to build an exposure when the tiles already in your hand, with jokers allowed, make it a group of 3 or more identical tiles: a Pung or a Kong. Say call, take the tile, and place the whole group face up on top of your rack, then discard. You cannot call a discard to make a pair unless that tile completes your mahjong, and a hand marked concealed cannot call for an exposure at all. Once the called tile and its group sit on your rack, the call stands; you may fix a mistake in that exposure only until you discard.",
+      "You may call a discard to build an exposure when the tiles already in your hand, with jokers allowed, make it a group of 3 or more identical tiles: a Pung, a Kong, or a larger group. Say call, take the tile, and place the whole group face up on top of your rack, then discard. You cannot call a discard to make a pair unless that tile completes your mahjong, and a hand marked concealed cannot call for an exposure at all. Once the called tile and its group sit on your rack, the call stands; you may fix a mistake in that exposure only until you discard.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
@@ -784,7 +787,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [NAMING, new RegExp(`${DISCARDED.source}|\\bsame\\b`, "i")],
     blocks: [MISNAMED, HAND_CLOSED],
     approved_answer:
-      "Name each tile aloud as you place it face up in the discard area, since naming it is what lets the other players call it. When your discard matches the tile discarded just before it, the League accepts saying same as well as naming the tile; a joker is always named joker.",
+      "Name each tile aloud as you place it face up in the discard area, since naming it is what lets the other players call it. When your discard matches the tile discarded just before it, the League accepts saying same as well as naming the tile.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
@@ -817,16 +820,16 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [MAHJONG_CUE, ERROR_CUE],
     blocks: [JOKER_EXCHANGE, MISNAMED, TWO_PLAYERS],
     approved_answer:
-      "If you declare mahjong and expose your tiles but the hand does not match a hand on the card, your hand is dead for the rest of that deal: your tiles go back on your rack, and you stop drawing and discarding. If you only said mahjong and had not yet exposed any tiles, there is no penalty and you keep playing. After a false mahjong, play continues with the player to the right of the one who made the error.",
+      "If you said mahjong but had not yet exposed any tiles, there is no penalty and you keep playing. Once you have exposed your tiles for a mahjong that turns out to be wrong, you cannot simply pick them back up as if nothing happened; the League's rulebook sets the consequence, and our instructor is confirming its exact current wording before we publish it here. After a false mahjong, play continues with the player to the right of the one who made the error.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note:
       "If other players threw in their hands after the false call, ask your table how it settles that deal; the League's rulebook covers those payments.",
-    source: "research_verified",
+    source: "owner_question",
     last_verified: VERIFIED_AUDIT,
-    confidence: "high",
+    confidence: "medium",
     classification: "standard_nmjl_rule",
-    provenance: researched("League rule on mahjong declared in error and the 2024 League clarification on who plays next; cross-checked via Mahj Life wiki articles 189, 197, and 216", 2024),
+    provenance: ownerQuestion("Mahjong declared in error with tiles exposed: is the hand dead outright, or may the declaration be retracted with the exposed tiles staying committed (League rulebook 2024); secondary summaries disagree (Mahj Life wiki articles 189, 197, 216)"),
   },
   {
     id: "dead-hand-details",
@@ -1098,7 +1101,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     last_verified: VERIFIED_AUDIT,
     confidence: "high",
     classification: "standard_nmjl_rule",
-    provenance: researched("Follows from the owner-approved wall game and winning entries; cross-checked via Mahj Life wiki articles 189 and 235", 2024),
+    provenance: researched("Follows from the owner-approved wall game and winning entries; the mahjong call on the last discard is the League's any-tile-for-mahjong rule, cross-checked via Mahj Life wiki articles 178 and 189", 2024),
   },
   {
     id: "rules-source",

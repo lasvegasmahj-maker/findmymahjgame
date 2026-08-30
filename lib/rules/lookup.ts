@@ -62,8 +62,8 @@ const CARD_REFUSAL =
 const EMPTY_ANSWER =
   "Ask me an American mahjong rules question, for example whether a joker can be used in a pair, and I will answer from our verified rules or ask you for the one detail I need.";
 
-// Common misspellings resolve to the rules vocabulary before any pattern runs. Applied
-// only on the rules path; directory parsing keeps the raw wording.
+// Common misspellings resolve to the rules vocabulary before topic detection and
+// retrieval; the route still hands the raw question to directory intent extraction.
 const SPELLFIX: Array<[RegExp, string | ((m: string) => string)]> = [
   [/\bcharl(?:e?s|es|se|ls)?t?on\b|\bcharleton\b|\bcharelston\b|\bcharlseton\b|\bcharlestown\b/gi, "charleston"],
   [/\bjo(?:c|k)k?ers?\b|\bjokrs?\b/gi, (m: string) => (m.toLowerCase().endsWith("s") ? "jokers" : "joker")],
@@ -97,8 +97,8 @@ export function spellfix(question: string): string {
 export function normalizeQuestion(raw: unknown, cap = 300): string {
   return String(raw || "")
     .slice(0, cap)
-    .replace(/[‘’]/g, "'")
-    .replace(/[“”]/g, '"')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201c\u201d]/g, '"')
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -199,9 +199,10 @@ function handleReply(ctx: ClarifyContext, reply: string): RulesLookupResult {
   const fixed = spellfix(normalizeQuestion(reply));
   if (fixed.length >= 20 && retrieve(fixed)) return lookupRule({ question: reply });
   const c = resolved.clarification;
-  const labels = c.options.map((o) => o.label).join(", ");
+  const prompt = c.prompt || needsClarification(spellfix(original), () => true)?.prompt || "Did you mean American mahjong?";
+  const labels = c.options.map((o) => `"${o.label}"`).join(" or ");
   const payload = toPayload(c, spellfix(original));
-  return clarificationResult({ ...payload, prompt: `${c.prompt} You can answer with one of: ${labels}.` });
+  return clarificationResult({ ...payload, prompt: `${prompt} You can answer with ${labels}.` });
 }
 
 export function lookupRule(input: RulesLookupInput): RulesLookupResult {

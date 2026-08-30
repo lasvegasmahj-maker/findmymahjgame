@@ -92,7 +92,14 @@ test.describe("multi-turn resolution", () => {
     const r = lookupRule({ question: "hmm", clarify: { id: "call-purpose", question: CALL } });
     expect(r.matched).toBe(false);
     expect(r.clarify?.id).toBe("call-purpose");
-    expect(r.needs_clarification).toMatch(/You can answer with one of: To make an exposure, It would complete mahjong/);
+    expect(r.needs_clarification).toMatch(/^Are you calling it to make an exposure, or would it complete mahjong\? You can answer with "To make an exposure" or "It would complete mahjong"\./);
+  });
+
+  test("the ruleset clarification re-asks with its real question, never an empty prompt", () => {
+    const r = lookupRule({ question: "hmm", clarify: { id: "ruleset", question: "How many tiles are in a riichi set?" } });
+    expect(r.clarify?.id).toBe("ruleset");
+    expect(r.needs_clarification).toMatch(/^That sounds like it may be about riichi style mahjong/);
+    expect(r.needs_clarification).toMatch(/You can answer with "Yes, American mahjong" or "No, another style"\.$/);
   });
 
   test("a brand new question typed during a clarification is answered as a new question", () => {

@@ -231,6 +231,26 @@ test.describe("rules truth benchmark: every case answers correctly or clarifies"
   });
 });
 
+test.describe("directory questions stay directory questions", () => {
+  test("cost, place names, and commerce wording never enter the rules path", () => {
+    for (const q of [
+      "Do I have to pay to play mahjong in Naples?",
+      "do i pay to play mahjong at the club",
+      "Is East Naples in your directory?",
+      "what time is east side mahjong in Boca",
+      "How much are lessons near Phoenix?",
+      "Any games in East Hampton this Saturday?",
+    ]) {
+      expect(detectAskTopic(q), q).toBe("directory");
+    }
+  });
+
+  test("the League's full name counts as American even after spelling normalization", () => {
+    const r = lookupRule({ question: "In National Mah Jongg League rules, not Chinese, can I use a joker in a pair?" });
+    expect(r.entry_id).toBe("joker-in-pair");
+  });
+});
+
 test.describe("corpus invariants", () => {
   const MONTH_RE =
     /\b(january|february|march|april|june|july|august|september|october|november|december)\b|\b(in|every|each|late|early|mid) may\b/i;
@@ -243,6 +263,11 @@ test.describe("corpus invariants", () => {
       expect(text, e.id).not.toMatch(/[–—]/);
       expect(text, e.id).not.toMatch(/\b[PKN]\b/);
     }
+  });
+
+  test("naming-discards makes no claim about how a discarded joker is named", () => {
+    const e = RULES_KNOWLEDGE.find((x) => x.id === "naming-discards")!;
+    expect(e.approved_answer).not.toMatch(/joker/i);
   });
 
   test("no answer states two conflicting rules: closed hands never call for a group, and jokers never sit in a pair", () => {

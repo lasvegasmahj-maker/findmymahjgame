@@ -45,7 +45,7 @@ export type ClarifyPayload = {
 
 const VARIANT_RE =
   /\b(riichi|japanese|chinese|hong ?kong|cantonese|sichuan|taiwanese|korean|filipino|singapor(e|ean)|mcr|zung ?jung)\b/i;
-const AMERICAN_RE = /\b(american|nmjl|national mah ?jongg league)\b/i;
+const AMERICAN_RE = /\b(american|nmjl|national (mah ?jongg?|mahjong) league)\b/i;
 const TOURNAMENT_RE = /\btournaments?\b/i;
 const TOURNAMENT_PHRASE = /\b(in|at|during|for|under|with) (a |the |our |my )?tournaments?( rules| play)?\b|\btournaments?( rules| play)?\b/gi;
 const PASS_VERB = /\bpass(es|ed|ing)?\b/i;

@@ -59,7 +59,7 @@ export default function AskClient() {
         body: JSON.stringify(clarify ? { q: query, clarify: { id: clarify.id, question: clarify.question } } : { q: query }),
       });
       const j = await r.json();
-      const next: Clarify | null = j?.rules?.clarify?.id ? j.rules.clarify : null;
+      const next: Clarify | null = j?.via === "rules" && j?.rules?.clarify?.id ? j.rules.clarify : null;
       setResp({ ok: !!j.ok, answer: j.answer || "", results: j.results ?? [], suggestions: j.suggestions ?? [], error: j.error, clarify: next });
       if (next) setQ("");
     } catch {

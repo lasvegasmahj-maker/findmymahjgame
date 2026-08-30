@@ -66,7 +66,15 @@ test.describe("Ask route: rules clarification turns", () => {
     expect(first.answer).not.toMatch(/cannot verify/i);
     const again = await ask(request, "???", { id: "topic", question: q });
     expect(again.rules.clarify.id).toBe("topic");
-    expect(again.answer).toMatch(/You can answer with one of/);
+    expect(again.answer).toMatch(/^I want to get this right\. Which part of the game is your question about\? You can answer with "/);
+  });
+
+  test("a mixed directory-plus-rules question never ships a clarification for the client to act on", async ({ request }) => {
+    const r = await ask(request, "Where can I play riichi mahjong in Austin?");
+    expect(r.topic).toBe("mixed");
+    expect(r.rules?.clarify).toBeUndefined();
+    expect(r.rules?.needs_clarification).toBeUndefined();
+    expect(r.answer).not.toMatch(/Did you mean American mahjong/);
   });
 
   test("a malformed clarification object is ignored and the text is answered as a question", async ({ request }) => {
