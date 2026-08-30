@@ -120,7 +120,7 @@ test.describe("/ask page: clarification UI", () => {
     await page.goto("/ask");
     await askOnPage(page, "Can I call that tile?");
     await expect(page.getByRole("status")).toContainText("Are you calling it to make an exposure, or would it complete mahjong?");
-    const options = page.getByTestId("ask-clarify").getByRole("button");
+    const options = page.getByTestId("ask-clarify").getByRole("button").filter({ hasNotText: "Never mind" });
     await expect(options).toHaveCount(2);
     await options.filter({ hasText: "It would complete mahjong" }).click();
     await expect(page.getByRole("status")).toContainText("Any discard that completes your mahjong may be called");

@@ -155,6 +155,7 @@ const RULES_SIGNAL_RES: RegExp[] = [
   /\brule ?book\b|\bmade easy\b|\bwho (makes|writes|sets) the rules\b/i,
   /\bmelds?\b|\b(quints?|sextets?)\b/i,
   /\b(can|may|could|should|am i allowed to) (i |we )?(call|claim) (that|this|it)[?!. ]*$/i,
+  /\b(call|calling|claim|claiming) (a |the |that |this |any )?(tile|discard)s?\b/i,
   /\b(can|may|do|should|must) (i|we|you) (have to |need to )?pass[?!. ]*$/i,
   /\bthe tile (i|you|she|he|they) (need|want|threw|discarded|put down)\b/i,
   /\bwho (is|goes|deals|starts|plays|becomes) (east|the dealer)\b|\b(which player|who) (should |will )?(be|become)s? east\b|\b(am i|will i be|do i become|when am i) east\b/i,
