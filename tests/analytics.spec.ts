@@ -188,4 +188,42 @@ test.describe("admin analytics", () => {
       await admin.dispose();
     }
   });
+
+  test("counts every event when a window holds more than one page of rows", async ({ baseURL }) => {
+    const supabase = serviceClient();
+    test.skip(!supabase, "Supabase service credentials not available in this environment");
+    test.skip(!ADMIN_PASSWORD, "ADMIN_PASSWORD not available in this environment");
+
+    // PostgREST caps a single select at 1,000 rows. Insert more than one page of
+    // test-classified events and require the rollup to count all of them.
+    const prefix = `analytics-page-${crypto.randomUUID()}`;
+    const total = 1250;
+    const toInsert = Array.from({ length: total }, (_, i) => ({
+      name: "zero_result_search",
+      props: { i },
+      session_key: `${prefix}-${i}`,
+      record_class: "test",
+    }));
+    for (let i = 0; i < toInsert.length; i += 500) {
+      const { error } = await supabase!.from("analytics_events").insert(toInsert.slice(i, i + 500));
+      expect(error).toBeFalsy();
+    }
+
+    const admin = await pwRequest.newContext({ baseURL: baseURL || "http://localhost:3000" });
+    try {
+      const login = await admin.post("/api/admin/login", { data: { password: ADMIN_PASSWORD } });
+      expect(login.ok()).toBeTruthy();
+
+      const res = await admin.get("/api/admin/analytics");
+      expect(res.ok()).toBeTruthy();
+      const body = await res.json();
+
+      expect(body.windows["7d"].test.eventCounts.zero_result_search).toBeGreaterThanOrEqual(total);
+      expect(body.windows["30d"].test.eventCounts.zero_result_search).toBeGreaterThanOrEqual(total);
+      expect(body.dataHealth.windowTruncated).toBe(false);
+    } finally {
+      await supabase!.from("analytics_events").delete().like("session_key", `${prefix}-%`);
+      await admin.dispose();
+    }
+  });
 });

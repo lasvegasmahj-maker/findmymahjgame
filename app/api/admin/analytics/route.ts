@@ -52,6 +52,34 @@ function buildReport(rows: EventRow[], sinceIso: string, recordClass: string): W
   return { eventCounts, askIntent, funnels };
 }
 
+// PostgREST returns at most 1,000 rows per request no matter how many match, so a
+// single select silently drops everything past the first page once a 30-day window
+// holds more than 1,000 events (the readiness pass hit this at 1,939 rows: the real
+// bucket lost its newest events while every total still looked plausible). Page
+// through the window in a stable order so every row is counted.
+const PAGE = 1000;
+const MAX_PAGES = 200;
+
+async function readEventsSince(sinceIso: string): Promise<{ rows: EventRow[]; error: string | null; truncated: boolean }> {
+  const rows: EventRow[] = [];
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const from = page * PAGE;
+    const { data, error } = await supabase
+      .from("analytics_events")
+      .select("name, record_class, created_at")
+      .gte("created_at", sinceIso)
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) return { rows: [], error: error.message, truncated: false };
+    const batch = (data ?? []) as EventRow[];
+    rows.push(...batch);
+    if (batch.length < PAGE) return { rows, error: null, truncated: false };
+  }
+  console.error(`admin analytics: window exceeded ${MAX_PAGES * PAGE} rows; report is truncated`);
+  return { rows, error: null, truncated: true };
+}
+
 export async function GET(req: NextRequest) {
   if (!verifyAdminSessionToken(req.cookies.get(ADMIN_COOKIE)?.value)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -62,18 +90,18 @@ export async function GET(req: NextRequest) {
   const since30 = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
 
   const [rowsResult, totalResult, oldestResult, newestResult] = await Promise.all([
-    supabase.from("analytics_events").select("name, record_class, created_at").gte("created_at", since30),
+    readEventsSince(since30),
     supabase.from("analytics_events").select("id", { count: "exact", head: true }),
     supabase.from("analytics_events").select("created_at").order("created_at", { ascending: true }).limit(1).maybeSingle(),
     supabase.from("analytics_events").select("created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
   ]);
 
   if (rowsResult.error) {
-    console.error("admin analytics read failed:", rowsResult.error.message);
+    console.error("admin analytics read failed:", rowsResult.error);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 
-  const rows = (rowsResult.data ?? []) as EventRow[];
+  const rows = rowsResult.rows;
 
   return NextResponse.json({
     ok: true,
@@ -85,6 +113,9 @@ export async function GET(req: NextRequest) {
       totalEvents: totalResult.count ?? 0,
       oldestEventAt: oldestResult.data?.created_at ?? null,
       newestEventAt: newestResult.data?.created_at ?? null,
+      // True only if the 30-day window exceeded the page ceiling below. Reported so a
+      // capped rollup can never pass as a complete one.
+      windowTruncated: rowsResult.truncated,
     },
     notes: [
       "search_performed and zero_result_search are counted only from what has actually been posted to /api/events; the homepage does not instrument search yet, so these stay at zero until that ships.",
