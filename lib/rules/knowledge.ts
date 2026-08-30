@@ -764,7 +764,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     keywords: ["joker", "exchange", "turn"],
     requires: [JOKER, JOKER_EXCHANGE, new RegExp(`${TIMING.source}|${ERROR_CUE.source}|\\b(own|my|your) (rack|exposure)\\b`, "i")],
     approved_answer:
-      "You may exchange a joker only during your own turn, after you have drawn from the wall or called a discard and before you discard. Hand over the tile the joker stands for and take the joker; you may redeem a joker from any exposure sitting face up on a rack, including your own. Once you discard, the chance passes until your next turn. If an exchange puts the wrong tile into an exposure, fix it before the next discard; after that discard, the hand holding the incorrect exposure is dead, while the player who handed over the wrong tile keeps playing.",
+      "You may exchange a joker only during your own turn, after you have drawn from the wall or called a discard and before you discard. Hand over the tile the joker stands for and take the joker; you may redeem a joker from any exposure of a hand still in play, including your own. Once you discard, the chance passes until your next turn. If an exchange puts the wrong tile into another player's exposure, fix it before the next discard; after that discard, that player's hand is dead while you keep playing. If you put the wrong tile into your own exposure, your hand is the dead one.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
@@ -864,7 +864,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [DEAD, DEAD_DETAIL],
     blocks: [JOKER_EXCHANGE, ERROR_CUE],
     approved_answer:
-      "A hand goes dead when it can no longer win: holding the wrong number of tiles once play has begun, making an exposure that fits no hand on the card, or exposing tiles for a hand marked concealed. A dead player stops drawing and discarding but still pays the winner of that deal. You do not declare your own hand dead; the other players do. Once play has begun, a wrong tile count cannot be fixed.",
+      "A hand goes dead when it can no longer win: holding the wrong number of tiles after East's first discard, making an exposure that fits no hand on the card, or exposing tiles for a hand marked concealed. A dead player stops drawing and discarding but still pays the winner of that deal. You do not declare your own hand dead; the other players do. After East's first discard, a wrong tile count cannot be fixed.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note:
