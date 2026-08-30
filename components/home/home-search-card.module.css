@@ -164,6 +164,22 @@
   cursor: pointer;
 }
 .chip:hover { background: rgba(255, 255, 255, 0.18); }
+/* Clarification choices sit inside the white answer box, so they take the navy outline pill. */
+.answerChip {
+  min-height: 44px;
+  padding: 0.5rem 1.1rem;
+  border: 2px solid var(--navy);
+  border-radius: 50px;
+  background: transparent;
+  color: var(--navy);
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-family: var(--font-dm-sans), "DM Sans", sans-serif;
+  cursor: pointer;
+}
+.answerChip:hover { background: var(--navy); color: white; }
+.answerChip:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; }
+.answerNote { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
 .chip:focus-visible {
   outline: 2px solid white;
   outline-offset: 2px;

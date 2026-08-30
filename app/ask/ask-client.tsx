@@ -113,7 +113,7 @@ export default function AskClient() {
 
           {resp.pendingReview && (
             <p data-testid="ask-pending-review" style={{ fontSize: "0.85rem", color: "var(--muted)", textAlign: "center", marginTop: "0.6rem" }}>
-              Written from National Mah Jongg League rules and awaiting our instructor&apos;s review.
+              We wrote this from National Mah Jongg League rules. Our instructor is reviewing it.
             </p>
           )}
 

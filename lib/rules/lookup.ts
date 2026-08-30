@@ -58,8 +58,6 @@ const CARD_REFUSAL =
 const EMPTY_ANSWER =
   "Ask me an American mahjong rules question, for example whether a joker can be used in a pair, and I will answer from our verified rules or ask you for the one detail I need.";
 
-// Common misspellings resolve to the rules vocabulary before topic detection and
-// retrieval; the route still hands the raw question to directory intent extraction.
 const SPELLFIX: Array<[RegExp, string | ((m: string) => string)]> = [
   [/\bcharlston\b|\bcharleton\b|\bcharelston\b|\bcharlseton\b|\bcharlestone\b|\bcharlestn\b/gi, "charleston"],
   [/\bjo(?:c|k)k?ers?\b|\bjokrs?\b/gi, (m: string) => (m.toLowerCase().endsWith("s") ? "jokers" : "joker")],

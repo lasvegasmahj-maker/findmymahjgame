@@ -117,8 +117,6 @@ export async function POST(req: NextRequest) {
   }
   const body = (await req.json().catch(() => null)) || {};
   const question = typeof body?.q === "string" ? normalizeQuestion(body.q, 200) : "";
-  // A reply to a pending clarification carries the clarification id and the original
-  // question back; the server keeps no conversation state.
   const recordClass = await resolveAskRecordClass(req);
   try {
   const clarifyRaw = body?.clarify;
@@ -140,8 +138,6 @@ export async function POST(req: NextRequest) {
   let rules: RulesLookupResult | null = null;
   if (topic !== "directory") {
     rules = lookupRule({ question, clarify });
-    // Logged once per unmatched question: at the first topic clarification (reason no_entry),
-    // never for a re-ask, a reply, or the empty question.
     const unmatchedFinal =
       !rules.matched && !rules.needs_clarification && !["empty", "rules_gap", "variant_scope"].includes(rules.unsupported_reason ?? "");
     if (unmatchedFinal || rules.unsupported_reason === "no_entry") void logRulesGap(rules.clarify?.question ?? question, rules);
@@ -199,6 +195,14 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  // "can I use a joker in a pair and where can I play near Naples": the extractor swallows the
+  // rules half as a place, so a too-long location is re-parsed from the last "and" clause.
+  if (intent.location && intent.location.split(/\s+/).length > 4) {
+    const tail = question.split(/\band\b/i).pop() ?? "";
+    const again = parseAskIntent(tail);
+    intent.location = again.location && again.location.split(/\s+/).length <= 4 ? again.location : null;
+    if (!intent.location) intent.radiusMiles = null;
+  }
   const located = intent.location ? await resolveLocation(intent.location) : null;
   const placeLabel = located ? located.label : intent.location ? titleCase(intent.location) : null;
 

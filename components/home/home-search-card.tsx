@@ -26,6 +26,7 @@ type AskResponse = {
   results: Card[];
   error?: string;
   clarify?: ClarifyPayload | null;
+  pendingReview?: boolean;
 };
 
 // Verified against production /api/ask: rules questions with a high-confidence
@@ -105,7 +106,7 @@ export default function HomeSearchCard() {
       });
       const j = await r.json();
       const next: ClarifyPayload | null = j?.topic === "rules" && j?.rules?.clarify?.id ? j.rules.clarify : null;
-      setResp({ ok: !!j.ok, answer: j.answer || "", results: j.results ?? [], error: j.error, clarify: next });
+      setResp({ ok: !!j.ok, answer: j.answer || "", results: j.results ?? [], error: j.error, clarify: next, pendingReview: j?.rules?.evidence === "owner_review_pending" });
     } catch {
       // Never invent an answer: a failed request shows only this fixed message.
       setResp({ ok: false, answer: "", results: [], error: "Something went wrong. Try again, or browse the Events page." });
@@ -205,10 +206,15 @@ export default function HomeSearchCard() {
         {!busy && resp && (
           <div className={styles.answer}>
             <p className={styles.answerText}>{resp.error || resp.answer}</p>
+            {resp.pendingReview && (
+              <p data-testid="home-ask-pending-review" className={styles.answerNote}>
+                We wrote this from National Mah Jongg League rules. Our instructor is reviewing it.
+              </p>
+            )}
             {resp.clarify && (
               <div data-testid="home-ask-clarify" role="group" aria-label={resp.clarify.prompt} className={styles.chips}>
                 {resp.clarify.options.map((o) => (
-                  <button key={o.key} type="button" disabled={busy} onClick={() => submitAsk(o.label, resp.clarify ?? null)} className={styles.chip}>
+                  <button key={o.key} type="button" disabled={busy} onClick={() => submitAsk(o.label, resp.clarify ?? null)} className={styles.answerChip}>
                     {o.label}
                   </button>
                 ))}

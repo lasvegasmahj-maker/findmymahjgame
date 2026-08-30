@@ -770,7 +770,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     varies_by_house: false,
     source: "research_verified",
     last_verified: VERIFIED_AUDIT,
-    confidence: "high",
+    confidence: "medium",
     classification: "nmjl_clarification",
     provenance: researched("League rules on joker exchange timing and a wrong exchange (fixable before the next discard; then the hand holding the incorrect exposure is dead); Mahj Life wiki articles 172, 221, 224 citing the rulebook and 2024 bulletin; Sloperama FAQ corroborates", 2024),
   },
@@ -967,7 +967,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [new RegExp(`${CHARLESTON_WORD.source}|\\bpass(es|ed|ing)?\\b`, "i"), STOP_OR_AGREE],
     blocks: [BLIND_PASS, COURTESY, JOKER, DISCARDED],
     approved_answer:
-      "The first Charleston, three passes, is required and cannot be stopped once it begins. The second Charleston is optional: any one player may stop it before it starts, without giving a reason, and no agreement from the others is needed. It can still be stopped after tiles for its first pass are put down, as long as nobody has looked at them; once a pass has been seen, that Charleston continues to the end. A courtesy pass can still be offered after a stop.",
+      "The first Charleston, three passes, is required and cannot be stopped once it begins. The second Charleston happens only if all four players agree, which is the same rule as saying any one player may stop it before it starts, without giving a reason. It can still be stopped after tiles for its first pass are put down, as long as nobody has looked at them; once a pass has been seen, that Charleston continues to the end. A courtesy pass can still be offered after a stop.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
