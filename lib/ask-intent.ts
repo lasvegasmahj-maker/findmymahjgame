@@ -1,5 +1,5 @@
-import { blindReadsAsPlace, BLIND_PASS, HAND_CLOSED } from "@/lib/rules/knowledge";
-import { normalizeQuestion } from "@/lib/rules/lookup";
+import { blindReadsAsPlace, BLIND_PASS, HAND_CLOSED, RULES_TOPIC_SIGNALS } from "@/lib/rules/knowledge";
+import { normalizeQuestion, spellfix } from "@/lib/rules/lookup";
 import { DAY_NAMES, type DayName, type TimeOfDay } from "@/lib/schedule";
 import { RADIUS_OPTIONS, type RadiusMiles } from "@/lib/geo";
 
@@ -138,13 +138,58 @@ const RULES_SIGNAL_RES: RegExp[] = [
   /\bcourtesy pass\b/i,
   BLIND_PASS,
   /\bwild tiles?\b/i,
+  // Added for the 2026-08-30 truth-layer audit: game-state and mistake questions.
+  /\bblanks?\b(?! (check|page|space|form))/i,
+  /\btournament (rules?|play|director)\b/i,
+  /\b(same tile|same discard|two players (call|want)|both (call|want)|who gets the tile|who gets it)\b/i,
+  /\b(pick|picking|picked|draw|drawing|drew) (ahead|out of turn|early|too soon|before (my|her|his|their) turn)\b/i,
+  /\b(my own discard|own discard|call back|take back|take it back)\b/i,
+  /\bmis-?nam(e|ed|es|ing)\b|\bwrong name\b/i,
+  /\b(false|wrong|mistaken|bad) (mahjong|maj|mah ?jong+)\b|\b(mahjong|maj|mah ?jong+) (in error|by mistake|by accident|wrongly|incorrectly)\b|\bdeclared (mahjong|maj|mah ?jong+)\b/i,
+  /\b(pay|pays|paid|payment|payout|score|scoring|jokerless|double)\b.{0,40}\b(hand|win|winner|winning|mahjong|maj|mah ?jong+|discard|discarder|self[- ]?pick|wall game|tile)\b|\b(hand|win|winner|winning|mahjong|maj|mah ?jong+|discard|discarder|wall game)\b.{0,40}\b(pay|pays|paid|payment|payout|score|scoring|jokerless|double)\b/i,
+  /\b(name|announce|say) (the |each |every |a |my |your )?(tile|discard)\b|\bsay same\b|\bsaying same\b/i,
+  /\b(hold|wait)\b.{0,30}\b(tile|discard|call)\b/i,
+  /\b(too many|too few|wrong number of|right number of|correct number of) tiles\b|\bhow many tiles (should|do|must) (i|you|we)\b/i,
+  /\bwhich hand should i\b|\bhow do i (pick|choose|decide on) (a|my) hand\b/i,
+  /\b(order of play|turn order|whose turn|who goes (next|first|after)|which way (do|does) (play|the turns?|it) go)\b/i,
+  /\b(colou?rs?|letters?) on the card\b|\bwhat does (c|x|f|d) (mean|stand for)\b|\bsoap\b.{0,20}\bzero\b/i,
+  /\b(last|final) (tile|discard)\b/i,
+  /\b(official|league) rules?\b|\brule ?book\b|\bmade easy\b|\bwho (makes|writes|sets) the rules\b/i,
+  /\bmelds?\b|\b(quints?|sextets?)\b/i,
+  /\b(call|calling|claim|claiming) (that|this|it|the tile|a tile)\b|\bcall it\b/i,
+  /\b(can|may|do|should|must) (i|we|you) (have to |need to )?pass[?!. ]*$/i,
+  /\bthe tile (i|you|she|he|they) (need|want|threw|discarded|put down)\b|\b(call|claim|take) it\b/i,
+  /\bwho (is|goes|deals|starts|plays|becomes) (east|first|the dealer)\b|\b(be|is|am|become) east\b/i,
+  /\b(have|holding|got|hold) \d+ tiles\b|\b(what|which) tiles\b/i,
+  /\b(allowed|able|permitted|ok|okay) to call\b|\b(calling|calls?) work\b|\bhow (does|do) (calling|a call)\b/i,
+  /\bwinning tile\b|\bcall(ed|ing)? (mahjong|maj|mah ?jong+)\b|\bhand (is|was) wrong\b/i,
+  /\bwhat does (hold|wait|call|same|maj|mahjong|soap|joker|kong|pung) mean\b/i,
+  /\bself[- ]?pick(ed)?\b/i,
+  /\b(clockwise|counterclockwise|counter-clockwise)\b|\bwhen (do|can|am) i (get to )?(pick|draw)\b/i,
+  /\bhands?\b.{0,30}\bcard\b|\b(read|list|tell|show|give|send) (me )?(the|this year'?s?|your) card\b/i,
+  /\b(three|3|five|5|two|2) (people|players|of us)\b|\bplay with (three|3|five|5|two|2)\b|\bthree[- ](player|handed|person)\b/i,
+  /\bcall(ing)? for (a |an )?(pair|pung|kong|quint|sextet|single|exposure)\b/i,
+  /\brules? (for|of|about|on) (calling|discards?|jokers?|the charleston|passing|exposures?|dead hands?|payments?|winning|the wall|dealing)\b/i,
+  /\b(nobody|no one) (wins|won)\b/i,
+  /\b(suits?)\b.{0,20}\b(mahjong|mah ?jong+|set|game)\b|\b(mahjong|mah ?jong+|set) suits?\b|\bwhat suits\b/i,
+  /\b(first|second|last) (left|right|across)\b/i,
+  /\b(call|claim)\b.{0,25}\bfor (mahjong|maj|mah ?jong+)\b|\bany tile\b/i,
+  /\bwhat (she|he|they|someone) (just )?(threw|discarded|put down|tossed)\b|\bpick up\b.{0,20}\b(discard|tile|what)\b/i,
+  /\b(call|claim|take) (that|this)\b[?!. ]*$/i,
+  /\bhow many of each\b/i,
+  /\bthe passing\b|\bpassing (before|round|phase|tiles|rules?)\b|\bbefore the game (starts|begins)\b/i,
+  /\b(skip|stop|decline|refuse|refuses|end)\b.{0,30}\b(passing|charleston|pass|passes)\b|\bround of passing\b/i,
+  /\bhow (do|does|can) (i|you|we|someone|a player) (actually |even |really )?win\b|\bwin the game\b/i,
+  ...RULES_TOPIC_SIGNALS,
+  /\b(exchange|redeem|swap|trade)\b.{0,30}\bjokers?\b/i,
+  /\bjokers?\b.{0,30}\b(exchange|redeem|swap|trade|discard|discarded|thrown|throw)\b/i,
 ];
 
 const VARIANT_QUESTION_RE =
   /\b(riichi|japanese|chinese|hong ?kong|cantonese|sichuan|taiwanese|korean|filipino|singapor(e|ean)|mcr|zung ?jung)\b/i;
 
 export function detectAskTopic(raw: string): AskTopic {
-  const q = normalizeQuestion(raw);
+  const q = spellfix(normalizeQuestion(raw));
   if (!q) return "directory";
   // Blind Pass, Blind River, and Blind Bay are real places; the name alone must
   // not read as a rules question.
@@ -156,19 +201,21 @@ export function detectAskTopic(raw: string): AskTopic {
   // The weak nouns (rules, rack, discard, deal) only signal a rules question when the
   // sentence actually asks something. "Any good deal on lessons in Naples" is commerce.
   const weakRulesNoun = /\b(rules?|racks?|discard(s|ing)?|deal(t|ing)?|dealer)\b/i.test(q);
-  const rulesAsk =
-    RULES_SIGNAL_RES.some((re) => re.test(q)) ||
-    (weakRulesNoun && questionForm) ||
-    (VARIANT_QUESTION_RE.test(q) && questionForm);
+  const strongRules = RULES_SIGNAL_RES.some((re) => re.test(q));
+  const rulesAsk = strongRules || (weakRulesNoun && questionForm) || (VARIANT_QUESTION_RE.test(q) && questionForm);
   if (!rulesAsk) return "directory";
 
   // Discovery needs a strong signal here. Bare "in" is not one: extractLocation reads
   // "in a pair" as a place, which would bolt a bogus search onto a pure rules question.
   const intent = parseAskIntent(q);
+  // "Can I blind pass in a tournament?" is a rules question about tournament play, not a
+  // search for tournaments; only a tournament type with no other discovery signal is
+  // discounted when a strong rules signal is present.
+  const tournamentOnly = intent.types?.length === 1 && intent.types[0] === "tournament";
   const discoveryAsk =
     intent.days.length > 0 ||
     intent.timeOfDay !== null ||
-    intent.types !== null ||
+    (intent.types !== null && !(strongRules && tournamentOnly)) ||
     /\bnear\b/i.test(q) ||
     /\b\d{5}\b/.test(q) ||
     /\b(nearby|in my area)\b/i.test(q) ||

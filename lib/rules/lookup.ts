@@ -1,11 +1,21 @@
-import { RULES_KNOWLEDGE, type KnowledgeEntry } from "./knowledge";
+import { RULES_KNOWLEDGE, type KnowledgeEntry, type RuleClassification } from "./knowledge";
+import {
+  GAP_ANSWER,
+  needsClarification,
+  resolveReply,
+  topicClarification,
+  toPayload,
+  type ClarifyContext,
+  type ClarifyPayload,
+} from "./clarify";
 
 // Deterministic rules retrieval. Order matters: the copyright guard runs before any
-// retrieval so no phrasing can pull card content out of the knowledge base, then variant
-// questions get a clarification instead of an American answer, then pattern matching.
-// An unmatched question returns an honest "cannot verify", never a guessed rule.
+// retrieval so no phrasing can pull card content out of the knowledge base, then a
+// question missing one fact gets a targeted clarification, then pattern matching. A
+// question that matches nothing gets a topic clarification, never a guessed rule and
+// never a bare refusal.
 
-export type RulesLookupInput = { question: string };
+export type RulesLookupInput = { question: string; clarify?: ClarifyContext | null };
 
 export type RulesLookupResult = {
   matched: boolean;
@@ -17,7 +27,14 @@ export type RulesLookupResult = {
   confidence: "high" | "medium" | "low" | "unsupported";
   source: string;
   last_verified?: string;
+  classification?: RuleClassification;
+  evidence?: string;
   needs_clarification?: string;
+  clarify?: ClarifyPayload;
+  // The clarification the answer came through, for telemetry.
+  clarified_by?: string;
+  // For gap logging after a topic clarification ended in "something else".
+  original_question?: string;
   unsupported_reason?: string;
 };
 
@@ -31,15 +48,47 @@ const CARD_CONTENT_RES: RegExp[] = [
   /hands? (on|for|from) (this|the) year/i,
 ];
 
-const VARIANT_RE =
-  /\b(riichi|japanese|chinese|hong ?kong|cantonese|sichuan|taiwanese|korean|filipino|singapor(e|ean)|mcr|zung ?jung)\b/i;
-const AMERICAN_RE = /\b(american|nmjl|national mah ?jongg league)\b/i;
+// Asking what the card's colors or letters mean is a legitimate rules question, not a
+// request for the card's contents; it bypasses the guard unless the wording also asks
+// for hands, values, or a copy.
+const NOTATION_ASK =
+  /\b(colou?rs?|notation|symbols?|letters?|abbreviations?|legend|mean|means|meaning|stand for|stands for|read (the|a|my) card|parenthes[ei]s)\b|\b[CX]\b/i;
+const CONTENT_REQUEST =
+  /\b(list|show|send|give|read|tell|type|copy|pdf|image|photo|scan|picture|screenshot|all the hands|which hands|what hands|hands are|line values?|values?|points?|categor(y|ies)|sections?)\b|what('s| is) on/i;
 
 const CARD_REFUSAL =
   "I cannot share the hands, categories, or line values from the annual card. The card is copyrighted material that the National Mah Jongg League sells, and buying the current card supports the League. Once you have your card, I am happy to explain how the general rules work.";
 
-const CANNOT_VERIFY =
-  "I cannot verify that rule from my approved American mahjong knowledge, so I will not guess. Ask your table or check the official National Mah Jongg League rules, and we will work on adding a verified answer.";
+const EMPTY_ANSWER =
+  "Ask me an American mahjong rules question, for example whether a joker can be used in a pair, and I will answer from our verified rules or ask you for the one detail I need.";
+
+// Common misspellings resolve to the rules vocabulary before any pattern runs. Applied
+// only on the rules path; directory parsing keeps the raw wording.
+const SPELLFIX: Array<[RegExp, string | ((m: string) => string)]> = [
+  [/\bcharl(?:e?s|es|se|ls)?t?on\b|\bcharleton\b|\bcharelston\b|\bcharlseton\b|\bcharlestown\b/gi, "charleston"],
+  [/\bjo(?:c|k)k?ers?\b|\bjokrs?\b/gi, (m: string) => (m.toLowerCase().endsWith("s") ? "jokers" : "joker")],
+  [/\bmah[\s-]?jong+g?\b|\bmahjong+\b|\bmah[\s-]?jon\b|\bmajh?ong\b/gi, "mahjong"],
+  [/\bdiscrad(s|ed|ing)?\b|\bdicard(s|ed|ing)?\b|\bdisacrd(s|ed|ing)?\b/gi, (m: string) => "discard" + (m.match(/(s|ed|ing)$/i)?.[0].toLowerCase() ?? "")],
+  [/\bconce[ae]l+ed\b|\bconceled\b|\bconcieled\b/gi, "concealed"],
+  [/\bexposer\b|\bexpsoure\b|\bexposuer\b/gi, "exposure"],
+  [/\bcurtesy\b|\bcourtesey\b|\bcourtsey\b|\bcoutesy\b/gi, "courtesy"],
+  [/\bdragan(s)?\b|\bdragoon(s)?\b/gi, (m: string) => (m.toLowerCase().endsWith("s") ? "dragons" : "dragon")],
+  [/\bflowr(s)?\b|\bflowe(s)?\b|\bflwoer(s)?\b/gi, (m: string) => (m.toLowerCase().endsWith("s") ? "flowers" : "flower")],
+  [/\bdeadhand\b/gi, "dead hand"],
+  [/\bwallgame\b/gi, "wall game"],
+  [/\bblindpass\b/gi, "blind pass"],
+  [/\bblind pas\b/gi, "blind pass"],
+  [/\bsextett?e?s?\b/gi, (m: string) => (m.toLowerCase().endsWith("s") ? "sextets" : "sextet")],
+  [/\bquint(?:s|es)\b|\bquins\b/gi, "quints"],
+];
+
+export function spellfix(question: string): string {
+  let out = question;
+  for (const [re, rep] of SPELLFIX) {
+    out = typeof rep === "string" ? out.replace(re, rep) : out.replace(re, rep);
+  }
+  return out;
+}
 
 // One normalization for every consumer (route, topic detection, retrieval), so
 // they can never disagree about a question. Cap first so no regex runs over an
@@ -48,44 +97,17 @@ const CANNOT_VERIFY =
 export function normalizeQuestion(raw: unknown, cap = 300): string {
   return String(raw || "")
     .slice(0, cap)
-    .replace(/[\u2018\u2019]/g, "'")
-    .replace(/[\u201c\u201d]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/[“”]/g, '"')
     .replace(/\s+/g, " ")
     .trim();
 }
 
-export function lookupRule(input: RulesLookupInput): RulesLookupResult {
-  const question = normalizeQuestion(input?.question);
-  if (!question) {
-    return { matched: false, ruleset: "american_nmjl", confidence: "low", source: "none", answer: CANNOT_VERIFY };
-  }
+type Best = { entry: KnowledgeEntry; specificity: number; score: number; matchLength: number };
 
-  for (const re of CARD_CONTENT_RES) {
-    if (re.test(question)) {
-      return {
-        matched: false,
-        ruleset: "american_nmjl",
-        confidence: "unsupported",
-        unsupported_reason: "annual_card_content",
-        source: "policy",
-        answer: CARD_REFUSAL,
-      };
-    }
-  }
-
-  if (VARIANT_RE.test(question) && !AMERICAN_RE.test(question)) {
-    const variant = question.match(VARIANT_RE)?.[0] ?? "another variant";
-    return {
-      matched: false,
-      ruleset: "american_nmjl",
-      confidence: "low",
-      source: "none",
-      needs_clarification: `That sounds like it may be about ${variant} style mahjong. I can only verify American mahjong rules, the National Mah Jongg League style. Did you mean American mahjong?`,
-    };
-  }
-
+function retrieve(question: string): KnowledgeEntry | null {
   const lower = question.toLowerCase();
-  let best: { entry: KnowledgeEntry; specificity: number; score: number; matchLength: number } | null = null;
+  let best: Best | null = null;
   for (const entry of RULES_KNOWLEDGE) {
     if (entry.blocks?.some((b) => (typeof b === "function" ? b(question) : b.test(question)))) continue;
     if (entry.requires && !entry.requires.every((re) => re.test(question))) continue;
@@ -111,12 +133,11 @@ export function lookupRule(input: RulesLookupInput): RulesLookupResult {
         (score > best.score || (score === best.score && matchLength > best.matchLength)));
     if (better) best = { entry, specificity, score, matchLength };
   }
+  if (!best || best.matchLength === 0) return null;
+  return best.entry;
+}
 
-  if (!best || best.matchLength === 0) {
-    return { matched: false, ruleset: "american_nmjl", confidence: "low", source: "none", answer: CANNOT_VERIFY };
-  }
-
-  const e = best.entry;
+function entryResult(e: KnowledgeEntry, clarifiedBy?: string): RulesLookupResult {
   return {
     matched: true,
     entry_id: e.id,
@@ -127,8 +148,98 @@ export function lookupRule(input: RulesLookupInput): RulesLookupResult {
     confidence: e.confidence,
     source: e.source,
     last_verified: e.last_verified,
+    classification: e.classification,
+    evidence: e.provenance.evidence,
+    ...(clarifiedBy ? { clarified_by: clarifiedBy } : {}),
   };
 }
+
+function clarificationResult(payload: ClarifyPayload, reason?: string): RulesLookupResult {
+  return {
+    matched: false,
+    ruleset: "american_nmjl",
+    confidence: "low",
+    source: "none",
+    needs_clarification: payload.prompt,
+    clarify: payload,
+    ...(reason ? { unsupported_reason: reason } : {}),
+  };
+}
+
+function handleReply(ctx: ClarifyContext, reply: string): RulesLookupResult {
+  const original = normalizeQuestion(ctx.question);
+  const resolved = resolveReply({ id: ctx.id, question: spellfix(original) }, reply);
+  if (!resolved) return lookupRule({ question: reply });
+  if ("option" in resolved) {
+    const { option } = resolved;
+    if (option.entry) {
+      const e = RULES_KNOWLEDGE.find((k) => k.id === option.entry);
+      if (e) return entryResult(e, ctx.id);
+    }
+    if (option.rewrite) {
+      const rewritten = option.rewrite(spellfix(original));
+      const r = lookupRule({ question: rewritten });
+      return r.matched ? { ...r, clarified_by: ctx.id } : r;
+    }
+    if (option.answer) {
+      return {
+        matched: false,
+        ruleset: "american_nmjl",
+        confidence: "low",
+        source: "policy",
+        answer: option.answer,
+        unsupported_reason: ctx.id === "topic" ? "rules_gap" : "variant_scope",
+        original_question: original,
+        clarified_by: ctx.id,
+      };
+    }
+  }
+  // The reply matched no option. A full new question moves on; anything else gets the
+  // same clarification once more with the choices spelled out.
+  const fixed = spellfix(normalizeQuestion(reply));
+  if (fixed.length >= 20 && retrieve(fixed)) return lookupRule({ question: reply });
+  const c = resolved.clarification;
+  const labels = c.options.map((o) => o.label).join(", ");
+  const payload = toPayload(c, spellfix(original));
+  return clarificationResult({ ...payload, prompt: `${c.prompt} You can answer with one of: ${labels}.` });
+}
+
+export function lookupRule(input: RulesLookupInput): RulesLookupResult {
+  const question = normalizeQuestion(input?.question);
+  if (input?.clarify && typeof input.clarify.id === "string" && typeof input.clarify.question === "string" && question) {
+    return handleReply(input.clarify, question);
+  }
+  if (!question) {
+    return { matched: false, ruleset: "american_nmjl", confidence: "low", source: "none", answer: EMPTY_ANSWER, unsupported_reason: "empty" };
+  }
+
+  const fixed = spellfix(question);
+  const notationAsk = NOTATION_ASK.test(fixed) && !CONTENT_REQUEST.test(fixed);
+  if (!notationAsk) {
+    for (const re of CARD_CONTENT_RES) {
+      if (re.test(fixed)) {
+        return {
+          matched: false,
+          ruleset: "american_nmjl",
+          confidence: "unsupported",
+          unsupported_reason: "annual_card_content",
+          source: "policy",
+          answer: CARD_REFUSAL,
+        };
+      }
+    }
+  }
+
+  const clarification = needsClarification(fixed, (q) => retrieve(q) !== null);
+  if (clarification) return clarificationResult(toPayload(clarification, fixed));
+
+  const entry = retrieve(fixed);
+  if (entry) return entryResult(entry);
+
+  return clarificationResult(toPayload(topicClarification(fixed), fixed), "no_entry");
+}
+
+export { GAP_ANSWER };
 
 // Synthesis guard: a model may only rephrase approved text, so any digit in its output
 // must already exist in the approved input. A new digit means new rule content, and the

@@ -15,12 +15,20 @@ type Card = {
   url: string | null;
 };
 
+type Clarify = {
+  id: string;
+  prompt: string;
+  question: string;
+  options: Array<{ key: string; label: string }>;
+};
+
 type AskResponse = {
   ok: boolean;
   answer: string;
   results: Card[];
   suggestions?: Array<{ label: string; href: string }>;
   error?: string;
+  clarify?: Clarify | null;
 };
 
 const EXAMPLES = [
@@ -37,7 +45,9 @@ export default function AskClient() {
   const [busy, setBusy] = useState(false);
   const [resp, setResp] = useState<AskResponse | null>(null);
 
-  async function ask(question: string) {
+  // A pending clarification travels back with the next reply (typed or clicked), so a
+  // rules question that needed one more fact resolves on the second turn.
+  async function ask(question: string, clarify: Clarify | null = null) {
     const query = question.trim();
     if (!query || busy) return;
     setBusy(true);
@@ -46,20 +56,24 @@ export default function AskClient() {
       const r = await fetch("/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ q: query }),
+        body: JSON.stringify(clarify ? { q: query, clarify: { id: clarify.id, question: clarify.question } } : { q: query }),
       });
       const j = await r.json();
-      setResp({ ok: !!j.ok, answer: j.answer || "", results: j.results ?? [], suggestions: j.suggestions ?? [], error: j.error });
+      const next: Clarify | null = j?.rules?.clarify?.id ? j.rules.clarify : null;
+      setResp({ ok: !!j.ok, answer: j.answer || "", results: j.results ?? [], suggestions: j.suggestions ?? [], error: j.error, clarify: next });
+      if (next) setQ("");
     } catch {
       setResp({ ok: false, answer: "", results: [], error: "Something went wrong. The Events page search still works." });
     }
     setBusy(false);
   }
 
+  const pending = resp?.clarify ?? null;
+
   return (
     <div>
       <form
-        onSubmit={(e) => { e.preventDefault(); ask(q); }}
+        onSubmit={(e) => { e.preventDefault(); ask(q, pending); }}
         style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center", maxWidth: 560, margin: "0 auto 1rem" }}
       >
         <label htmlFor="ask-q" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>
@@ -69,7 +83,7 @@ export default function AskClient() {
           id="ask-q"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Ask about games, teachers, events, or mahjong rules..."
+          placeholder={pending ? "Type your answer, or pick one below" : "Ask about games, teachers, events, or mahjong rules..."}
           maxLength={200}
           className="form-input"
           style={{ flex: "1 1 300px", minHeight: 54, fontSize: "1.05rem" }}
@@ -79,7 +93,7 @@ export default function AskClient() {
           disabled={busy}
           style={{ minHeight: 54, padding: "0 1.5rem", border: "none", borderRadius: 12, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.05rem", cursor: "pointer", fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif", opacity: busy ? 0.6 : 1 }}
         >
-          {busy ? "Searching..." : "Ask"}
+          {busy ? "Searching..." : pending ? "Reply" : "Ask"}
         </button>
       </form>
 
@@ -103,6 +117,22 @@ export default function AskClient() {
           <p style={{ fontSize: "1.1rem", color: "var(--navy)", fontWeight: 600, textAlign: "center", lineHeight: 1.55 }}>
             {resp.error || resp.answer}
           </p>
+
+          {pending && (
+            <div data-testid="ask-clarify" style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center", marginTop: "1rem" }}>
+              {pending.options.map((o) => (
+                <button
+                  key={o.key}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => ask(o.label, pending)}
+                  style={{ minHeight: 44, padding: "0.5rem 1.1rem", borderRadius: 50, fontSize: "0.95rem", fontWeight: 800, border: "2px solid var(--navy)", background: "white", color: "var(--navy)", cursor: "pointer", fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif" }}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+          )}
 
           {resp.results.length > 0 && (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 300px), 1fr))", gap: "1rem", marginTop: "1.2rem" }}>

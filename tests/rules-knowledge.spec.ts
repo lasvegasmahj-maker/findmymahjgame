@@ -16,19 +16,39 @@ function allText(entry: (typeof RULES_KNOWLEDGE)[number]): string {
 }
 
 test.describe("knowledge base fact checks", () => {
-  test("entry count stays in the seeded range", () => {
-    expect(RULES_KNOWLEDGE.length).toBeGreaterThanOrEqual(12);
-    expect(RULES_KNOWLEDGE.length).toBeLessThanOrEqual(25);
+  test("entry count stays in the audited range", () => {
+    expect(RULES_KNOWLEDGE.length).toBeGreaterThanOrEqual(40);
+    expect(RULES_KNOWLEDGE.length).toBeLessThanOrEqual(80);
   });
 
-  test("every entry is well formed and owner approved", () => {
+  test("every entry is well formed, classified, and carries provenance", () => {
     const seen = new Set<string>();
+    const CLASSES = ["standard_nmjl_rule", "nmjl_clarification", "tournament_rule", "house_optional_rule", "etiquette", "strategy"];
     for (const e of RULES_KNOWLEDGE) {
       expect(e.id).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
       expect(seen.has(e.id)).toBe(false);
       seen.add(e.id);
       expect(e.ruleset).toBe("american_nmjl");
-      expect(e.source).toBe("owner_approved");
+      expect(["owner_approved", "research_verified", "owner_question"]).toContain(e.source);
+      expect(CLASSES).toContain(e.classification);
+      expect(e.provenance.source_title.length).toBeGreaterThan(10);
+      // Anything not approved by the owner stays flagged for owner review, and an
+      // open owner question never presents itself as verified.
+      if (e.source === "owner_approved") {
+        expect(e.provenance.source_type, e.id).toBe("owner_approved");
+        expect(e.provenance.owner_review_required, e.id).toBe(false);
+        expect(e.provenance.evidence, e.id).toBe("verified");
+      } else {
+        expect(e.provenance.owner_review_required, e.id).toBe(true);
+      }
+      if (e.source === "owner_question") {
+        expect(e.provenance.evidence, e.id).toBe("owner_question_pending");
+        expect(e.approved_answer, e.id).toMatch(/instructor is confirming/);
+      } else {
+        expect(e.approved_answer, e.id).not.toMatch(/instructor is confirming/);
+      }
+      // Provenance is metadata only: titles and article numbers, never source prose.
+      expect(e.provenance.source_title.length + (e.provenance.source_ref?.length ?? 0), e.id).toBeLessThan(400);
       expect(e.last_verified).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(e.last_verified <= new Date().toISOString().slice(0, 10)).toBe(true);
       expect(["high", "medium"]).toContain(e.confidence);
@@ -142,6 +162,7 @@ test.describe("rules lookup", () => {
     expect(r.matched).toBe(false);
     expect(r.needs_clarification).toBeTruthy();
     expect(r.needs_clarification).toMatch(/American mahjong/);
+    expect(r.clarify?.id).toBe("ruleset");
   });
 
   test("saying American skips the variant clarification", () => {
@@ -151,11 +172,13 @@ test.describe("rules lookup", () => {
     expect(r.entry_id).toBe("tile-count");
   });
 
-  test("unknown rule fails honestly with cannot verify", () => {
+  test("unknown rule never guesses: it asks which topic instead of refusing", () => {
     const r = lookupRule({ question: "What happens if my elbow knocks over the rack?" });
     expect(r.matched).toBe(false);
     expect(r.confidence).toBe("low");
-    expect(r.answer).toMatch(/cannot verify/i);
+    expect(r.answer).toBeUndefined();
+    expect(r.clarify?.id).toBe("topic");
+    expect(r.needs_clarification).not.toMatch(/cannot verify/i);
   });
 
   test("same question twice returns identical output", () => {
@@ -285,7 +308,7 @@ test.describe("retrieval precedence: specific beats generic", () => {
     expect(lookupRule({ question: "What does concealed mean in mahjong?" }).entry_id).toBe("open-vs-closed");
     expect(lookupRule({ question: "What is the Charleston?" }).entry_id).toBe("charleston");
     expect(lookupRule({ question: "How does the Charleston work?" }).entry_id).toBe("charleston");
-    expect(lookupRule({ question: "Can I do a courtesy pass?" }).entry_id).toBe("charleston");
+    expect(lookupRule({ question: "Can I do a courtesy pass?" }).entry_id).toBe("courtesy-pass");
     expect(lookupRule({ question: "What is a joker?" }).entry_id).toBe("jokers-basics");
     expect(lookupRule({ question: "What is a joker? My friend passed one to me." }).entry_id).toBe("jokers-basics");
     expect(lookupRule({ question: "Can a joker pass for any tile?" }).entry_id).toBe("jokers-basics");

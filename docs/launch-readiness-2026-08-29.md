@@ -190,3 +190,4 @@ launch gates are OFF; nothing here is launched.
   open: the live Stripe values, the live portal link, and the same three settings in
   Live mode.
 - 2026-08-29 (quick-table gate): owner approved gating /api/tables/* behind launch_player_matching; implemented in lib/tables-gate.ts and the five routes, closed states on /play, /played, and /played/confirm, regression suite tests/quick-tables-gate.spec.ts; all four gates still OFF.
+- 2026-08-30 (rules truth layer): owner requirement applied to Ask Find My Mahj; corpus audited and expanded to 49 provenance-tagged entries (21 owner-approved unchanged, 28 flagged for owner review), clarification engine added (multi-turn through the real route), rules truth benchmark plus blind held-out set added; record in docs/rules-truth-audit-2026-08-30.md, source policy in docs/rules-sources.md; all four gates still OFF.

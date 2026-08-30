@@ -28,8 +28,8 @@ export default function AskPage() {
       </Suspense>
       <p style={{ fontSize: "0.85rem", color: "var(--muted)", textAlign: "center", marginTop: "2.5rem", maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
         Ask Find My Mahj can help you find where to play, learn, and connect, and can answer
-        American Mahjong rules questions using our reviewed rules knowledge. If we cannot verify
-        an answer, we tell you instead of guessing.
+        American Mahjong rules questions using our reviewed rules knowledge. If a question needs one
+        more detail, we ask for it instead of guessing.
       </p>
     </main>
   );

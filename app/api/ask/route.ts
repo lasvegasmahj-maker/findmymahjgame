@@ -80,10 +80,11 @@ function trackAskOutcome(
   recordClass: RecordClass,
   topic: "directory" | "rules" | "mixed",
   results: number,
-  matched: boolean
+  matched: boolean,
+  clarify?: string | null
 ) {
   const supabase = lazyServerClient();
-  const props = { topic, results, matched };
+  const props = { topic, results, matched, ...(clarify ? { clarify } : {}) };
   void track(supabase, "ask_submitted", { props, recordClass });
   const intentName =
     topic === "directory" ? "ask_intent_directory" : topic === "rules" ? "ask_intent_rules" : "ask_intent_mixed";
@@ -99,18 +100,27 @@ export async function POST(req: NextRequest) {
   }
   const body = (await req.json().catch(() => null)) || {};
   const question = typeof body?.q === "string" ? normalizeQuestion(body.q, 200) : "";
+  // A reply to a pending clarification carries the clarification id and the original
+  // question back; the server keeps no conversation state.
+  const clarifyRaw = body?.clarify;
+  const clarify =
+    clarifyRaw && typeof clarifyRaw.id === "string" && typeof clarifyRaw.question === "string"
+      ? { id: clarifyRaw.id.slice(0, 40), question: normalizeQuestion(clarifyRaw.question, 200) }
+      : null;
   const recordClass = await resolveAskRecordClass(req);
   try {
-  const topic = detectAskTopic(question);
+  const topic = clarify ? "rules" : detectAskTopic(question);
   let rules: RulesLookupResult | null = null;
   if (topic !== "directory") {
-    rules = lookupRule({ question });
-    if (!rules.matched && !rules.needs_clarification) void logRulesGap(question, rules);
+    rules = lookupRule({ question, clarify });
+    if (!rules.matched && !rules.needs_clarification && rules.unsupported_reason !== "empty") {
+      void logRulesGap(rules.original_question ?? question, rules);
+    }
   }
 
   if (topic === "rules" && rules) {
     const answer = await composeRulesAnswer(rules, question);
-    trackAskOutcome(recordClass, topic, 0, rules.matched);
+    trackAskOutcome(recordClass, topic, 0, rules.matched, rules.clarify ? `${rules.clarify.id}:asked` : rules.clarified_by ? `${rules.clarified_by}:resolved` : null);
     return NextResponse.json({
       ok: true,
       answer,
