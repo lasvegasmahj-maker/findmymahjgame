@@ -39,7 +39,8 @@ const CASES: Case[] = [
   A("Can I swap a joker out of someone's exposure?", "joker-exchange"),
   A("when am I allowed to redeem a joker", "joker-exchange-timing"),
   A("can i exchange a joker on my own rack", "joker-exchange-timing"),
-  A("I exchanged a joker for the wrong tile, what now?", "joker-exchange-timing"),
+  A("I exchanged a joker for the wrong tile, what now?", "joker-exchange-wrong-tile"),
+  A("when can I redeem a joker during my turn", "joker-exchange-timing"),
   A("Can I call a joker that was discarded?", "joker-discarded"),
   A("someone threw a joker, can i take it", "joker-discarded"),
   A("is it ok to discard a joker", "joker-discarded"),
@@ -89,7 +90,7 @@ const CASES: Case[] = [
   A("Can I call a discard for mahjong if it finishes a single?", "calling-for-mahjong"),
   A("If two of us call the same tile who wins?", "two-players-same-tile"),
   A("what does hold mean", "two-players-same-tile"),
-  A("someone said wait, do they get the tile", "two-players-same-tile"),
+  A("someone said wait, do they get the tile", ["two-players-same-tile", "hold-or-wait"]),
   A("can i take back the tile i just discarded", "own-discard"),
   A("Can I call my own discard for mahjong?", "own-discard"),
   A("do i have to say the tile name when i discard", "naming-discards"),
@@ -108,7 +109,7 @@ const CASES: Case[] = [
   // Winning, mistakes, payments
   A("how do you win", "winning-mahjong"),
   A("What happens if I call mahjong but my hand is wrong?", "mahjong-in-error"),
-  A("false mahjong penalty", "mahjong-in-error"),
+  A("false mahjong penalty", ["mahjong-in-error", "mahjong-in-error-settlement"]),
   A("i declared maj by mistake", "mahjong-in-error"),
   A("who pays when i win on a discard", "payments-basics"),
   A("does the discarder pay double", "payments-basics"),
@@ -141,8 +142,9 @@ const CASES: Case[] = [
   R("what does the first hand on the card mean"),
   R("what does the 2026 card hand mean"),
   // Players, tournaments, house, strategy, sources
-  A("can three people play", "players-count"),
-  A("how do you play with 3", "players-count"),
+  A("can three people play", ["players-count", "three-player-procedure"]),
+  A("how many players do you need", "players-count"),
+  A("how do you play with 3", ["players-count", "three-player-procedure"]),
   C("Can I blind pass in a tournament?", "tournament"),
   A("how do tournament rules differ", "tournament-rules"),
   A("what are common table rules", "courtesies-vs-rules"),
@@ -163,6 +165,28 @@ const CASES: Case[] = [
   A("dead hand?", "dead-hand"),
   A("so like, my friend says you can't call for a pair, is that true", "calling-for-pair"),
   A("mahjongg rules for discrads", "calling-discard"),
+  // Owner-approved answers, 2026-08-30 decisions.
+  A("I named the tile wrong and someone called mahjong on it", "misnamed-discard"),
+  A("what is the penalty for misnaming a discard", "misnamed-discard"),
+  A("can we take jokers out of a dead player's exposures", "dead-hand-jokers"),
+  A("her hand went dead, can I still exchange for the joker she exposed", "dead-hand-jokers"),
+  A("can I call a discard to finish a sextet", "calling-quints-sextets"),
+  A("can I call a flower to complete a sextet block", "calling-quints-sextets"),
+  A("who pays after someone declares mahjong by mistake", "mahjong-in-error-settlement"),
+  A("we all threw in our hands and the mahjong was wrong, what now", "mahjong-in-error-settlement"),
+  A("how do you deal for three players", "three-player-procedure"),
+  A("three handed mahjong, is there a charleston", "three-player-procedure"),
+  A("we only have 3 players, how many tiles does each person get", "three-player-procedure"),
+  A("someone has 12 tiles after the charleston, do we redeal", "wrong-tile-count-before-play"),
+  A("wrong number of tiles before east discards", "wrong-tile-count-before-play"),
+  A("does saying hold count as a call", "hold-or-wait"),
+  A("is hold the same as call", "hold-or-wait"),
+  A("I said wait, does that give me the tile", "hold-or-wait"),
+  A("what happens if I pick out of turn", "picking-ahead"),
+  A("is my hand dead if I drew early", "picking-ahead"),
+  A("who pays when I win on a discard", "payments-basics"),
+  A("does a jokerless hand pay double", "payments-basics"),
+
   // Unknown but legitimate: never a bare refusal
   C("What happens if my elbow knocks over the rack?", "topic"),
   C("what is the rule if a tile falls on the floor", "topic"),
@@ -287,6 +311,57 @@ test.describe("directory questions stay directory questions", () => {
   });
 });
 
+test.describe("adversarial pairs from the owner decisions (2026-08-30)", () => {
+  test("the deal's final discard is separated from the most recent discard", () => {
+    const final = lookupRule({ question: "the wall is empty, can the last discard be called for an exposure" });
+    expect(final.entry_id).toBe("last-tile-of-wall");
+    expect(final.answer).toMatch(/no published League ruling either way/);
+    // The claim the owner struck must never come back.
+    expect(final.answer).not.toMatch(/wins you nothing|futile|pointless/i);
+    const recent = lookupRule({ question: "when can I call a discard?" });
+    expect(recent.entry_id).toBe("calling-discard");
+    expect(String(recent.answer)).not.toMatch(/no published League ruling/);
+  });
+
+  test("picking ahead states the League dead-hand rule and labels the reprieve as house practice", () => {
+    const r = lookupRule({ question: "what happens if I pick out of turn" });
+    expect(r.entry_id).toBe("picking-ahead");
+    expect(r.answer).toMatch(/Under League rules, drawing out of turn makes your hand dead/);
+    expect(r.answer).toMatch(/house practice or director practice, not a League rule/);
+    // An interrupted pick is a different thing and must not read as picking ahead.
+    expect(r.answer).toMatch(/interrupted pick/);
+    expect(lookupRule({ question: "someone called while I was picking, is that picking ahead" }).answer).toMatch(/interrupted pick/);
+  });
+
+  test("no answer presents house or tournament leniency as League law", () => {
+    for (const e of RULES_KNOWLEDGE) {
+      const a = [e.approved_answer, e.house_note ?? ""].join(" ");
+      if (/tournament director|many teachers|house practice|table custom|house rule|tournament rules/i.test(a)) {
+        expect(a, e.id).toMatch(/not a League rule|table rule|house rule|table custom|house practice|director practice|table choice|table preference|not League law/i);
+      }
+    }
+  });
+
+  test("the three-player answer publishes counts and never picks a final pickup sequence", () => {
+    const r = lookupRule({ question: "how do you deal for three players" });
+    expect(r.entry_id).toBe("three-player-procedure");
+    expect(r.answer).toMatch(/East holds 14 tiles and the other two hold 13/);
+    expect(r.answer).toMatch(/two slightly different orders/);
+    expect(r.answer).not.toMatch(/East picks 2|picks two tiles|then East picks a 14th/);
+  });
+
+  test("a wrong joker exchange names the rack that goes dead and keeps the giver playing", () => {
+    const r = lookupRule({ question: "I exchanged a joker for the wrong tile, whose hand is dead" });
+    expect(r.entry_id).toBe("joker-exchange-wrong-tile");
+    expect(r.answer).toMatch(/before the next discard there is no penalty|Catch it before the next discard and there is no penalty/);
+    expect(r.answer).toMatch(/incorrect exposure has a dead hand/);
+    expect(r.answer).toMatch(/handed over the wrong tile keeps playing/);
+    // The separate rule about changing a valid exposure must stay separate.
+    expect(r.answer).toMatch(/changing an otherwise valid exposure/);
+    expect(r.answer).not.toMatch(/cannot verify|instructor is confirming/i);
+  });
+});
+
 test.describe("corpus invariants", () => {
   const MONTH_RE =
     /\b(january|february|march|april|june|july|august|september|october|november|december)\b|\b(in|every|each|late|early|mid) may\b/i;
@@ -299,6 +374,20 @@ test.describe("corpus invariants", () => {
       expect(text, e.id).not.toMatch(/[\u2013\u2014]/);
       expect(text, e.id).not.toMatch(/\b[PKN]\b/);
     }
+  });
+
+  test("every owner-approved answer is free of the instructor placeholder", () => {
+    for (const e of RULES_KNOWLEDGE) {
+      if (e.source !== "owner_approved") continue;
+      expect(e.approved_answer, e.id).not.toMatch(/instructor is confirming/);
+      expect(e.provenance.owner_review_required, e.id).toBe(false);
+      expect(e.provenance.evidence, e.id).toBe("verified");
+    }
+  });
+
+  test("no rules question is left waiting on the instructor", () => {
+    expect(RULES_KNOWLEDGE.filter((e) => e.provenance.evidence === "owner_question_pending").map((e) => e.id)).toEqual([]);
+    expect(RULES_KNOWLEDGE.filter((e) => /instructor is confirming/.test(e.approved_answer)).map((e) => e.id)).toEqual([]);
   });
 
   test("fixing an exposure closes on either cut-off: a discard or a joker exchange", () => {

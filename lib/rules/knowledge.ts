@@ -55,6 +55,7 @@ const VERIFIED = "2026-08-22" as const;
 const VERIFIED_REVIEW = "2026-08-26" as const;
 const VERIFIED_WORDING = "2026-08-29" as const;
 const VERIFIED_AUDIT = "2026-08-30" as const;
+const OWNER_DECIDED = "2026-08-30" as const;
 
 const OWNER: Provenance = {
   source_type: "owner_approved",
@@ -74,6 +75,19 @@ function researched(ref: string, year?: number): Provenance {
     ...(year ? { source_year: year } : {}),
     owner_review_required: true,
     evidence: "owner_review_pending",
+  };
+}
+
+// The owner approved these answers on 2026-08-30 after reading the research; the research
+// trail stays on the entry so the basis is never lost.
+function ownerApproved(ref: string, year?: number): Provenance {
+  return {
+    source_type: "owner_approved",
+    source_title: "Owner approved 2026-08-30 on the researched basis below (certified American mahjong instructor)",
+    source_ref: ref,
+    ...(year ? { source_year: year } : {}),
+    owner_review_required: false,
+    evidence: "verified",
   };
 }
 
@@ -124,7 +138,7 @@ const DISCARDED = /\b(discard|discards|discarded|discarding|thrown|throw|throws|
 const ERROR_CUE =
   /\b(error|mistake|mistakenly|wrong|wrongly|false|falsely|incorrect|invalid|not valid|isn'?t valid|didn'?t have|did not have|by accident|accidentally|premature|too early|oops|bad|botched|busted|penalt(y|ies))\b/i;
 export const MISNAMED =
-  /\bmis-?nam(e|ed|es|ing)\b|\bwrong name\b|\bnamed (it|the tile|a tile|my discard|the discard) wrong(ly)?\b|\bcalled it (the )?wrong\b|\bsaid the wrong tile\b|\bwrong tile name\b|\bnamed the wrong\b|\bmisspoke\b|\bcalled (it|the tile|my discard) (a|an) \w+ by mistake\b|\bannounced (it|the tile) (as )?the wrong\b|\bcalled it (a|an) [^.?!]{1,20} but (it was|it's|its|it is)\b|\bsaid [^.?!]{1,15} but (it was|it's|it is)\b|\bnamed it (a|an) [^.?!]{1,20}\bbut\b/i;
+  /\bmis-?nam(e|ed|es|ing)\b|\bwrong name\b|\bnamed (it|the tile|a tile|my discard|the discard) wrong(ly)?\b|\bcalled it (the )?wrong\b|\bsaid the wrong tile\b|\bwrong tile name\b|\bnamed the wrong\b|\bmisspoke\b|\bcalled (it|the tile|my discard) (a|an) \w+ by mistake\b|\bannounced (it|the tile) (as )?the wrong\b|\bcalled it (a|an) [^.?!]{1,20} but (it was|it's|its|it is)\b|\bsaid [^.?!]{1,15} but (it was|it's|it is)\b|\bnamed it (a|an) [^.?!]{1,20}\bbut\b|\b(called|named|said) it (a|an|the) ?[\w ]{1,14}\bbut (it was|it'?s|its|it is|she|he|they|threw|discarded|actually)\b/i;
 export const TWO_PLAYERS =
   /\b(both|two (players|people|of us)|more than one|same (tile|discard)|at the same time|simultaneous(ly)?|who gets|who has priority|priority|first dibs|hold|wait)\b/i;
 const TWO_PLAYERS_ASK = new RegExp(`${CLAIM_VERB.source}|\\b(want|wants|wanted|need|needs|declare|declares|mahjong|maj|tile|discard|mean|means|meaning|say|saying|said|shout|announce)\\b`, "i");
@@ -196,6 +210,22 @@ export function blindReadsAsPlace(question: string): boolean {
     (BLIND_PROPER_PASS.test(question) && !QUESTION_FORM.test(question))
   );
 }
+
+const THREE_PLAYER =
+  /\b(three|3)[- ](player|handed|person|handed)\b|\b(three|3) (people|players|of us)\b|\bplay(ing)? with (just )?(three|3)\b|\bonly (three|3)\b|\bmissing a (fourth|4th)\b|\bwithout a (fourth|4th)\b/i;
+const THREE_PLAYER_HOW =
+  /\b(procedure|how|deal|deals|dealt|dealing|set ?up|start|starts|walls?|charleston|tiles?|rules?|official|work|works|count|counts|pass|passes|passing|play|still)\b/i;
+const WRONG_COUNT =
+  /\b(wrong number|wrong count|miscount|too many tiles|too few tiles|12 tiles|14 tiles|short a tile|missing a tile|extra tile|one too many|one too few|short one)\b/i;
+const BEFORE_PLAY =
+  /\b(before (east|the first discard|play|we start)|charleston|courtesy pass|deal|dealt|dealing|re-?deal|redeal|start|starts|started|begins?|beginning|first discard)\b/i;
+const HOLD_WAIT = /\b(hold|wait)\b(?!\s+(a |the )?(spot|seat|place|table|room))/i;
+const HOLD_WAIT_ASK =
+  /\b(call|calls|called|claim|claims|count|counts|mean|means|legal|legally|stop|stops|priority|say|says|saying|said|shout|shouted|allowed|same as|instead of)\b/i;
+const SETTLEMENT =
+  /\b(pay|pays|paid|paying|payment|payments|settle|settles|settled|settlement|owe|owes|collect|collects|value|double|penalty|penalties|throw(n)? in|threw in|toss(ed)? in)\b/i;
+const FINAL_DISCARD_SCENE =
+  /\b(last discard|final discard|last tile|wall is (empty|gone|out|used up)|wall runs out|no tiles left|out of tiles|end of the wall|nothing left to draw)\b/i;
 
 // Shared by the route, the Ask box, and the clarification engine so they cannot drift.
 export const VARIANT_RE =
@@ -691,7 +721,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     keywords: ["mahjong", "win", "call", "discard"],
     requires: [CLAIM_VERB, MAHJONG_CUE],
     // Closed-hand and false-mahjong questions have their own answers.
-    blocks: [HAND_CLOSED, ERROR_CUE, TWO_PLAYERS, OWN_DISCARD, JOKER],
+    blocks: [HAND_CLOSED, ERROR_CUE, TWO_PLAYERS, OWN_DISCARD, JOKER, MISNAMED],
     approved_answer:
       "Yes. Any discard that completes your mahjong may be called, including a tile that finishes a pair or fills a single, and a concealed hand may call it too. The one tile no one may ever call is a discarded joker. Say mahjong, take the tile, and show your hand. A call for mahjong beats a call for an exposure, and the chance to call ends once the next player has drawn and racked a tile, or discarded.",
     ruleset: RULESET,
@@ -708,7 +738,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [EXPOSURE_CUE, CLAIM_VERB],
     keywords: ["exposure", "call", "pung", "kong"],
     requires: [CLAIM_VERB, EXPOSURE_CUE],
-    blocks: [HAND_CLOSED, TWO_PLAYERS, OWN_DISCARD, JOKER_EXCHANGE, /\bpairs?\b/i, QUINT_SEXTET, MISNAMED],
+    blocks: [HAND_CLOSED, TWO_PLAYERS, OWN_DISCARD, JOKER_EXCHANGE, /\bpairs?\b/i, QUINT_SEXTET, MISNAMED, FINAL_DISCARD_SCENE],
     approved_answer:
       "You may call a discard to build an exposure when the tiles already in your hand, with jokers allowed, make it a group of 3 or more identical tiles: a Pung, a Kong, or a larger group. Say call, take the tile, and place the whole group face up on top of your rack, then discard. You cannot call a discard to make a pair unless that tile completes your mahjong, and a hand marked concealed cannot call for an exposure at all. The call is committed as soon as the called tile goes on your rack or you expose tiles from your hand. You may fix a mistake in that exposure only until you discard or exchange a joker; after either, it is locked.",
     ruleset: RULESET,
@@ -778,14 +808,30 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [JOKER, JOKER_EXCHANGE, new RegExp(`${TIMING.source}|${ERROR_CUE.source}|\\b(own|my|your) (rack|exposure)\\b`, "i")],
     blocks: [DEAD],
     approved_answer:
-      "You may exchange a joker only during your own turn, after you have drawn from the wall or called a discard and before you discard. Hand over the tile the joker stands for and take the joker; you may redeem a joker from any exposure on the table, including your own. Once you discard, the chance passes until your next turn. If an exchange puts the wrong tile into an exposure, fix it before the next discard; our instructor is confirming the League's current ruling on what happens after that discard.",
+      "You may exchange a joker only during your own turn, after you have drawn from the wall or called a discard and before you discard. Hand over the tile the joker stands for and take the joker; you may redeem a joker from any exposure on the table, including your own. Once you discard, the chance passes until your next turn. If an exchange puts the wrong tile into an exposure, fix it before the next discard and there is no penalty.",
     ruleset: RULESET,
     varies_by_house: false,
-    source: "research_verified",
-    last_verified: VERIFIED_AUDIT,
-    confidence: "medium",
+    source: "owner_approved",
+    last_verified: OWNER_DECIDED,
+    confidence: "high",
     classification: "nmjl_clarification",
-    provenance: researched("League rules on joker exchange timing and a wrong exchange (fixable before the next discard; then the hand holding the incorrect exposure is dead); Mahj Life wiki articles 172, 221, 224 citing the rulebook and 2024 bulletin; Sloperama FAQ corroborates", 2024),
+    provenance: ownerApproved("League rulings on exchange timing and own-rack redemption; the wrong-tile consequence has its own entry per bulletin 2024 FAQ #10 and rulebook 2024 p.24 #14; via Mahj Life 172, 221, 224 and Sloperama FAQ", 2024),
+  },
+  {
+    id: "joker-exchange-wrong-tile",
+    topic: "A joker exchanged for the wrong tile",
+    question_patterns: [JOKER_EXCHANGE, ERROR_CUE],
+    keywords: ["joker", "exchange", "wrong tile"],
+    requires: [JOKER, JOKER_EXCHANGE, ERROR_CUE],
+    approved_answer:
+      "Catch it before the next discard and there is no penalty: take the wrong tile back, put the right one in, and play continues. Once that discard has been made and the exposure is still wrong, the player whose rack holds the incorrect exposure has a dead hand for that deal. The player who handed over the wrong tile keeps playing and owes nothing, because the League makes each player responsible for the exposures on their own rack. A dead player stops drawing and discarding and still pays the winner. Keep this separate from a different rule: changing an otherwise valid exposure after you have completed a joker exchange is not allowed, and that has nothing to do with fixing an exchange that went wrong. You can avoid the whole problem by announcing the exchange before anyone touches a tile and passing the tile from hand to hand, so you both see it.",
+    ruleset: RULESET,
+    varies_by_house: false,
+    source: "owner_approved",
+    last_verified: OWNER_DECIDED,
+    confidence: "high",
+    classification: "standard_nmjl_rule",
+    provenance: ownerApproved("NMJL Bulletin 2024 FAQ #10 with rulebook 2024 p.24 #14: correctable before the next discard, then the holder of the incorrect exposure is disqualified while the giver plays on; via Mahj Life 224, 37, 172, 221 and Sloperama FAQ", 2024),
   },
   {
     id: "two-players-same-tile",
@@ -795,14 +841,14 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [TWO_PLAYERS, TWO_PLAYERS_ASK],
     blocks: [ERROR_CUE, BLIND_PASS, CHARLESTON_WORD],
     approved_answer:
-      "When more than one player wants the same discard, a call for mahjong wins over a call for an exposure. If both want it for the same reason, the player whose turn comes next gets it. A player who hesitates can lose the tile once another player has claimed it and racked it. Whether saying hold or wait counts as a call is a point our instructor is confirming.",
+      "When more than one player wants the same discard, a call for mahjong wins over a call for an exposure. If both want it for the same reason, the player whose turn comes next gets it. Which word you use does not change that order, so hold, wait, and call all carry the same weight for priority. A player who hesitates can lose the tile once another player has claimed it and then racked it or exposed tiles.",
     ruleset: RULESET,
     varies_by_house: false,
-    source: "research_verified",
-    last_verified: VERIFIED_AUDIT,
-    confidence: "medium",
+    source: "owner_approved",
+    last_verified: OWNER_DECIDED,
+    confidence: "high",
     classification: "standard_nmjl_rule",
-    provenance: researched("League rule on concurrent claims (mahjong first, then next in turn); hold or wait as a call is filed as an owner question; cross-checked via Mahj Life wiki articles 264 and 281 and the owner-approved calling entry", 2025),
+    provenance: ownerApproved("League rule on concurrent claims (mahjong first, then next in turn) and on word choice not setting priority; located and cross-checked via Mahj Life wiki articles 57, 264, 281 and the owner-approved calling entry", 2025),
   },
   {
     id: "own-discard",
@@ -844,14 +890,14 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     keywords: ["misnamed", "wrong name"],
     requires: [MISNAMED],
     approved_answer:
-      "Misnaming a discard carries its own League rules. Our instructor is confirming the exact ruling before we publish it here. Until then, ask your table to apply the League's rulebook to that situation rather than a table custom.",
+      "Name every discard aloud as you place it face up, because the correct name is what makes the tile claimable. When your tile repeats the discard just before it, the League accepts saying same, and you say joker when you throw a joker. If you say the wrong name, fix it with words only: state the correct name of the tile you actually threw. Never swap tiles, even if the tile you named by mistake sits in your hand. Once you correct the name and nobody has acted on the error, play continues with no penalty and any player may claim the tile normally. A call made on the wrong name does not stand, so if a player wanted the tile only for an exposure, correct the name and play on. If a player declares mahjong based on the wrong name, the deal ends there: you alone pay that player 4 times the value of the hand, and the other two players pay nothing. That penalty applies even when the tile you threw was really a joker, because the claim rests on what you said. If two players declare mahjong at once, one on the wrong name and one needing the tile you actually threw, the player who needs the actual tile wins. If nobody catches the misname before the next player picks and racks, the chance to claim that tile is gone and nobody pays a penalty. Watch each discard with your eyes, not just your ears.",
     ruleset: RULESET,
     varies_by_house: false,
-    source: "owner_question",
-    last_verified: VERIFIED_AUDIT,
-    confidence: "medium",
-    classification: "nmjl_clarification",
-    provenance: ownerQuestion("Exact League penalty for a misnamed discard (corrected before or after another player acts on it)"),
+    source: "owner_approved",
+    last_verified: OWNER_DECIDED,
+    confidence: "high",
+    classification: "standard_nmjl_rule",
+    provenance: ownerApproved("League rulebook misnamed discard rule (2023 p.16 r.3, 2020 p.19 r.6, 2024 pp.16, 17, 19) and the card back Miscalled Tile section; repeat-discard naming per the 2024 bulletin Q12; located and cross-checked via Mahj Life wiki articles 67, 80, 189, 242 and the Sloperama American mahjong FAQ", 2024),
   },
   {
     id: "mahjong-in-error",
@@ -861,14 +907,83 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [MAHJONG_CUE, ERROR_CUE],
     blocks: [JOKER_EXCHANGE, MISNAMED, TWO_PLAYERS],
     approved_answer:
-      "A mahjong declared in error is covered by specific League rules. Our instructor is confirming the exact current wording before we publish it here. Until then, ask your table to apply the League's rulebook to that deal rather than a table custom.",
+      "It depends on how far the declaration went. If you only said mahjong and nothing went face up, take it back right away, before anyone else exposes tiles or disturbs a hand; there is no penalty and play continues. If you called a discard for mahjong and racked the tile, or laid down only the one group that tile completes, you may drop the mahjong declaration and keep it as a call for that exposure, then discard to finish your turn. The exposure stays on your rack, and if it fits no hand on the card the other players can declare your hand dead the normal way. That path needs a hand that can make an exposure, so it does not help a hand marked concealed, and a tile you picked yourself gives no such escape. If you put down tiles from your concealed hand, your hand is dead and you cannot take the declaration back. Your turn ends without a discard, put the tiles you just showed back behind the sloped part of your rack, and any exposures you made properly earlier stay up, so other players may still redeem jokers from them. If your hand was a concealed hand, every tile returns to your rack and no one can redeem a joker from it. You stop drawing and discarding, and play continues with the player on your right. Anyone who threw in a hand because of your false mahjong is dead too.",
     ruleset: RULESET,
     varies_by_house: false,
-    source: "owner_question",
-    last_verified: VERIFIED_AUDIT,
-    confidence: "medium",
+    source: "owner_approved",
+    last_verified: OWNER_DECIDED,
+    confidence: "high",
     classification: "standard_nmjl_rule",
-    provenance: ownerQuestion("Mahjong declared in error with tiles exposed: is the hand dead outright, or may the declaration be retracted with the exposed tiles staying committed (League rulebook 2024); secondary summaries disagree (Mahj Life wiki articles 189, 197, 216)"),
+    provenance: ownerApproved("League rulebook 2024 p.21 #2 and #3, p.22 #4(b), p.23 #6, and the 1993 bulletin Q&A p.12; the next-player rule is a League clarification (2023 letter and a 2024 call), not rulebook text; located and cross-checked via Mahj Life wiki articles 197, 216, 55, 52, 207, 189, 38", 2024),
+  },
+  {
+    id: "mahjong-in-error-settlement",
+    topic: "Settlement after a false mahjong",
+    question_patterns: [MAHJONG_CUE, ERROR_CUE, SETTLEMENT],
+    keywords: ["mahjong", "error", "pay", "settle"],
+    requires: [MAHJONG_CUE, ERROR_CUE, SETTLEMENT],
+    approved_answer:
+      "Settlement follows from how many hands are left standing. Everyone should hold their hands until someone checks the call, and you cannot take back a hand you threw in, because that hand is dead too. If at least two hands stay intact, play continues and no one pays yet; when someone later wins, the dead players pay along with everyone else, and a wall game means no one pays. If the false call leaves only one intact hand, the deal ends there and the player who declared in error pays that one player double the value of the hand the declarer was attempting, while players who threw in neither pay nor collect. If more than one player declared in error, the last one to do so carries that payment. A player who throws in a hand and wrecks the wall before anyone checks the call pays each player with an intact hand the lowest value printed on the card. One more thing worth knowing: another player who wanted that same claimed tile for mahjong may still take it and win, but a player who wanted it only for an exposure may not.",
+    ruleset: RULESET,
+    varies_by_house: false,
+    source: "owner_approved",
+    last_verified: OWNER_DECIDED,
+    confidence: "high",
+    classification: "standard_nmjl_rule",
+    provenance: ownerApproved("League rulebook 2024 p.21 #2 and #3, p.22 #4 and #5(a) through #5(e), p.23 #6, the card back Mah Jongg in Error section, and the 1993 and 2006 bulletins; located and cross-checked via Mahj Life wiki articles 197, 216, 52, 55, 159, 138, 56, 141, 54, 51, 142 and the Sloperama American mahjong FAQ", 2024),
+  },
+  {
+    id: "three-player-procedure",
+    topic: "Playing with three players",
+    question_patterns: [THREE_PLAYER, THREE_PLAYER_HOW],
+    keywords: ["three player", "three handed", "3 players"],
+    requires: [THREE_PLAYER, THREE_PLAYER_HOW],
+    approved_answer:
+      "American mahjong seats 4 players, and the League's rulebook covers playing with 3. Build all 4 walls as usual with the full 152 tiles and leave one seat empty. Deal only to the 3 players: each takes 4 tiles at a time until everyone holds 12, and the empty seat gets nothing. The players then finish the deal so East holds 14 tiles and the other two hold 13. League publications describe that last pick in two slightly different orders, and both end with the same counts. There is no Charleston with 3 players. That is the League's official rule, not a table preference. East opens with a discard, and play runs like the 4-player game. Anything beyond this is a table choice, such as an invented Charleston for 3, a ghost hand dealt to the empty seat, or a betting arrangement, so agree on those before you start.",
+    ruleset: RULESET,
+    varies_by_house: true,
+    house_note:
+      "Anything past the official baseline, including a three-player Charleston or a ghost hand, is a table choice.",
+    source: "owner_approved",
+    last_verified: OWNER_DECIDED,
+    confidence: "high",
+    classification: "standard_nmjl_rule",
+    provenance: ownerApproved("League rulebook 2024 p.26 three-handed section; the rulebook and the 2024 bulletin describe the final pick in different orders that reach the same counts, so this entry publishes the counts only by owner decision; located and cross-checked via Mahj Life wiki articles 102, 188, 226 and the Sloperama American mahjong FAQ", 2024),
+  },
+  {
+    id: "wrong-tile-count-before-play",
+    topic: "Wrong tile count before East's first discard",
+    question_patterns: [WRONG_COUNT, BEFORE_PLAY],
+    keywords: ["wrong number", "12 tiles", "redeal"],
+    requires: [WRONG_COUNT, BEFORE_PLAY],
+    approved_answer:
+      "Count your tiles before East's first discard. The League treats that discard as the start of the deal, so it is your cutoff for fixing anything. Count again when the Charleston ends, because that is the last easy moment to catch a mistake. If any player holds the wrong number of tiles at that point, the table throws all the hands in, rebuilds the walls, and deals again. No one pays a penalty, because a fresh deal is a reset and not a punishment. One correction escapes that. If the player seated to East's left holds 12 tiles because that player never took a 13th tile during the deal, that player takes the next tile from the wall and play continues, because that tile was rightfully theirs. League answers put this correction on the table from before the Charleston right up to East's first discard. It covers that seat only, and it covers a player who is short, not a player holding too many. After East's first discard, none of this works. A player holding the wrong number of tiles has a dead hand, and no one can fix the count. Another player has to call it, because you never declare your own hand dead, and the dead player still pays the winner of that deal. The habit that prevents almost all of it: everyone counts to 13, East counts to 14, before East discards.",
+    ruleset: RULESET,
+    varies_by_house: false,
+    source: "owner_approved",
+    last_verified: OWNER_DECIDED,
+    confidence: "high",
+    classification: "standard_nmjl_rule",
+    provenance: ownerApproved("League rulebook 2024 p.14 first bullet with the 2002 bulletin Q&A; p.17 carries the one seat exception, independently established by a 1987 bulletin Q&A; earlier editions agree; located and cross-checked via Mahj Life wiki articles 36, 63, 83, 226, 205 and the Sloperama American mahjong FAQ", 2024),
+  },
+  {
+    id: "hold-or-wait",
+    topic: "Saying hold or wait",
+    question_patterns: [HOLD_WAIT, HOLD_WAIT_ASK],
+    keywords: ["hold", "wait", "call"],
+    requires: [HOLD_WAIT, HOLD_WAIT_ASK, /\b(tile|discard|call|calls|claim|play|game|turn)\b/i],
+    blocks: [CHARLESTON_WORD, BLIND_PASS],
+    approved_answer:
+      "Priority does not turn on which word you pick. The League does ask you to say call, take, or I want that when you actually claim the tile, and it lets you say hold or wait first while you decide. So after you say hold and make up your mind, say call before you take the tile. The one thing you may never do is reach in silently, because you have to speak your claim out loud. Two separate things settle it. Priority decides who is entitled to the tile: a claim for mahjong beats a claim for an exposure, and when two players want it for the same reason the player whose turn comes next gets preference. Commitment decides when the tile becomes yours: you own the call once you place the tile on top of your rack or expose tiles from your hand. Until you do one of those, you may change your mind, return the tile, and draw from the wall instead. Put those together and the common table argument disappears. If you are next in turn and you say hold, the table should give you a reasonable moment, and another player should not expose ahead of you. You lose that tile by going quiet, because a player later in turn order who calls it and then racks it or exposes tiles has finished a claim you never finished. You also lose it if someone claims it for mahjong, because mahjong outranks an exposure. The whole window closes for everybody once the next player racks the tile they picked, names that tile, discards it, starts a joker exchange, or declares mahjong.",
+    ruleset: RULESET,
+    varies_by_house: true,
+    house_note:
+      "How long a reasonable moment lasts is your table's call and not a League rule, and tournament directors read the moment of placement more strictly than a social game does.",
+    source: "owner_approved",
+    last_verified: OWNER_DECIDED,
+    confidence: "high",
+    classification: "standard_nmjl_rule",
+    provenance: ownerApproved("League rulebook 2024 pp.15 and 31 (commitment at placement), p.17 (the acts that close the window), 2023 p.18 r.13, and a 2023 League letter; the verbalization requirement runs back through the 2013 and 2018 editions; located and cross-checked via Mahj Life wiki articles 57, 264, 281, 21, 107, 177 and the Sloperama American mahjong FAQ read as raw text", 2024),
   },
   {
     id: "dead-hand-details",
@@ -895,15 +1010,16 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [DEAD, JOKER],
     keywords: ["dead", "joker", "exchange"],
     requires: [DEAD, JOKER],
+    blocks: [ERROR_CUE],
     approved_answer:
-      "Whether a joker sitting in a dead player's exposure can still be redeemed is a point our instructor is confirming against the League's rulebook before we publish it here. Until then, ask your table to follow the League's rulebook for that deal.",
+      "Yes, with limits that depend on which exposure the joker sits in. When a hand goes dead, the other players may still redeem jokers from any correct exposure that player made before the hand went dead. Redeem one the normal way, on your own turn, by handing over the real tile that joker stands for. This works even when the hand died for a separate reason, such as holding the wrong number of tiles. The exposure that caused the dead hand works differently: those tiles, jokers included, go back onto the player's rack, so no one can redeem them. A hand marked concealed that exposed tiles in error gives up nothing, because the whole exposed portion returns to the rack. One timing point: if a hand is already dead but nobody has declared it dead yet, even the jokers in the exposure that made it dead are still up for grabs, and they go out of reach only once the table declares the hand dead. The dead player stops drawing, discarding, and exchanging for the rest of that deal, and still pays the winner.",
     ruleset: RULESET,
     varies_by_house: false,
-    source: "owner_question",
-    last_verified: VERIFIED_AUDIT,
-    confidence: "medium",
-    classification: "nmjl_clarification",
-    provenance: ownerQuestion("May a joker in a dead player's exposure be exchanged, and does it matter whether that exposure is the one that made the hand dead"),
+    source: "owner_approved",
+    last_verified: OWNER_DECIDED,
+    confidence: "high",
+    classification: "standard_nmjl_rule",
+    provenance: ownerApproved("League rulebook 2024 p.22 #4(b), 2020 p.16 #3(b) and pp.24 #19 to #21, bulletins 1970 to 2019; the undeclared-hand timing point rests on the 2023 bulletin; located and cross-checked via Mahj Life wiki articles 38, 205, 189, 197, 180 and the Sloperama American mahjong FAQ", 2024),
   },
   {
     id: "picking-ahead",
@@ -913,14 +1029,16 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [PICK_VERB, AHEAD],
     blocks: [CHARLESTON_WORD, BLIND_PASS],
     approved_answer:
-      "Wait your turn. You may not draw your tile from the wall until the player before you has discarded; picking ahead is against League rules. If a tile was picked too early, stop and let the table sort it out before anyone else plays.",
+      "Wait for the player before you to discard, and wait a beat in case someone calls it, before you touch the wall. The first rule on the back of the card bars picking or looking ahead, printed in capitals. Under League rules, drawing out of turn makes your hand dead. That is the standard rule and it sets no condition about how quickly the table catches you. You stop picking and discarding for the rest of the deal and still pay the winner. Return the tile to the exact spot in the wall it came from and never anywhere else, because moving it elsewhere kills the hand on its own. Discarding before you pick from the wall kills your hand the same way. If someone claims your out-of-turn discard for mahjong, the deal stops, you pay the winner 4 times the value of the hand, and the other two players pay nothing. Play then picks up to the right of the last action and keeps moving right, so a player your slip skipped does not get that turn back. One thing this is not: picking correctly on your own turn and having a valid call interrupt you. That is an interrupted pick, the tile goes back in its spot, and nobody's hand is dead. Two points to settle with your group. Many teachers, social tables, and tournament directors let a player off when someone stops them before they rack or look at the tile; that is house practice or director practice, not a League rule, so ask how your table plays it. And on whether an out-of-turn discard can still be claimed for an exposure, League answers have been reported both ways, so that one is unsettled and your table should agree on it.",
     ruleset: RULESET,
-    varies_by_house: false,
-    source: "research_verified",
-    last_verified: VERIFIED_AUDIT,
+    varies_by_house: true,
+    house_note:
+      "A quick-catch reprieve is house or tournament practice, never a League rule.",
+    source: "owner_approved",
+    last_verified: OWNER_DECIDED,
     confidence: "high",
     classification: "standard_nmjl_rule",
-    provenance: researched("League rule against picking ahead; cross-checked via Mahj Life wiki articles 59, 189, and 209", 2024),
+    provenance: ownerApproved("League rulebook 2024 p.19 #15(g) and #15(h) and the card back rule 1; payment on a mahjong claim after an out-of-turn discard per 2023 p.19 r.15(e) and p.20 r.16(b); whether such a discard may be claimed for an exposure is reported both ways and stays on the authoritative-resolution queue; located and cross-checked via Mahj Life wiki articles 70, 122, 209, 59, 147, 189, 9 and the Sloperama American mahjong FAQ", 2024),
   },
   {
     id: "order-of-play",
@@ -1014,16 +1132,16 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [PAYMENT],
     blocks: [ERROR_CUE, MISNAMED, DEAD, TOURNAMENT],
     approved_answer:
-      "Every hand on the card shows its value, and the League's rulebook sets who pays and how much, depending on whether the winning tile came from a discard or from the wall and whether the hand used jokers. Agree at your table before the first hand whether you play for money or for points. By League rule a wall game pays nothing.",
+      "The League sets who pays and how much. Your table sets what a point is worth. Who pays: the winner announces the hand and its value, then tells each player what to pay. Win on another player's discard and that discarder pays double the hand's value while the other 2 players each pay the single value. Pick your own winning tile from the wall and all 3 players pay double. Redeeming a joker from your own rack as your last move before declaring counts as a self pick. Jokerless: if your hand could have used jokers and has none when you declare, the value doubles again, and that stacks, so a jokerless win on a discard costs the discarder 4 times the value while the other 2 pay double. Say the hand is jokerless when you declare, because you lose the bonus if you forget. Hands in the Singles and Pairs group get no jokerless bonus, since their printed value already accounts for it, but the self pick double still applies. A player whose hand went dead still pays the winner. If the wall runs out and nobody declares mahjong, no one wins and no one pays. Amounts: the card prints a value beside each hand, and those values are points. The League does not require you to play for money. Many tables treat a point as a penny, but chips, paper scoring, and playing for nothing are all fine. A wall game kitty, an ante, and any cap on losses are table customs, not League rules, so agree on all of it before the first hand. Sanctioned tournaments score differently, so follow the director's rules there.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note:
-      "Some tables add their own bonuses or play for points instead of money.",
-    source: "research_verified",
-    last_verified: VERIFIED_AUDIT,
+      "What a point is worth, kitties, antes, and loss caps are table customs.",
+    source: "owner_approved",
+    last_verified: OWNER_DECIDED,
     confidence: "high",
     classification: "standard_nmjl_rule",
-    provenance: researched("League payment rules exist in the rulebook (amounts held back pending the owner's wording decision, question 10); wall game pays nothing per the owner-approved wall-game entry; cross-checked via Mahj Life wiki articles 98 and 208", 2024),
+    provenance: ownerApproved("League rulebook 2024 p.26 (payment structure, jokerless double with the Singles and Pairs exclusion) and p.17; the card prints each hand's value; amounts in money are table custom, not League rule; located and cross-checked via Mahj Life wiki articles 208, 151, 99, 98, 97, 72, 137, 155, 238, 45 and the Sloperama American mahjong FAQ", 2024),
   },
   {
     id: "quints-sextets",
@@ -1049,14 +1167,14 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     keywords: ["quint", "sextet", "call"],
     requires: [QUINT_SEXTET, CLAIM_VERB],
     approved_answer:
-      "Yes. A discard may be called to complete any group of 3 or more identical tiles, and that includes a Quint or a Sextet, as long as the tiles already in your hand, with jokers allowed, make up the rest of the group. The whole group then goes face up on your rack. A hand marked concealed cannot call for any exposure.",
+      "Yes. You may call a discard to complete any exposed group of 3 or more identical tiles, and that includes a 5 tile Quint and a 6 tile Sextet. The rest of the group must already be in your hand, with jokers allowed to fill in, and the entire group goes face up on your rack in one move. One limit applies: a call must complete a whole block as printed on the card, never part of one. If your hand shows 6 flowers as a single block, you cannot call a flower to expose just 3 of them; you need the other 5 in hand so that one call finishes all 6. A hand marked concealed cannot call for any exposure.",
     ruleset: RULESET,
     varies_by_house: false,
-    source: "research_verified",
-    last_verified: VERIFIED_AUDIT,
+    source: "owner_approved",
+    last_verified: OWNER_DECIDED,
     confidence: "high",
     classification: "standard_nmjl_rule",
-    provenance: researched("League rulebook and bulletin rule that a discard may be claimed to expose a pung, kong, quint, or sextet; consistent with the owner-approved calling entry (3 or more identical tiles); cross-checked via Mahj Life wiki articles 146 and 221", 2020),
+    provenance: ownerApproved("League rulebook 2020 p.23 #10 and 2024 p.15, bulletins 1993 p.5, 2001, 2015, 2019; the whole-block limit comes from the same rule; located and cross-checked via Mahj Life wiki articles 146 and 254", 2024),
   },
   {
     id: "exposures-basics",
@@ -1100,7 +1218,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [TOURNAMENT, /\b(rules?|differ|different|differs|standard|league play|director'?s?|penalt(y|ies)|scoring|time limit|timed)\b/i],
     blocks: [/\b(near|nearby|in my area|\d{5}|looking for|find|register|sign up)\b/i, placeAfterPrep],
     approved_answer:
-      "Tournaments play by National Mah Jongg League rules as the foundation, but each tournament director adds procedures of their own: timed rounds, a point system, and penalties for things like misnamed discards. Those rules apply only at that event and never change the League's rules for regular play. At a tournament, the director's rule governs; away from it, the League rule does.",
+      "Tournaments play by National Mah Jongg League rules as the foundation, but each tournament director adds procedures of their own: timed rounds, a point system, and penalties for things like misnamed discards. Those are tournament rules, not League law: they apply only at that event and never change the League's rules for regular play. At a tournament, the director's rule governs; away from it, the League rule does.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
@@ -1130,19 +1248,21 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
   {
     id: "last-tile-of-wall",
     topic: "The last tiles of the wall",
-    question_patterns: [LAST_OF_WALL],
+    question_patterns: [LAST_OF_WALL, FINAL_DISCARD_SCENE],
     keywords: ["last tile", "wall runs out"],
     requires: [LAST_OF_WALL],
-    blocks: [HAND_CLOSED, CLAIM_VERB],
+    blocks: [HAND_CLOSED],
     approved_answer:
-      "Play continues until the wall is used up. If the last tile is drawn and discarded and no one has declared mahjong, the deal ends as a wall game and no one pays. The final tile drawn from the wall can still win for the player who draws it, and the last discard of the deal can still be called for mahjong.",
+      "League rules do not change as the wall gets short. While any tiles remain in the wall, you may call a discard for an exposure or for mahjong, right down to the last tile. A table that bans calls near the end plays a house rule, often called a cold wall. Groups define it differently, since some bar only exposure calls and others bar every claim, and the League has never sanctioned any version of it. Anyone may still claim the very last discard of the deal for mahjong. On whether you may instead call that final discard only to make an exposure, we found no published League ruling either way, so agree at your table how you will handle it until the League settles it. If the last tile of the wall is drawn and discarded and no one declares mahjong, the hand ends with no winner and no one pays.",
     ruleset: RULESET,
-    varies_by_house: false,
-    source: "research_verified",
-    last_verified: VERIFIED_AUDIT,
+    varies_by_house: true,
+    house_note:
+      "Cold wall and hot wall restrictions and any last-tile bonus are table rules, so agree on them before the first hand.",
+    source: "owner_approved",
+    last_verified: OWNER_DECIDED,
     confidence: "high",
     classification: "standard_nmjl_rule",
-    provenance: researched("Follows from the owner-approved wall game and winning entries; the mahjong call on the last discard is the League's any-tile-for-mahjong rule, cross-checked via Mahj Life wiki articles 178 and 189", 2024),
+    provenance: ownerApproved("League rulebook 2024 pp.15 and 16 (wall game) and p.17 #8 (calling window), bulletins 1976 to 2014, none of which carves out a depleted wall; the exposure call on the deal's final discard is unresolved in published League material and is on the authoritative-resolution queue; located and cross-checked via Mahj Life wiki articles 107, 131, 137, 235 and the Sloperama American mahjong FAQ", 2024),
   },
   {
     id: "rules-source",

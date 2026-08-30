@@ -52,7 +52,9 @@ test.describe("knowledge base fact checks", () => {
         expect(e.approved_answer, e.id).not.toMatch(/instructor is confirming/);
       }
       // Provenance is metadata only: titles and article numbers, never source prose.
-      expect(e.provenance.source_title.length + (e.provenance.source_ref?.length ?? 0), e.id).toBeLessThan(400);
+      // Titles, page numbers, and article numbers only. Comfortably shorter than prose,
+      // but long enough to carry a full multi-source trail.
+      expect(e.provenance.source_title.length + (e.provenance.source_ref?.length ?? 0), e.id).toBeLessThan(520);
       expect(e.last_verified).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(e.last_verified <= new Date().toISOString().slice(0, 10)).toBe(true);
       expect(["high", "medium"]).toContain(e.confidence);

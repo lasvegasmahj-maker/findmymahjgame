@@ -82,6 +82,16 @@ The server keeps no state. The response carries the clarification id and the ori
 question; the client sends both back with the reply (typed or clicked). Obvious questions
 are never interrogated: a question that already carries the fact is answered directly.
 
+## Attribution policy (owner approved 2026-08-30)
+
+Write "the League rules that ..." only when the entry's provenance is League-issued text the
+research actually read: the printed card, a named page of the rulebook, a bulletin, or a
+League letter. Where a rule reached us through secondary summaries, write "under League
+rules" without claiming we read the text ourselves. Never write that a rule comes "directly
+from the League" unless we read the League's own words. The phrase stays accurate in the
+annual-card answer, which is about buying the card, a channel confirmed on the League's own
+store page.
+
 ## Adding or changing a rule
 
 1. Locate the League rule (hierarchy above). If it cannot be resolved confidently, add an

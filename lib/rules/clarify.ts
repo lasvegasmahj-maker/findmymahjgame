@@ -51,7 +51,7 @@ const VARIANT_NAMES: Record<string, string> = {
 const TOURNAMENT_RE = /\btournaments?\b/i;
 const TOURNAMENT_PHRASE = /\b(in|at|during|for|under|with) (a |the |our |my )?tournaments?( rules| play)?\b|\btournaments?( rules| play)?\b/gi;
 const PASS_VERB = /\bpass(es|ed|ing)?\b/i;
-const PASS_CONTEXT = /\b(charleston|blind|courtesy|jokers?|tiles?|right|left|across|discards?|first|second|last|round|before|start|starts|begins?|the game|explain|how|rules?|passing)\b/i;
+const PASS_CONTEXT = /\b(charleston|blind|courtesy|jokers?|tiles?|right|left|across|discards?|first|second|last|round|before|start|starts|begins?|the game|explain|how|rules?|passing|three|3|players?|handed)\b/i;
 const DEMONSTRATIVE_TILE =
   /\b(that|this) (tile|discard|one)\b|\b(call|claim|take|grab|have) (it|that|this)\b|\bwhat (she|he|they|someone) (just )?(threw|discarded|put down|tossed)\b|\b(her|his|their|the) (last |latest |most recent )?discard\b|\bthe tile (she|he|they|someone) (just )?(threw|discarded|put down|tossed)\b|\bthe tile (i|you) (need|want)\b/i;
 const OWN_HAND = /\b(my|this|our|the) hand\b/i;
