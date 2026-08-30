@@ -197,6 +197,19 @@ export function blindReadsAsPlace(question: string): boolean {
   );
 }
 
+// Shared by the route, the Ask box, and the clarification engine so they cannot drift.
+export const VARIANT_RE =
+  /\b(riichi|japanese|chinese|hong ?kong|cantonese|sichuan|taiwanese|korean|filipino|singapor(e|ean)|mcr|zung ?jung)\b/i;
+export const AMERICAN_RE = /\b(american|nmjl|national (mah ?jongg?|mahjong) league)\b/i;
+// A capitalized style word after a preposition ("in American mahjong", "in Chinese") is not a place.
+const STYLE_WORD =
+  /\b(american|nmjl|riichi|japanese|chinese|hong ?kong|cantonese|sichuan|taiwanese|korean|filipino|singapor(e|ean)|mcr|zung ?jung|mahjong|mah ?jongg?|charleston|league)\b/i;
+const PLACE_AFTER_PREP_RAW = /\b(in|near|around|at|to) [A-Z][a-z]+/;
+export function placeAfterPrep(q: string): boolean {
+  const m = PLACE_AFTER_PREP_RAW.exec(q);
+  return !!m && !STYLE_WORD.test(m[0]);
+}
+
 // Concept matchers the shared Ask box may treat as rules signals on their own: each one
 // names a mahjong-only idea, so a directory question cannot trip it.
 export const RULES_TOPIC_SIGNALS: RegExp[] = [
@@ -967,7 +980,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [new RegExp(`${CHARLESTON_WORD.source}|\\bpass(es|ed|ing)?\\b`, "i"), STOP_OR_AGREE],
     blocks: [BLIND_PASS, COURTESY, JOKER, DISCARDED],
     approved_answer:
-      "The first Charleston, three passes, is required and cannot be stopped once it begins. The second Charleston happens only if all four players agree, which is the same rule as saying any one player may stop it before it starts, without giving a reason. It can still be stopped after tiles for its first pass are put down, as long as nobody has looked at them; once a pass has been seen, that Charleston continues to the end. A courtesy pass can still be offered after a stop.",
+      "The first Charleston, three passes, is required and cannot be stopped once it begins. The second Charleston happens only if all four players agree, which is the same rule as saying any one player may stop it before it starts, without giving a reason. Once the second Charleston is under way, it continues to the end. A courtesy pass can still be offered after a stop.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
@@ -1085,7 +1098,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [TOURNAMENT],
     keywords: ["tournament", "director"],
     requires: [TOURNAMENT, /\b(rules?|differ|different|differs|standard|league play|director'?s?|penalt(y|ies)|scoring|time limit|timed)\b/i],
-    blocks: [/\b(near|nearby|in my area|\d{5}|looking for|find|register|sign up)\b/i, /\b(in|near|around|at|to) [A-Z][a-z]+/],
+    blocks: [/\b(near|nearby|in my area|\d{5}|looking for|find|register|sign up)\b/i, placeAfterPrep],
     approved_answer:
       "Tournaments play by National Mah Jongg League rules as the foundation, but each tournament director adds procedures of their own: timed rounds, a point system, and penalties for things like misnamed discards. Those rules apply only at that event and never change the League's rules for regular play. At a tournament, the director's rule governs; away from it, the League rule does.",
     ruleset: RULESET,

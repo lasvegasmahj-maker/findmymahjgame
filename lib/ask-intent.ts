@@ -1,4 +1,4 @@
-import { blindReadsAsPlace, BLIND_PASS, HAND_CLOSED, RULES_TOPIC_SIGNALS, RULES_TOPIC_SIGNALS_CONDITIONAL } from "@/lib/rules/knowledge";
+import { blindReadsAsPlace, BLIND_PASS, HAND_CLOSED, RULES_TOPIC_SIGNALS, RULES_TOPIC_SIGNALS_CONDITIONAL, VARIANT_RE, placeAfterPrep } from "@/lib/rules/knowledge";
 import { normalizeQuestion, spellfix } from "@/lib/rules/lookup";
 import { DAY_NAMES, type DayName, type TimeOfDay } from "@/lib/schedule";
 import { RADIUS_OPTIONS, type RadiusMiles } from "@/lib/geo";
@@ -201,13 +201,9 @@ const MAHJ_VOCAB =
   /\b(tiles?|hands?|discards?|discarded|discarding|walls?|card|charleston|jokers?|mahjong|mahj|maj|pungs?|kongs?|quints?|sextets?|expos\w*|melds?|racks?|deal|dealer|dealt|east|turns?|passing|win|wins|winning|won|bams?|craks?|dots?|winds?|dragons?|flowers?|soap|rules?|rule ?book|scoring|pays?|paid|dead|call|calls|called|calling|play|playing|players?|three[- ]handed|on the card|blanks?)\b/i;
 const DIRECTORY_NOUNS =
   /\b(groups|games|clubs|teachers?|instructors?|lessons?|classes|events|tournaments|venues|studios|meetups?|leagues|retreats|cruises|directory|listings?|website|near|nearby|zip|miles?|downtown|fourth|seat|spot|waitlist|reserve|reservation|show up|looking for|sign up|register)\b/i;
-// A capitalized place after in/near/at is a search, never a rules context.
-const PLACE_HINT = /\b(in|near|around|at|to) [A-Z][a-z]+/;
 const COMMERCE_RE =
   /\b(buy|buying|purchase|store|shop|for sale|price|prices|cost|costs|sell|sells|order|amazon|membership|fee|fees|sets? for|credit|debit|checkout)\b/i;
 
-const VARIANT_QUESTION_RE =
-  /\b(riichi|japanese|chinese|hong ?kong|cantonese|sichuan|taiwanese|korean|filipino|singapor(e|ean)|mcr|zung ?jung)\b/i;
 
 export function detectAskTopic(raw: string): AskTopic {
   const q = spellfix(normalizeQuestion(raw));
@@ -222,11 +218,12 @@ export function detectAskTopic(raw: string): AskTopic {
   // The weak nouns (rules, rack, discard, deal) only signal a rules question when the
   // sentence actually asks something. "Any good deal on lessons in Naples" is commerce.
   const weakRulesNoun = /\b(rules?|racks?|discard(s|ing)?|deal(t|ing)?|dealer)\b/i.test(q);
-  const conditional =
-    CONDITIONAL_RULES_SIGNALS.some((re) => re.test(q)) &&
-    MAHJ_VOCAB.test(q) && !DIRECTORY_NOUNS.test(q) && !COMMERCE_RE.test(q) && !PLACE_HINT.test(q);
+  const plainContext = MAHJ_VOCAB.test(q) && !DIRECTORY_NOUNS.test(q) && !COMMERCE_RE.test(q) && !placeAfterPrep(q);
+  const conditional = CONDITIONAL_RULES_SIGNALS.some((re) => re.test(q)) && plainContext;
+  // "riichi rules for pon" is a rules question even without a question word.
+  const variantAsk = VARIANT_RE.test(q) && (questionForm || plainContext);
   const strongRules = RULES_SIGNAL_RES.some((re) => re.test(q)) || conditional;
-  const rulesAsk = strongRules || (weakRulesNoun && questionForm) || (VARIANT_QUESTION_RE.test(q) && questionForm);
+  const rulesAsk = strongRules || (weakRulesNoun && questionForm) || variantAsk;
   if (!rulesAsk) return "directory";
 
   // Discovery needs a strong signal here. Bare "in" is not one: extractLocation reads

@@ -125,11 +125,11 @@ prompt and options; the page renders the options as buttons and also accepts a t
 
 - tests/rules-knowledge.spec.ts: hard mahjong facts, provenance rules, precedence classes.
 - tests/rules-clarify.spec.ts: triggers, non-interrogation, multi-turn resolution.
-- tests/rules-truth-benchmark.spec.ts: 128 classified cases, each run through casing,
+- tests/rules-truth-benchmark.spec.ts: 130 classified cases, each run through casing,
   punctuation, newline, smart-quote, and truncation variants; every entry reachable; corpus
   invariants (no source name, month, dash, or letter code; no conflicting rules; tournament,
   house, and strategy entries labeled as such; owner wording pinned).
-- tests/rules-heldout.spec.ts: 82 blind cases (76 at the first, tuning-free run; 82 after the gate rounds added phrasings), written after the routing logic and the
+- tests/rules-heldout.spec.ts: 83 blind cases (76 at the first, tuning-free run; 83 after the gate rounds added phrasings), written after the routing logic and the
   benchmark were finished. First, tuning-free run: 60 passed, 16 failed. Of the 16: 0 stated
   a wrong rule; 3 answered a related entry that did not address the asked point
   (joker-exchange question answered by the exposure entry, dealer's extra tile answered by
@@ -204,6 +204,8 @@ rulebook summary; that entry now states only the supported core and carries ques
 - Round 7: PASS, no blockers; warnings fixed (passing questions reach the Charleston answer; a bare parsed location no longer ejects a reply from its clarification; research entries record evidence owner_review_pending until approved).
 - Round 8: PASS, no blockers; warnings fixed (the homepage Ask card answers a clarification in place; an open clarification turn is not counted as unanswered; audit tables regenerated from the corpus).
 - Round 9: FAIL on the home-card chips being white on white (invisible); fixed with a navy pill style and a computed-color assertion on both viewports; negated replies never resolve to the option they refuse; a mixed question no longer echoes its rules half as a place name.
+- Round 11: PASS, no blockers; warnings fixed (tournament, rulebook, suit, and blank signals vocabulary-gated; a rate limit mid-clarification keeps the pending question).
+- Round 12: PASS, no blockers; warnings fixed (a capitalized style word after a preposition is never a place; a statement-form variant question reaches the style clarification; the Charleston-stop entry states only the settled rule).
 - Round 10: PASS, no blockers; warnings fixed (a negation in a topic reply keeps the named topic; the pending-review note claims no provenance; the hold-or-wait sentence and the wrong-exchange consequence became owner questions 13 and 14; the calling window wording matches the owner-approved house note in every research entry).
 
 ## Independent truth-verification panel (2026-08-30)

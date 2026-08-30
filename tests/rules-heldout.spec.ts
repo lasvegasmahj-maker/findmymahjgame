@@ -89,6 +89,7 @@ export const HELD_OUT = [
   A("where do the official rules come from", "rules-source"),
   C("how do you score in hong kong mahjong", "ruleset"),
   C("Is chow allowed in Chinese mahjong?", "ruleset"),
+  C("riichi rules for pon", "ruleset"),
   A("jocker exchange, when?", "joker-exchange-timing", "joker-exchange"),
   A("charelston pass rules", "charleston"),
   A("dead hand jokers", "dead-hand-jokers"),
@@ -107,7 +108,7 @@ test.describe("held-out blind evaluation", () => {
         expect(r.matched, `expected an answer but got ${JSON.stringify(r.clarify?.id ?? r.unsupported_reason)}`).toBe(true);
         expect(c.ex.entry, `routed to ${r.entry_id}`).toContain(r.entry_id);
         expect(r.answer).not.toMatch(MONTH_RE);
-        expect(r.answer).not.toMatch(/[–—]/);
+        expect(r.answer).not.toMatch(/[\u2013\u2014]/);
       } else if (c.ex.kind === "clarify") {
         expect(r.matched, `expected clarification ${c.ex.id} but got entry ${r.entry_id}`).toBe(false);
         expect(r.clarify?.id).toBe(c.ex.id);

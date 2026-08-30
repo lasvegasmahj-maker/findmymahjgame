@@ -8,7 +8,7 @@ import { detectAskTopic } from "../lib/ask-intent";
 
 const MONTH_RE =
   /\b(january|february|march|april|june|july|august|september|october|november|december)\b|\b(in|every|each|late|early|mid) may\b/i;
-const DASH_RE = /[–—]/;
+const DASH_RE = /[\u2013\u2014]/;
 const LETTER_CODE_RE = /\b[PKN]\b/;
 
 function allText(entry: (typeof RULES_KNOWLEDGE)[number]): string {

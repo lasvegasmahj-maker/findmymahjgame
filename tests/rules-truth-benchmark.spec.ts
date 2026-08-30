@@ -296,7 +296,7 @@ test.describe("corpus invariants", () => {
       const text = [e.topic, e.approved_answer, e.house_note ?? ""].join(" ");
       expect(text, e.id).not.toMatch(/mahj ?life/i);
       expect(text, e.id).not.toMatch(MONTH_RE);
-      expect(text, e.id).not.toMatch(/[–—]/);
+      expect(text, e.id).not.toMatch(/[\u2013\u2014]/);
       expect(text, e.id).not.toMatch(/\b[PKN]\b/);
     }
   });

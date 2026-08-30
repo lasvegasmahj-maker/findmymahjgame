@@ -3,6 +3,7 @@ import { extractIntent, rephraseApprovedAnswer } from "@/lib/ask-llm";
 import { parseAskIntent, detectAskTopic } from "@/lib/ask-intent";
 import { normalizeQuestion, lookupRule, spellfix, summarizeRulesGap, type RulesLookupResult } from "@/lib/rules/lookup";
 import { answersOption, isExactOption } from "@/lib/rules/clarify";
+import { placeAfterPrep } from "@/lib/rules/knowledge";
 import { lazyServerClient } from "@/lib/supabase-server";
 import { searchEventsWithRelaxation, searchVenues, describeRelaxations } from "@/lib/search";
 import { resolveLocation } from "@/lib/resolve-location";
@@ -96,7 +97,6 @@ function trackAskOutcome(
 }
 
 const STRONG_SEARCH_CUE = /\b(where|near|nearby|find|looking for|teachers?|instructors?|lessons?|class|classes|zip)\b/i;
-const PLACE_AFTER_PREP = /\b(in|near|around|at|to) [A-Z][a-z]+/;
 
 // A parsed location alone is not a search cue: extractLocation reads "at all really" as a
 // place, so a plain reply would be ejected from its clarification.
@@ -105,7 +105,7 @@ function looksLikeDirectorySearch(q: string): boolean {
   return (
     intent.days.length > 0 || intent.timeOfDay !== null || intent.types !== null || intent.kind === "teachers" ||
     /\b(where|near|nearby|find|looking for|events?|games?|groups?|clubs?|meetups?|teachers?|instructors?|lessons?)\b/i.test(q) ||
-    PLACE_AFTER_PREP.test(q)
+    placeAfterPrep(q)
   );
 }
 
@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
     const ctx = { id: clarify.id, question: spellfix(clarify.question) };
     // "mahjong teacher near Naples" answers the mahjong option by word alone; a strong search
     // cue in the same reply makes it a search.
-    const keep = isExactOption(ctx, question) || (answersOption(ctx, question) && !STRONG_SEARCH_CUE.test(question) && !PLACE_AFTER_PREP.test(question));
+    const keep = isExactOption(ctx, question) || (answersOption(ctx, question) && !STRONG_SEARCH_CUE.test(question) && !placeAfterPrep(question));
     if (!keep && looksLikeDirectorySearch(question) && detectAskTopic(question) === "directory") clarify = null;
   }
   const topic = clarify ? "rules" : detectAskTopic(question);

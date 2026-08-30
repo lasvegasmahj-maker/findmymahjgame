@@ -192,7 +192,8 @@ function handleReply(ctx: ClarifyContext, reply: string): RulesLookupResult {
     return lookupRule({ question: reply });
   }
   const c = resolved.clarification;
-  const prompt = c.prompt || needsClarification(spellfix(original), () => true)?.prompt || "Did you mean American mahjong?";
+  const again = needsClarification(spellfix(original), () => true);
+  const prompt = c.prompt || (again?.id === c.id ? again.prompt : "") || "Did you mean American mahjong?";
   const choices =
     c.options.length <= 2 ? `You can answer with ${c.options.map((o) => `"${o.label}"`).join(" or ")}.` : "Pick one of the choices below, or type it.";
   const payload = toPayload(c, original);

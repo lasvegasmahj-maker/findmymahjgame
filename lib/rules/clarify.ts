@@ -9,6 +9,8 @@ import {
   MISNAMED,
   OWN_DISCARD,
   TWO_PLAYERS,
+  VARIANT_RE,
+  AMERICAN_RE,
 } from "./knowledge";
 
 // The clarification engine. A rules question that cannot be answered correctly without
@@ -46,9 +48,6 @@ const VARIANT_NAMES: Record<string, string> = {
   sichuan: "Sichuan", taiwanese: "Taiwanese", korean: "Korean", filipino: "Filipino", singapore: "Singapore", singaporean: "Singaporean",
   mcr: "MCR", "zung jung": "Zung Jung", zungjung: "Zung Jung",
 };
-const VARIANT_RE =
-  /\b(riichi|japanese|chinese|hong ?kong|cantonese|sichuan|taiwanese|korean|filipino|singapor(e|ean)|mcr|zung ?jung)\b/i;
-const AMERICAN_RE = /\b(american|nmjl|national (mah ?jongg?|mahjong) league)\b/i;
 const TOURNAMENT_RE = /\btournaments?\b/i;
 const TOURNAMENT_PHRASE = /\b(in|at|during|for|under|with) (a |the |our |my )?tournaments?( rules| play)?\b|\btournaments?( rules| play)?\b/gi;
 const PASS_VERB = /\bpass(es|ed|ing)?\b/i;
@@ -176,7 +175,7 @@ const TOPIC_GROUPS: Array<{ key: string; label: string; match: RegExp; entry: st
 const SOMETHING_ELSE_KEY = "other";
 const SOMETHING_ELSE_LABEL = "Something else";
 export const GAP_ANSWER =
-  "Thanks, that one is not in our verified American mahjong rules yet, so I will not guess at it. We have logged the topic for our instructor to research and add. Until then, check the National Mah Jongg League's rulebook, and where the League has a rule, follow it over a table custom.";
+  "Thanks, that one is not in our verified American mahjong rules yet, so I will not guess at it. I have logged the topic for our instructor to research and add. Until then, check the National Mah Jongg League's rulebook, and where the League has a rule, follow it over a table custom.";
 
 function specificEntryLikely(q: string): boolean {
   return (

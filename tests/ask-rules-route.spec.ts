@@ -72,6 +72,12 @@ test.describe("Ask route: rules clarification turns", () => {
     const no = await ask(request, "no, Chinese", { id: "ruleset", question: q });
     expect(no.rules.matched).toBe(false);
     expect(no.answer).toMatch(/only verify American mahjong rules/);
+    const yesIn = await ask(request, "yes, in American mahjong", { id: "ruleset", question: "in riichi can I call a pung?" });
+    expect(yesIn.topic).toBe("rules");
+    expect(yesIn.rules?.matched ?? yesIn.rules?.clarify?.id).toBeTruthy();
+    expect(yesIn.answer).not.toMatch(/near American/);
+    const noIn = await ask(request, "no, in Chinese", { id: "ruleset", question: "in riichi can I call a pung?" });
+    expect(noIn.answer).toMatch(/only verify American mahjong rules/);
     for (const reply of ["no, not American", "Not American mahjong", "not right"]) {
       const r = await ask(request, reply, { id: "ruleset", question: q });
       expect(r.rules.matched, reply).toBe(false);
