@@ -224,8 +224,10 @@ const HOLD_WAIT_ASK =
   /\b(call|calls|called|claim|claims|count|counts|mean|means|legal|legally|stop|stops|priority|say|says|saying|said|shout|shouted|allowed|same as|instead of)\b/i;
 const SETTLEMENT =
   /\b(pay|pays|paid|paying|payment|payments|settle|settles|settled|settlement|owe|owes|collect|collects|value|double|penalty|penalties|throw(n)? in|threw in|toss(ed)? in)\b/i;
+// Only the deal's final discard, never the most recent one: "her last discard finishes my
+// pung" is an ordinary calling question and must not reach the end-of-wall answer.
 const FINAL_DISCARD_SCENE =
-  /\b(last discard|final discard|last tile|wall is (empty|gone|out|used up)|wall runs out|no tiles left|out of tiles|end of the wall|nothing left to draw)\b/i;
+  /\b(last|final) (discard|tile)\b(?=[^.?!]{0,40}\b(wall|deal|game|end|empty|left)\b)|\b(wall|deal|game|end|empty)\b[^.?!]{0,40}\b(last|final) (discard|tile)\b|\bwall is (empty|gone|out|used up)\b|\bwall runs out\b|\bno tiles left\b|\bout of tiles\b|\bend of the wall\b|\bnothing left to draw\b/i;
 
 // Shared by the route, the Ask box, and the clarification engine so they cannot drift.
 export const VARIANT_RE =
@@ -890,7 +892,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     keywords: ["misnamed", "wrong name"],
     requires: [MISNAMED],
     approved_answer:
-      "Name every discard aloud as you place it face up, because the correct name is what makes the tile claimable. When your tile repeats the discard just before it, the League accepts saying same, and you say joker when you throw a joker. If you say the wrong name, fix it with words only: state the correct name of the tile you actually threw. Never swap tiles, even if the tile you named by mistake sits in your hand. Once you correct the name and nobody has acted on the error, play continues with no penalty and any player may claim the tile normally. A call made on the wrong name does not stand, so if a player wanted the tile only for an exposure, correct the name and play on. If a player declares mahjong based on the wrong name, the deal ends there: you alone pay that player 4 times the value of the hand, and the other two players pay nothing. That penalty applies even when the tile you threw was really a joker, because the claim rests on what you said. If two players declare mahjong at once, one on the wrong name and one needing the tile you actually threw, the player who needs the actual tile wins. If nobody catches the misname before the next player picks and racks, the chance to claim that tile is gone and nobody pays a penalty. Watch each discard with your eyes, not just your ears.",
+      "Name every discard aloud as you place it face up, because the correct name is what makes the tile claimable. When your tile repeats the discard just before it, the League accepts saying same. If you say the wrong name, fix it with words only: state the correct name of the tile you actually threw. Never swap tiles, even if the tile you named by mistake sits in your hand. Once you correct the name and nobody has acted on the error, play continues with no penalty and any player may claim the tile normally. A call made on the wrong name does not stand, so if a player wanted the tile only for an exposure, correct the name and play on. If a player declares mahjong based on the wrong name, the deal ends there: you alone pay that player 4 times the value of the hand, and the other two players pay nothing. That penalty applies even when the tile you threw was really a joker, because the claim rests on what you said. If two players declare mahjong at once, one on the wrong name and one needing the tile you actually threw, the player who needs the actual tile wins. If nobody catches the misname before the next player picks and racks, the chance to claim that tile is gone and nobody pays a penalty. Watch each discard with your eyes, not just your ears.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "owner_approved",

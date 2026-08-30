@@ -174,10 +174,6 @@ const RULES_SIGNAL_RES: RegExp[] = [
   /\bwhat (she|he|they|someone) (just )?(threw|discarded|put down|tossed)\b|\bpick up\b.{0,20}\b(discard|tile|what)\b/i,
   /\b(skip|stop|decline|refuse|refuses|end)\b.{0,30}\b(passing|charleston|passes)\b|\bround of passing\b/i,
   /\bpass(es|ed|ing)? (the |my |your |a )?tiles?\b|\bhow (does|do) (passing|the pass(es)?|a pass|passes) work\b|\b(what is|what'?s|explain) (the )?passing\b/i,
-  /\b(three|3)[- ](player|handed|person)\b|\bmissing a (fourth|4th)\b|\bwithout a (fourth|4th)\b|\b(three|3) of us\b[^.?!]{0,40}\b(pass|passing|charleston|deal|tiles?|play|still)\b/i,
-  /\b(redeal|re-?deal)\b|\b(12|14) tiles\b|\bwrong number of tiles\b|\bshort a tile\b|\bextra tile\b/i,
-  /\b(hold|wait)\b(?!\s+(a |the )?(spot|seat|place|table|room))[^.?!]{0,30}\b(call|claim|tile|discard|priority|count|counts|mean)\b|\b(call|claim|tile|discard|priority)\b[^.?!]{0,30}\b(hold|wait)\b(?!\s+(a |the )?(spot|seat|place|table|room))/i,
-  /\b(final|last) discard\b|\bcold wall\b|\bhot wall\b/i,
   ...RULES_TOPIC_SIGNALS,
   /\b(exchange|redeem|swap|trade)\b.{0,30}\bjokers?\b/i,
   /\bjokers?\b.{0,30}\b(exchange|redeem|swap|trade|discard|discarded|thrown|throw)\b/i,
@@ -188,6 +184,11 @@ const RULES_SIGNAL_RES: RegExp[] = [
 const CONDITIONAL_RULES_SIGNALS: RegExp[] = [
   ...RULES_TOPIC_SIGNALS_CONDITIONAL,
   /\bhow many of each\b/i,
+  // Everyday words: gated below on mahjong vocabulary with no directory, commerce, or place cue.
+  /\b(three|3) of us\b[^.?!]{0,40}\b(pass|passing|charleston|deal|tiles?|play|still)\b/i,
+  /\b(redeal|re-?deal)\b|\b(12|14) tiles\b|\bwrong number of tiles\b|\bshort a tile\b|\bextra tile\b/i,
+  /\b(hold|wait)\b(?!\s+(a |the )?(spot|seat|place|table|room))[^.?!]{0,30}\b(call|claim|tile|discard|priority|count|counts|mean)\b|\b(call|claim|tile|discard|priority)\b[^.?!]{0,30}\b(hold|wait)\b(?!\s+(a |the )?(spot|seat|place|table|room))/i,
+  /\bcold wall\b|\bhot wall\b|\b(final|last) discard\b[^.?!]{0,40}\b(wall|deal|game|exposure|mahjong)\b|\b(wall|deal)\b[^.?!]{0,40}\b(final|last) discard\b/i,
   /\bblanks?\b(?! (check|page|space|form))/i,
   /\btournament (rules?|play|director)\b/i,
   /\brule ?book\b|\bmade easy\b/i,
@@ -202,7 +203,7 @@ const CONDITIONAL_RULES_SIGNALS: RegExp[] = [
   /\bon the card\b|\bwhat does (the )?(little |letter |a |an )?[cx] (mean|stand for)\b|\b[cx] (after|next to|beside|behind) (a|the) hand\b/i,
 ];
 const MAHJ_VOCAB =
-  /\b(tiles?|hands?|discards?|discarded|discarding|walls?|card|charleston|jokers?|mahjong|mahj|maj|pungs?|kongs?|quints?|sextets?|expos\w*|melds?|racks?|deal|dealer|dealt|east|turns?|passing|win|wins|winning|won|bams?|craks?|dots?|winds?|dragons?|flowers?|soap|rules?|rule ?book|scoring|pays?|paid|dead|call|calls|called|calling|play|playing|players?|three[- ]handed|on the card|blanks?)\b/i;
+  /\b(tiles?|hands?|discards?|discarded|discarding|walls?|card|charleston|jokers?|mahjong|mahj|maj|pungs?|kongs?|quints?|sextets?|expos\w*|melds?|racks?|deal|dealer|dealt|east|turns?|passing|win|wins|winning|won|bams?|craks?|dots?|winds?|dragons?|flowers?|soap|rules?|rule ?book|scoring|pays?|paid|dead|call|calls|called|calling|play|playing|players?|three[- ]handed|on the card|blanks?|pass|passes|redeal)\b/i;
 const DIRECTORY_NOUNS =
   /\b(groups|games|clubs|teachers?|instructors?|lessons?|classes|events|tournaments|venues|studios|meetups?|leagues|retreats|cruises|directory|listings?|website|near|nearby|zip|miles?|downtown|fourth|seat|spot|waitlist|reserve|reservation|show up|looking for|sign up|register)\b/i;
 const COMMERCE_RE =

@@ -300,6 +300,14 @@ test.describe("directory questions stay directory questions", () => {
       "does mahjong suit beginners",
       "which club suits my game night in Naples",
       "where can I buy a set with blanks",
+      "looking for a 3 player group in Henderson",
+      "do you have a 3 person class",
+      "how much for a three person lesson",
+      "what is the price for an extra tile set",
+      "can I get an extra tile set at the store",
+      "can you hold my spot until I call the teacher",
+      "is there a 3 person game near me",
+      "3 handed groups near 89138",
     ]) {
       expect(detectAskTopic(q), q).toBe("directory");
     }
@@ -318,6 +326,16 @@ test.describe("adversarial pairs from the owner decisions (2026-08-30)", () => {
     expect(final.answer).toMatch(/no published League ruling either way/);
     // The claim the owner struck must never come back.
     expect(final.answer).not.toMatch(/wins you nothing|futile|pointless/i);
+    // "last discard" in ordinary speech is the most recent one, not the deal's final tile.
+    for (const q of [
+      "the last tile she discarded completes my kong, can I call it",
+      "can I call the last tile for an exposure",
+      "her last discard finishes my pung, can I take it",
+    ]) {
+      const r = lookupRule({ question: q });
+      expect(r.entry_id, q).toBe("calling-for-exposure");
+      expect(String(r.answer), q).not.toMatch(/no published League ruling/);
+    }
     const recent = lookupRule({ question: "when can I call a discard?" });
     expect(recent.entry_id).toBe("calling-discard");
     expect(String(recent.answer)).not.toMatch(/no published League ruling/);
@@ -397,9 +415,11 @@ test.describe("corpus invariants", () => {
     }
   });
 
-  test("naming-discards makes no claim about how a discarded joker is named", () => {
-    const e = RULES_KNOWLEDGE.find((x) => x.id === "naming-discards")!;
-    expect(e.approved_answer).not.toMatch(/joker/i);
+  test("no entry claims how a discarded joker is named", () => {
+    for (const id of ["naming-discards", "misnamed-discard"]) {
+      const e = RULES_KNOWLEDGE.find((x) => x.id === id)!;
+      expect(e.approved_answer, id).not.toMatch(/say joker|named joker|call it joker/i);
+    }
   });
 
   test("no answer states two conflicting rules: closed hands never call for a group, and jokers never sit in a pair", () => {
