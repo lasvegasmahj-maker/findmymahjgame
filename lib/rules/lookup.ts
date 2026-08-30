@@ -62,7 +62,7 @@ const EMPTY_ANSWER =
 // Common misspellings resolve to the rules vocabulary before topic detection and
 // retrieval; the route still hands the raw question to directory intent extraction.
 const SPELLFIX: Array<[RegExp, string | ((m: string) => string)]> = [
-  [/\bcharl(?:e?s|es|se|ls)?t?on\b|\bcharleton\b|\bcharelston\b|\bcharlseton\b|\bcharlestown\b/gi, "charleston"],
+  [/\bcharlston\b|\bcharleton\b|\bcharelston\b|\bcharlseton\b|\bcharlestone\b|\bcharlestn\b/gi, "charleston"],
   [/\bjo(?:c|k)k?ers?\b|\bjokrs?\b/gi, (m: string) => (m.toLowerCase().endsWith("s") ? "jokers" : "joker")],
   [/\bmah[\s-]?jong+g?\b|\bmahjong+\b|\bmah[\s-]?jon\b|\bmajh?ong\b/gi, "mahjong"],
   [/\bdiscrad(s|ed|ing)?\b|\bdicard(s|ed|ing)?\b|\bdisacrd(s|ed|ing)?\b/gi, (m: string) => "discard" + (m.match(/(s|ed|ing)$/i)?.[0].toLowerCase() ?? "")],

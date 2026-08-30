@@ -23,8 +23,9 @@ rule. Each entry is classified so the site can say which kind of rule it is givi
 
 ## Mahj Life: approved for research, with a copyright boundary
 
-Mahj Life publishes its educational material under Creative Commons Attribution-NonCommercial-
-NoDerivatives 4.0 (CC BY-NC-ND 4.0) and marks its names as trademarks. Find My Mahj is a
+Mahj Life publishes its educational material under
+Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 (CC BY-NC-ND 4.0)
+and marks its names as trademarks. Find My Mahj is a
 commercial site, so:
 
 - Mahj Life is used for research, verification, source discovery, and cross-checking only.

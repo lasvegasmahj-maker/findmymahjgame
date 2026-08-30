@@ -154,7 +154,7 @@ const PAYMENT =
 const QUINT_SEXTET = /\b(quints?|sextets?|five of a kind|six of a kind)\b/i;
 // Card groupings built from different tiles: a joker never fills these.
 const MIXED_GROUP =
-  /\b(news|n ?e ?w ?s|runs?|sequences?|consecutive|straight|year|years|the date|20[0-9]{2}|1 ?2 ?3|2 ?4 ?6|3 ?6 ?9|369|246|different tiles|mixed group|line of singles)\b/i;
+  /\b(news|n ?e ?w ?s|runs?|sequences?|consecutive|straight|year|years|20[0-9]{2} hand|1 ?2 ?3|2 ?4 ?6|3 ?6 ?9|369|246|different tiles|mixed group|line of singles)\b/i;
 // Scoring vocabulary only: "do I have to pay to play mahjong in Naples" is a directory question.
 export const SCORING_ASK =
   /\b(who|how much) (pays|do (i|we|you) pay|does (everyone|each player|the discarder|the winner) pay)\b|\bpay(s|ing)? (the )?(winner|double|value|more|less|twice)\b|\bjokerless\b|\bpayout\b|\bself[- ]?pick(ed)?\b|\bdiscarder pays?\b|\b(pay|pays|paid|payment|payments|score|scoring|worth|value|double) (for|on|in|after|with|of) (a |the |my )?(wall game|self[- ]?pick|jokerless|win|winning|mahjong|maj|discard|hand)\b|\bhand (value|worth|is worth|pays)\b|\bvalue of (a |the |my )?hand\b|\b(win|wins|won) on a discard\b|\bworth double\b|\bdouble the value\b|\bscoring\b/i;
@@ -700,7 +700,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [CLAIM_VERB, EXPOSURE_CUE],
     blocks: [HAND_CLOSED, TWO_PLAYERS, OWN_DISCARD, JOKER_EXCHANGE, /\bpairs?\b/i, QUINT_SEXTET, MISNAMED],
     approved_answer:
-      "You may call a discard to build an exposure when the tiles already in your hand, with jokers allowed, make it a group of 3 or more identical tiles: a Pung, a Kong, or a larger group. Say call, take the tile, and place the whole group face up on top of your rack, then discard. You cannot call a discard to make a pair unless that tile completes your mahjong, and a hand marked concealed cannot call for an exposure at all. Once the called tile and its group sit on your rack, the call stands; you may fix a mistake in that exposure only until you discard.",
+      "You may call a discard to build an exposure when the tiles already in your hand, with jokers allowed, make it a group of 3 or more identical tiles: a Pung, a Kong, or a larger group. Say call, take the tile, and place the whole group face up on top of your rack, then discard. You cannot call a discard to make a pair unless that tile completes your mahjong, and a hand marked concealed cannot call for an exposure at all. The call is committed as soon as the called tile goes on your rack or you expose tiles from your hand. You may fix a mistake in that exposure only until you discard or exchange a joker; after either, it is locked.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
@@ -734,7 +734,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [JOKER, MIXED_GROUP],
     blocks: [JOKER_EXCHANGE, JOKER_PASS, DISCARDED],
     approved_answer:
-      "No. A joker never fills a group made of different tiles, such as a run like 1 2 3, a year, the four winds together, or any line of singles, even though those groups have 3 or more tiles. Jokers only work inside a group of 3 or more identical tiles: a Pung, Kong, Quint, or Sextet. Those mixed groups must be built from the real tiles.",
+      "A joker never stands in for one of the single tiles that make up a mixed group: a run like 1 2 3, a year, the four winds together, or any line of singles, even though those groups have 3 or more tiles. In a hand that includes such a group, jokers can still fill that hand's Pungs, Kongs, Quints, or Sextets. The mixed group itself must be built from the real tiles.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
@@ -1057,7 +1057,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [EXPOSURE_WORD],
     blocks: [CLAIM_VERB, JOKER_EXCHANGE, HAND_CLOSED, DEAD, TWO_PLAYERS],
     approved_answer:
-      "An exposure is a group you called: the discard plus the matching tiles from your hand, placed face up on top of your rack. Only a Pung, Kong, Quint, or Sextet can be exposed, never a pair. Until you discard, you may still fix a mistake in the exposure; after that it is locked, and the only later change is a player redeeming a joker in it. Every exposure must fit one hand on the card, and if your exposures cannot all fit the same hand, your hand is dead. A hand marked concealed makes no exposures.",
+      "An exposure is a group you called: the discard plus the matching tiles from your hand, placed face up on top of your rack. Only a Pung, Kong, Quint, or Sextet can be exposed, never a pair. You may fix a mistake in an exposure only until you discard or exchange a joker; after either, it is locked, and the only later change is a player redeeming a joker in it. Every exposure must fit one hand on the card, and if your exposures cannot all fit the same hand, your hand is dead. A hand marked concealed makes no exposures.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
@@ -1074,7 +1074,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [new RegExp(`${CARD_WORD.source}|\\bzero\\b|${CX_LETTERS.source}`, "i"), NOTATION],
     blocks: [/\b(come(s)? out|release|publish|new card|next card|when)\b/i],
     approved_answer:
-      "On the card, each color stands for a different suit, not a fixed one: a hand shown in a single color uses one suit, and a hand shown in three colors uses three different suits. C after a hand means it must be played concealed; X means exposures are allowed. F stands for a flower, D for a dragon, and the winds appear by their first letters. Jokers are never printed in a hand; they stand in for tiles inside any group of 3 or more. In hands that show a year or another number with a zero, the Soap plays the zero.",
+      "On the card, each color stands for a different suit, not a fixed one: a hand shown in a single color uses one suit, and a hand shown in three colors uses three different suits. C after a hand means it must be played concealed; X means exposures are allowed. F stands for a flower, D for a dragon, and the winds appear by their first letters. Jokers are never printed in a hand; they stand in for tiles inside any group of 3 or more identical tiles. In hands that show a year or another number with a zero, the Soap plays the zero.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
@@ -1141,7 +1141,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [OFFICIAL],
     blocks: [CARD_WORD, TOURNAMENT],
     approved_answer:
-      "American mahjong's official rules come from the National Mah Jongg League: the card it publishes every spring and its rulebook, Mah Jongg Made Easy, along with the rulings in its bulletins. Find My Mahj answers only from those rules as reviewed by our instructor, and we say so whenever something is a table courtesy or a house rule instead of a League rule.",
+      "American mahjong's official rules come from the National Mah Jongg League: the card it publishes every spring and its rulebook, Mah Jongg Made Easy, along with the rulings in its bulletins. Find My Mahj answers only from those rules; our instructor reviews every answer we add, and we say so whenever something is a table courtesy or a house rule instead of a League rule.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",

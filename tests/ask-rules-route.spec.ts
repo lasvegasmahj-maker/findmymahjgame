@@ -79,10 +79,13 @@ test.describe("Ask route: rules clarification turns", () => {
 
   test("a directory question typed while a clarification is pending gets the search, not a forced rule", async ({ request }) => {
     const ctx = { id: "call-purpose", question: "Can I call that tile?" };
-    const teachers = await ask(request, "mahjong teachers near Naples FL", ctx);
+    const teachers = await ask(request, "mahjong teacher near Naples FL", ctx);
     expect(teachers.topic).toBe("directory");
     expect(teachers.intent.kind).toBe("teachers");
     expect(teachers.rules).toBeUndefined();
+    const neverMind = await ask(request, "never mind, where can I play in Boca?", ctx);
+    expect(neverMind.topic).toBe("directory");
+    expect(neverMind.rules?.clarify).toBeUndefined();
     const find = await ask(request, "Find an instructor near Phoenix", { id: "pass-context", question: "Can I pass?" });
     expect(find.topic).toBe("directory");
     expect(find.rules?.clarify).toBeUndefined();
@@ -131,5 +134,14 @@ test.describe("/ask page: clarification UI", () => {
     await expect(page.getByRole("button", { name: "Reply" })).toBeVisible();
     await askOnPage(page, "for an exposure");
     await expect(page.getByRole("status")).toContainText("group of 3 or more identical tiles");
+  });
+
+  test("Never mind cancels a pending clarification", async ({ page }) => {
+    await page.goto("/ask");
+    await askOnPage(page, "Can I call that tile?");
+    await expect(page.getByTestId("ask-clarify")).toBeVisible();
+    await page.getByRole("button", { name: "Never mind" }).click();
+    await expect(page.getByTestId("ask-clarify")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Ask" })).toBeVisible();
   });
 });

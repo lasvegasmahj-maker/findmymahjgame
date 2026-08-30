@@ -253,6 +253,20 @@ test.describe("directory questions stay directory questions", () => {
       "who is the authority on mahjong groups in Austin",
       "I don't want it too far, games in Naples",
       "the mahjong club address is wrong, who fixes listings",
+      "We are three players looking for a fourth in Naples",
+      "Any games for 2 players in Boca?",
+      "Is there a mahjong meetup for 5 people in Austin",
+      "Can they hold a spot for me if I call ahead?",
+      "Who goes first on the waitlist for the Boca game?",
+      "Looking for a game with official rules in Phoenix",
+      "Do I need to call it in to reserve a seat?",
+      "Which tiles set should I buy for lessons?",
+      "Can I show up before the game starts to get a lesson?",
+      "Do you offer hands-on lessons and take a credit card?",
+      "Three of us want to learn, any teachers near Boca?",
+      "Charlestown mahjong groups?",
+      "Charlton games on Tuesday?",
+      "never mind, where can I play in Boca?",
     ]) {
       expect(detectAskTopic(q), q).toBe("directory");
     }
@@ -275,6 +289,13 @@ test.describe("corpus invariants", () => {
       expect(text, e.id).not.toMatch(MONTH_RE);
       expect(text, e.id).not.toMatch(/[–—]/);
       expect(text, e.id).not.toMatch(/\b[PKN]\b/);
+    }
+  });
+
+  test("fixing an exposure closes on either cut-off: a discard or a joker exchange", () => {
+    for (const id of ["calling-for-exposure", "exposures-basics"]) {
+      const e = RULES_KNOWLEDGE.find((x) => x.id === id)!;
+      expect(e.approved_answer, id).toMatch(/until you discard or exchange a joker/);
     }
   });
 

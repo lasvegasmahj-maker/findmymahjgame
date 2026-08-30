@@ -132,6 +132,13 @@ export default function AskClient() {
                   {o.label}
                 </button>
               ))}
+              <button
+                type="button"
+                onClick={() => { setResp(null); setQ(""); }}
+                style={{ minHeight: 44, background: "none", border: "none", color: "var(--muted)", fontWeight: 700, cursor: "pointer", fontSize: "0.9rem", fontFamily: "var(--font-dm-sans), 'DM Sans', sans-serif" }}
+              >
+                Never mind
+              </button>
             </div>
           )}
 
