@@ -132,3 +132,16 @@ launch gates are OFF; nothing here is launched.
   corrected this record; analytics paging fix added. 18:19 PT: another operator
   deployed baffb99 to production from the CLI. The deploy of the analytics fix is
   pending the final gate; the next entry records it.
+- 2026-08-29 19:08 PT: I fast-forwarded this branch onto main as 2025269, which
+  carries the record, the admin analytics paging fix, and the (created_at, id) index
+  migration, and deployed it to production from the Vercel CLI (READY, sha 2025269,
+  aliased to findmymahjgame.com). Verified after the deploy: security headers
+  present; all four launch gates and matcher_enabled still false; /api/ask serves the
+  PR #13 wording; no 5xx in the last 3 hours. The only error-level logs in that
+  window were two transient "fetch failed" analytics inserts from /api/ask at 18:10
+  and 18:51 PT (before this deploy); the Ask responses returned 200, so no visitor
+  was affected. I could not call the live /api/admin/analytics endpoint myself
+  because I do not hold production admin credentials. The proof for the fix is the
+  suite run on a local build of the same commit, pointed at the production
+  analytics_events table: 576 passed, the analytics spec passed 7 of 7, and the
+  rollup total equaled the table's head count.
