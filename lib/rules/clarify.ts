@@ -258,8 +258,12 @@ export function resolveReply(ctx: ClarifyContext, reply: string): { option: Clar
   // Option words are loose on purpose ("mahjong", "play"), so only a short reply may match
   // them; a whole new question typed mid-clarification is handled as a question.
   if (trimmed.split(/\s+/).length > 6) return { clarification };
-  const matches = clarification.options.filter((o) => o.match.test(trimmed));
-  // Both options matching means the reply restated the whole question; ask again.
-  if (matches.length === 1) return { option: matches[0], clarification };
+  // "not a tournament" matches both tournament options; the longer, more specific match wins.
+  // A tie means the reply restated the whole question, so ask again.
+  const scored = clarification.options
+    .map((o) => ({ o, len: (trimmed.match(o.match)?.[0] ?? "").length }))
+    .filter((x) => x.len > 0)
+    .sort((a, b) => b.len - a.len);
+  if (scored.length === 1 || (scored.length > 1 && scored[0].len > scored[1].len)) return { option: scored[0].o, clarification };
   return { clarification };
 }
