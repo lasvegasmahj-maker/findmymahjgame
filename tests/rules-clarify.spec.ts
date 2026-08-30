@@ -102,6 +102,13 @@ test.describe("multi-turn resolution", () => {
     expect(r.needs_clarification).toMatch(/You can answer with "Yes, American mahjong" or "No, another style"\.$/);
   });
 
+  test("a negated reply never resolves to the option it refuses", () => {
+    expect(lookupRule({ question: "no, not concealed", clarify: { id: "hand-type", question: "Can I call for a pung with my hand?" } }).entry_id).not.toBe("closed-hand-final-tile");
+    expect(lookupRule({ question: "not for an exposure", clarify: { id: "call-purpose", question: CALL } }).entry_id).not.toBe("calling-for-exposure");
+    expect(lookupRule({ question: "not the charleston", clarify: { id: "pass-context", question: "Can I pass?" } }).entry_id).not.toBe("charleston");
+    expect(lookupRule({ question: "not exposure, mahjong", clarify: { id: "call-purpose", question: CALL } }).entry_id).toBe("calling-for-mahjong");
+  });
+
   test("a brand new question typed during a clarification is answered as a new question", () => {
     const r = lookupRule({ question: "Actually, can I use a joker in a pair?", clarify: { id: "call-purpose", question: CALL } });
     expect(r.entry_id).toBe("joker-in-pair");

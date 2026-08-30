@@ -7,7 +7,6 @@ import { test, expect, type APIRequestContext, type Page } from "@playwright/tes
 test.describe.configure({ mode: "serial" });
 // Local only: the API block needs RATE_LIMIT_TEST_BYPASS and one browser project.
 test.skip(!/localhost|127\.0\.0\.1/.test(process.env.PLAYWRIGHT_BASE_URL ?? "localhost"), "needs the local rate-limit bypass");
-test.skip(({ isMobile }) => !!isMobile, "one browser project is enough for the API turns");
 
 async function ask(request: APIRequestContext, q: string, clarify?: { id: string; question: string }) {
   const res = await request.post("/api/ask", { data: clarify ? { q, clarify } : { q } });
@@ -17,6 +16,26 @@ async function ask(request: APIRequestContext, q: string, clarify?: { id: string
 }
 
 test.describe("Ask route: rules clarification turns", () => {
+  // The API turns need no second viewport; the UI blocks below run on both.
+  test.skip(({ isMobile }) => !!isMobile, "one browser project is enough for the API turns");
+
+  test("a mixed question never swallows the rules half as a place name", async ({ request }) => {
+    const r = await ask(request, "can I use a joker in a pair and where can I play near Naples");
+    expect(r.topic).toBe("mixed");
+    expect(r.answer).toMatch(/never be used in a pair/);
+    expect(r.answer).not.toMatch(/near A Pair/);
+    expect(r.intent.location?.toLowerCase()).toBe("naples");
+  });
+
+  test("a negated reply never resolves to the option it refuses", async ({ request }) => {
+    const hand = await ask(request, "no, not concealed", { id: "hand-type", question: "Can I call for a pung with my hand?" });
+    expect(hand.rules?.entry_id).not.toBe("closed-hand-final-tile");
+    const call = await ask(request, "not for an exposure", { id: "call-purpose", question: "Can I call that tile?" });
+    expect(call.rules?.entry_id).not.toBe("calling-for-exposure");
+    const pass = await ask(request, "not the charleston", { id: "pass-context", question: "Can I pass?" });
+    expect(pass.rules?.entry_id).not.toBe("charleston");
+  });
+
   test("Can I call that tile? -> clarification -> Complete mahjong. -> the correct rule", async ({ request }) => {
     const first = await ask(request, "Can I call that tile?");
     expect(first.ok).toBe(true);
@@ -162,6 +181,16 @@ test.describe("/ask page: clarification UI", () => {
     await expect(status).toContainText("Are you calling it to make an exposure, or would it complete mahjong?");
     const options = page.getByTestId("home-ask-clarify").getByRole("button");
     await expect(options).toHaveCount(2);
+    await expect(options.first()).toBeVisible();
+    const colors = await options.first().evaluate((el) => {
+      const cs = getComputedStyle(el);
+      let node: HTMLElement | null = el as HTMLElement;
+      let bg = "rgba(0, 0, 0, 0)";
+      while (node && (bg === "rgba(0, 0, 0, 0)" || bg === "transparent")) { bg = getComputedStyle(node).backgroundColor; node = node.parentElement; }
+      return { color: cs.color, bg };
+    });
+    expect(colors.color, "chip text must not vanish on its background").not.toBe(colors.bg);
+    expect(colors.color).not.toBe("rgb(255, 255, 255)");
     await options.filter({ hasText: "It would complete mahjong" }).click();
     await expect(status).toContainText("Any discard that completes your mahjong may be called");
     await expect(page.getByTestId("home-ask-clarify")).toHaveCount(0);
