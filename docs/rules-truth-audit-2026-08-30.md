@@ -168,7 +168,7 @@ rulebook summary; that entry now states only the supported core and carries ques
    current wording.)
 7. Wording flag: annual-card says players buy the card "directly from the League"; retailers
    also sell it. Keep or soften?
-8. Mahjong declared in error with tiles exposed: is the hand dead outright, or may the declaration be retracted with the exposed tiles staying committed (League rulebook 2024, p. 21)? Secondary summaries disagree, so entry mahjong-in-error now states only the supported core (no exposure means no penalty; play continues to the right) and says the instructor is confirming the rest.
+8. Mahjong declared in error: is the hand dead outright once tiles are exposed, or may the declaration be retracted with the exposed tiles staying committed (League rulebook 2024, p. 21), and what happens when no tiles were exposed? Secondary summaries disagree, so entry mahjong-in-error now claims no rule at all and defers entirely to the instructor.
 
 9. Picking ahead: what is the League's consequence when a player draws before the previous
    player has discarded (is the hand dead, does the tile go back)? Entries picking-ahead and

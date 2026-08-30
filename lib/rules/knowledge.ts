@@ -763,15 +763,16 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [JOKER_EXCHANGE, TIMING, ERROR_CUE],
     keywords: ["joker", "exchange", "turn"],
     requires: [JOKER, JOKER_EXCHANGE, new RegExp(`${TIMING.source}|${ERROR_CUE.source}|\\b(own|my|your) (rack|exposure)\\b`, "i")],
+    blocks: [DEAD],
     approved_answer:
-      "You may exchange a joker only during your own turn, after you have drawn from the wall or called a discard and before you discard. Hand over the tile the joker stands for and take the joker; you may redeem a joker from any exposure of a hand still in play, including your own. Once you discard, the chance passes until your next turn. If an exchange puts the wrong tile into another player's exposure, fix it before the next discard; after that discard, that player's hand is dead while you keep playing. If you put the wrong tile into your own exposure, your hand is the dead one.",
+      "You may exchange a joker only during your own turn, after you have drawn from the wall or called a discard and before you discard. Hand over the tile the joker stands for and take the joker; you may redeem a joker from any exposure of a hand still in play, including your own. Once you discard, the chance passes until your next turn. If an exchange puts the wrong tile into an exposure, fix it before the next discard; after that discard, only the hand holding the incorrect exposure is dead. If you put the wrong tile into your own exposure, that dead hand is yours.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
     last_verified: VERIFIED_AUDIT,
     confidence: "high",
     classification: "nmjl_clarification",
-    provenance: researched("League rulings on joker exchange timing and on a wrong exchange (the rack holding the incorrect exposure is dead, the redeemer plays on); cross-checked via Mahj Life wiki articles 172, 221, and 224 citing the League rulebook and 2024 bulletin Q&A", 2024),
+    provenance: researched("League rulings on joker exchange timing and on a wrong exchange (correctable before the next discard; afterward the hand holding the incorrect exposure is dead); cross-checked via Mahj Life wiki articles 172, 221, and 224 citing the League rulebook and 2024 bulletin Q&A, corroborated by the Sloperama American mahjong FAQ", 2024),
   },
   {
     id: "two-players-same-tile",
@@ -847,7 +848,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [MAHJONG_CUE, ERROR_CUE],
     blocks: [JOKER_EXCHANGE, MISNAMED, TWO_PLAYERS],
     approved_answer:
-      "A mahjong declared in error is covered by specific League rules, and the outcome depends on whether any tiles were exposed and on what the other players did next. Our instructor is confirming the exact current wording before we publish it here. Until then, ask your table to apply the League's rulebook to that deal rather than a table custom.",
+      "A mahjong declared in error is covered by specific League rules. Our instructor is confirming the exact current wording before we publish it here. Until then, ask your table to apply the League's rulebook to that deal rather than a table custom.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "owner_question",
