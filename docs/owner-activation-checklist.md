@@ -8,11 +8,11 @@ The product is engineering-complete and frozen. Only the items below remain, and
 Status: DONE 2026-08-29. You confirmed Mahjong Collective, LLC operates Find My Mahj Game and receives its payments; the new Terms are live at /terms.
 
 ### Stripe Billing settings (Test mode now; repeat in Live mode before payments open)
-Status: OWNER CONFIGURATION REQUIRED (the published billing disclosures promise these)
+Status: DONE IN TEST MODE 2026-08-29; repeat in Live mode before payments open
 1. Customer portal: DONE in Test mode 2026-08-29. You enabled the portal with self-service cancellation at the end of the billing period, and Stripe asks the customer for a cancellation reason; I set NEXT_PUBLIC_STRIPE_PORTAL_URL in Vercel Production to the test portal link and redeployed, and a paid provider's dashboard now shows "Manage or cancel your subscription". In Live mode: turn on the Live toggle, open Settings, Billing, Customer portal, turn on the no-code customer portal link, copy the link (it starts with https://billing.stripe.com/p/login/ and has no test_ in it), and send it to me before payments open. It is public, not a secret.
-2. Renewal reminders: Settings, Billing, Subscriptions and emails. Turn on the upcoming renewal reminder email for annual subscriptions and note the lead time Stripe offers; the policy targets 30 days. Tell me the lead time you see so the policy wording and the setting match.
-3. Failed payments: same page. Turn on Smart Retries (or your preferred retry rule) and the failed-payment customer emails. When 2 and 3 are done, tell me; I set app_settings.stripe_billing_emails_confirmed to true, which the Launch Simulator requires before it reports payments ready.
-4. Live mode: repeat 1 to 3 after the live account exists. The Launch Simulator refuses to report payments ready if the test portal link is still set once the Stripe keys are live.
+2. Renewal reminders: DONE in Test mode 2026-08-29. Upcoming-renewal emails are on with the timing set to 30 days, matching the published Billing Disclosures.
+3. Failed payments: DONE in Test mode 2026-08-29. Failed-payment customer emails and Smart Retries are on (up to 8 retries within 2 weeks; if all fail, Stripe cancels the subscription and leaves the invoice past due), which matches the published Billing Disclosures. I set app_settings.stripe_billing_emails_confirmed to test; the Launch Simulator's billing self-service check passes under test keys.
+4. Live mode: repeat 1 to 3 after the live account exists, then tell me and I set app_settings.stripe_billing_emails_confirmed to live. The Launch Simulator refuses to report payments ready under live keys until that value is live and the portal link is the live one.
 
 ### Stripe (live mode)
 Status: SANDBOX VERIFIED 2026-08-29, LIVE KEYS AWAITING OWNER
@@ -42,9 +42,7 @@ What: supply a Google service-account credential with Search Console access to t
 When done: I connect the finished adapter and verify clicks, impressions, CTR, and position show in the admin SEO panel. No new SEO project.
 
 ### Policies
-Status: DRAFT READY, AWAITING OWNER APPROVAL
-What: review the five drafts in docs/policy/drafts (terms, privacy, provider terms, matching community standards, billing disclosures).
-When done: I publish exactly what you approve. I will not mark them approved on my own.
+Status: DONE 2026-08-29. All five policies are published (/terms, /privacy, /provider-terms, /billing-disclosures, /matching-standards) after your 18 decisions; /terms went live after you confirmed Mahjong Collective, LLC as the operating entity. Audit trail: docs/policy/owner-decisions-2026-08-29.md.
 
 ### Rules
 Status: RESOLVED 2026-08-26

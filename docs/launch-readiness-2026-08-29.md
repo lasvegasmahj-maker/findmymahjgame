@@ -180,3 +180,11 @@ launch gates are OFF; nothing here is launched.
   Simulator now lists the test portal link as a blocker for launch_payments once the
   Stripe secret key is a live key, and fails the billing self-service check if
   payments are opened with it still in place.
+- 2026-08-29 (late night): owner completed the Stripe Test billing settings:
+  renewal-reminder emails at 30 days, failed-payment emails, Smart Retries (up to 8
+  within 2 weeks, then cancel). All consistent with the published Billing
+  Disclosures. I set app_settings.stripe_billing_emails_confirmed = test (it becomes
+  live once the Live-mode settings are confirmed); the Launch Simulator's billing
+  self-service check passes with the test portal link. Still owed before payments
+  open: the live Stripe values, the live portal link, and the same three settings in
+  Live mode.

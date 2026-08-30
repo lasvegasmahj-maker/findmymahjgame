@@ -80,5 +80,6 @@ line "a verified badge and more visibility" is gone.
   failed-payment emails that depend on Stripe Billing settings the owner configures before
   payments open; the Launch Simulator reports payments as not ready until the customer portal
   link is in place and the owner has confirmed the email settings
-  (app_settings.stripe_billing_emails_confirmed = true).
+  (app_settings.stripe_billing_emails_confirmed = test in Test mode, and live once the
+  Live-mode settings are confirmed).
 

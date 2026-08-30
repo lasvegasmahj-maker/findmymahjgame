@@ -203,11 +203,13 @@ export async function runLaunchSimulation(supabase: SupabaseClient): Promise<Sim
         .from("app_settings").select("key, value").in("key", ["stripe_billing_emails_confirmed", "launch_payments"]);
       if (settingsErr) throw new Error(`app_settings read failed: ${settingsErr.message}`);
       const setting = (k: string) => rows?.find((r) => r.key === k)?.value;
-      const emailsOk = setting("stripe_billing_emails_confirmed") === "true";
+      // A test-mode email confirmation must not satisfy live Stripe keys.
+      const emailsMode = setting("stripe_billing_emails_confirmed");
+      const emailsOk = liveKeys ? emailsMode === "live" : emailsMode === "test" || emailsMode === "live";
       const paymentsOpen = setting("launch_payments") === "true";
       const missing = [
         portalOk ? null : testLinkUnderLiveKeys ? "customer portal link is still the test-mode link while Stripe keys are live (NEXT_PUBLIC_STRIPE_PORTAL_URL)" : "customer portal link (NEXT_PUBLIC_STRIPE_PORTAL_URL)",
-        emailsOk ? null : "billing emails confirmation (app_settings.stripe_billing_emails_confirmed)",
+        emailsOk ? null : liveKeys ? "billing emails confirmed for live mode (app_settings.stripe_billing_emails_confirmed must be live)" : "billing emails confirmation (app_settings.stripe_billing_emails_confirmed)",
       ].filter(Boolean).join(", ");
       if (portalOk && emailsOk) {
         push("Billing self-service", "PASS", "Stripe customer portal link configured and billing emails confirmed by the owner");
