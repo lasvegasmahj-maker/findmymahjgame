@@ -53,3 +53,7 @@ closed-gate default already in place; nothing blocks engineering.
    it, providers choose Premium or revert to Basic. Remaining step: rename the
    sandbox Stripe test product (owner, Stripe dashboard) and create the future live
    product as Find My Mahj Premium.
+
+10. Policy decisions (2026-08-29): all 18 made; see docs/policy/owner-decisions-2026-08-29.md.
+    Applied and published except the Terms of Use operating entity (decision 1), which
+    awaits the owner's confirmation of the registered legal name.

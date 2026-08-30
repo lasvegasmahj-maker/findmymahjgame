@@ -1,19 +1,10 @@
 # Find My Mahj Premium: Billing Disclosures
 
-**DRAFT FOR OWNER REVIEW, NOT YET IN EFFECT.** This is a working draft for Shauna and counsel to
-review and edit. No billing disclosure document exists anywhere on the site today; pricing
-currently appears only as marketing copy on `/join` and `/get-listed`. See
-`docs/policy/audit-2026-08.md`, section 6, for the full audit.
-
-**Free-period conflict RESOLVED 2026-08-23.** The owner-approved provider business model
-replaced both old free-period mechanisms (the 6-month FINDMYMAHJGAME code and the 12-month
-Stripe coupon) with one: a 90-day Premium trial that starts automatically when a provider
-claims their listing, no card collected, no automatic billing ever. Sections below reflect
-the approved model. Bracketed `[OWNER TO CONFIRM]` items that remain are unrelated to the
-free period (notice days, refunds).
-
-Bracketed items marked `[OWNER TO CONFIRM]` are business or legal facts only the owner can
-decide. Do not publish this document with any bracket still open.
+**Status (2026-08-29):** PUBLISHED at /billing-disclosures. All 5 owner decisions applied. This
+file is the source of truth; scripts/policy-content.mjs generates
+content/policy/billing-disclosures.ts from it, and the page renders that module. The renewal
+reminder, failed-payment emails, and self-service cancellation described below depend on Stripe
+Billing settings the owner configures before payments open (docs/owner-activation-checklist.md).
 
 ---
 
@@ -22,10 +13,11 @@ decide. Do not publish this document with any bracket still open.
 - Players never pay, for anything, ever.
 - A Basic listing is free forever for teachers, organizers, and businesses, and it is never
   ranked lower for being free.
-- Premium is $89 a year and adds business conversion tools (structured lesson requests through
-  Find My Mahj and the Premium Provider badge). It never buys search placement or verification.
+- Find My Mahj Premium is $89 a year and adds business tools (structured lesson requests through
+  Find My Mahj on teacher listings, and the Premium Provider badge). It never buys search
+  placement, ranking, or verification.
 - Claiming your listing starts 90 days of Premium free, automatically, no card collected.
-- We never see or store your card number. Payments are handled by Stripe.
+- We never see or store your card number. Stripe handles payments.
 
 ## Who pays, and who does not
 
@@ -34,10 +26,11 @@ creating a player listing, or using Mahj Match never pay anything.
 
 ## What Premium costs
 
-Premium is $89 per year. It adds business conversion tools on top of your free Basic listing:
-structured lesson requests from players delivered straight to you through Find My Mahj, and the
-Premium Provider badge. Payment never buys search placement, ranking, or verification; your
-Basic listing is never removed, hidden, or demoted for not paying.
+Find My Mahj Premium is $89 a year, billed annually. It adds business tools on top of your
+free Basic listing: structured lesson requests from players delivered straight to you through
+Find My Mahj (on teacher listings), and the Premium Provider badge. Payment never buys search
+placement, ranking, or verification; your Basic listing is never removed, hidden, or demoted for
+not paying.
 
 ## The introductory offer: 90 days of Premium when you claim your listing
 
@@ -45,49 +38,48 @@ When you claim your listing, Premium turns on automatically for 90 days from you
 No promo code, no card collected, nothing to cancel. At the end of the 90 days you choose: pay
 $89 a year to keep Premium, or do nothing and your listing simply continues as a free Basic
 listing. You are never billed automatically at the end of the trial, because we never collected
-a card. The old FINDMYMAHJGAME code is retired and no longer grants anything.
+a card.
 
 ## Renewal
 
-[OWNER TO CONFIRM: advance-notice days.] Once automated Stripe checkout is turned on: a paid
-membership (started by your own explicit checkout, never by trial expiry) renews automatically each year at $89 unless you cancel
-before your renewal date. You will be notified before a renewal charge. [OWNER TO CONFIRM: how
-many days of advance notice].
+A paid membership, started by your own explicit checkout and never by trial expiry, renews
+automatically each year at $89 unless you cancel before your renewal date. Once paid membership
+opens, before each annual renewal we send you a reminder email, targeted 30 days ahead of the
+renewal date, so you have time to decide.
 
 ## Cancellation
 
-You can cancel Premium at any time. [OWNER TO CONFIRM: whether cancellation is
-self-service once automated billing is live, or handled by request to hello@findmymahjgame.com
-in the meantime]. There is no cancellation fee. Cancelling stops future billing; it does not
-remove your listing, which reverts to the free Basic listing.
+You can cancel Find My Mahj Premium at any time, yourself, through the subscription management
+link on your provider dashboard (Stripe's secure customer portal), available from the day paid
+membership opens. If you prefer, email
+hello@findmymahjgame.com and we will cancel it for you. There is no cancellation fee. Canceling stops future billing; your Premium tools continue until the end of the period you already paid
+for, and your listing then continues as a free Basic listing.
 
 ## If a payment fails
 
-[OWNER TO CONFIRM before publishing: this section describes an intended policy that is not yet
-built. As of this draft, a failed payment marks your membership as past due internally, but no
-automatic grace-period notice, reminder email, or downgrade currently happens; that has to be
-built before this paragraph can be published as a description of present behavior.]
-
-The intended policy: if a payment fails, you get a 14-day grace period during which your
-Premium benefits continue while we ask you to update your payment method. If
-payment is not resolved within that window, your listing reverts to the free Basic
-listing. It is never deleted. There is no penalty fee for a failed or late payment beyond the loss
-of paid visibility features once the grace period ends.
+If a renewal payment fails, Stripe may retry it according to its payment-recovery settings and
+emails you so you can update your card, from the day paid membership opens. If the payment ultimately does not succeed, Premium
+ends when your paid period ends. Your listing stays published as a free Basic listing; nothing
+is deleted because a renewal failed, and we charge no penalty fee. Once Premium ends, the
+Premium tools (lesson requests and the Premium Provider badge) pause until you renew.
 
 ## What we store, and what we never store
 
 We use Stripe to process all payments. We never see or store your card number, expiration date,
 or security code. What we do keep, to show you your own membership status and keep your listing
-benefits current, is limited to: your email, a reference ID from Stripe identifying your
-subscription, its status (active, past due, or cancelled), and the price you are on. If our
+benefits current, is limited to: your email, Stripe reference IDs for your customer and subscription records,
+the subscription status (active, past due, or canceled), the price you are on, and your renewal
+date. If our
 records and Stripe's ever disagree, Stripe's record is always the correct one.
 
 ## Refunds
 
-[OWNER TO CONFIRM: refund policy for the $89/year Premium membership. The former advertiser
-pricing model had a 30-day prorated refund window for annual plans; whether that carries forward
-to Find My Mahj Premium, and whether it is the same policy as the separate advertiser/sponsor
-track described in Advertiser Terms, needs a decision.]
+If Find My Mahj Premium is not right for you, you can request a full refund within 30 days of
+your first $89 charge by emailing hello@findmymahjgame.com. After that 30-day period we do not
+offer routine refunds, and renewal charges are generally non-refundable. The exception is
+described in our [Provider Terms](/provider-terms): if we remove your paid listing for a reason
+not caused by your own violation or misconduct, we refund the unused portion of your term on a
+prorated basis. All of this applies except where otherwise required by applicable law.
 
 ## Founding Advisor and Charter Member pricing
 
@@ -98,8 +90,7 @@ programs layered on top of the membership described above, not separate products
 
 ## Changes to this disclosure
 
-We may update these billing terms. If a change affects your price or renewal, you will be
-notified before it takes effect for you.
+We may update these billing terms. If a change affects your price or renewal, we will notify you before it takes effect for you.
 
 ## Contact
 
@@ -107,6 +98,5 @@ Billing questions: hello@findmymahjgame.com.
 
 ---
 
-*Last drafted: this working draft has no effective date until the owner approves and publishes
-it, and until the free-period mechanism conflict described above is resolved. See
-`docs/policy/launch-gate.md`.*
+*Effective August 29, 2026. Owner decisions applied 2026-08-29; see
+docs/policy/owner-decisions-2026-08-29.md.*

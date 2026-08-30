@@ -4,6 +4,17 @@ The product is engineering-complete and frozen. Only the items below remain, and
 
 ## Activation items
 
+### Terms of Use: operating legal entity
+Status: AWAITING OWNER CONFIRMATION (the last open policy item)
+What: the Terms of Use must name the registered legal entity that operates Find My Mahj Game and receives its payments. The only entity in your records is Mahjong Collective, LLC (doing business as Las Vegas Mahjong). Reply with one of: (a) "Find My Mahj Game is operated by Mahjong Collective, LLC and that entity receives the Stripe payouts", or (b) the exact registered legal name that does. I then publish the new Terms at /terms the same day. Do not guess; I will not.
+
+### Stripe Billing settings (Test mode now; repeat in Live mode before payments open)
+Status: OWNER CONFIGURATION REQUIRED (the published billing disclosures promise these)
+1. Customer portal: Settings, Billing, Customer portal. Turn it on, allow customers to cancel subscriptions (immediately or at period end, your choice), and turn on the no-code "customer portal link". Copy that link (it starts with https://billing.stripe.com/p/login/) and send it to me; it is a public link, not a secret. I set NEXT_PUBLIC_STRIPE_PORTAL_URL in Vercel and redeploy, and the provider dashboard then shows "Manage or cancel your subscription". Until then the dashboard shows the email path.
+2. Renewal reminders: Settings, Billing, Subscriptions and emails. Turn on the upcoming renewal reminder email for annual subscriptions and note the lead time Stripe offers; the policy targets 30 days. Tell me the lead time you see so the policy wording and the setting match.
+3. Failed payments: same page. Turn on Smart Retries (or your preferred retry rule) and the failed-payment customer emails. When 2 and 3 are done, tell me; I set app_settings.stripe_billing_emails_confirmed to true, which the Launch Simulator requires before it reports payments ready.
+4. Live mode: repeat 1 to 3 after the live account exists; the live portal link differs from the test link.
+
 ### Stripe (live mode)
 Status: SANDBOX VERIFIED 2026-08-29, LIVE KEYS AWAITING OWNER
 What: the sandbox account, $89/year price, webhook, and env vars are in place, and the whole checkout, webhook, entitlement, and trial lifecycle passed on production with test data. Two short lists below; the term test-classified is defined in docs/billing-launch-runbook.md under Terms used here.

@@ -86,14 +86,16 @@ launch gates are OFF; nothing here is launched.
 
 ## What still prevents owner launch authorization
 
-1. Policy publication (blocks every gate, per docs/policy/launch-gate.md): the five
-   drafts in docs/policy/drafts still carry [OWNER TO CONFIRM] brackets (terms-of-use
-   7, privacy-policy 3, provider-terms 2, billing-disclosures 5,
-   matching-community-standards 1: 18 decisions, not counting the header text that
-   explains what the brackets mean). /terms and /privacy exist but hold older text;
-   /provider-terms, /billing-disclosures, and /matching-standards do not exist. Once
-   the owner approves the text, publishing the routes is a small, authorized
-   launch-configuration change.
+1. Policy publication (blocks every gate, per docs/policy/launch-gate.md): RESOLVED
+   except one item. The owner made all 18 decisions on 2026-08-29
+   (docs/policy/owner-decisions-2026-08-29.md). /privacy, /provider-terms,
+   /billing-disclosures, and /matching-standards are published from the resolved
+   drafts and linked from the footer, /join, the provider dashboard, the account
+   page, and Mahj Match. /terms keeps its previous page until the owner confirms the
+   operating legal entity (the only record names Mahjong Collective, LLC; whether it
+   operates Find My Mahj Game is unconfirmed). The published billing disclosures also
+   depend on three Stripe Billing settings the owner configures before payments open
+   (customer portal with cancellation, renewal reminders, failed-payment emails).
 2. Live Stripe (blocks launch_payments only; public signup, provider claims, and
    player matching do not depend on it): Production holds sandbox keys. The three
    values the app reads (STRIPE_SECRET_KEY, STRIPE_PRICE_MEMBERSHIP_ANNUAL,
@@ -163,3 +165,7 @@ launch gates are OFF; nothing here is launched.
   Premium, $89/year. Policy drafts, runbook, checklist, and decisions log normalized
   to the name; 18 owner policy decisions untouched. No user-facing code carried the
   old name; one code comment updated; no deploy needed.
+- 2026-08-29 (evening): owner made all 18 policy decisions; published /privacy (new
+  text), /provider-terms, /billing-disclosures, /matching-standards; corrected the
+  FAQ; /terms held pending the operating-entity confirmation; all four gates still
+  OFF.

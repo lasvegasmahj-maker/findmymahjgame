@@ -42,6 +42,10 @@ const KEY_ROUTES = [
   "/states",
   "/states/texas",
   "/states/texas/dallas",
+  "/privacy",
+  "/provider-terms",
+  "/billing-disclosures",
+  "/matching-standards",
 ];
 
 async function scrollOverflow(page: Page): Promise<number> {

@@ -1,19 +1,15 @@
 # Privacy Policy
 
-**DRAFT FOR OWNER REVIEW, NOT YET IN EFFECT.** This is a working draft for Shauna and counsel to
-review and edit. It is not published, and it does not describe the current live Privacy Policy.
-See `docs/policy/audit-2026-08.md` for how this compares to the page currently live at
-`/privacy`.
-
-Bracketed items marked `[OWNER TO CONFIRM]` are business or legal facts only the owner can
-decide. Do not publish this document with any bracket still open.
-
-This policy is designed to support privacy-respecting handling of your data. It is not a claim
-of legal compliance with any specific law; [OWNER TO CONFIRM: whether counsel wants a specific
-compliance statement, for example about a particular state or country's privacy law, added
-here].
+**Status (2026-08-29):** PUBLISHED at /privacy. All 3 owner decisions applied. This file is the
+source of truth; scripts/policy-content.mjs generates content/policy/privacy-policy.ts from it,
+and the page renders that module. Edit here, regenerate, and republish.
 
 ---
+
+This policy describes, in plain language, what data Find My Mahj Game collects, how we use it,
+how long we keep it, who we share it with, and how you can have it deleted. It is written to
+support privacy-respecting handling of your data; it is not a claim of compliance with any
+specific law.
 
 ## What we collect
 
@@ -50,19 +46,23 @@ our system automatically strips those out before anything is stored. Any text va
 is capped at a short length so it cannot carry identifying detail. We also collect standard
 server logs (IP address, browser type, pages visited) to keep the site running and secure.
 
-**Payments:** if you pay for Find My Mahj Premium, payment is handled entirely by Stripe, our
-payment processor. We never see or store your card number. We keep only a record that a payment
-happened, its status, and a Stripe reference ID, so we can show you your membership status and
-keep your listing's benefits current.
+**Payments:** if you pay for Find My Mahj Premium, Stripe, our payment processor, handles the
+payment. We never see or store your card number. We keep the limited membership record
+described in our [Billing Disclosures](/billing-disclosures): your email, Stripe reference IDs
+for your customer and subscription records, the subscription status, the price you are on, and
+your renewal date, so we can show you your membership status and keep your listing's benefits
+current.
 
 ## What we never collect or show
 
-- **Your exact address.** If a listing or description includes a street address, a cross-street,
-  or language describing a private home, our system detects it and either blocks it from going
-  public or removes the specific street-level detail, keeping only the city and a general
-  description like "the host shares the exact location once you join the group." This applies
-  even to well-meaning submissions; we would rather ask you to confirm than publish something
-  that narrows down where you live.
+- **Your exact address.** For player listings and Mahj Match, if a description includes a
+  street address, a cross-street, or language describing a private home, our system detects it
+  and either blocks it from going public or removes the specific street-level detail, keeping
+  only the city and a general description like "the host shares the exact location once you
+  join the group." For teacher, organizer, and business listings, a person reviews every
+  submission before it goes public and removes street-level detail that describes a private
+  home. This applies even to well-meaning submissions; we would rather ask you to confirm than
+  publish something that narrows down where you live.
 - **Your email address, publicly.** It is never shown on your public listing or public profile.
 - **Your last name, publicly.** Public listings show first name and last initial only.
 - **Your card number.** We never receive or store it; Stripe does.
@@ -94,8 +94,10 @@ timestamp. You can withdraw from matching at any time.
 
 When we propose a table to you and other players, each of you sees only first names and the
 compatibility facts you agreed to share (general area, availability, and similar), not full
-names, not exact addresses, not contact information. Nobody's contact information is shared
-directly; if a table is confirmed, we handle the connection through the platform.
+names, not exact addresses, not contact information. If a table is confirmed, we email everyone and
+show a table page with first names, day, time, and general area; we never share email
+addresses or phone numbers, and the group decides how to exchange contact details. The
+[Matching Community Standards](/matching-standards) describe this in full.
 
 ## Transactional email versus marketing email
 
@@ -114,11 +116,13 @@ We send two different kinds of email, and they work differently:
 
 We use cookies only as required for the site to function, for example to keep you signed in. We
 use first-party analytics, described above, to understand aggregate site traffic and improve the
-directory. We do not use advertising cookies or cross-site trackers.
+directory. Our host, Vercel, also counts page views through Vercel Web Analytics, which uses no
+cookies and does not identify you. We do not use advertising cookies or cross-site trackers.
 
 ## Third-party services
 
-The site uses Supabase (database and storage), Vercel (hosting), Resend (transactional email),
+The site uses Supabase (database and storage), Vercel (hosting, and Vercel Web Analytics, which
+counts page views without cookies), Resend (transactional email),
 Mailchimp (marketing newsletter, only if you opt in), and Stripe (payments, only for paid
 memberships). Each has its own privacy policy. We share with each only the minimum data
 necessary for it to do its job.
@@ -130,16 +134,13 @@ or a listing, we record the category of report and any detail you provide. Repor
 serious (harassment, safety concerns, and similar) are reviewed by a person, not resolved
 automatically.
 
-## Data deletion
+## Data deletion and privacy requests
 
-You can request deletion of your account and its data from your account page, or by emailing us.
-Deletion is not instant: your request is logged, and a person on our team reviews and completes
-it. [OWNER TO CONFIRM: target turnaround time for a deletion request, and whether we want to
-commit to sending an automatic email confirmation once that capability is built, versus a
-personal reply]. Public listing content is removed from view as part of this process.
-
-To request removal of your listing or personal information, email
-hello@findmymahjgame.com.
+You can request deletion of your account and its data, or make any other privacy request, from
+your account page or by emailing hello@findmymahjgame.com. We will acknowledge your request.
+Requests are generally processed within 30 days, and we confirm completion by email. Different
+timing may apply where required by applicable law. A person on our team reviews and completes
+each request; public listing content is removed from view as part of this process.
 
 ## Changes to this policy
 
@@ -148,10 +149,10 @@ we share it, will be announced clearly.
 
 ## Contact
 
-Questions about this policy: hello@findmymahjgame.com, or use our contact form.
-[OWNER TO CONFIRM: registered business address, if one is required]
+Questions about this policy: hello@findmymahjgame.com, or use our [contact form](/contact).
+Find My Mahj Game, Las Vegas, Nevada.
 
 ---
 
-*Last drafted: this working draft has no effective date until the owner approves and publishes
-it. See `docs/policy/launch-gate.md` for what must be true before it can go live.*
+*Effective August 29, 2026. Owner decisions applied 2026-08-29; see
+docs/policy/owner-decisions-2026-08-29.md.*

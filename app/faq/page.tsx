@@ -54,7 +54,7 @@ const FAQ_ITEMS: FaqItem[] = [
   },
   {
     q: "I am a mahjong instructor. Can I get listed?",
-    a: "Yes. Create your teacher listing, and you can join the directory for a verified badge and more visibility. Players can request lessons from you directly.",
+    a: "Yes. Create your free teacher listing and claim it to earn the Verified badge. Find My Mahj Premium ($89 a year, with 90 days free when you claim) adds on-platform lesson requests from players and the Premium Provider badge. Premium never buys placement or ranking.",
     links: [
       { href: "/get-listed", label: "Get listed" },
       { href: "/join", label: "Join the directory" },

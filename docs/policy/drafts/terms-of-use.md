@@ -1,11 +1,9 @@
 # Terms of Use
 
-**DRAFT FOR OWNER REVIEW, NOT YET IN EFFECT.** This is a working draft for Shauna and counsel to
-review and edit. It is not published, and it does not describe the current live Terms of Use.
-See `docs/policy/audit-2026-08.md` for how this compares to the page currently live at `/terms`.
-
-Bracketed items marked `[OWNER TO CONFIRM]` are business or legal facts only the owner can
-decide. Do not publish this document with any bracket still open.
+**Status (2026-08-29):** 6 of 7 owner decisions applied. The single open bracket below is the
+operating legal entity, which the owner must confirm from business records; until then the page
+at /terms keeps its previous text and this file does not generate page content. Source of truth
+for the future page at /terms; scripts/policy-content.mjs generates content/policy from it.
 
 ---
 
@@ -34,8 +32,8 @@ link, and clicking it signs you in. There is no password to create, remember, or
 
 You are responsible for keeping access to your own email address secure, since that is what
 controls your account. You can deactivate your account at any time from your account page. You
-can also request deletion of your account; see "Your data" below and our Privacy Policy for how
-that works.
+can also request deletion of your account; see "Your data" below and our
+[Privacy Policy](/privacy) for how that works.
 
 ## Player listings
 
@@ -50,11 +48,13 @@ that works.
 
 ## Provider listings: teachers, organizers, and businesses
 
-Teachers, organizers, and businesses can create a free listing. Some features (visibility,
-badges, and other promotion) are part of Find My Mahj Premium, the paid provider tier; see
-our Billing Disclosures at [OWNER TO CONFIRM final URL] and our Provider Terms at [OWNER TO CONFIRM final URL] for how
+Teachers, organizers, and businesses can create a free listing. Find My Mahj Premium, the paid
+provider tier ($89 a year), adds business tools on top of a free listing: structured lesson
+requests from players (on teacher listings) and the Premium Provider badge. See our
+[Billing Disclosures](/billing-disclosures) and our [Provider Terms](/provider-terms) for how
 claiming a listing, ownership, and membership work. Being listed is always free. Money never
-buys the right to exist in the directory, only visibility and promotion on top of it.
+buys the right to exist in the directory, verification of a listing, placement, or ranking; free
+and paid listings get the same neutral placement.
 
 ## Mahj Match and matching
 
@@ -73,14 +73,14 @@ preference) with the other people on that proposed table. Nothing more is shared
 say yes.
 
 Full detail on how matching works, and the community standards that apply to it, live in a
-separate document, our Matching Community Standards at [OWNER TO CONFIRM final URL].
+separate document, our [Matching Community Standards](/matching-standards).
 
 ## Blocking and reporting
 
 You can block another user, and you can report a user or a listing. Reports are reviewed, and
 serious reports (harassment, safety concerns, and similar) are reviewed by a person, not decided
-automatically. See our Matching Community Standards at [OWNER TO CONFIRM final URL] for detail on how this
-works today.
+automatically. See our [Matching Community Standards](/matching-standards) for detail on how
+this works today.
 
 ## Meeting other players in person: your safety
 
@@ -143,14 +143,15 @@ payments) will be announced clearly, not buried in a routine update.
 
 ## Governing law
 
-[OWNER TO CONFIRM: governing law and jurisdiction for disputes]
+These Terms of Use are governed by the laws of the State of Nevada. Any dispute arising from
+these terms or your use of the site will be handled in the state or federal courts located in
+Clark County, Nevada.
 
 ## Contact
 
-Questions about these terms: hello@findmymahjgame.com.
-[OWNER TO CONFIRM: registered business address, if one is required]
+Questions about these terms: hello@findmymahjgame.com. Find My Mahj Game, Las Vegas, Nevada.
 
 ---
 
-*Last drafted: this working draft has no effective date until the owner approves and publishes
-it. See `docs/policy/launch-gate.md` for what must be true before it can go live.*
+*Effective once published. Owner decisions applied 2026-08-29; see
+docs/policy/owner-decisions-2026-08-29.md.*

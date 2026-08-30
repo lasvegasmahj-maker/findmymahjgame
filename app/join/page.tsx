@@ -105,6 +105,9 @@ export default async function JoinPage({ searchParams }: { searchParams: Promise
             <Check>Lesson requests from players sent straight to your inbox (for teacher listings)</Check>
             <Check>The Premium Provider badge on your listing</Check>
           </ul>
+          <p style={{ margin: "0.9rem 0 0", fontSize: "0.88rem", color: "var(--muted)" }}>
+            Premium never buys placement, ranking, or verification. Full terms: <Link href="/billing-disclosures" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Billing Disclosures</Link> and <Link href="/provider-terms" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Provider Terms</Link>.
+          </p>
         </div>
 
         {/* Charter Member (replaces Founding Teacher) */}

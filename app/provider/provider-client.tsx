@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { isPremiumActive } from "@/lib/premium";
+
+// Stripe's no-code customer portal login link, set per environment once the owner enables the
+// portal in Stripe Billing settings. Absent until then, so the dashboard never shows a dead link.
+const PORTAL_URL = (process.env.NEXT_PUBLIC_STRIPE_PORTAL_URL || "").startsWith("https://billing.stripe.com/") ? process.env.NEXT_PUBLIC_STRIPE_PORTAL_URL || "" : "";
 
 type OwnedListing = {
   id: string;
@@ -392,6 +397,9 @@ export default function ProviderClient({ signedIn, gateOpen }: { signedIn: boole
 
       <section>
         <h2 style={sectionTitle}>Membership</h2>
+        <p style={{ margin: "0 0 0.7rem", fontSize: "0.85rem", color: "var(--muted)" }}>
+          Find My Mahj Premium is $89 a year. <Link href="/billing-disclosures" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Billing Disclosures</Link> &middot; <Link href="/provider-terms" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Provider Terms</Link>
+        </p>
         <div style={card}>
           {(() => {
             const teacher = dash?.ownedListings.find((l) => l.listing_table === "venue_listings" && l.status === "published");
@@ -412,10 +420,20 @@ export default function ProviderClient({ signedIn, gateOpen }: { signedIn: boole
             );
             if (premiumActive && teacher?.premium_paid) {
               return (
-                <p style={{ margin: 0, color: "var(--navy)" }}>
-                  Premium is active on {teacher.business_name || "your listing"} through {until}.
-                  Players can send you lesson requests directly, and your card shows the Premium Provider badge.
-                </p>
+                <div>
+                  <p style={{ margin: 0, color: "var(--navy)" }}>
+                    Premium is active on {teacher.business_name || "your listing"} through {until}.
+                    Players can send you lesson requests directly, and your card shows the Premium Provider badge.
+                  </p>
+                  {PORTAL_URL ? (
+                    <p style={{ margin: "0.7rem 0 0", fontSize: "0.88rem" }}>
+                      <a href={PORTAL_URL} target="_blank" rel="noopener noreferrer" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Manage or cancel your subscription</a>
+                      <span style={{ color: "var(--muted)" }}> (Stripe emails you a secure sign-in link)</span>
+                    </p>
+                  ) : (
+                    <p style={{ margin: "0.7rem 0 0", fontSize: "0.88rem", color: "var(--muted)" }}>To cancel or change your subscription, email <a href="mailto:hello@findmymahjgame.com" style={{ color: "var(--pink-text)", fontWeight: 700 }}>hello@findmymahjgame.com</a>.</p>
+                  )}
+                </div>
               );
             }
             if (premiumActive) {

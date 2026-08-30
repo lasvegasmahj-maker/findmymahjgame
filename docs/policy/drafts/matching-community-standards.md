@@ -1,21 +1,16 @@
 # Mahj Match: Matching Terms and Community Standards
 
-**DRAFT FOR OWNER REVIEW, NOT YET IN EFFECT.** This is a working draft for Shauna and counsel to
-review and edit. No document like this exists anywhere on the site today; Mahj Match currently
-has zero public-facing copy. See `docs/policy/audit-2026-08.md`, section 5, for the full audit,
-including one engineering gap that should be closed before this document is published: the 18+
-consent check is built but is not yet proven to run on every path into matching. Do not publish
-this document, or flip the `playerMatching` launch gate, until that is confirmed. See
-`docs/policy/launch-gate.md`.
-
-Bracketed items marked `[OWNER TO CONFIRM]` are business or legal facts only the owner can
-decide. Do not publish this document with any bracket still open.
-
-This document covers Mahj Match, our feature that proposes a table of players to each other
-based on location, availability, and preferences. It works alongside the Terms of Use and the
-Privacy Policy.
+**Status (2026-08-29):** PUBLISHED at /matching-standards. The owner decision applied. This
+file is the source of truth; scripts/policy-content.mjs generates
+content/policy/matching-community-standards.ts from it, and the page renders that module. The
+18+ consent check runs on every path into matching (request, respond, and candidate building);
+the player-matching launch gate itself stays OFF until the owner authorizes launch.
 
 ---
+
+This document covers Mahj Match, our feature that proposes a table of players to each other
+based on location, availability, and preferences. It works alongside the
+[Terms of Use](/terms) and the [Privacy Policy](/privacy).
 
 ## Mahj Match is for adults 18 and over, only
 
@@ -47,10 +42,10 @@ through those stages together.
    never full names, exact addresses, or contact information.
 3. **You accept or decline.** You can accept or decline a proposed seat. Declining releases your
    seat and does not notify the other players who you were.
-4. **The table forms.** Once every seat is accepted, the table is confirmed. At this point you
-   can coordinate directly with your tablemates through the platform. We do not share your email
-   address or phone number automatically; how you exchange contact details for the actual game
-   is up to you and your tablemates.
+4. **The table forms.** Once every seat is accepted, we email everyone that the table is
+   confirmed and show the table page with first names, day, time, and general area. We do not
+   share email addresses or phone numbers; the group decides together how to exchange contact
+   details for the actual game.
 
 We never share your exact home address through matching. If a game is hosted at someone's home,
 the location is described generally (for example, city and neighborhood) until the group is
@@ -77,7 +72,7 @@ other) to help route them.
 - Reports we consider low-risk based on the category and detail provided may be resolved through
   our standard review process.
 - Reports that raise a safety concern, or that we cannot confidently sort automatically, are
-  flagged for a person on our team to review by hand. Serious reports are never auto-resolved.
+  flagged for a person on our team to review by hand. We never auto-resolve serious reports.
 - We will not tell the person you reported who reported them.
 
 ## Community standards while using Mahj Match
@@ -97,14 +92,17 @@ other) to help route them.
 ## Our review process
 
 We review reports, and we can remove a user from matching, or from the platform entirely, based
-on a violation of these standards. [OWNER TO CONFIRM: whether removed users are told why, and
-whether there is an appeal path]. We are not a party to any in-person meeting arranged through
-Mahj Match, and the safety guidance and liability terms in our Terms of Use apply fully here.
+on a violation of these standards. If we remove or restrict you for a violation, we tell you the
+general category of the violation. We never reveal who reported you or any detail that could
+identify a reporter. You may send one written appeal to hello@findmymahjgame.com; a person on our
+team reviews it, with a target of 7 days. We are not a party to any in-person meeting arranged
+through Mahj Match, and the safety guidance and liability terms in our [Terms of Use](/terms)
+apply fully here.
 
 ## Changes to this document
 
 We may update these matching terms and community standards. If a change materially affects how
-your information is used or shared, you will be asked to review and re-confirm your consent
+your information is used or shared, we will ask you to review and re-confirm your consent
 before matching continues.
 
 ## Contact
@@ -114,6 +112,5 @@ concern, use the in-product report feature so it reaches a person quickly, or em
 
 ---
 
-*Last drafted: this working draft has no effective date until the owner approves and publishes
-it, and until the 18+ consent check is confirmed to run on every matching path. See
-`docs/policy/launch-gate.md`.*
+*Effective August 29, 2026. Owner decision applied 2026-08-29; see
+docs/policy/owner-decisions-2026-08-29.md.*

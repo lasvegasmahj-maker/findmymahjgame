@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import MahjMatchClient from "./mahj-match-client";
 import { lazyServerClient } from "@/lib/supabase-server";
 import { isLaunched } from "@/lib/launch-gates";
@@ -26,8 +27,11 @@ export default async function MahjMatchPage() {
       >
         Mahj Match
       </h1>
-      <p style={{ textAlign: "center", color: "var(--muted)", margin: "0 0 1.8rem", fontSize: "1.05rem" }}>
+      <p style={{ textAlign: "center", color: "var(--muted)", margin: "0 0 0.6rem", fontSize: "1.05rem" }}>
         Tell us when and where you want to play. We fill a four-player table with people near you.
+      </p>
+      <p style={{ textAlign: "center", color: "var(--muted)", margin: "0 0 1.8rem", fontSize: "0.88rem" }}>
+        Adults 18 and over only. Read the <Link href="/matching-standards" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Matching Community Standards</Link>.
       </p>
       <MahjMatchClient launched={launched} />
     </main>

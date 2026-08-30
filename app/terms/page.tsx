@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Terms of Use",
@@ -16,7 +17,7 @@ export default function TermsPage() {
       <div className="page-hero">
         <div className="eyebrow">Legal</div>
         <h1>Terms of Use</h1>
-        <p>Last updated: April 2026</p>
+        <p>Last updated: August 2026</p>
       </div>
 
       <div className="page-body">
@@ -57,7 +58,11 @@ export default function TermsPage() {
             We reserve the right to approve, reject or remove any paid listing at our discretion
           </li>
           <li>Listings must be for genuine mahjong-related businesses, events or services</li>
-          <li>Payment terms and cancellation policies are outlined in the Advertiser Terms</li>
+          <li>
+            Pricing, renewal, cancellation, and refund terms for Find My Mahj Premium are in our{" "}
+            <Link href="/billing-disclosures" style={{ color: "var(--pink-text)", fontWeight: 600 }}>Billing Disclosures</Link>; how listings, claims, and ownership work is in our{" "}
+            <Link href="/provider-terms" style={{ color: "var(--pink-text)", fontWeight: 600 }}>Provider Terms</Link>
+          </li>
         </ul>
 
         <h2>Prohibited Use</h2>

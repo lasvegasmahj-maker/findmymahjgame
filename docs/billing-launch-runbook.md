@@ -99,6 +99,8 @@ The old FINDMYMAHJGAME coupon is retired (superseded by the app-managed 90-day c
 | STRIPE_PUBLISHABLE_KEY | Same page, "Publishable key" (starts with pk_). Not read by the app today; set for completeness only |
 | STRIPE_PRICE_MEMBERSHIP_ANNUAL | The price ID you copied in Step 2 (starts with price_) |
 | STRIPE_WEBHOOK_SECRET | You get this in Step 5 below (starts with whsec_) |
+| NEXT_PUBLIC_STRIPE_PORTAL_URL | Public, not a secret: Stripe's no-code customer portal login link (starts with https://billing.stripe.com/). Inlined into the client bundle, so it needs a redeploy. Until set, the provider dashboard shows the email cancellation path |
+| app_settings.stripe_billing_emails_confirmed | Not an env var: a database setting Claude sets to 'true' after the owner confirms Stripe's renewal-reminder and failed-payment emails are on. The Launch Simulator requires it before payments open |
 
 ## Step 5: Tell Stripe where to send payment events
 

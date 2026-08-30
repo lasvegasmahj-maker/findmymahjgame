@@ -187,6 +187,32 @@ export async function runLaunchSimulation(supabase: SupabaseClient): Promise<Sim
       push("Billing test", "FAIL", e instanceof Error ? e.message : "unknown");
     }
 
+    // The published billing disclosures promise self-service cancellation through Stripe's
+    // customer portal plus renewal-reminder and failed-payment emails, which only the owner's
+    // Stripe Billing settings can deliver. Payments must not open until both exist, so this
+    // check fails only if launch_payments is ON without them; while payments are closed it
+    // reports the gap without marking the rest of the product not ready.
+    try {
+      const portal = process.env.NEXT_PUBLIC_STRIPE_PORTAL_URL || "";
+      const portalOk = portal.startsWith("https://billing.stripe.com/");
+      const { data: rows, error: settingsErr } = await supabase
+        .from("app_settings").select("key, value").in("key", ["stripe_billing_emails_confirmed", "launch_payments"]);
+      if (settingsErr) throw new Error(`app_settings read failed: ${settingsErr.message}`);
+      const setting = (k: string) => rows?.find((r) => r.key === k)?.value;
+      const emailsOk = setting("stripe_billing_emails_confirmed") === "true";
+      const paymentsOpen = setting("launch_payments") === "true";
+      const missing = [portalOk ? null : "customer portal link (NEXT_PUBLIC_STRIPE_PORTAL_URL)", emailsOk ? null : "billing emails confirmation (app_settings.stripe_billing_emails_confirmed)"].filter(Boolean).join(", ");
+      if (portalOk && emailsOk) {
+        push("Billing self-service", "PASS", "Stripe customer portal link configured and billing emails confirmed by the owner");
+      } else if (!paymentsOpen) {
+        push("Billing self-service", "PASS", `payments closed; still required before launch_payments: ${missing} (owner-activation-checklist)`);
+      } else {
+        push("Billing self-service", "FAIL", `launch_payments is ON without ${missing}; the published billing disclosures are not being honored`);
+      }
+    } catch (e) {
+      push("Billing self-service", "FAIL", e instanceof Error ? e.message : "unknown");
+    }
+
     // 4. Consent + matching + table formation
     try {
       const four = playerIds.slice(0, 4);

@@ -6,7 +6,8 @@ import { test, expect } from "@playwright/test";
 const ROUTES = [
   "/", "/play", "/start", "/events", "/teachers", "/venues", "/faq", "/about",
   "/help", "/newsletter", "/how-it-works", "/get-listed", "/list-my-game",
-  "/ambassadors", "/privacy", "/terms", "/states/texas",
+  "/ambassadors", "/privacy", "/terms", "/provider-terms", "/billing-disclosures",
+  "/matching-standards", "/states/texas",
   "/states/texas/dallas", "/states/nevada/las-vegas", "/events?type=tournament",
 ];
 

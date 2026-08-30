@@ -79,7 +79,7 @@ export default function AdvertiseClient() {
         <div style={{ background: "linear-gradient(135deg, #fffdf0, #fff8dc)", border: "2px solid #f5c842", borderRadius: 16, padding: "2rem", textAlign: "center", marginBottom: "2.5rem" }}>
           <h3 style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", fontSize: "1.4rem", color: "#5a4000", marginBottom: "0.5rem" }}>Founding Partner Spots Available
           </h3>
-          <p style={{ fontSize: "0.9rem", color: "#7a6020", maxWidth: 500, margin: "0 auto 0.5rem" }}>Get in early. Founding Partners receive priority placement, locked-in rates, and a Founding Partner badge featured across the site and in launch marketing.
+          <p style={{ fontSize: "0.9rem", color: "#7a6020", maxWidth: 500, margin: "0 auto 0.5rem" }}>Get in early. Founding Partners receive a clearly labeled sponsor spot (separate from the neutral listing order of the directory), locked-in rates, and a Founding Partner badge featured across the site and in launch marketing.
           </p>
           <p style={{ fontSize: "0.82rem", color: "#a07800" }}>Use code <strong>FINDMYMAHJ</strong> in your inquiry.</p>
         </div>

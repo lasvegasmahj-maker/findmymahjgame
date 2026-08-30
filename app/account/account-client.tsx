@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import BlockButton from "@/components/safety/block-button";
 
@@ -409,6 +410,7 @@ function MahjMatchSection() {
         <form onSubmit={optIn} style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>
           <p style={{ margin: 0, fontSize: "0.86rem", color: "var(--navy)", lineHeight: 1.6, background: "var(--bg)", border: "1px solid var(--border)", borderRadius: 8, padding: "0.8rem" }}>
             Mahj Match introduces you to other adult players. By opting in you confirm you are 18 or older, and you agree we may share your first name, general area, availability, and play preferences with players we propose seating you with. We never share your email, exact address, or last name. You can turn this off any time.
+           Read the <Link href="/matching-standards" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Matching Community Standards</Link>.
           </p>
 
           {renderPrefFields()}
