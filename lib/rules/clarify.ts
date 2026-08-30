@@ -40,6 +40,12 @@ export type ClarifyPayload = {
   options: Array<{ key: string; label: string }>;
 };
 
+const NEGATION = /\b(no|nope|not|don'?t|never|isn'?t)\b/i;
+const VARIANT_NAMES: Record<string, string> = {
+  riichi: "Riichi", japanese: "Japanese", chinese: "Chinese", "hong kong": "Hong Kong", hongkong: "Hong Kong", cantonese: "Cantonese",
+  sichuan: "Sichuan", taiwanese: "Taiwanese", korean: "Korean", filipino: "Filipino", singapore: "Singapore", singaporean: "Singaporean",
+  mcr: "MCR", "zung jung": "Zung Jung", zungjung: "Zung Jung",
+};
 const VARIANT_RE =
   /\b(riichi|japanese|chinese|hong ?kong|cantonese|sichuan|taiwanese|korean|filipino|singapor(e|ean)|mcr|zung ?jung)\b/i;
 const AMERICAN_RE = /\b(american|nmjl|national (mah ?jongg?|mahjong) league)\b/i;
@@ -170,7 +176,7 @@ const TOPIC_GROUPS: Array<{ key: string; label: string; match: RegExp; entry: st
 const SOMETHING_ELSE_KEY = "other";
 const SOMETHING_ELSE_LABEL = "Something else";
 export const GAP_ANSWER =
-  "Thanks, that one is not in our verified American mahjong rules yet, so I will not guess at it. We have logged the topic for our instructor to research and add. Until then, the National Mah Jongg League's rulebook and card settle it, and your table should follow the League rule rather than a table custom.";
+  "Thanks, that one is not in our verified American mahjong rules yet, so I will not guess at it. We have logged the topic for our instructor to research and add. Until then, check the National Mah Jongg League's rulebook, and where the League has a rule, follow it over a table custom.";
 
 function specificEntryLikely(q: string): boolean {
   return (
@@ -184,7 +190,8 @@ function specificEntryLikely(q: string): boolean {
 export function needsClarification(question: string, matchesAfterTournamentStrip: (q: string) => boolean): Clarification | null {
   const q = question;
   if (VARIANT_RE.test(q) && !AMERICAN_RE.test(q)) {
-    const variant = q.match(VARIANT_RE)?.[0] ?? "another style of";
+    const raw = (q.match(VARIANT_RE)?.[0] ?? "").toLowerCase();
+    const variant = VARIANT_NAMES[raw] ?? (raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : "another style of");
     const base = CLARIFICATIONS.find((c) => c.id === "ruleset")!;
     return {
       ...base,
@@ -258,8 +265,13 @@ export function resolveReply(ctx: ClarifyContext, reply: string): { option: Clar
   // Option words are loose on purpose ("mahjong", "play"), so only a short reply may match
   // them; a whole new question typed mid-clarification is handled as a question.
   if (trimmed.split(/\s+/).length > 6) return { clarification };
-  // "not a tournament" matches both tournament options; the longer, more specific match wins.
-  // A tie means the reply restated the whole question, so ask again.
+  // A negated reply ("no, not American") belongs to the "other" option even though the word
+  // it negates matches the other side; otherwise the longer, more specific match wins, and a
+  // tie means the reply restated the whole question, so ask again.
+  if (NEGATION.test(trimmed)) {
+    const other = clarification.options.find((o) => o.key === "other");
+    if (other) return { option: other, clarification };
+  }
   const scored = clarification.options
     .map((o) => ({ o, len: (trimmed.match(o.match)?.[0] ?? "").length }))
     .filter((x) => x.len > 0)

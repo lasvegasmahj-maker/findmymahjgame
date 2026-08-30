@@ -765,7 +765,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [JOKER, JOKER_EXCHANGE, new RegExp(`${TIMING.source}|${ERROR_CUE.source}|\\b(own|my|your) (rack|exposure)\\b`, "i")],
     blocks: [DEAD],
     approved_answer:
-      "You may exchange a joker only during your own turn, after you have drawn from the wall or called a discard and before you discard. Hand over the tile the joker stands for and take the joker; you may redeem a joker from any exposure of a hand still in play, including your own. Once you discard, the chance passes until your next turn. If an exchange puts the wrong tile into an exposure, fix it before the next discard; after that discard, only the hand holding the incorrect exposure is dead. If you put the wrong tile into your own exposure, that dead hand is yours.",
+      "You may exchange a joker only during your own turn, after you have drawn from the wall or called a discard and before you discard. Hand over the tile the joker stands for and take the joker; you may redeem a joker from any exposure on the table, including your own. Once you discard, the chance passes until your next turn. If an exchange puts the wrong tile into an exposure, fix it before the next discard; after that discard, only the hand holding the incorrect exposure is dead. If you put the wrong tile into your own exposure, that dead hand is yours.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
@@ -831,7 +831,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     keywords: ["misnamed", "wrong name"],
     requires: [MISNAMED],
     approved_answer:
-      "Misnaming a discard carries its own League rules, and the consequence depends on whether anyone called the tile or declared mahjong based on the wrong name. Our instructor is confirming the exact ruling before we publish it here. Until then, ask your table to apply the League's rulebook to that situation rather than a table custom.",
+      "Misnaming a discard carries its own League rules. Our instructor is confirming the exact ruling before we publish it here. Until then, ask your table to apply the League's rulebook to that situation rather than a table custom.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "owner_question",
@@ -1001,16 +1001,16 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [PAYMENT],
     blocks: [ERROR_CUE, MISNAMED, DEAD, TOURNAMENT],
     approved_answer:
-      "Every hand on the card shows its value. When you win on another player's discard, that player pays you double the value and the other two pay the value. When you draw the winning tile yourself, all three players pay double. A hand that could have used jokers but has none is worth double, and both doubles can apply to the same hand. By League rule a wall game pays nothing; some tables settle it by their own custom, so agree on that before the first hand.",
+      "Every hand on the card shows its value, and the League's rulebook sets who pays and how much, depending on whether the winning tile came from a discard or from the wall and whether the hand used jokers. Agree at your table before the first hand whether you play for money or for points. By League rule a wall game pays nothing.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note:
-      "Some tables add their own bonuses or play for points instead of money; agree on that before the first hand.",
+      "Some tables add their own bonuses or play for points instead of money.",
     source: "research_verified",
     last_verified: VERIFIED_AUDIT,
     confidence: "high",
     classification: "standard_nmjl_rule",
-    provenance: researched("League payment rules (discarder pays double, self-pick all pay double, jokerless doubles, wall game pays nothing); cross-checked via Mahj Life wiki articles 98 and 208", 2024),
+    provenance: researched("League payment rules exist in the rulebook (amounts held back pending the owner's wording decision, question 10); wall game pays nothing per the owner-approved wall-game entry; cross-checked via Mahj Life wiki articles 98 and 208", 2024),
   },
   {
     id: "quints-sextets",
@@ -1120,7 +1120,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [LAST_OF_WALL],
     blocks: [HAND_CLOSED, CLAIM_VERB],
     approved_answer:
-      "Play continues until the wall is used up. If the last tile is drawn and no one has declared mahjong, the deal ends as a wall game and no one pays. The final tile drawn from the wall can still win for the player who draws it, and the last discard of the deal can still be called for mahjong.",
+      "Play continues until the wall is used up. If the last tile is drawn and discarded and no one has declared mahjong, the deal ends as a wall game and no one pays. The final tile drawn from the wall can still win for the player who draws it, and the last discard of the deal can still be called for mahjong.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",

@@ -98,7 +98,7 @@ test.describe("multi-turn resolution", () => {
   test("the ruleset clarification re-asks with its real question, never an empty prompt", () => {
     const r = lookupRule({ question: "hmm", clarify: { id: "ruleset", question: "How many tiles are in a riichi set?" } });
     expect(r.clarify?.id).toBe("ruleset");
-    expect(r.needs_clarification).toMatch(/^That sounds like it may be about riichi style mahjong/);
+    expect(r.needs_clarification).toMatch(/^That sounds like it may be about Riichi style mahjong/);
     expect(r.needs_clarification).toMatch(/You can answer with "Yes, American mahjong" or "No, another style"\.$/);
   });
 
@@ -118,6 +118,12 @@ test.describe("multi-turn resolution", () => {
     expect(no.matched).toBe(false);
     expect(no.answer).toMatch(/only verify American mahjong rules/);
     expect(no.unsupported_reason).toBe("variant_scope");
+    for (const reply of ["no, not American", "Not American mahjong", "not right"]) {
+      const r = lookupRule({ question: reply, clarify: { id: "ruleset", question: q } });
+      expect(r.matched, reply).toBe(false);
+      expect(r.answer, reply).toMatch(/only verify American mahjong rules/);
+    }
+    expect(lookupRule({ question: "how does the charleston work in chinese mahjong" }).needs_clarification).toMatch(/about Chinese style mahjong/);
   });
 
   test("tournament: standard strips the tournament context; tournament explains director rules", () => {

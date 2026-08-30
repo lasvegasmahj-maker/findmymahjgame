@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
+import type { ClarifyPayload as Clarify } from "@/lib/rules/clarify";
 
 type Card = {
   id: string;
@@ -15,12 +16,6 @@ type Card = {
   url: string | null;
 };
 
-type Clarify = {
-  id: string;
-  prompt: string;
-  question: string;
-  options: Array<{ key: string; label: string }>;
-};
 
 type AskResponse = {
   ok: boolean;

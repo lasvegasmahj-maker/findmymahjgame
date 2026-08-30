@@ -2,7 +2,9 @@ import { test, expect, type APIRequestContext, type Page } from "@playwright/tes
 
 // Multi-turn clarification through the REAL Ask route and the real /ask page, not only
 // unit-level retrieval. The server keeps no state: the clarification id and the original
-// question ride along with each reply.
+// question ride along with each reply. The API tests fire well over the 15-per-minute limit,
+// so they run serially and rely on RATE_LIMIT_TEST_BYPASS=1 from .env.local (local only).
+test.describe.configure({ mode: "serial" });
 
 async function ask(request: APIRequestContext, q: string, clarify?: { id: string; question: string }) {
   const res = await request.post("/api/ask", { data: clarify ? { q, clarify } : { q } });
@@ -47,6 +49,12 @@ test.describe("Ask route: rules clarification turns", () => {
     const no = await ask(request, "no, Chinese", { id: "ruleset", question: q });
     expect(no.rules.matched).toBe(false);
     expect(no.answer).toMatch(/only verify American mahjong rules/);
+    for (const reply of ["no, not American", "Not American mahjong", "not right"]) {
+      const r = await ask(request, reply, { id: "ruleset", question: q });
+      expect(r.rules.matched, reply).toBe(false);
+      expect(r.answer, reply).toMatch(/only verify American mahjong rules/);
+    }
+    expect(first.answer).toMatch(/about Chinese style mahjong/);
   });
 
   test("tournament context asks which rules, and standard answers the underlying rule", async ({ request }) => {

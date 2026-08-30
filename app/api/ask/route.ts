@@ -137,10 +137,12 @@ export async function POST(req: NextRequest) {
     if (unmatchedFinal || rules.unsupported_reason === "no_entry") void logRulesGap(rules.clarify?.question ?? question, rules);
   }
 
+  // An owner-question answer is honest but unverified; it must count that way everywhere.
+  const rulesVerified = Boolean(rules?.matched && rules.evidence === "verified");
+
   if (topic === "rules" && rules) {
     const answer = await composeRulesAnswer(rules, question);
-    // An owner-question answer is honest but unverified; it must count that way.
-    trackAskOutcome(recordClass, topic, 0, rules.matched && rules.evidence === "verified", rules.clarify ? `${rules.clarify.id}:asked` : rules.clarified_by ? `${rules.clarified_by}:resolved` : null);
+    trackAskOutcome(recordClass, topic, 0, rulesVerified, rules.clarify ? `${rules.clarify.id}:asked` : rules.clarified_by ? `${rules.clarified_by}:resolved` : null);
     return NextResponse.json({
       ok: true,
       answer,
@@ -169,7 +171,7 @@ export async function POST(req: NextRequest) {
   const extras = rulesForMixed ? { topic, rules: rulesForMixed } : { topic };
 
   if (!intent.recognized) {
-    trackAskOutcome(recordClass, topic, 0, Boolean(rules?.matched));
+    trackAskOutcome(recordClass, topic, 0, rulesVerified);
     return NextResponse.json({
       ok: true,
       answer: withRulesLead(
@@ -221,7 +223,7 @@ export async function POST(req: NextRequest) {
       suggestions.push({ label: "Browse all teachers", href: "/teachers" });
       if (intent.location) suggestions.push({ label: "Get notified when one is added", href: `/teachers?near=${encodeURIComponent(intent.location)}` });
     }
-    trackAskOutcome(recordClass, topic, cards.length, cards.length > 0 || Boolean(rules?.matched));
+    trackAskOutcome(recordClass, topic, cards.length, cards.length > 0 || rulesVerified);
     return NextResponse.json({ ok: true, answer: withRulesLead(answer), results: cards, suggestions, intent, via, ...extras });
   }
 
@@ -275,7 +277,7 @@ export async function POST(req: NextRequest) {
     suggestions.push({ label: bq ? "See these on the Events page" : "Browse the Events page", href: `/events${bq ? `?${bq}` : ""}` });
   }
 
-  trackAskOutcome(recordClass, topic, cards.length, cards.length > 0 || Boolean(rules?.matched));
+  trackAskOutcome(recordClass, topic, cards.length, cards.length > 0 || rulesVerified);
   return NextResponse.json({
     ok: true,
     answer: withRulesLead(answer),
