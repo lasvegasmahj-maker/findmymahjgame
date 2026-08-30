@@ -203,6 +203,7 @@ rulebook summary; that entry now states only the supported core and carries ques
 - Round 11: PASS, no blockers; warnings fixed (tournament, rulebook, suit, and blank signals vocabulary-gated; a rate limit mid-clarification keeps the pending question).
 - Round 12: PASS, no blockers; warnings fixed (a capitalized style word after a preposition is never a place; a statement-form variant question reaches the style clarification; the Charleston-stop entry states only the settled rule).
 - Round 13: PASS, no blockers; warning fixed (the mixed-question location repair no longer strips a long place name from a plain search); this record was tidied for the owner.
+- Round 14: PASS, no blockers, style nits only (three deferral sentences in passive voice; the home-card chip class duplicates the global outline button; a wall-game wording tie). Merged to main as 862992a and deployed to findmymahjgame.com on 2026-08-30; production verified with all four launch gates OFF and matcher_enabled false.
 
 ## Independent truth-verification panel (2026-08-30)
 
