@@ -272,8 +272,9 @@ export function resolveReply(ctx: ClarifyContext, reply: string): { option: Clar
   if (neg) {
     const other = clarification.options.find((o) => o.key === "other");
     if (other) return { option: other, clarification };
-    // "no, not concealed": whatever is named after the negation is the option being refused.
-    const negated = trimmed.slice((neg.index ?? 0) + neg[0].length);
+    // "no, not concealed": whatever is named right after the negation, up to the next comma
+    // or "but", is the option being refused; "not exposure, mahjong" still picks mahjong.
+    const negated = trimmed.slice((neg.index ?? 0) + neg[0].length).split(/[,;.]|\bbut\b|\bjust\b/)[0];
     const remaining = clarification.options.filter((o) => !o.match.test(negated) && o.match.test(trimmed));
     if (remaining.length === 1) return { option: remaining[0], clarification };
     return { clarification };
