@@ -144,6 +144,7 @@ const CASES: Case[] = [
   // Players, tournaments, house, strategy, sources
   A("can three people play", ["players-count", "three-player-procedure"]),
   A("how many players do you need", "players-count"),
+  A("does the dealer get 14 tiles at the deal", "dealing"),
   A("how do you play with 3", ["players-count", "three-player-procedure"]),
   C("Can I blind pass in a tournament?", "tournament"),
   A("how do tournament rules differ", "tournament-rules"),
@@ -308,6 +309,10 @@ test.describe("directory questions stay directory questions", () => {
       "can you hold my spot until I call the teacher",
       "is there a 3 person game near me",
       "3 handed groups near 89138",
+      "we need an extra tile set",
+      "I have an extra tile set to donate",
+      "do people talk or play silently",
+      "do I have to say anything before I play",
     ]) {
       expect(detectAskTopic(q), q).toBe("directory");
     }
@@ -349,6 +354,16 @@ test.describe("adversarial pairs from the owner decisions (2026-08-30)", () => {
     // An interrupted pick is a different thing and must not read as picking ahead.
     expect(r.answer).toMatch(/interrupted pick/);
     expect(lookupRule({ question: "someone called while I was picking, is that picking ahead" }).answer).toMatch(/interrupted pick/);
+  });
+
+  test("no house note merely repeats the sentence that already closes its answer", () => {
+    for (const e of RULES_KNOWLEDGE) {
+      if (!e.house_note) continue;
+      const tail = e.approved_answer.slice(-160).toLowerCase();
+      const words = e.house_note.toLowerCase().replace(/[^a-z ]/g, "").split(/\s+/).filter((w) => w.length > 4);
+      const overlap = words.filter((w) => tail.includes(w)).length;
+      expect(overlap / Math.max(1, words.length), e.id).toBeLessThan(0.7);
+    }
   });
 
   test("no answer presents house or tournament leniency as League law", () => {
@@ -415,6 +430,32 @@ test.describe("corpus invariants", () => {
       const e = RULES_KNOWLEDGE.find((x) => x.id === id)!;
       expect(e.approved_answer, id).toMatch(/until you discard or exchange a joker/);
     }
+  });
+
+  test("a dead hand's jokers are not answered by the wrong-exchange rule", () => {
+    for (const q of [
+      "her hand went dead for the wrong number of tiles, can I take her jokers",
+      "his hand is dead by mistake, can I still take the joker",
+      "dead hand penalty, can we take her jokers",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("dead-hand-jokers");
+    }
+    expect(lookupRule({ question: "I exchanged a joker for the wrong tile, whose hand is dead" }).entry_id).toBe("joker-exchange-wrong-tile");
+    expect(lookupRule({ question: "can i exchange a joker on my own rack" }).entry_id).toBe("joker-exchange-timing");
+    expect(lookupRule({ question: "Can I swap a joker out of someone's exposure?" }).entry_id).toBe("joker-exchange");
+  });
+
+  test("picking ahead never implies that returning the tile saves the hand", () => {
+    const e = RULES_KNOWLEDGE.find((x) => x.id === "picking-ahead")!;
+    expect(e.approved_answer).not.toMatch(/kills the hand on its own/);
+    expect(e.approved_answer).toMatch(/Your hand is already dead/);
+  });
+
+  test("the normal 14 tile deal is not treated as a wrong count", () => {
+    for (const q of ["does the dealer get 14 tiles at the deal", "east starts with 14 tiles right"]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("dealing");
+    }
+    expect(lookupRule({ question: "I ended up with 14 tiles before east threw, redeal?" }).entry_id).toBe("wrong-tile-count-before-play");
   });
 
   test("out-of-turn questions reach the entry that answers them, and the dead-hand list stays open", () => {

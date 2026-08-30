@@ -25,7 +25,7 @@ export async function rephraseApprovedAnswer(approved: string, question: string)
       signal: AbortSignal.timeout(6000),
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 300,
+        max_tokens: 1000,
         system:
           "Rephrase the approved mahjong rules answer so it directly addresses the player's question. " +
           "Use ONLY facts present in the approved answer. Never add, remove, or change a rule, a number, or a tile name. " +
@@ -37,8 +37,12 @@ export async function rephraseApprovedAnswer(approved: string, question: string)
     });
     if (!res.ok) return approved;
     const body = await res.json();
+    // A cut-off rephrase reads as a complete rule and loses whatever came after the cut,
+    // so any sign of truncation or heavy loss falls back to the approved text.
+    if (body?.stop_reason === "max_tokens") return approved;
     const text = String(body?.content?.[0]?.text ?? "").trim();
     if (!text) return approved;
+    if (text.length < approved.length * 0.7) return approved;
     if (!synthesisDigitGuard(approved, text)) return approved;
     if (MONTH_RE.test(text) && !MONTH_RE.test(approved)) return approved;
     if (/[–—]/.test(text)) return approved;

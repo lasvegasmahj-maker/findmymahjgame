@@ -33,6 +33,29 @@ const EXAMPLES = [
   "Find an instructor near Phoenix",
 ];
 
+// A long rules answer read as one centered block of semibold text, roughly 40 lines on a
+// phone. Split it into paragraphs and left-align once it passes a short-answer length.
+function AnswerText({ text }: { text: string }) {
+  const long = text.length > 400;
+  if (!long) {
+    return (
+      <p style={{ fontSize: "1.1rem", color: "var(--navy)", fontWeight: 600, textAlign: "center", lineHeight: 1.55 }}>{text}</p>
+    );
+  }
+  const sentences = text.match(/[^.!?]+[.!?]+(\s|$)/g) ?? [text];
+  const paras: string[] = [];
+  for (let i = 0; i < sentences.length; i += 3) paras.push(sentences.slice(i, i + 3).join("").trim());
+  return (
+    <div style={{ maxWidth: 640, margin: "0 auto" }}>
+      {paras.map((p, i) => (
+        <p key={i} style={{ fontSize: "1.05rem", color: "var(--navy)", fontWeight: 500, textAlign: "left", lineHeight: 1.6, margin: i === 0 ? "0 0 0.8rem" : "0 0 0.8rem" }}>
+          {p}
+        </p>
+      ))}
+    </div>
+  );
+}
+
 export default function AskClient() {
   // Prefill from /ask?q=... (the homepage "Continue on the Ask page" link).
   const searchParams = useSearchParams();
@@ -111,9 +134,7 @@ export default function AskClient() {
           {pending && (
             <p style={{ fontSize: "0.9rem", color: "var(--muted)", textAlign: "center", margin: "0 0 0.4rem" }}>You asked: {pending.question}</p>
           )}
-          <p style={{ fontSize: "1.1rem", color: "var(--navy)", fontWeight: 600, textAlign: "center", lineHeight: 1.55 }}>
-            {resp.error || resp.answer}
-          </p>
+          <AnswerText text={resp.error || resp.answer} />
 
           {resp.pendingReview && (
             <p data-testid="ask-pending-review" style={{ fontSize: "0.85rem", color: "var(--muted)", textAlign: "center", marginTop: "0.6rem" }}>

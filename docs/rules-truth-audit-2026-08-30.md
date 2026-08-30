@@ -134,7 +134,7 @@ prompt and options; the page renders the options as buttons and also accepts a t
   punctuation, newline, smart-quote, and truncation variants; every entry reachable; corpus
   invariants (no source name, month, dash, or letter code; no conflicting rules; tournament,
   house, and strategy entries labeled as such; owner wording pinned).
-- tests/rules-heldout.spec.ts: 93 blind cases (76 at the first, tuning-free run; 83 after the gate rounds added phrasings), written after the routing logic and the
+- tests/rules-heldout.spec.ts: 93 blind cases (76 at the first, tuning-free run; 83 after the gate rounds added phrasings; 93 after the owner decisions of 2026-08-30 added 10), written after the routing logic and the
   benchmark were finished. First, tuning-free run: 60 passed, 16 failed. Of the 16: 0 stated
   a wrong rule; 3 answered a related entry that did not address the asked point
   (joker-exchange question answered by the exposure entry, dealer's extra tile answered by
@@ -193,6 +193,13 @@ rulebook summary; that entry now states only the supported core and carries ques
    until the player says call or mahjong? Entry two-players-same-tile now says the instructor
    is confirming this point; the settled priority rules stay.
 
+
+### Gate rounds after the owner decisions
+
+- Round 15: FAIL. Three blockers: the new three-player, extra-tile, hold, and final-discard signals were unconditional and pulled directory searches into rules answers; FINAL_DISCARD_SCENE matched an ordinary last discard, so a pung call was answered with the end-of-wall rule; and the misnamed-discard answer had reintroduced a joker-naming claim an earlier round removed as unsupported.
+- Publish-fidelity panel: three blockers. The three-player entry published a dealing step beyond the owner's end-counts-only instruction and unsourced on its provenance; the dead-hand list read as exhaustive while omitting drawing out of turn, and its matcher pulled those questions to itself; and asking whether a claim must be spoken landed on the answer about declining a call.
+- Round 16: FAIL. Two blockers: six of the longer answers exceeded the rephrase token budget, so a truncated rule would have shipped the moment an API key is added; and the picking-ahead answer implied that returning the tile saves a hand it had just called dead. Warnings fixed: dead-hand joker questions were diverted to the wrong-exchange entry, the normal 14 tile deal read as a wrong count, several signals hijacked directory searches, and four answers repeated their own house note.
+- Round 17: FAIL. Confirmed the dead-hand joker diversion independently and named the same fix, plus bare silently and say-anything wording that flipped etiquette questions onto the rules path.
 
 ## Owner decisions on the 13 final rule questions (2026-08-30)
 

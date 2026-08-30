@@ -184,10 +184,9 @@ const RULES_SIGNAL_RES: RegExp[] = [
 const CONDITIONAL_RULES_SIGNALS: RegExp[] = [
   ...RULES_TOPIC_SIGNALS_CONDITIONAL,
   /\bhow many of each\b/i,
-  // Everyday words: gated below on mahjong vocabulary with no directory, commerce, or place cue.
-  /\b(three|3) of us\b[^.?!]{0,40}\b(pass|passing|charleston|deal|tiles?|play|still)\b/i,
-  /\b(redeal|re-?deal)\b|\b(12|14) tiles\b|\bwrong number of tiles\b|\bshort a tile\b|\bextra tile\b/i,
-  /\b(hold|wait)\b(?!\s+(a |the )?(spot|seat|place|table|room))[^.?!]{0,30}\b(call|claim|tile|discard|priority|count|counts|mean)\b|\b(call|claim|tile|discard|priority)\b[^.?!]{0,30}\b(hold|wait)\b(?!\s+(a |the )?(spot|seat|place|table|room))/i,
+  /\b(three|3) of us\b[^.?!]{0,40}\b(pass|passing|charleston|deal|dealt|redeal|tiles each|how many tiles)\b/i,
+  /\b(redeal|re-?deal)\b|\b(12|14) tiles\b|\bwrong number of tiles\b|\bshort a tile\b|\bextra tile\b(?!\s+sets?\b)/i,
+  /\b(hold|wait)\b(?!\s+(a |an |the |my |your |our |her |his |their )?(spot|seat|place|table|room))[^.?!]{0,30}\b(call|claim|tile|discard|priority|count|counts|mean)\b|\b(call|claim|tile|discard|priority)\b[^.?!]{0,30}\b(hold|wait)\b(?!\s+(a |an |the |my |your |our |her |his |their )?(spot|seat|place|table|room))/i,
   /\bcold wall\b|\bhot wall\b|\b(final|last) discard\b[^.?!]{0,40}\b(wall|deal|game|exposure|mahjong)\b|\b(wall|deal)\b[^.?!]{0,40}\b(final|last) discard\b/i,
   /\bblanks?\b(?! (check|page|space|form))/i,
   /\btournament (rules?|play|director)\b/i,
