@@ -53,7 +53,7 @@ Every entry in `lib/rules/knowledge.ts` records:
 | `provenance.source_year` | Year of the source or ruling where relevant. |
 | `last_verified` | Date the entry was last verified. |
 | `provenance.owner_review_required` | `true` for every entry the owner has not yet approved. |
-| `provenance.evidence` | `verified`, `owner_review_pending`, or `owner_question_pending`. |
+| `provenance.evidence` | `verified` (owner-approved), `owner_review_pending` (research-verified, awaiting the owner), or `owner_question_pending` (an open owner question). |
 | `varies_by_house` / `house_note` | Marks table-to-table variation without softening the League rule. |
 
 Tests enforce the structure: `tests/rules-knowledge.spec.ts` (well-formed entries, hard

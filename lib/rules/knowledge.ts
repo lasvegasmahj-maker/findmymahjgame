@@ -73,7 +73,7 @@ function researched(ref: string, year?: number): Provenance {
     source_ref: ref,
     ...(year ? { source_year: year } : {}),
     owner_review_required: true,
-    evidence: "verified",
+    evidence: "owner_review_pending",
   };
 }
 
@@ -81,7 +81,7 @@ const ARITHMETIC: Provenance = {
   source_type: "arithmetic",
   source_title: "Follows from the owner-approved tile counts",
   owner_review_required: true,
-  evidence: "verified",
+  evidence: "owner_review_pending",
 };
 
 function ownerQuestion(ref: string): Provenance {

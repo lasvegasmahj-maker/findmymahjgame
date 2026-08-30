@@ -40,7 +40,9 @@ test.describe("knowledge base fact checks", () => {
         expect(e.provenance.evidence, e.id).toBe("verified");
       } else {
         expect(e.provenance.owner_review_required, e.id).toBe(true);
+        expect(e.provenance.evidence, e.id).not.toBe("verified");
       }
+      if (e.source === "research_verified") expect(e.provenance.evidence, e.id).toBe("owner_review_pending");
       if (e.source === "owner_question") {
         expect(e.provenance.evidence, e.id).toBe("owner_question_pending");
         expect(e.approved_answer, e.id).toMatch(/instructor is confirming/);

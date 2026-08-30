@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extractIntent, rephraseApprovedAnswer } from "@/lib/ask-llm";
 import { parseAskIntent, detectAskTopic } from "@/lib/ask-intent";
-import { normalizeQuestion, lookupRule, summarizeRulesGap, type RulesLookupResult } from "@/lib/rules/lookup";
+import { normalizeQuestion, lookupRule, spellfix, summarizeRulesGap, type RulesLookupResult } from "@/lib/rules/lookup";
 import { answersOption, isExactOption } from "@/lib/rules/clarify";
 import { lazyServerClient } from "@/lib/supabase-server";
 import { searchEventsWithRelaxation, searchVenues, describeRelaxations } from "@/lib/search";
@@ -93,11 +93,14 @@ function trackAskOutcome(
   if (!matched) void track(supabase, "ask_unverified", { props, recordClass });
 }
 
+// A parsed location alone is not a search cue: extractLocation reads "at all really" as a
+// place, so a plain reply would be ejected from its clarification.
 function looksLikeDirectorySearch(q: string): boolean {
   const intent = parseAskIntent(q);
   return (
-    intent.location !== null || intent.days.length > 0 || intent.timeOfDay !== null || intent.types !== null ||
-    intent.kind === "teachers" || /\b(where|near|nearby|find|looking for|events?|games?|groups?|clubs?|meetups?)\b/i.test(q)
+    intent.days.length > 0 || intent.timeOfDay !== null || intent.types !== null || intent.kind === "teachers" ||
+    /\b(where|near|nearby|find|looking for|events?|games?|groups?|clubs?|meetups?|teachers?|instructors?|lessons?)\b/i.test(q) ||
+    /\b(in|near|around|at|to) [A-Z][a-z]+/.test(q)
   );
 }
 
@@ -122,8 +125,9 @@ export async function POST(req: NextRequest) {
   // the search, not a forced rules reply. A clicked label, or a short reply that answers an
   // option ("in a tournament" reads as a place to the search parser), stays a reply.
   if (clarify) {
-    const shortReply = question.split(/\s+/).length <= 3;
-    const keep = isExactOption(clarify, question) || (shortReply && answersOption(clarify, question));
+    const ctx = { id: clarify.id, question: spellfix(clarify.question) };
+    const shortReply = question.split(/\s+/).length <= 6;
+    const keep = isExactOption(ctx, question) || (shortReply && answersOption(ctx, question));
     if (!keep && looksLikeDirectorySearch(question) && detectAskTopic(question) === "directory") clarify = null;
   }
   const topic = clarify ? "rules" : detectAskTopic(question);
@@ -138,7 +142,8 @@ export async function POST(req: NextRequest) {
   }
 
   // An owner-question answer is honest but unverified; it must count that way everywhere.
-  const rulesVerified = Boolean(rules?.matched && rules.evidence === "verified");
+  // Research-verified answers awaiting owner review are still answers.
+  const rulesVerified = Boolean(rules?.matched && rules.evidence !== "owner_question_pending");
 
   if (topic === "rules" && rules) {
     const answer = await composeRulesAnswer(rules, question);

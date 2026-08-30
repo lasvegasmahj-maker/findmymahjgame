@@ -5,6 +5,9 @@ import { test, expect, type APIRequestContext, type Page } from "@playwright/tes
 // question ride along with each reply. The API tests fire well over the 15-per-minute limit,
 // so they run serially and rely on RATE_LIMIT_TEST_BYPASS=1 from .env.local (local only).
 test.describe.configure({ mode: "serial" });
+// Local only: the API block needs RATE_LIMIT_TEST_BYPASS and one browser project.
+test.skip(!/localhost|127\.0\.0\.1/.test(process.env.PLAYWRIGHT_BASE_URL ?? "localhost"), "needs the local rate-limit bypass");
+test.skip(({ isMobile }) => !!isMobile, "one browser project is enough for the API turns");
 
 async function ask(request: APIRequestContext, q: string, clarify?: { id: string; question: string }) {
   const res = await request.post("/api/ask", { data: clarify ? { q, clarify } : { q } });
@@ -117,7 +120,7 @@ test.describe("Ask route: rules clarification turns", () => {
     const echoed = await ask(request, "Can I call that tile?");
     expect(echoed.rules.clarify.question).toBe("Can I call that tile?");
     expect(r.rules.classification).toBe("standard_nmjl_rule");
-    expect(["verified", "owner_review_pending", "owner_question_pending"]).toContain(r.rules.evidence);
+    expect(r.rules.evidence).toBe("owner_review_pending");
     const raw = JSON.stringify(r);
     expect(raw).not.toMatch(/mahjlife|Mahj Life|source_title|source_ref/i);
     for (const f of ["contact_email", "reviewer_notes", "phone", "stripe"]) expect(raw).not.toContain(f);
