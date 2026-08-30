@@ -93,6 +93,9 @@ function trackAskOutcome(
   if (!matched) void track(supabase, "ask_unverified", { props, recordClass });
 }
 
+const STRONG_SEARCH_CUE = /\b(where|near|nearby|find|looking for|teachers?|instructors?|lessons?|class|classes|zip)\b/i;
+const PLACE_AFTER_PREP = /\b(in|near|around|at|to) [A-Z][a-z]+/;
+
 // A parsed location alone is not a search cue: extractLocation reads "at all really" as a
 // place, so a plain reply would be ejected from its clarification.
 function looksLikeDirectorySearch(q: string): boolean {
@@ -100,7 +103,7 @@ function looksLikeDirectorySearch(q: string): boolean {
   return (
     intent.days.length > 0 || intent.timeOfDay !== null || intent.types !== null || intent.kind === "teachers" ||
     /\b(where|near|nearby|find|looking for|events?|games?|groups?|clubs?|meetups?|teachers?|instructors?|lessons?)\b/i.test(q) ||
-    /\b(in|near|around|at|to) [A-Z][a-z]+/.test(q)
+    PLACE_AFTER_PREP.test(q)
   );
 }
 
@@ -126,8 +129,9 @@ export async function POST(req: NextRequest) {
   // option ("in a tournament" reads as a place to the search parser), stays a reply.
   if (clarify) {
     const ctx = { id: clarify.id, question: spellfix(clarify.question) };
-    const shortReply = question.split(/\s+/).length <= 6;
-    const keep = isExactOption(ctx, question) || (shortReply && answersOption(ctx, question));
+    // "mahjong teacher near Naples" answers the mahjong option by word alone; a strong search
+    // cue in the same reply makes it a search.
+    const keep = isExactOption(ctx, question) || (answersOption(ctx, question) && !STRONG_SEARCH_CUE.test(question) && !PLACE_AFTER_PREP.test(question));
     if (!keep && looksLikeDirectorySearch(question) && detectAskTopic(question) === "directory") clarify = null;
   }
   const topic = clarify ? "rules" : detectAskTopic(question);
