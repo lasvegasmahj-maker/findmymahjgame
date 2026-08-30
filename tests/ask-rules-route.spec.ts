@@ -25,6 +25,32 @@ test.describe("Ask route: rules clarification turns", () => {
     expect(r.intent.location?.toLowerCase()).toContain("lake of the ozarks");
   });
 
+  test("the owner-decided answers reach the rules path from the Ask box", async ({ request }) => {
+    const cases: Array<[string, string]> = [
+      ["Do I have to say call out loud?", "hold-or-wait"],
+      ["Is my hand dead if I pick out of turn?", "picking-ahead"],
+      ["how do you deal for three players", "three-player-procedure"],
+      ["who pays after someone declares mahjong by mistake", "mahjong-in-error-settlement"],
+      ["someone has 12 tiles after the charleston, do we redeal", "wrong-tile-count-before-play"],
+      ["I exchanged a joker for the wrong tile, whose hand is dead", "joker-exchange-wrong-tile"],
+      ["what is the penalty for misnaming a discard", "misnamed-discard"],
+      ["can we take jokers out of a dead player's exposures", "dead-hand-jokers"],
+    ];
+    for (const [q, id] of cases) {
+      const r = await ask(request, q);
+      expect(r.topic, q).toBe("rules");
+      expect(r.rules?.entry_id, q).toBe(id);
+      expect(String(r.answer), q).not.toMatch(/instructor is confirming|cannot verify/i);
+    }
+  });
+
+  test("a directory search is not hijacked by the owner-decided topics", async ({ request }) => {
+    for (const q of ["looking for a 3 player group in Henderson", "what is the price for an extra tile set", "can you hold my spot until I call the teacher"]) {
+      const r = await ask(request, q);
+      expect(r.topic, q).toBe("directory");
+    }
+  });
+
   test("a mixed question never swallows the rules half as a place name", async ({ request }) => {
     const r = await ask(request, "can I use a joker in a pair and where can I play near Naples");
     expect(r.topic).toBe("mixed");

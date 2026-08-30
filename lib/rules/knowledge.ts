@@ -178,7 +178,7 @@ const TOURNAMENT = /\btournaments?\b/i;
 const BLANK = /\bblanks?\b(?! (check|page|space|form))/i;
 const SPEAK_ASK = /\b(say|says|saying|said|announce|announces|announcing|announced|out loud|aloud|verbal|verbally|speak|silently|silence)\b/i;
 // Asking whether a CLAIM must be spoken, not asking how to name a discard.
-const SPOKEN_CLAIM =
+export const SPOKEN_CLAIM =
   /\b(say|saying|announce|announcing|speak)\b[^.?!]{0,24}\b(call|calls|claim|claims|mahjong|maj|take it|it out loud)\b|\b(call|claim)\b[^.?!]{0,24}\b(out loud|aloud|verbally)\b|\breach in silently\b|\bsilently\b|\bwithout saying\b|\bsay anything\b/i;
 const DECLINE_CALL =
   /\b(have to|must|required|forced|need to|do i need to|obligated|supposed to)\b(?![^.?!]{0,25}\b(say|announce|speak)\b)[^.?!]{0,25}\b(call|take|claim|pick up)\b|\b(pass on|skip|ignore|let it go|decline|don'?t want|do not want|not take|leave)\b[^.?!]{0,25}\b(discard|tile|it)\b/i;
@@ -266,6 +266,7 @@ export const RULES_TOPIC_SIGNALS: RegExp[] = [
 // answered with hand strategy instead of a search.
 export const RULES_TOPIC_SIGNALS_CONDITIONAL: RegExp[] = [
   MISNAMED,
+  SPOKEN_CLAIM,
   BLANK,
   ORDER,
   LAST_OF_WALL,
