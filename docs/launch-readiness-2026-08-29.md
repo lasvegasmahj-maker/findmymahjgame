@@ -171,3 +171,12 @@ launch gates are OFF; nothing here is launched.
 - 2026-08-29 (late evening): owner confirmed Mahjong Collective, LLC as the operating
   entity; the new Terms of Use published at /terms; 18 of 18 policy decisions
   resolved; all four gates still OFF.
+- 2026-08-29 (night): owner configured the Stripe Test customer portal (self-service
+  cancellation at end of billing period); NEXT_PUBLIC_STRIPE_PORTAL_URL set in Vercel
+  Production and redeployed; a paid QA provider's dashboard shows the Stripe-hosted
+  manage/cancel link on production; QA artifacts removed. Still owed before payments
+  open: renewal-reminder and failed-payment emails (then
+  app_settings.stripe_billing_emails_confirmed), and the live portal link. The Launch
+  Simulator now lists the test portal link as a blocker for launch_payments once the
+  Stripe secret key is a live key, and fails the billing self-service check if
+  payments are opened with it still in place.

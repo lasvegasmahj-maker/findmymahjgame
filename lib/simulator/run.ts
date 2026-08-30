@@ -194,14 +194,21 @@ export async function runLaunchSimulation(supabase: SupabaseClient): Promise<Sim
     // reports the gap without marking the rest of the product not ready.
     try {
       const portal = process.env.NEXT_PUBLIC_STRIPE_PORTAL_URL || "";
-      const portalOk = portal.startsWith("https://billing.stripe.com/");
+      // Stripe's test-mode portal links carry a test_ path segment; one left in place after the
+      // keys go live would send real customers to a portal that cannot find their subscription.
+      const liveKeys = /^(sk|rk)_live_/.test(process.env.STRIPE_SECRET_KEY || "");
+      const testLinkUnderLiveKeys = liveKeys && /\/test_/.test(portal);
+      const portalOk = portal.startsWith("https://billing.stripe.com/") && !testLinkUnderLiveKeys;
       const { data: rows, error: settingsErr } = await supabase
         .from("app_settings").select("key, value").in("key", ["stripe_billing_emails_confirmed", "launch_payments"]);
       if (settingsErr) throw new Error(`app_settings read failed: ${settingsErr.message}`);
       const setting = (k: string) => rows?.find((r) => r.key === k)?.value;
       const emailsOk = setting("stripe_billing_emails_confirmed") === "true";
       const paymentsOpen = setting("launch_payments") === "true";
-      const missing = [portalOk ? null : "customer portal link (NEXT_PUBLIC_STRIPE_PORTAL_URL)", emailsOk ? null : "billing emails confirmation (app_settings.stripe_billing_emails_confirmed)"].filter(Boolean).join(", ");
+      const missing = [
+        portalOk ? null : testLinkUnderLiveKeys ? "customer portal link is still the test-mode link while Stripe keys are live (NEXT_PUBLIC_STRIPE_PORTAL_URL)" : "customer portal link (NEXT_PUBLIC_STRIPE_PORTAL_URL)",
+        emailsOk ? null : "billing emails confirmation (app_settings.stripe_billing_emails_confirmed)",
+      ].filter(Boolean).join(", ");
       if (portalOk && emailsOk) {
         push("Billing self-service", "PASS", "Stripe customer portal link configured and billing emails confirmed by the owner");
       } else if (!paymentsOpen) {

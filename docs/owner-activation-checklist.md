@@ -9,10 +9,10 @@ Status: DONE 2026-08-29. You confirmed Mahjong Collective, LLC operates Find My 
 
 ### Stripe Billing settings (Test mode now; repeat in Live mode before payments open)
 Status: OWNER CONFIGURATION REQUIRED (the published billing disclosures promise these)
-1. Customer portal: Settings, Billing, Customer portal. Turn it on, allow customers to cancel subscriptions (immediately or at period end, your choice), and turn on the no-code "customer portal link". Copy that link (it starts with https://billing.stripe.com/p/login/) and send it to me; it is a public link, not a secret. I set NEXT_PUBLIC_STRIPE_PORTAL_URL in Vercel and redeploy, and the provider dashboard then shows "Manage or cancel your subscription". Until then the dashboard shows the email path.
+1. Customer portal: DONE in Test mode 2026-08-29. You enabled the portal with self-service cancellation at the end of the billing period, and Stripe asks the customer for a cancellation reason; I set NEXT_PUBLIC_STRIPE_PORTAL_URL in Vercel Production to the test portal link and redeployed, and a paid provider's dashboard now shows "Manage or cancel your subscription". In Live mode: turn on the Live toggle, open Settings, Billing, Customer portal, turn on the no-code customer portal link, copy the link (it starts with https://billing.stripe.com/p/login/ and has no test_ in it), and send it to me before payments open. It is public, not a secret.
 2. Renewal reminders: Settings, Billing, Subscriptions and emails. Turn on the upcoming renewal reminder email for annual subscriptions and note the lead time Stripe offers; the policy targets 30 days. Tell me the lead time you see so the policy wording and the setting match.
 3. Failed payments: same page. Turn on Smart Retries (or your preferred retry rule) and the failed-payment customer emails. When 2 and 3 are done, tell me; I set app_settings.stripe_billing_emails_confirmed to true, which the Launch Simulator requires before it reports payments ready.
-4. Live mode: repeat 1 to 3 after the live account exists; the live portal link differs from the test link.
+4. Live mode: repeat 1 to 3 after the live account exists. The Launch Simulator refuses to report payments ready if the test portal link is still set once the Stripe keys are live.
 
 ### Stripe (live mode)
 Status: SANDBOX VERIFIED 2026-08-29, LIVE KEYS AWAITING OWNER
