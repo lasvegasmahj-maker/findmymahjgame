@@ -7,11 +7,17 @@ launch gates are OFF; nothing here is launched.
 
 ## Verified on 2026-08-29 (production, test-classified data only)
 
-- Deployment: main 0538e80, Vercel production READY 2026-08-26, no error-level or 5xx
-  runtime logs in the last 3 hours, all security headers present.
-- Full Playwright suite: 575 passed, 1 pre-existing skip (desktop). Mobile viewport:
-  60 passed under Chromium device emulation. WebKit cannot launch on the build Mac
-  (Bus error), a local environment limit, not a product defect.
+- Deployment at the time of the pass: production build 0538e80 (Vercel READY
+  2026-08-26), no error-level or 5xx runtime logs in the last 3 hours, all security
+  headers present. Main advanced to baffb99 later on 2026-08-29 (PR #13, rules
+  wording in lib/rules/knowledge.ts only, merged from the owner's account, not
+  deployed at that point). This record's branch was rebased onto baffb99 and the
+  suite below ran on that code; the deploy that carries it is logged in the changelog
+  at the end of this file.
+- Full Playwright suite on baffb99 plus the analytics fix below: 576 passed, 1
+  pre-existing skip (desktop). Mobile viewport: 60 passed under Chromium device
+  emulation. WebKit cannot launch on the build Mac (Bus error), a local environment
+  limit, not a product defect.
 - Launch Simulator: 14 of 14 PASS against production.
 - Billing and trial lifecycle, end to end on production with a QA provider:
   - Claim and trial: the claim auto-approves; the trial starts at exactly 90.000 days
@@ -30,16 +36,32 @@ launch gates are OFF; nothing here is launched.
   - Expiry: an expired, unconverted trial keeps the listing published and owned,
     loses only the Premium inquiry (403), shows as Basic on the dashboard and as
     expired on admin, and a re-claim cannot restart it.
-  - Cleanup: the readiness pass removed every QA artifact afterwards; residue count 0.
+  - Cleanup: the readiness pass removed every QA artifact afterwards; residue count
+    0.
   - Not exercised: subscription cancellation (customer.subscription.deleted). The
     sandbox QA subscriptions were never cancelled in Stripe, and no automated test
-    covers that event. Owner step: cancel them in the Stripe Test-mode dashboard;
-    the pass then confirms the mirrored rows show status canceled. Do this before
-    the live-mode run so the first cancel is not on a real charge.
+    covers that event. Owner step: cancel them in the Stripe Test-mode dashboard; the
+    pass then confirms the mirrored rows show status canceled. Do this before the
+    live-mode run so the first cancel is not on a real charge.
 - Data quality: 0 issues after the pass removed one orphan QA auth user left by an
   earlier rehearsal. Real players 0, real provider submissions 0, paid members 0.
 - Rules retrieval: closed-hand, blind pass, joker, place-name, and copyright paths
   verified live.
+
+## Found and fixed during the pass (authorized defect fix under the build freeze)
+
+- Admin analytics undercounted once a 30-day window held more than 1,000 events. The
+  rollup read analytics_events with a single select, which PostgREST caps at 1,000
+  rows without an error; at 1,939 rows the newest events fell off and the real bucket
+  lost its listing_viewed count while every total still looked plausible. The suite
+  caught it (analytics.spec.ts, real/test bucket split) after the day's rehearsals
+  pushed the table past the cap. Fix: app/api/admin/analytics/route.ts pages through
+  the window in a stable order and reports dataHealth.windowTruncated if a 200-page
+  ceiling is ever hit; a new test inserts 1,250 test-classified events and requires
+  all of them counted. Backlog: lib/data-trust.ts and several app/api/admin routes
+  still read rows without paging; every table they touch was under 600 rows on
+  2026-08-29, so they are correct today and must be paged before any of those tables
+  can pass 1,000.
 
 ## What still prevents owner launch authorization
 
@@ -85,3 +107,10 @@ launch gates are OFF; nothing here is launched.
   false) or the daily matcher proposes no tables.
 - The Launch Simulator proves subsystems on test data; it does not exercise a gate's
   ON branch. Verify each gate live after flipping it.
+
+## Changelog
+
+- 2026-08-29: pass completed on production build 0538e80; record corrected through
+  six reviewer-gate rounds; analytics paging fix added; deploy of baffb99 plus the
+  fix pending the final gate (see next entry once it lands).
+
