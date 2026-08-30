@@ -772,7 +772,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     last_verified: VERIFIED_AUDIT,
     confidence: "high",
     classification: "nmjl_clarification",
-    provenance: researched("League rulings on joker exchange timing and on a wrong exchange (correctable before the next discard; afterward the hand holding the incorrect exposure is dead); cross-checked via Mahj Life wiki articles 172, 221, and 224 citing the League rulebook and 2024 bulletin Q&A, corroborated by the Sloperama American mahjong FAQ", 2024),
+    provenance: researched("League rules on joker exchange timing and a wrong exchange (fixable before the next discard; then the hand holding the incorrect exposure is dead); Mahj Life wiki articles 172, 221, 224 citing the rulebook and 2024 bulletin; Sloperama FAQ corroborates", 2024),
   },
   {
     id: "two-players-same-tile",
