@@ -50,7 +50,7 @@ const CARD_CONTENT_RES: RegExp[] = [
 const NOTATION_ASK =
   /\b(colou?rs?|notation|symbols?|letters?|abbreviations?|legend|mean|means|meaning|stand for|stands for|read (the|a|my) card|parenthes[ei]s)\b|\b[CX]\b/i;
 const CONTENT_REQUEST =
-  /\b(list|show|send|give|read|tell|type|copy|pdf|image|photo|scan|picture|screenshot|hands|line values?|values?|points?|categor(y|ies)|sections?)\b|\b(first|second|third|last|\d+(st|nd|rd|th)|20\d\d) hand\b|what('s| is) on/i;
+  /\b(list|show|send|give|read|tell|type|copy|pdf|image|photo|scan|picture|screenshot|hands|line values?|values?|points?|categor(y|ies)|sections?)\b|\b(first|second|third|last|\d+(st|nd|rd|th)|20\d\d) (card )?hand\b|what('s| is) on/i;
 
 const CARD_REFUSAL =
   "I cannot share the hands, categories, or line values from the annual card. The card is copyrighted material that the National Mah Jongg League sells, and buying the current card supports the League. Once you have your card, I am happy to explain how the general rules work.";
