@@ -8,17 +8,14 @@ with any specific law; the documents describe what Find My Mahj Game actually do
 
 1. Operating entity: use the exact registered legal entity that operates Find My Mahj Game and
    receives its payments; never describe Shauna as "doing business as" without a registered
-   assumed name. STATUS: PENDING OWNER CONFIRMATION. The only legal entity in the business
-   records I can read is Mahjong Collective, LLC (doing business as Las Vegas Mahjong, per the
-   executed contractor agreements in the CEO OS Drive). Whether it also operates Find My Mahj
-   Game and receives the Stripe payouts is not established by any record, so /terms keeps its
-   previous page and the new Terms of Use is not generated until the owner confirms the name.
+   assumed name. APPLIED. The owner confirmed on 2026-08-29: "Find My Mahj Game is operated by
+   Mahjong Collective, LLC, and Find My Mahj Game payments will be received by Mahjong
+   Collective, LLC." The Terms name Mahjong Collective, LLC as the operating entity and payee.
 2. Billing Disclosures live at /billing-disclosures. APPLIED.
 3. Provider Terms live at /provider-terms. APPLIED.
 4. Matching Community Standards live at /matching-standards. APPLIED.
 5. The same /matching-standards route is used everywhere the standards are referenced. APPLIED.
-6. Nevada law; disputes handled in Clark County, Nevada; no attorney-review claim. APPLIED in the
-   draft (publishes with the Terms once decision 1 is confirmed).
+6. Nevada law; disputes handled in Clark County, Nevada; no attorney-review claim. APPLIED.
 7. Public contact is hello@findmymahjgame.com, Las Vegas, Nevada; no street or home address.
    APPLIED.
 

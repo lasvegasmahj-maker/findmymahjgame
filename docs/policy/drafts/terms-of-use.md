@@ -1,16 +1,16 @@
 # Terms of Use
 
-**Status (2026-08-29):** 6 of 7 owner decisions applied. The single open bracket below is the
-operating legal entity, which the owner must confirm from business records; until then the page
-at /terms keeps its previous text and this file does not generate page content. Source of truth
-for the future page at /terms; scripts/policy-content.mjs generates content/policy from it.
+**Status (2026-08-29):** PUBLISHED at /terms. All 7 owner decisions applied; the owner
+confirmed the operating entity, Mahjong Collective, LLC, on 2026-08-29. This file is the
+source of truth; scripts/policy-content.mjs generates content/policy/terms-of-use.ts from it,
+and the page renders that module. Edit here, regenerate, and republish.
 
 ---
 
 ## Who this agreement is with
 
-These Terms of Use are between you and Find My Mahj Game, operated by
-[OWNER TO CONFIRM: business entity name], when you use findmymahjgame.com. By creating an
+These Terms of Use are between you and Find My Mahj Game, operated by Mahjong Collective,
+LLC, when you use findmymahjgame.com. Mahjong Collective, LLC receives payments for Find My Mahj Premium. By creating an
 account, creating a listing, claiming a listing, using Mahj Match, or otherwise using this site,
 you agree to these terms.
 
@@ -31,9 +31,8 @@ Creating an account uses a passwordless sign-in: you enter your email, we send y
 link, and clicking it signs you in. There is no password to create, remember, or reset.
 
 You are responsible for keeping access to your own email address secure, since that is what
-controls your account. You can deactivate your account at any time from your account page. You
-can also request deletion of your account; see "Your data" below and our
-[Privacy Policy](/privacy) for how that works.
+controls your account. You can deactivate your account at any time from your account page. You can also request deletion of your account; see "Data deletion and privacy requests" in
+our [Privacy Policy](/privacy) for how that works.
 
 ## Player listings
 
@@ -103,8 +102,8 @@ By using this platform to connect with other players, you agree that:
   mediate, though we do want to know if someone made you feel unsafe; see "Blocking and
   reporting" above.
 
-**Safety tip:** meet new players in public places, coffee shops, libraries, community centers,
-restaurants. Never share your home address with someone you have not met before, and never
+**Safety tip:** meet new players in public places such as coffee shops, libraries, community
+centers, and restaurants. Never share your home address with someone you have not met before, and never
 include one in a public listing.
 
 ## Prohibited use
@@ -149,9 +148,10 @@ Clark County, Nevada.
 
 ## Contact
 
-Questions about these terms: hello@findmymahjgame.com. Find My Mahj Game, Las Vegas, Nevada.
+Questions about these terms: hello@findmymahjgame.com. Find My Mahj Game is operated by
+Mahjong Collective, LLC, Las Vegas, Nevada.
 
 ---
 
-*Effective once published. Owner decisions applied 2026-08-29; see
+*Effective August 29, 2026. Owner decisions applied 2026-08-29; see
 docs/policy/owner-decisions-2026-08-29.md.*

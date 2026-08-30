@@ -55,5 +55,5 @@ closed-gate default already in place; nothing blocks engineering.
    product as Find My Mahj Premium.
 
 10. Policy decisions (2026-08-29): all 18 made; see docs/policy/owner-decisions-2026-08-29.md.
-    Applied and published except the Terms of Use operating entity (decision 1), which
-    awaits the owner's confirmation of the registered legal name.
+    All applied and published, including the Terms of Use naming Mahjong Collective, LLC
+    as the operating entity (owner confirmation 2026-08-29).

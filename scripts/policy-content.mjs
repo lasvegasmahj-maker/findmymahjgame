@@ -10,8 +10,7 @@ const DRAFTS = path.join(ROOT, "docs/policy/drafts");
 const OUT = path.join(ROOT, "content/policy");
 
 const DOCS = [
-  // Terms of Use waits on the owner's confirmation of the operating legal entity.
-  { file: "terms-of-use", slug: "terms-of-use", route: "/terms", title: "Terms of Use", updated: "August 29, 2026", publish: false },
+  { file: "terms-of-use", slug: "terms-of-use", route: "/terms", title: "Terms of Use", updated: "August 29, 2026", publish: true },
   { file: "privacy-policy", slug: "privacy-policy", route: "/privacy", title: "Privacy Policy", updated: "August 29, 2026", publish: true },
   { file: "provider-terms", slug: "provider-terms", route: "/provider-terms", title: "Provider Terms", updated: "August 29, 2026", publish: true },
   { file: "billing-disclosures", slug: "billing-disclosures", route: "/billing-disclosures", title: "Billing Disclosures", updated: "August 29, 2026", publish: true },

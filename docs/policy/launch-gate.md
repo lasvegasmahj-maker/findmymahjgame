@@ -5,6 +5,15 @@ routes on the live site, before each launch gate in `lib/launch-gates.ts` can fl
 on. It is a process document, not itself a policy; nothing here is legal advice and nothing here
 is published to users.
 
+> Status 2026-08-29: the owner made all 18 policy decisions
+> (docs/policy/owner-decisions-2026-08-29.md) and confirmed the operating entity, Mahjong
+> Collective, LLC. All five policy documents are live from the resolved drafts (/terms,
+> /privacy, /provider-terms, /billing-disclosures, /matching-standards), so the policy
+> precondition for every gate is met. Engineering preconditions below are met as well
+> (consent wiring, the app-managed 90-day trial with no coupon, sandbox billing verified).
+> The billing disclosures still depend on the owner's Stripe Billing settings before
+> launch_payments opens; see docs/owner-activation-checklist.md.
+
 The four gates, from `lib/launch-gates.ts`:
 
 ```

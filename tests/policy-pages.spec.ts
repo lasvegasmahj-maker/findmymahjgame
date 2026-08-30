@@ -6,6 +6,7 @@ import { execFileSync } from "child_process";
 // The published policy documents: every route serves, carries its owner-decided facts, never
 // leaks a draft bracket, and never contradicts the approved provider model.
 const PUBLISHED = [
+  { path: "/terms", h1: "Terms of Use", must: ["Mahjong Collective, LLC", "State of Nevada", "Clark County, Nevada", "Las Vegas, Nevada", "Money never buys the right to exist in the directory"] },
   { path: "/privacy", h1: "Privacy Policy", must: ["generally processed within 30 days", "Las Vegas, Nevada", "Stripe"] },
   { path: "/provider-terms", h1: "Provider Terms", must: ["$89 a year", "never for placement", "prorated basis", "every edit is reviewed", "by emailing hello@findmymahjgame.com"] },
   { path: "/billing-disclosures", h1: "Billing Disclosures", must: ["$89 a year", "targeted 30 days ahead", "customer portal", "within 30 days of your first $89 charge", "except where otherwise required by applicable law"] },
@@ -33,13 +34,6 @@ test.describe("policy documents", () => {
       }
     });
   }
-
-  test("/terms still serves and carries no draft bracket while the entity confirmation is pending", async ({ page }) => {
-    const res = await page.goto("/terms");
-    expect(res?.status()).toBe(200);
-    const text = await page.locator("body").innerText();
-    expect(text).not.toContain("OWNER TO CONFIRM");
-  });
 
   test("the footer links every policy document", async ({ page }) => {
     await page.goto("/");
@@ -72,7 +66,7 @@ test.describe("policy documents", () => {
 
   test("source pins: generated content carries no bracket and published drafts are bracket-free", () => {
     const root = path.resolve(__dirname, "..");
-    for (const slug of ["privacy-policy", "provider-terms", "billing-disclosures", "matching-community-standards"]) {
+    for (const slug of ["terms-of-use", "privacy-policy", "provider-terms", "billing-disclosures", "matching-community-standards"]) {
       const generated = fs.readFileSync(path.join(root, "content/policy", `${slug}.ts`), "utf8");
       expect(generated).not.toContain("OWNER TO CONFIRM");
       expect(generated).not.toContain("DRAFT FOR OWNER REVIEW");
@@ -80,9 +74,6 @@ test.describe("policy documents", () => {
       expect(draft).toContain("PUBLISHED at /");
       expect(draft).not.toContain("OWNER TO CONFIRM");
     }
-    // Terms of Use waits on one owner confirmation; if it is ever generated it must be bracket-free.
-    const terms = path.join(root, "content/policy/terms-of-use.ts");
-    if (fs.existsSync(terms)) expect(fs.readFileSync(terms, "utf8")).not.toContain("OWNER TO CONFIRM");
     const generator = fs.readFileSync(path.join(root, "scripts/policy-content.mjs"), "utf8");
     expect(generator).toContain("still carries an owner bracket; not generating");
     // The site must serve exactly what the drafts say: regenerate in check mode and require no drift.

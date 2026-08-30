@@ -5,8 +5,7 @@ The product is engineering-complete and frozen. Only the items below remain, and
 ## Activation items
 
 ### Terms of Use: operating legal entity
-Status: AWAITING OWNER CONFIRMATION (the last open policy item)
-What: the Terms of Use must name the registered legal entity that operates Find My Mahj Game and receives its payments. The only entity in your records is Mahjong Collective, LLC (doing business as Las Vegas Mahjong). Reply with one of: (a) "Find My Mahj Game is operated by Mahjong Collective, LLC and that entity receives the Stripe payouts", or (b) the exact registered legal name that does. I then publish the new Terms at /terms the same day. Do not guess; I will not.
+Status: DONE 2026-08-29. You confirmed Mahjong Collective, LLC operates Find My Mahj Game and receives its payments; the new Terms are live at /terms.
 
 ### Stripe Billing settings (Test mode now; repeat in Live mode before payments open)
 Status: OWNER CONFIGURATION REQUIRED (the published billing disclosures promise these)
