@@ -107,13 +107,16 @@ export default function AskClient() {
 
       {resp && (
         <div role="status" aria-live="polite" style={{ maxWidth: 720, margin: "0 auto" }}>
+          {pending && (
+            <p style={{ fontSize: "0.9rem", color: "var(--muted)", textAlign: "center", margin: "0 0 0.4rem" }}>You asked: {pending.question}</p>
+          )}
           <p style={{ fontSize: "1.1rem", color: "var(--navy)", fontWeight: 600, textAlign: "center", lineHeight: 1.55 }}>
             {resp.error || resp.answer}
           </p>
 
           {resp.pendingReview && (
             <p data-testid="ask-pending-review" style={{ fontSize: "0.85rem", color: "var(--muted)", textAlign: "center", marginTop: "0.6rem" }}>
-              We wrote this from National Mah Jongg League rules. Our instructor is reviewing it.
+              Our instructor is reviewing this answer.
             </p>
           )}
 

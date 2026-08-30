@@ -50,7 +50,7 @@ const CARD_CONTENT_RES: RegExp[] = [
 const NOTATION_ASK =
   /\b(colou?rs?|notation|symbols?|letters?|abbreviations?|legend|mean|means|meaning|stand for|stands for|read (the|a|my) card|parenthes[ei]s)\b|\b[CX]\b/i;
 const CONTENT_REQUEST =
-  /\b(list|show|send|give|read|tell|type|copy|pdf|image|photo|scan|picture|screenshot|hands|line values?|values?|points?|categor(y|ies)|sections?)\b|what('s| is) on/i;
+  /\b(list|show|send|give|read|tell|type|copy|pdf|image|photo|scan|picture|screenshot|hands|line values?|values?|points?|categor(y|ies)|sections?)\b|\b(first|second|third|last|\d+(st|nd|rd|th)|20\d\d) hand\b|what('s| is) on/i;
 
 const CARD_REFUSAL =
   "I cannot share the hands, categories, or line values from the annual card. The card is copyrighted material that the National Mah Jongg League sells, and buying the current card supports the League. Once you have your card, I am happy to explain how the general rules work.";
@@ -188,12 +188,15 @@ function handleReply(ctx: ClarifyContext, reply: string): RulesLookupResult {
     }
   }
   const fixed = spellfix(normalizeQuestion(reply));
-  if (fixed.length >= 20 && retrieve(fixed)) return lookupRule({ question: reply });
+  if (retrieve(fixed) && (fixed.length >= 20 || /\?$|^(what|how|when|can|could|may|is|are|do|does|why|which)\b/i.test(fixed))) {
+    return lookupRule({ question: reply });
+  }
   const c = resolved.clarification;
   const prompt = c.prompt || needsClarification(spellfix(original), () => true)?.prompt || "Did you mean American mahjong?";
-  const labels = c.options.map((o) => `"${o.label}"`).join(" or ");
+  const choices =
+    c.options.length <= 2 ? `You can answer with ${c.options.map((o) => `"${o.label}"`).join(" or ")}.` : "Pick one of the choices below, or type it.";
   const payload = toPayload(c, original);
-  return clarificationResult({ ...payload, prompt: `${prompt} You can answer with ${labels}.` });
+  return clarificationResult({ ...payload, prompt: `${prompt} ${choices}` });
 }
 
 export function lookupRule(input: RulesLookupInput): RulesLookupResult {

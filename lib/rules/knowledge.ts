@@ -680,7 +680,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     // Closed-hand and false-mahjong questions have their own answers.
     blocks: [HAND_CLOSED, ERROR_CUE, TWO_PLAYERS, OWN_DISCARD, JOKER],
     approved_answer:
-      "Yes. Any discard that completes your mahjong may be called, including a tile that finishes a pair or fills a single, and a concealed hand may call it too. The one tile no one may ever call is a discarded joker. Say mahjong, take the tile, and show your hand. A call for mahjong beats a call for an exposure, and the chance to call ends once the next player has drawn and racked a tile.",
+      "Yes. Any discard that completes your mahjong may be called, including a tile that finishes a pair or fills a single, and a concealed hand may call it too. The one tile no one may ever call is a discarded joker. Say mahjong, take the tile, and show your hand. A call for mahjong beats a call for an exposure, and the chance to call ends once the next player has drawn and racked a tile, or discarded.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
@@ -731,7 +731,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [JOKER, MIXED_GROUP],
     blocks: [JOKER_EXCHANGE, JOKER_PASS, DISCARDED],
     approved_answer:
-      "A joker never stands in for one of the single tiles that make up a mixed group: a run like 1 2 3, a year, the four winds together, or any line of singles, even though those groups have 3 or more tiles. In a hand that includes such a group, jokers can still fill that hand's Pungs, Kongs, Quints, or Sextets. The mixed group itself must be built from the real tiles.",
+      "A joker never stands in for one of the single tiles that make up a mixed group: a run like 1 2 3, a year, NEWS with one of each wind, or any line of singles, even though those groups have 3 or more tiles. In a hand that includes such a group, jokers can still fill that hand's Pungs, Kongs, Quints, or Sextets. The mixed group itself must be built from the real tiles.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
@@ -765,7 +765,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [JOKER, JOKER_EXCHANGE, new RegExp(`${TIMING.source}|${ERROR_CUE.source}|\\b(own|my|your) (rack|exposure)\\b`, "i")],
     blocks: [DEAD],
     approved_answer:
-      "You may exchange a joker only during your own turn, after you have drawn from the wall or called a discard and before you discard. Hand over the tile the joker stands for and take the joker; you may redeem a joker from any exposure on the table, including your own. Once you discard, the chance passes until your next turn. If an exchange puts the wrong tile into an exposure, fix it before the next discard; after that discard, only the hand holding the incorrect exposure is dead. If you put the wrong tile into your own exposure, that dead hand is yours.",
+      "You may exchange a joker only during your own turn, after you have drawn from the wall or called a discard and before you discard. Hand over the tile the joker stands for and take the joker; you may redeem a joker from any exposure on the table, including your own. Once you discard, the chance passes until your next turn. If an exchange puts the wrong tile into an exposure, fix it before the next discard; our instructor is confirming the League's current ruling on what happens after that discard.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
@@ -782,14 +782,14 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [TWO_PLAYERS, TWO_PLAYERS_ASK],
     blocks: [ERROR_CUE, BLIND_PASS, CHARLESTON_WORD],
     approved_answer:
-      "When more than one player wants the same discard, a call for mahjong wins over a call for an exposure. If both want it for the same reason, the player whose turn comes next gets it. Saying hold or wait counts the same as saying call; the word you use does not change who has priority. A player who hesitates can lose the tile once another player has claimed it and racked it.",
+      "When more than one player wants the same discard, a call for mahjong wins over a call for an exposure. If both want it for the same reason, the player whose turn comes next gets it. A player who hesitates can lose the tile once another player has claimed it and racked it. Whether saying hold or wait counts as a call is a point our instructor is confirming.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
     last_verified: VERIFIED_AUDIT,
-    confidence: "high",
+    confidence: "medium",
     classification: "standard_nmjl_rule",
-    provenance: researched("League rule on concurrent claims (mahjong first, then next in turn); cross-checked via Mahj Life wiki articles 264 and 281 and the owner-approved calling entry", 2025),
+    provenance: researched("League rule on concurrent claims (mahjong first, then next in turn); hold or wait as a call is filed as an owner question; cross-checked via Mahj Life wiki articles 264 and 281 and the owner-approved calling entry", 2025),
   },
   {
     id: "own-discard",
@@ -984,7 +984,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [DECLINE_CALL],
     blocks: [CHARLESTON_WORD, BLIND_PASS, COURTESY, JOKER],
     approved_answer:
-      "You never have to call a discard. If you do not want it, say nothing and let play continue. Once the next player has drawn and racked a tile, that discard is out of reach for everyone.",
+      "You never have to call a discard. If you do not want it, say nothing and let play continue. Once the next player has drawn and racked a tile, or discarded, that discard is out of reach for everyone.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",

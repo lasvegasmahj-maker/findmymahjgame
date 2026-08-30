@@ -74,8 +74,9 @@ through the real Ask route and the real /ask page).
 - `tournament`: a rules question set inside a tournament asks whether standard League play or the tournament's rules are meant.
 - `pass-context`: a bare "Can I pass?" asks whether it is Charleston passing or passing on a discard.
 - `topic`: a rules question that matches no entry is offered the closest topics; the scrubbed
-  topic is logged for the owner the moment that clarification is shown, and a "Something else"
-  reply gets the honest gap answer without a second log entry.
+  topic is logged for the owner the moment that clarification is shown (so the operator queue
+  is a demand signal that also contains questions the player then resolved with a topic
+  choice), and a "Something else" reply gets the honest gap answer without a second log entry.
 
 The server keeps no state. The response carries the clarification id and the original
 question; the client sends both back with the reply (typed or clicked). Obvious questions

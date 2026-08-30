@@ -208,7 +208,7 @@ export default function HomeSearchCard() {
             <p className={styles.answerText}>{resp.error || resp.answer}</p>
             {resp.pendingReview && (
               <p data-testid="home-ask-pending-review" className={styles.answerNote}>
-                We wrote this from National Mah Jongg League rules. Our instructor is reviewing it.
+                Our instructor is reviewing this answer.
               </p>
             )}
             {resp.clarify && (

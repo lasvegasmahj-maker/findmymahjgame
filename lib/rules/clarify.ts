@@ -270,7 +270,8 @@ export function resolveReply(ctx: ClarifyContext, reply: string): { option: Clar
   // tie means the reply restated the whole question, so ask again.
   const negs = [...trimmed.matchAll(new RegExp(NEGATION.source, "gi"))];
   if (negs.length) {
-    const other = clarification.options.find((o) => o.key === "other");
+    // "no, not American" answers the style question; a "no" in a topic reply does not.
+    const other = clarification.id === "ruleset" ? clarification.options.find((o) => o.key === "other") : undefined;
     if (other) return { option: other, clarification };
     // "no, not concealed": whatever is named right after the last negation, up to the next
     // comma or "but", is the option being refused; "not exposure, mahjong" still picks mahjong.
