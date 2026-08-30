@@ -12,15 +12,16 @@ records; our database only keeps a copy for the admin dashboard.
 
 ## Status 2026-08-29
 
-Done in sandbox: Steps 1 through 6, and every Step 8 checklist item except the
-cancel item, in test mode on production with a QA account.
+Done in sandbox: Steps 1 through 6 and every Step 8 checklist item, in test mode on
+production with a QA account.
 
-Not yet exercised: the cancel event (customer.subscription.deleted). Nobody has canceled a sandbox subscription yet, and no automated test covers that
-event.
+Cancel event (customer.subscription.deleted): exercised 2026-08-29 in the connected
+sandbox (FindMyMahj sandbox); four events, four 200s, four canceled test rows. No
+automated test covers it yet.
 
-Owner step before live mode: in Stripe Test mode, open Subscriptions and cancel each
-leftover QA subscription immediately. I then confirm the mirrored rows show status
-canceled and remove them.
+Owner step before live mode: DONE 2026-08-29 (the four leftover QA subscriptions were
+canceled and their mirrored rows removed). When working in Stripe, use the sandbox
+named FindMyMahj sandbox; a sibling sandbox named Las Vegas Mahjong is not connected.
 
 Terms used here:
 - test-classified: marked as a QA account so it never counts as revenue

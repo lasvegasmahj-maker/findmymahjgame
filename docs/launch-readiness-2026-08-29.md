@@ -45,12 +45,18 @@ launch gates are OFF; nothing here is launched.
     expired on admin, and a re-claim cannot restart it.
   - Cleanup: the readiness pass removed every QA artifact afterwards; the Data
     quality panel listed no issues.
-  - Not exercised: subscription cancellation (customer.subscription.deleted). The
-    sandbox QA subscriptions were never canceled in Stripe, and no automated test
-    covers that event. Owner step: cancel them in the Stripe Test-mode dashboard;
-    each cancel event writes a fresh test-classified row with status canceled, which
-    the pass confirms and then removes so the Data quality panel is clean again. Do
-    this before the live-mode run so the first cancel is not on a real charge.
+  - Cancellation, exercised 2026-08-29 19:26 PT: the owner canceled the four sandbox
+    QA subscriptions immediately in the connected sandbox (display name FindMyMahj
+    sandbox; a sibling sandbox named Las Vegas Mahjong is not connected). Stripe
+    delivered four customer.subscription.deleted events. The webhook answered 200 to
+    each and the ledger recorded all four as processed within half a second. The
+    mirror wrote each subscription as canceled and test-classified; the QA listings
+    they pointed at were already gone, and livemode false short-circuits
+    classification, so no listing was touched. The Data quality panel listed no
+    issues before and after. I then removed the four mirror rows, the four ledger
+    rows, and one billing_customers row left by the checkout session I had opened
+    earlier to confirm which sandbox production uses (a checkout session, never
+    paid). No automated test covers the event yet (backlog).
 - Data quality: 0 issues after the pass removed one orphan QA auth user left by an
   earlier rehearsal. Real players 0, real provider submissions 0, paid members 0.
 - Rules retrieval: closed-hand, blind pass, joker, place-name, and copyright paths
@@ -145,3 +151,8 @@ launch gates are OFF; nothing here is launched.
   suite run on a local build of the same commit, pointed at the production
   analytics_events table: 576 passed, the analytics spec passed 7 of 7, and the
   rollup total equaled the table's head count.
+- 2026-08-29 19:26 PT: the owner canceled all four sandbox QA subscriptions in the
+  connected FindMyMahj sandbox; the cancellation path worked end to end in production
+  (four events, four 200s, four canceled test rows, no listing touched) and I removed
+  the resulting QA rows. Residue 0; real revenue $0; real paying providers 0; gates
+  OFF.

@@ -6,10 +6,9 @@ The product is engineering-complete and frozen. Only the items below remain, and
 
 ### Stripe (live mode)
 Status: SANDBOX VERIFIED 2026-08-29, LIVE KEYS AWAITING OWNER
-What: the sandbox account, $89/year price, webhook, and env vars are in place, and the whole checkout, webhook, entitlement, and trial lifecycle passed on production with test data. Three short lists below; the term test-classified is defined in docs/billing-launch-runbook.md under Terms used here.
+What: the sandbox account, $89/year price, webhook, and env vars are in place, and the whole checkout, webhook, entitlement, and trial lifecycle passed on production with test data. Two short lists below; the term test-classified is defined in docs/billing-launch-runbook.md under Terms used here.
 
-Before anything (Stripe Test mode):
-1. Open https://dashboard.stripe.com/test/subscriptions and cancel each leftover QA subscription immediately (they came from the sandbox checks; no money involved). Tell me when done. Each cancel writes a fresh QA-marked row in our database copy, which I confirm shows canceled and then remove.
+Before anything (Stripe Test mode): DONE 2026-08-29. You canceled all four QA subscriptions in the connected sandbox (named FindMyMahj sandbox; the sibling sandbox named Las Vegas Mahjong is not the connected one) and I verified the cancellation path end to end.
 
 Live keys:
 1. Turn on the Live toggle at the top of https://dashboard.stripe.com
