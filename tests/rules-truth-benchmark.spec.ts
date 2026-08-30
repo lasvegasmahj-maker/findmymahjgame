@@ -363,9 +363,11 @@ test.describe("adversarial pairs from the owner decisions (2026-08-30)", () => {
   test("the three-player answer publishes counts and never picks a final pickup sequence", () => {
     const r = lookupRule({ question: "how do you deal for three players" });
     expect(r.entry_id).toBe("three-player-procedure");
-    expect(r.answer).toMatch(/East holds 14 tiles and the other two hold 13/);
+    expect(r.answer).toMatch(/East holding 14 tiles and the other two holding 13/);
     expect(r.answer).toMatch(/two slightly different orders/);
     expect(r.answer).not.toMatch(/East picks 2|picks two tiles|then East picks a 14th/);
+    // End counts only: no dealing mechanics the owner did not authorize.
+    expect(r.answer).not.toMatch(/4 tiles at a time|four at a time|holds 12|everyone holds/);
   });
 
   test("a wrong joker exchange names the rack that goes dead and keeps the giver playing", () => {
@@ -413,6 +415,24 @@ test.describe("corpus invariants", () => {
       const e = RULES_KNOWLEDGE.find((x) => x.id === id)!;
       expect(e.approved_answer, id).toMatch(/until you discard or exchange a joker/);
     }
+  });
+
+  test("out-of-turn questions reach the entry that answers them, and the dead-hand list stays open", () => {
+    for (const q of ["Is my hand dead if I pick out of turn?", "I drew out of turn but put the tile back, is my hand still dead?"]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("picking-ahead");
+    }
+    const details = RULES_KNOWLEDGE.find((e) => e.id === "dead-hand-details")!;
+    expect(details.approved_answer).toMatch(/for example/);
+    expect(details.approved_answer).toMatch(/draws out of turn/);
+  });
+
+  test("asking whether a claim must be spoken never lands on the declining answer", () => {
+    for (const q of ["Do I have to say call out loud?", "Must I announce my call?", "Do I need to say anything when I take a discard?"]) {
+      const r = lookupRule({ question: q });
+      expect(r.entry_id, q).not.toBe("passing-on-a-discard");
+      expect(String(r.answer), q).toMatch(/out loud|speak your claim|say so out loud/);
+    }
+    expect(lookupRule({ question: "do i have to call a discard if i can" }).entry_id).toBe("passing-on-a-discard");
   });
 
   test("no entry claims how a discarded joker is named", () => {

@@ -149,7 +149,7 @@ const TIMING =
   /\b(when|before|after|during|timing|turn|my turn|own turn|right away|immediately|as soon as|first|then|order)\b/i;
 const DEAD = /\bdead\b/i;
 const DEAD_DETAIL =
-  /\b(too many|too few|wrong number|how many|count|thirteen|fifteen|twelve|1[0-9]|out of turn|expos(e|ed|ure|ures)|pay|pays|payment|who (can|may|gets to) (declare|call|say)|declare (my|your|his|her|their) own|self|myself|what makes|why|when|causes?|reasons?)\b/i;
+  /\b(too many|too few|wrong number|how many|count|thirteen|fifteen|twelve|1[0-9]|expos(e|ed|ure|ures)|pay|pays|payment|who (can|may|gets to) (declare|call|say)|declare (my|your|his|her|their) own|self|myself|what makes|why|when|causes?|reasons?)\b/i;
 const HAND_SIZE =
   /\b((should|do|must|can|am|are) (i|you|we) (supposed to )?(have|hold|be holding|keep) [^.?!]{0,20}\btiles?\b|how many tiles (should|do|must|can) (i|you|we) (have|hold|keep|be holding)|how many tiles (should|must) (be )?in (my|your|our) hand|tiles? in (my|your|our) hand|tiles? (should|must) (be )?in (my|your) hand|between turns|after (i|you) discard|during (my|your) turn|correct number of tiles|right number of tiles|count (my|your) tiles|i have (\d+|too many|too few|an extra|one too many|one less) tiles?|one short|short a tile|missing a tile|extra tile)\b/i;
 const PICK_VERB = /\b(pick|picks|picked|picking|draw|draws|drew|drawing|take|takes|took|taking|grab)\b/i;
@@ -176,8 +176,12 @@ const NOTATION =
   /\b(colou?rs?|red|green|blue|black|notation|symbols?|letters?|abbreviations?|legend|key|mean|means|meaning|stand for|stands for|read (the|a|my) card|parenthes[ei]s|concealed|exposed|soap|zero)\b|\b[CX]\b/i;
 const TOURNAMENT = /\btournaments?\b/i;
 const BLANK = /\bblanks?\b(?! (check|page|space|form))/i;
+const SPEAK_ASK = /\b(say|says|saying|said|announce|announces|announcing|announced|out loud|aloud|verbal|verbally|speak|silently|silence)\b/i;
+// Asking whether a CLAIM must be spoken, not asking how to name a discard.
+const SPOKEN_CLAIM =
+  /\b(say|saying|announce|announcing|speak)\b[^.?!]{0,24}\b(call|calls|claim|claims|mahjong|maj|take it|it out loud)\b|\b(call|claim)\b[^.?!]{0,24}\b(out loud|aloud|verbally)\b|\breach in silently\b|\bsilently\b|\bwithout saying\b|\bsay anything\b/i;
 const DECLINE_CALL =
-  /\b(have to|must|required|forced|need to|do i need to|obligated|supposed to)\b[^.?!]{0,25}\b(call|take|claim|pick up)\b|\b(pass on|skip|ignore|let it go|decline|don'?t want|do not want|not take|leave)\b[^.?!]{0,25}\b(discard|tile|it)\b/i;
+  /\b(have to|must|required|forced|need to|do i need to|obligated|supposed to)\b(?![^.?!]{0,25}\b(say|announce|speak)\b)[^.?!]{0,25}\b(call|take|claim|pick up)\b|\b(pass on|skip|ignore|let it go|decline|don'?t want|do not want|not take|leave)\b[^.?!]{0,25}\b(discard|tile|it)\b/i;
 const OFFICIAL =
   /\b(official|who (makes|writes|sets|decides|publishes|runs)|where (do|does|are) the rules|which rules|rulebook|rule book|made easy|source of (the )?rules|governing body|authority|the league)\b/i;
 const STRATEGY =
@@ -941,7 +945,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     keywords: ["three player", "three handed", "3 players"],
     requires: [THREE_PLAYER, THREE_PLAYER_HOW],
     approved_answer:
-      "American mahjong seats 4 players, and the League's rulebook covers playing with 3. Build all 4 walls as usual with the full 152 tiles and leave one seat empty. Deal only to the 3 players: each takes 4 tiles at a time until everyone holds 12, and the empty seat gets nothing. The players then finish the deal so East holds 14 tiles and the other two hold 13. League publications describe that last pick in two slightly different orders, and both end with the same counts. There is no Charleston with 3 players. That is the League's official rule, not a table preference. East opens with a discard, and play runs like the 4-player game. Anything beyond this is a table choice, such as an invented Charleston for 3, a ghost hand dealt to the empty seat, or a betting arrangement, so agree on those before you start.",
+      "American mahjong seats 4 players, and the League's rulebook covers playing with 3. Build all 4 walls as usual with the full 152 tiles and leave one seat empty. Deal only to the 3 players, and the empty seat gets nothing. The deal ends with East holding 14 tiles and the other two holding 13. League publications describe the final pickup in two slightly different orders, and both reach those counts. There is no Charleston with 3 players. That is the League's official rule, not a table preference. East opens with a discard, and play runs like the 4-player game. Anything beyond this is a table choice, such as an invented Charleston for 3, a ghost hand dealt to the empty seat, or a betting arrangement, so agree on those before you start.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note:
@@ -973,8 +977,12 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     topic: "Saying hold or wait",
     question_patterns: [HOLD_WAIT, HOLD_WAIT_ASK],
     keywords: ["hold", "wait", "call"],
-    requires: [HOLD_WAIT, HOLD_WAIT_ASK, /\b(tile|discard|call|calls|claim|play|game|turn)\b/i],
-    blocks: [CHARLESTON_WORD, BLIND_PASS],
+    requires: [
+      new RegExp(`${HOLD_WAIT.source}|${SPOKEN_CLAIM.source}`, "i"),
+      HOLD_WAIT_ASK,
+      /\b(tile|discard|call|calls|claim|play|game|turn)\b/i,
+    ],
+    blocks: [CHARLESTON_WORD, BLIND_PASS, MISNAMED, new RegExp(`${NAMING.source}[^.?!]{0,20}\\b(tile|discard)s?\\b`, "i")],
     approved_answer:
       "Priority does not turn on which word you pick. The League does ask you to say call, take, or I want that when you actually claim the tile, and it lets you say hold or wait first while you decide. So after you say hold and make up your mind, say call before you take the tile. The one thing you may never do is reach in silently, because you have to speak your claim out loud. Two separate things settle it. Priority decides who is entitled to the tile: a claim for mahjong beats a claim for an exposure, and when two players want it for the same reason the player whose turn comes next gets preference. Commitment decides when the tile becomes yours: you own the call once you place the tile on top of your rack or expose tiles from your hand. Until you do one of those, you may change your mind, return the tile, and draw from the wall instead. Put those together and the common table argument disappears. If you are next in turn and you say hold, the table should give you a reasonable moment, and another player should not expose ahead of you. You lose that tile by going quiet, because a player later in turn order who calls it and then racks it or exposes tiles has finished a claim you never finished. You also lose it if someone claims it for mahjong, because mahjong outranks an exposure. The whole window closes for everybody once the next player racks the tile they picked, names that tile, discards it, starts a joker exchange, or declares mahjong.",
     ruleset: RULESET,
@@ -995,7 +1003,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [DEAD, DEAD_DETAIL],
     blocks: [JOKER_EXCHANGE, ERROR_CUE],
     approved_answer:
-      "A hand goes dead when it can no longer win: holding the wrong number of tiles after East's first discard, making an exposure that fits no hand on the card, or exposing tiles for a hand marked concealed. A dead player stops drawing and discarding but still pays the winner of that deal. You do not declare your own hand dead; the other players do. After East's first discard, a wrong tile count cannot be fixed.",
+      "A hand goes dead when it can no longer win, for example when a player holds the wrong number of tiles after East's first discard, draws out of turn, makes an exposure that fits no hand on the card, or exposes tiles for a hand marked concealed. A dead player stops drawing and discarding but still pays the winner of that deal. You do not declare your own hand dead; the other players do. After East's first discard, a wrong tile count cannot be fixed.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note:
@@ -1115,9 +1123,9 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [DECLINE_CALL],
     keywords: ["have to call", "skip", "ignore"],
     requires: [DECLINE_CALL],
-    blocks: [CHARLESTON_WORD, BLIND_PASS, COURTESY, JOKER],
+    blocks: [CHARLESTON_WORD, BLIND_PASS, COURTESY, JOKER, SPOKEN_CLAIM],
     approved_answer:
-      "You never have to call a discard. If you do not want it, say nothing and let play continue. Once the next player has drawn and racked a tile, or discarded, that discard is out of reach for everyone.",
+      "You never have to call a discard. If you do not want it, say nothing and let play continue. If you do want it, say so out loud, because you may never reach in silently. Once the next player has drawn and racked a tile, or discarded, that discard is out of reach for everyone.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
