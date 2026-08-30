@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies, headers } from "next/headers";
 import { verifyGameToken } from "@/lib/game-token";
+import { quickTablesOpenFor } from "@/lib/tables-gate";
+import TablesClosed from "@/components/tables-closed";
+import { USER_COOKIE } from "@/lib/user-auth";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 export const metadata: Metadata = { title: "Confirm your game", robots: { index: false } };
 
@@ -19,6 +24,11 @@ export default async function PlayedConfirmPage({ searchParams }: { searchParams
       </main>
     );
   }
+
+  // The POST this form submits is gated by the same rule; a real visitor learns that here, not after a tap.
+  const [h, c] = await Promise.all([headers(), cookies()]);
+  const { allowed } = await quickTablesOpenFor({ host: h.get("host"), sessionCookie: c.get(USER_COOKIE)?.value }, lazyServerClient());
+  if (!allowed) return <TablesClosed what="Confirming your game" />;
 
   const yes = v.answer === "yes";
   return (

@@ -12,6 +12,8 @@ import { attendInfo } from "@/lib/event-level";
 import { STATES } from "@/lib/states-data";
 import { schemaScriptProps } from "@/lib/schema";
 import FavoriteButton from "@/components/favorite-button";
+import { isLaunched } from "@/lib/launch-gates";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
   title: "Mahjong Events and Open Plays Near You",
@@ -65,6 +67,7 @@ function distanceLabel(miles: number, precision: "address" | "postal" | "city" |
 }
 
 export default async function EventsPage({ searchParams }: { searchParams: Promise<{ near?: string; type?: string; sort?: string; radius?: string }> }) {
+  const tablesOpen = await isLaunched(lazyServerClient(), "playerMatching");
   // Server component: capture the request time once so freshness math is stable within a render.
   // eslint-disable-next-line react-hooks/purity -- async server component renders once per request; a request-time clock read is intentional
   const now = Date.now();
@@ -288,12 +291,12 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
       ) : (
         <BrandedEmptyState
           title={`No ${em.label} listed${near ? ` in ${near}` : ""} yet.`}
-          message={em.organizer ? `Be the first. If you run ${em.phrase}, list it here so players can find it.` : "Be the first. You can list a game, start your own table, or get the weekly note when games open near you."}
+          message={em.organizer ? `Be the first. If you run ${em.phrase}, list it here so players can find it.` : tablesOpen ? "Be the first. You can list a game, start your own table, or get the weekly note when games open near you." : "Be the first. You can list a game, or get the weekly note when games open near you."}
           ctaHref={em.organizer ? em.href! : "/get-listed"}
           ctaLabel={em.organizer ? em.cta! : "List your game"}
           secondary={
             <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", maxWidth: 320, margin: "0 auto" }}>
-              {!em.organizer && <Link href="/start" style={{ minHeight: 52, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "var(--navy)", color: "white", fontWeight: 800, fontSize: "1.05rem", textDecoration: "none" }}>Start a table</Link>}
+              {tablesOpen && !em.organizer && <Link href="/start" style={{ minHeight: 52, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "var(--navy)", color: "white", fontWeight: 800, fontSize: "1.05rem", textDecoration: "none" }}>Start a table</Link>}
               <Link href="/newsletter" style={{ minHeight: 52, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "white", color: "var(--navy)", border: "2px solid var(--navy)", fontWeight: 800, fontSize: "1.05rem", textDecoration: "none" }}>Get the weekly list</Link>
               <NotifyMe defaultCity={near || ""} />
             </div>

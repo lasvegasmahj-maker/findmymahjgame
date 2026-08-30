@@ -12,7 +12,7 @@ const bigBtn = (ready: boolean): React.CSSProperties => ({ width: "100%", minHei
 
 type Game = { share_code: string; day_of_week: string | null; time_of_day: string | null; venue_name: string | null; city: string | null; state: string | null; skill: string | null; seats_total: number; filled: number };
 
-export default function PlayClient() {
+export default function PlayClient({ tablesOpen = true }: { tablesOpen?: boolean }) {
   const [step, setStep] = useState<"where" | "results" | "capture" | "done">("where");
   const [city, setCity] = useState("");
   const [games, setGames] = useState<Game[]>([]);
@@ -28,7 +28,7 @@ export default function PlayClient() {
   const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
   const [err, setErr] = useState("");
   const [geoMsg, setGeoMsg] = useState("");
-  const [captureWhy, setCaptureWhy] = useState<"none" | "notify">("none");
+  const [captureWhy, setCaptureWhy] = useState<"none" | "notify" | "closed">("none");
 
   async function runFind(input: string) {
     setSearching(true); setGeoMsg("");
@@ -40,10 +40,14 @@ export default function PlayClient() {
         if (zg.city) { town = zg.city; if (zg.state) setStateGuess(zg.state); setCity(town); }
         else { setSearching(false); setGeoMsg("We couldn't find that ZIP code. Please type your town instead."); return; }
       }
+      // While game tables are closed, the honest next step is the notify form, not a search;
+      // the town is resolved first so the promise names a place, not a ZIP.
+      if (!tablesOpen) { setSearching(false); setCity(town); setStep("capture"); setCaptureWhy("closed"); return; }
       const res = await fetch(`/api/tables/find?city=${encodeURIComponent(town)}`);
       const d = await res.json().catch(() => ({ tables: [] }));
       setSearching(false);
       if (res.status === 429) { setGeoMsg("So many searches! Please wait a moment and try again."); return; }
+      if (res.status === 403) { setStep("capture"); setCaptureWhy("closed"); return; }
       if ((d.tables || []).length > 0) { setGames(d.tables); setStep("results"); setCaptureWhy("notify"); }
       else { setStep("capture"); setCaptureWhy("none"); }
     } catch {
@@ -113,7 +117,7 @@ export default function PlayClient() {
     return shell(
       <>
         <h1 style={{ fontSize: "2rem", color: "var(--navy)", margin: "0.8rem 0 0.3rem", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>I Want to Play</h1>
-        <p style={{ fontSize: "1.15rem", color: "var(--muted)", lineHeight: 1.5 }}>Find a game near you. Always free, and we never share your information.</p>
+        <p style={{ fontSize: "1.15rem", color: "var(--muted)", lineHeight: 1.5 }}>{tablesOpen ? "Find a game near you. Always free, and we never share your information." : "Finding a game is not open yet. Tell us where you are and we will tell you the moment it opens near you. Always free, and we never share your information."}</p>
         <button type="button" onClick={useMyLocation} disabled={searching} style={{ width: "100%", minHeight: 68, marginTop: "1.4rem", borderRadius: 16, border: "none", background: "var(--navy)", color: "white", fontSize: "1.3rem", fontWeight: 800, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
           {searching ? "Looking..." : "Use My Location"}
         </button>
@@ -121,7 +125,7 @@ export default function PlayClient() {
         {geoMsg && <p role="alert" style={{ color: "#dc2626", fontSize: "1.05rem", textAlign: "center", marginTop: 0 }}>{geoMsg}</p>}
         <form onSubmit={findGames}>
           <input style={fieldStyle} inputMode="text" aria-label="City or ZIP code" placeholder="City or ZIP code" value={city} onChange={(e) => setCity(e.target.value)} />
-          <button type="submit" disabled={!city.trim() || searching} style={bigBtn(!!city.trim())}>{searching ? "Looking..." : "Find a Game"}</button>
+          <button type="submit" disabled={!city.trim() || searching} style={bigBtn(!!city.trim())}>{searching ? "Looking..." : tablesOpen ? "Find a Game" : "Tell Me When It Opens"}</button>
         </form>
       </>
     );
@@ -162,7 +166,7 @@ export default function PlayClient() {
     return shell(
       <div style={{ textAlign: "center", paddingTop: "2rem" }}>
         <h1 style={{ fontSize: "1.9rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>You&rsquo;re on the list!</h1>
-        <p style={{ fontSize: "1.2rem", color: "var(--navy)", lineHeight: 1.6 }}>We&rsquo;ll reach out as soon as there&rsquo;s a game near {city}. Want one sooner? <Link href="/start" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Start your own table</Link> and invite friends.</p>
+        <p style={{ fontSize: "1.2rem", color: "var(--navy)", lineHeight: 1.6 }}>{captureWhy === "closed" ? <>We&rsquo;ll reach out as soon as games open near {city}.</> : <>We&rsquo;ll reach out as soon as there&rsquo;s a game near {city}. Want one sooner? <Link href="/start" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Start your own table</Link> and invite friends.</>}</p>
       </div>
     );
   }
@@ -172,10 +176,10 @@ export default function PlayClient() {
   return shell(
     <>
       <h1 style={{ fontSize: "1.9rem", color: "var(--navy)", margin: "0.8rem 0 0.3rem", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>
-        {captureWhy === "notify" ? `Want to know when another game opens in ${city}?` : `No public games in ${city} right now`}
+        {captureWhy === "closed" ? "Not open yet" : captureWhy === "notify" ? `Want to know when another game opens in ${city}?` : `No public games in ${city} right now`}
       </h1>
       <p style={{ fontSize: "1.15rem", color: "var(--muted)", lineHeight: 1.5 }}>
-        {captureWhy === "notify" ? "Leave your name and we will tell you the moment a new table opens." : "Some tables fill by invitation, so check back soon. The fastest way to play is to start your own table and invite a few people, or we can tell you when a game opens near you."}
+        {captureWhy === "closed" ? `Finding and joining games is not open yet. Leave your name and we will tell you the moment it opens in ${city}.` : captureWhy === "notify" ? "Leave your name and we will tell you the moment a new table opens." : "Some tables fill by invitation, so check back soon. The fastest way to play is to start your own table and invite a few people, or we can tell you when a game opens near you."}
       </p>
       {captureWhy === "none" && (
         <Link href="/start" style={{ display: "flex", minHeight: 64, alignItems: "center", justifyContent: "center", marginTop: "1.3rem", borderRadius: 16, background: "var(--navy)", color: "white", fontWeight: 800, fontSize: "1.3rem", textDecoration: "none" }}>Start your own table &rarr;</Link>

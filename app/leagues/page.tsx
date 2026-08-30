@@ -7,6 +7,8 @@ import CityAutocomplete from "@/components/city-autocomplete";
 import { safeHttpUrl } from "@/lib/sanitize";
 import { attendInfo } from "@/lib/event-level";
 import { schemaScriptProps } from "@/lib/schema";
+import { isLaunched } from "@/lib/launch-gates";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
   title: "Mahjong Leagues Near You",
@@ -21,6 +23,7 @@ const field: React.CSSProperties = { minHeight: 54, padding: "0 1rem", border: "
 const goBtn: React.CSSProperties = { minHeight: 54, padding: "0 1.5rem", border: "none", borderRadius: 12, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" };
 
 export default async function LeaguesPage({ searchParams }: { searchParams: Promise<{ near?: string }> }) {
+  const tablesOpen = await isLaunched(lazyServerClient(), "playerMatching");
   // Server component: capture the request time once so freshness math is stable within a render.
   // eslint-disable-next-line react-hooks/purity -- async server component renders once per request; a request-time clock read is intentional
   const now = Date.now();
@@ -100,7 +103,7 @@ export default async function LeaguesPage({ searchParams }: { searchParams: Prom
           <p style={{ fontSize: "1.1rem", color: "var(--muted)", lineHeight: 1.6, marginBottom: "1.6rem" }}>Be the first. You can list a league, start your own, or browse every kind of game and event near you.</p>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", maxWidth: 320, margin: "0 auto" }}>
             <Link href="/get-listed" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "var(--pink)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>List your league</Link>
-            <Link href="/start" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "var(--navy)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Start a table</Link>
+            {tablesOpen && <Link href="/start" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "var(--navy)", color: "white", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Start a table</Link>}
             <Link href="/events" style={{ minHeight: 56, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, background: "white", color: "var(--navy)", border: "2px solid var(--navy)", fontWeight: 800, fontSize: "1.1rem", textDecoration: "none" }}>Browse all games and events</Link>
           </div>
           <div style={{ marginTop: "1.6rem" }}><NotifyMe defaultCity={near || ""} /></div>

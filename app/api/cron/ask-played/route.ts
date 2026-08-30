@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cronRequestAuthorized } from "@/lib/cron-auth";
-import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "@/lib/email";
 import { signGameToken } from "@/lib/game-token";
 import { escapeHtml } from "@/lib/sanitize";
 import { lazyServerClient } from "@/lib/supabase-server";
+import { isLaunched } from "@/lib/launch-gates";
 
 const supabase = lazyServerClient();
 
@@ -17,10 +17,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // While game tables are closed the confirm page cannot accept an answer, so nobody is asked;
+  // the rows wait, unstamped, until the feature is open.
+  if (!(await isLaunched(supabase, "playerMatching"))) return NextResponse.json({ asked: 0 });
+
   const cutoff = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
   const { data: rows, error: qErr } = await supabase
     .from("tables")
     .select("id, share_code, day_of_week, time_of_day, city")
+    // QA-filled tables must never email the founder or land on a gated confirm page.
+    .eq("record_class", "real_external")
     .eq("status", "full")
     .is("played", null)
     .is("asked_played_at", null)

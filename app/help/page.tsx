@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CONTACT_EMAIL, HELP_PHONE } from "@/lib/constants";
+import { isLaunched } from "@/lib/launch-gates";
+import { lazyServerClient } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
   title: "I Need Help",
@@ -12,7 +14,11 @@ const card: React.CSSProperties = { display: "block", background: "white", borde
 const big: React.CSSProperties = { fontSize: "1.3rem", fontWeight: 800 };
 const sub: React.CSSProperties = { fontSize: "1.05rem", color: "var(--muted)", marginTop: "0.3rem", lineHeight: 1.5 };
 
-export default function HelpPage() {
+// A gate flip reaches this page within a minute without making it uncacheable.
+export const revalidate = 60;
+
+export default async function HelpPage() {
+  const tablesOpen = await isLaunched(lazyServerClient(), "playerMatching");
   return (
     <main style={{ maxWidth: 560, margin: "0 auto", padding: "1.5rem 1.2rem 4rem" }}>
       <Link href="/" style={{ fontSize: "1.05rem", color: "var(--pink-text)", fontWeight: 700, textDecoration: "none" }}>&larr; Home</Link>
@@ -37,22 +43,31 @@ export default function HelpPage() {
 
       <a href="/play" style={card}>
         <div style={big}>Help me find a game</div>
-        <div style={sub}>Tell us your town and we will find you a game.</div>
+        <div style={sub}>{tablesOpen ? "Tell us your town and we will find you a game." : "Tell us your town and we will tell you the moment games open near you."}</div>
       </a>
 
-      <div style={{ ...card, cursor: "default" }}>
-        <div style={big}>How to find a game</div>
-        <div style={sub}>1) Tap &ldquo;I Want to Play.&rdquo; 2) Type your town. 3) Tap a game. 4) Tap &ldquo;Claim a Seat&rdquo; and add your name and phone or email. Done.</div>
-      </div>
+      {tablesOpen ? (
+        <>
+          <div style={{ ...card, cursor: "default" }}>
+            <div style={big}>How to find a game</div>
+            <div style={sub}>1) Tap &ldquo;I Want to Play.&rdquo; 2) Type your town. 3) Tap a game. 4) Tap &ldquo;Claim a Seat&rdquo; and add your name and phone or email. Done.</div>
+          </div>
 
-      <div style={{ ...card, cursor: "default" }}>
-        <div style={big}>How to start a table</div>
-        <div style={sub}>1) Tap &ldquo;Start a Table.&rdquo; 2) Pick a day and time. 3) Add your name and number. 4) Share it with friends to fill the seats.</div>
-      </div>
+          <div style={{ ...card, cursor: "default" }}>
+            <div style={big}>How to start a table</div>
+            <div style={sub}>1) Tap &ldquo;Start a Table.&rdquo; 2) Pick a day and time. 3) Add your name and number. 4) Share it with friends to fill the seats.</div>
+          </div>
+        </>
+      ) : (
+        <div style={{ ...card, cursor: "default" }}>
+          <div style={big}>Finding and starting games is not open yet</div>
+          <div style={sub}>Tell us where you are on the Play page and we will tell you the moment it opens near you.</div>
+        </div>
+      )}
 
       <div style={{ ...card, cursor: "default", background: "var(--bg)" }}>
         <div style={big}>What is a &ldquo;table&rdquo;?</div>
-        <div style={sub}>A table is a game of mahjong with 4 people. You can join one near you, or start your own and invite players.</div>
+        <div style={sub}>{tablesOpen ? "A table is a game of mahjong with 4 people. You can join one near you, or start your own and invite players." : "A table is a game of mahjong with 4 people. When tables open, you can join one near you or start your own and invite players."}</div>
       </div>
 
       <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Report a problem")}`} style={card}>

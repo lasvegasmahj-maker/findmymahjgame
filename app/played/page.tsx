@@ -9,12 +9,17 @@ export default async function PlayedPage({ searchParams }: { searchParams: Promi
     result === "yes" ? { title: "Wonderful!", body: "So glad your table became a real game. Want to keep it going? Set up next week's table with the same day, time, and place in one tap." }
     : result === "recurring" ? { title: "Your standing game is set!", body: "We marked this as a weekly game. When a seat opens, we'll help you fill it. It is always free for players." }
     : result === "no" ? { title: "Thanks for telling us", body: "No worries. When you're ready, start a new table and we'll help you fill it." }
+    : result === "closed" ? { title: "Not open yet", body: "Game tables are not open yet, so we did not record your answer." }
+    : result === "retry" ? { title: "One moment", body: "That was a lot of taps at once. Please try your link again in a minute." }
     : { title: "Thanks", body: "That link wasn't valid or has expired, but thank you for letting us know." };
 
   return (
     <main style={{ maxWidth: 520, margin: "0 auto", padding: "4rem 1.2rem", textAlign: "center" }}>
       <h1 style={{ fontSize: "1.9rem", color: "var(--navy)", fontFamily: "var(--font-playfair), 'Playfair Display', serif" }}>{msg.title}</h1>
       <p style={{ fontSize: "1.2rem", color: "var(--navy)", lineHeight: 1.6 }}>{msg.body}</p>
+      {result === "closed" && (
+        <p style={{ fontSize: "1.1rem", color: "var(--navy)", lineHeight: 1.6 }}>Want to know when they open? <Link href="/play" style={{ color: "var(--pink-text)", fontWeight: 700 }}>Tell us on the Play page</Link>.</p>
+      )}
 
       {result === "yes" && token && (
         <form method="POST" action="/api/tables/run-it-back" style={{ marginTop: "1.4rem" }}>

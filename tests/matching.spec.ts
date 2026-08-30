@@ -229,12 +229,12 @@ test.describe("legacy match/decide is retired", () => {
 });
 
 test.describe("public table listing excludes non-real rows", () => {
-  test("source pin: tables/find filters to record_class real_external", () => {
+  test("source pin: tables/find filters to the requester's own record class", () => {
     const source = fs.readFileSync(path.join(__dirname, "..", "app", "api", "tables", "find", "route.ts"), "utf8");
-    expect(source).toContain('eq("record_class", "real_external")');
+    expect(source).toContain('eq("record_class", access.recordClass)');
   });
 
-  test("a test-classified table never appears in a live find query", async ({ request }) => {
+  test("a test-classified table never reaches a real visitor's find query", async ({ request }) => {
     const { url, key } = readSupabaseServiceEnv();
     test.skip(!url || !key, "Supabase service env not available in this environment");
     const db: SupabaseClient = createClient(url!, key!);
@@ -254,8 +254,9 @@ test.describe("public table listing excludes non-real rows", () => {
       .single();
     expect(error, error?.message).toBeNull();
     try {
-      const res = await request.get(`/api/tables/find?city=${encodeURIComponent(city)}`);
-      expect(res.ok()).toBeTruthy();
+      // A real visitor (production host) is refused while the gate is OFF and, once it is ON,
+      // sees only real tables; either way the test table never reaches them.
+      const res = await request.get(`/api/tables/find?city=${encodeURIComponent(city)}`, { headers: { host: "findmymahjgame.com" } });
       const j = await res.json();
       expect(j.tables).toEqual([]);
     } finally {

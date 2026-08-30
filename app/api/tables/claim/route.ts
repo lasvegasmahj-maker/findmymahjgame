@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "@/lib/email";
 import { clampText, isValidEmail, escapeHtml } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
 import { lazyServerClient } from "@/lib/supabase-server";
+import { quickTablesAccess, TABLES_CLOSED_MESSAGE } from "@/lib/tables-gate";
 
 const supabase = lazyServerClient();
 
@@ -12,6 +12,11 @@ const first = (n: string) => escapeHtml((n || "").trim().split(/\s+/)[0] || "A p
 export async function POST(req: NextRequest) {
   if (!(await rateLimit(req, "claim", 10, 60))) {
     return NextResponse.json({ error: "Too many requests. Please wait a minute and try again." }, { status: 429 });
+  }
+
+  const access = await quickTablesAccess(req, supabase);
+  if (!access.allowed) {
+    return NextResponse.json({ error: TABLES_CLOSED_MESSAGE }, { status: 403 });
   }
 
   const b = (await req.json().catch(() => null)) || {};
@@ -23,7 +28,9 @@ export async function POST(req: NextRequest) {
   }
 
   const { data: t } = await supabase.from("tables").select("*").eq("share_code", b.shareCode).single();
-  if (!t) return NextResponse.json({ error: "Table not found." }, { status: 404 });
+  // A seat always carries the table's class, so a requester may only sit at a table of their
+  // own class: QA never joins (or emails) a real table, and a real person never joins a QA one.
+  if (!t || t.record_class !== access.recordClass) return NextResponse.json({ error: "Table not found." }, { status: 404 });
 
   const { count } = await supabase.from("table_seats").select("id", { count: "exact", head: true }).eq("table_id", t.id);
   const filled = count ?? 0;
@@ -37,6 +44,7 @@ export async function POST(req: NextRequest) {
     name,
     phone: clampText(b.phone, 40) || null,
     email: clampText(b.email, 254) || null,
+    record_class: t.record_class,
   }).select("id").single();
   if (seatErr || !seatRow) {
     console.error("claim: seat insert failed", seatErr?.message);
@@ -60,6 +68,9 @@ export async function POST(req: NextRequest) {
     const { error: fullErr } = await supabase.from("tables").update({ status: "full", filled_at: new Date().toISOString() }).eq("id", t.id);
     if (fullErr) console.error("claim: failed to mark table full", fullErr.message);
   }
+
+  // A test-classified table is QA traffic: it must never email the founder or a real inbox.
+  if (t.record_class !== "real_external") return NextResponse.json({ success: true, seatsRemaining: remaining });
 
   const when = `${escapeHtml(t.day_of_week || "")} ${escapeHtml(t.time_of_day || "")}`.trim();
   const area = t.city ? escapeHtml(t.city) : "your area";

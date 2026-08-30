@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 import { verifyGameToken } from "@/lib/game-token";
 import { rateLimit } from "@/lib/rate-limit";
 import { lazyServerClient } from "@/lib/supabase-server";
+import { quickTablesAccess } from "@/lib/tables-gate";
 
 const supabase = lazyServerClient();
 
@@ -14,7 +14,7 @@ const supabase = lazyServerClient();
 // is re-added or emailed without choosing to rejoin (no auto-spam, no roster
 // exposure). GET never mutates; only the human form POST clones.
 const CLONE_FIELDS =
-  "host_name, host_phone, host_email, city, state, day_of_week, time_of_day, venue_type, venue_name, skill, seats_total, referred_by";
+  "host_name, host_phone, host_email, city, state, day_of_week, time_of_day, venue_type, venue_name, skill, seats_total, referred_by, record_class";
 
 export async function GET(req: NextRequest) {
   return NextResponse.redirect(`${req.nextUrl.origin}/played?result=yes`);
@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
   if (!(await rateLimit(req, "run-it-back", 5, 60))) {
     return NextResponse.redirect(`${siteUrl}/played?result=yes`, 303);
   }
+  if (!(await quickTablesAccess(req, supabase)).allowed) return NextResponse.redirect(`${siteUrl}/played?result=closed`, 303);
   const form = await req.formData().catch(() => null);
   const token = String(form?.get("token") || "");
   const v = token ? verifyGameToken(token) : null;
@@ -77,6 +78,7 @@ export async function POST(req: NextRequest) {
       is_recurring: true,
       parent_table_id: v.tableId,
       referred_by: orig.referred_by,
+      record_class: orig.record_class,
     })
     .select("id, share_code")
     .single();
@@ -92,6 +94,7 @@ export async function POST(req: NextRequest) {
     phone: orig.host_phone,
     email: orig.host_email,
     is_host: true,
+    record_class: orig.record_class,
   });
   if (seatErr) console.error("run-it-back: host seat insert failed", seatErr.message);
 

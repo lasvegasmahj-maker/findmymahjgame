@@ -1,12 +1,14 @@
-import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";
 import ShareSheet from "@/components/share-sheet";
 import SeatDots from "@/components/seat-dots";
 import AddToCalendar from "@/components/add-to-calendar";
 import ClaimClient from "./claim-client";
 import { lazyServerClient } from "@/lib/supabase-server";
+import TablesClosed from "@/components/tables-closed";
+import { quickTablesOpenFor } from "@/lib/tables-gate";
+import { USER_COOKIE } from "@/lib/user-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -28,8 +30,13 @@ export default async function TablePage({
   const { code } = await params;
   const { created } = await searchParams;
 
+  const [hdrs, jar] = await Promise.all([headers(), cookies()]);
+  const { allowed, recordClass } = await quickTablesOpenFor({ host: hdrs.get("host"), sessionCookie: jar.get(USER_COOKIE)?.value }, lazyServerClient());
+  if (!allowed) return <TablesClosed what="Joining a table" />;
+
   const { data: t } = await supabase.from("tables").select("*").eq("share_code", code).single();
-  if (!t) notFound();
+  // Same class rule as the claim route: nobody sees a table of another class.
+  if (!t || t.record_class !== recordClass) notFound();
 
   const { data: seats } = await supabase
     .from("table_seats")
@@ -43,8 +50,7 @@ export default async function TablePage({
   const remaining = Math.max(0, total - filled);
   const isFull = remaining === 0;
 
-  const h = await headers();
-  const host = h.get("host") || "findmymahjgame.com";
+  const host = hdrs.get("host") || "findmymahjgame.com";
   const base = `${host.includes("localhost") ? "http" : "https"}://${host}`;
   const url = `${base}/t/${code}`;
 

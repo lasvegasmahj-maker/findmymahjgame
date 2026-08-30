@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 import { clampText, isValidEmail } from "@/lib/sanitize";
 import { rateLimit } from "@/lib/rate-limit";
 import { lazyServerClient } from "@/lib/supabase-server";
+import { quickTablesAccess, TABLES_CLOSED_MESSAGE } from "@/lib/tables-gate";
 
 const supabase = lazyServerClient();
 
@@ -15,6 +15,9 @@ export async function POST(req: NextRequest) {
   if (!(await rateLimit(req, "create", 5, 60))) {
     return NextResponse.json({ error: "Too many requests. Please wait a minute and try again." }, { status: 429 });
   }
+
+  const access = await quickTablesAccess(req, supabase);
+  if (!access.allowed) return NextResponse.json({ error: TABLES_CLOSED_MESSAGE }, { status: 403 });
 
   const b = (await req.json().catch(() => null)) || {};
 
@@ -41,6 +44,9 @@ export async function POST(req: NextRequest) {
     seats_total: 4,
     status: "forming",
     referred_by: clampText(b.referredBy, 40) || null,
+    // A table started by test traffic while the gate is dark must never surface to a real
+    // visitor, so it carries the creator's classification.
+    record_class: access.recordClass,
   };
 
   const { data, error } = await supabase.from("tables").insert(row).select("id, share_code").single();
@@ -52,6 +58,7 @@ export async function POST(req: NextRequest) {
     phone: row.host_phone,
     email: row.host_email,
     is_host: true,
+    record_class: access.recordClass,
   });
   if (hostSeatErr) console.error("create: host seat insert failed", hostSeatErr.message);
 

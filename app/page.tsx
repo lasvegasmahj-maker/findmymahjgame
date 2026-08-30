@@ -6,6 +6,7 @@ import { createServerClient } from "@/lib/supabase-server";
 import { safeHttpUrl } from "@/lib/sanitize";
 import { STATES } from "@/lib/states-data";
 import SeatDots from "@/components/seat-dots";
+import { isLaunched } from "@/lib/launch-gates";
 
 export const metadata: Metadata = {
   title: { absolute: "Find My Mahj Game | Mahjong Players & Groups Nationwide" },
@@ -60,13 +61,15 @@ export default async function Home() {
     .slice(0, 6);
   // Forming tables with open seats (never the nearly-full ones; see below).
   // record_class filter keeps QA's synthetic "test" tables off the public homepage.
-  const { data: formingRaw } = await supabase
+  // While launch_player_matching is OFF a real visitor cannot claim a seat, so no seat is advertised.
+  const tablesOpen = await isLaunched(supabase, "playerMatching");
+  const formingRaw = !tablesOpen ? [] : (await supabase
     .from("tables")
     .select("id, share_code, day_of_week, time_of_day, city, seats_total")
     .eq("status", "forming")
     .eq("record_class", "real_external")
     .order("created_at", { ascending: false })
-    .limit(20);
+    .limit(20)).data;
   const forming: { share_code: string; day_of_week: string | null; time_of_day: string | null; city: string | null; total: number; filled: number }[] = [];
   for (const t of formingRaw || []) {
     const { count } = await supabase.from("table_seats").select("id", { count: "exact", head: true }).eq("table_id", t.id);

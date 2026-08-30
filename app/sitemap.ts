@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { ALL_STATE_SLUGS, STATES } from "@/lib/states-data";
 import { createServerClient } from "@/lib/supabase-server";
+import { isLaunched } from "@/lib/launch-gates";
 import { cityIndexability } from "@/lib/seo/indexability";
 import { buildCityCounts, groupRowsByCity, citySlugOf, type CityCountRow } from "@/lib/seo/city-counts";
 import { isFounderListing } from "@/lib/featured-listings";
@@ -18,7 +19,12 @@ const LAUNCH_CITY_KEYS = [
 
 type ListingRow = { city: string | null; state: string | null; updated_at?: string | null; created_at?: string | null };
 
+// Hourly, so a launch-gate flip (which adds /start) reaches the sitemap without a redeploy.
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // /start renders a noindex closed page while the table gate is OFF, so it is listed only when open.
+  let tablesOpen = false;
   // Real listing timestamps drive lastmod. A sitemap that stamps every URL
   // with the request time teaches crawlers to distrust our lastmod entirely,
   // so entries without a known data timestamp simply omit it.
@@ -32,6 +38,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   try {
     const supabase = createServerClient();
+    tablesOpen = await isLaunched(supabase, "playerMatching");
     const [ev, ve, pl] = await Promise.all([
       supabase.from("event_listings").select("city, state, mahjong_variant, variant_confidence, confirmed_active_at, updated_at, created_at").eq("status", "published"),
       supabase.from("venue_listings").select("id, city, state, venue_type, description, website, instagram, mahjong_variant, variant_confidence, confirmed_active_at, updated_at, created_at").eq("status", "published"),
@@ -107,7 +114,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/play`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE}/ask`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE}/help`, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${BASE}/start`, changeFrequency: "monthly", priority: 0.8 },
+    ...(tablesOpen ? [{ url: `${BASE}/start`, changeFrequency: "monthly" as const, priority: 0.8 }] : []),
     { url: `${BASE}/newsletter`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${BASE}/how-it-works`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE}/get-listed`, changeFrequency: "monthly", priority: 0.7 },

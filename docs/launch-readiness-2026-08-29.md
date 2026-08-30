@@ -118,8 +118,9 @@ launch gates are OFF; nothing here is launched.
    confirm the Data quality panel lists no issues and the Paid Premium and Verified
    paying customers counts read 0, and delete from billing_subscriptions by
    stripe_subscription_id any row that reappears later.
-3. Owner decision, docs/owner-decisions-pending.md item 8: the legacy quick-table
-   routes (/api/tables/*) are live for real traffic with no launch gate.
+3. RESOLVED 2026-08-29: the legacy quick-table routes (/api/tables/*) now sit behind
+   launch_player_matching with the shared dark-launch rule; a real visitor is refused before
+   any write while the gate is OFF (docs/owner-decisions-pending.md item 8).
 4. RESOLVED 2026-08-29: the customer-facing product name is Find My Mahj Premium
    ($89/year). Policy drafts and current docs now use it. Two Stripe-side steps
    remain for the owner: rename the sandbox test product (Product catalog, the
@@ -188,3 +189,4 @@ launch gates are OFF; nothing here is launched.
   self-service check passes with the test portal link. Still owed before payments
   open: the live Stripe values, the live portal link, and the same three settings in
   Live mode.
+- 2026-08-29 (quick-table gate): owner approved gating /api/tables/* behind launch_player_matching; implemented in lib/tables-gate.ts and the five routes, closed states on /play, /played, and /played/confirm, regression suite tests/quick-tables-gate.spec.ts; all four gates still OFF.

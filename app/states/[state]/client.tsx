@@ -48,6 +48,7 @@ interface Venue {
 }
 
 interface Props {
+  tablesOpen?: boolean;
   stateData: StateData;
   players: Player[];
   events: Event[];
@@ -94,7 +95,7 @@ interface ConnectForm {
   submitting: boolean;
 }
 
-export default function StatePageClient({ stateData, players, events, venues, initialCity, initialTab }: Props) {
+export default function StatePageClient({ stateData, players, events, venues, initialCity, initialTab, tablesOpen = true }: Props) {
   const [activeTab, setActiveTab] = useState<"players" | "events" | "teachers">(initialTab === "events" || initialTab === "teachers" ? initialTab : "players");
   const [selectedCities, setSelectedCities] = useState<string[]>(initialCity ? [initialCity] : []);
   const [cityMenuOpen, setCityMenuOpen] = useState(false);
@@ -347,7 +348,7 @@ export default function StatePageClient({ stateData, players, events, venues, in
                 </p>
                 <Link href="/list-my-game" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>Create My Free Listing &rarr;
                 </Link>
-                <FindGameFallback city={selectedCities[0] || ""} state={stateData.name} />
+                <FindGameFallback city={selectedCities[0] || ""} state={stateData.name} tablesOpen={tablesOpen} />
               </div>
             )}
 
@@ -408,7 +409,7 @@ export default function StatePageClient({ stateData, players, events, venues, in
                 <p style={{ fontSize: "1rem", color: "var(--muted)", marginBottom: "2rem", maxWidth: 450, marginLeft: "auto", marginRight: "auto", lineHeight: 1.7 }}>Host an open play, tournament, or mahjong night? List it and reach players searching for games.
                 </p>
                 <Link href="/get-listed" className="btn-cta-primary" style={{ padding: "0.9rem 2.5rem" }}>List Your Event &rarr;</Link>
-                <FindGameFallback city={selectedCities[0] || ""} state={stateData.name} />
+                <FindGameFallback city={selectedCities[0] || ""} state={stateData.name} tablesOpen={tablesOpen} />
               </div>
             )}
 

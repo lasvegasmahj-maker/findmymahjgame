@@ -1,5 +1,6 @@
 import { STATES, ALL_STATE_SLUGS } from "@/lib/states-data";
 import { createServerClient } from "@/lib/supabase-server";
+import { isLaunched } from "@/lib/launch-gates";
 import { notFound } from "next/navigation";
 import StatePageClient from "./client";
 import { buildStatePageSchema, schemaScriptProps } from "@/lib/schema";
@@ -77,6 +78,7 @@ export default async function StatePage({ params, searchParams }: { params: Prom
   if (!data) notFound();
 
   const supabase = createServerClient();
+  const tablesOpen = await isLaunched(supabase, "playerMatching");
 
   // Explicit public-safe columns only. These rows serialize into client props
   // (and some into JSON-LD), so select("*") would ship contact_email, phone,
@@ -128,7 +130,7 @@ export default async function StatePage({ params, searchParams }: { params: Prom
   return (
     <>
       <script {...schemaScriptProps(stateSchema)} />
-      <StatePageClient
+      <StatePageClient tablesOpen={tablesOpen}
         stateData={data}
         players={players}
         events={events}

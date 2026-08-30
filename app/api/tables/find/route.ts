@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { rateLimit } from "@/lib/rate-limit";
 import { lazyServerClient } from "@/lib/supabase-server";
+import { quickTablesAccess, TABLES_CLOSED_MESSAGE } from "@/lib/tables-gate";
 
 const supabase = lazyServerClient();
 
@@ -10,15 +10,20 @@ export async function GET(req: NextRequest) {
   if (!(await rateLimit(req, "tables-find", 20, 60))) {
     return NextResponse.json({ tables: [], error: "Please wait a moment and try again." }, { status: 429 });
   }
+  const access = await quickTablesAccess(req, supabase);
+  if (!access.allowed) {
+    return NextResponse.json({ tables: [], error: TABLES_CLOSED_MESSAGE }, { status: 403 });
+  }
   const city = (req.nextUrl.searchParams.get("city") || "").trim().slice(0, 80).replace(/[%_]/g, "");
   if (!city) return NextResponse.json({ tables: [] });
 
   const { data: rows } = await supabase
     .from("tables")
     .select("id, share_code, day_of_week, time_of_day, venue_name, city, state, skill, seats_total, status")
-    // QA and test-classified tables (Mahj Match's own E2E suite, admin dry runs) must never
-    // reach a real visitor's search results, so this is a hard filter, not a display choice.
-    .eq("record_class", "real_external")
+    // A visitor sees only tables of their own class: QA and test-classified tables (Mahj
+    // Match's own E2E suite, admin dry runs) never reach a real visitor, and QA never sees a
+    // real table. A hard filter, not a display choice.
+    .eq("record_class", access.recordClass)
     .neq("status", "full")
     .ilike("city", `%${city}%`)
     .order("created_at", { ascending: false })

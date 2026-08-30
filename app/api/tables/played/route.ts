@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { verifyGameToken } from "@/lib/game-token";
+import { rateLimit } from "@/lib/rate-limit";
 import { lazyServerClient } from "@/lib/supabase-server";
+import { quickTablesAccess } from "@/lib/tables-gate";
 
 const supabase = lazyServerClient();
 
@@ -16,6 +17,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const siteUrl = req.nextUrl.origin;
+  if (!(await rateLimit(req, "played", 20, 60))) return NextResponse.redirect(`${siteUrl}/played?result=retry`, 303);
+  if (!(await quickTablesAccess(req, supabase)).allowed) return NextResponse.redirect(`${siteUrl}/played?result=closed`, 303);
   let token = "";
   const ct = req.headers.get("content-type") || "";
   if (ct.includes("form")) {

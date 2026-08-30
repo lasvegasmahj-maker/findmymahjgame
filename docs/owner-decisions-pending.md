@@ -34,13 +34,18 @@ closed-gate default already in place; nothing blocks engineering.
    Reconciliation guard now covers both tables and excludes founding-member
    entitlements. Revenue and paying-member counts verified unchanged at 0.
 
-8. The legacy "quick table" share-link feature (app/api/tables/create, claim,
-   find, played, run-it-back) predates the account and consent system and has no
-   launch gate; it is reachable by real traffic today, unlike gated Mahj Match.
-   The public find endpoint already filters to real_external rows. This appears
-   intentional (it is the existing "tables forming" feature, not algorithmic
-   matching), but confirm whether it should stay live at launch or move behind a
-   gate. No change made autonomously.
+8. RESOLVED 2026-08-29 (owner decision): the legacy quick-table routes (/api/tables/create,
+   find, claim, played, run-it-back) are gated behind the existing launch_player_matching gate
+   with the shared dark-launch rule (lib/tables-gate.ts). While the gate is OFF a real visitor
+   is refused before any read of the request or any write (403 "Game tables are not open yet."; the form posts land on the closed thanks page), and /play, /start,
+   /t/[code], and /played/confirm show a closed state instead of a form. Test traffic (a local
+   development host or a signed-in test-classified profile) keeps working, and whatever it
+   creates is classified test so it never surfaces to a real visitor or emails the founder (the
+   ask-played cron also only asks real tables, find lists only the requester's own class, and
+   claim refuses a table of another class). The homepage advertises no forming table and
+   the sitemap omits /start while the gate is OFF.
+   No second gate; matcher_enabled stays the separate switch for the automated matcher.
+   Pinned by tests/quick-tables-gate.spec.ts.
 
 9. RESOLVED 2026-08-29 (owner decision): the paid provider product is named
    Find My Mahj Premium, priced $89/year, customer-facing everywhere (site, Stripe

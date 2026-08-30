@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       <h2 style="color:#1a1f5e;">Thank you, ${firstName}!</h2>
       <p style="font-size:16px;line-height:1.7;">We received your application to become a <strong>Founding Ambassador</strong> for Find My Mahj Game. People like you are how real mahjong tables happen.</p>
       <p style="font-size:16px;line-height:1.7;">Here is what happens next: a real person will read your application and reach out to talk about how we can support you in building the mahjong community in your city.</p>
-      <p style="font-size:16px;line-height:1.7;">In the meantime, you can start a table or find a game any time at <a href="https://findmymahjgame.com" style="color:#e91e8c;font-weight:700;">findmymahjgame.com</a>.</p>
+      <p style="font-size:16px;line-height:1.7;">In the meantime, you can browse games, events, and teachers any time at <a href="https://findmymahjgame.com" style="color:#e91e8c;font-weight:700;">findmymahjgame.com</a>.</p>
       <p style="font-size:14px;color:#6b7280;line-height:1.6;">If you did not apply, you can safely ignore this email.</p>
     </div>`,
   }).catch(() => {});
