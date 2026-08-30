@@ -34,12 +34,15 @@ launch gates are OFF; nothing here is launched.
     published listing gets 409 (the route ignores any listing id in the request body)
     and the first provider's listing stays untouched; a canceled checkout returns
     safely with no entitlement change.
-  - Payment and webhook: the sandbox checkout shows Directory Membership at $89.00;
-    the app classifies the mirrored subscription as test at its first write; both
-    webhook events process; the correct listing moves to a 365-day paid entitlement
-    stamped with the subscription id and the other listing stays untouched; the
-    ledger deduplicates a redelivered event id (answers 200 with duplicate: true and
-    writes nothing); real revenue and paying providers stay 0 throughout.
+  - Payment and webhook: the sandbox checkout shows the Stripe product at $89.00
+    (named Directory Membership at the time; the owner renamed the product Find My
+    Mahj Premium on 2026-08-29, and the sandbox test product still needs that rename
+    in the Stripe dashboard); the app classifies the mirrored subscription as test at
+    its first write; both webhook events process; the correct listing moves to a
+    365-day paid entitlement stamped with the subscription id and the other listing
+    stays untouched; the ledger deduplicates a redelivered event id (answers 200 with
+    duplicate: true and writes nothing); real revenue and paying providers stay 0
+    throughout.
   - Expiry: an expired, unconverted trial keeps the listing published and owned,
     loses only the Premium inquiry (403), shows as Basic on the dashboard and as
     expired on admin, and a re-claim cannot restart it.
@@ -116,11 +119,11 @@ launch gates are OFF; nothing here is launched.
    stripe_subscription_id any row that reappears later.
 3. Owner decision, docs/owner-decisions-pending.md item 8: the legacy quick-table
    routes (/api/tables/*) are live for real traffic with no launch gate.
-4. Owner decision, docs/owner-decisions-pending.md item 9: the customer-facing
-   product name. The sandbox Stripe price is named Directory Membership (so the
-   checkout page, receipt, and card statement say that) while the site sells it as
-   Premium; four of the five policy drafts (all but the matching community standards)
-   also say Directory Membership. Settle one name before the live price is created.
+4. RESOLVED 2026-08-29: the customer-facing product name is Find My Mahj Premium
+   ($89/year). Policy drafts and current docs now use it. Two Stripe-side steps
+   remain for the owner: rename the sandbox test product (Product catalog, the
+   product named Directory Membership, Edit, Name) and, when live Stripe is created,
+   name the live product Find My Mahj Premium.
 
 ## Launch-day facts
 
@@ -156,3 +159,7 @@ launch gates are OFF; nothing here is launched.
   (four events, four 200s, four canceled test rows, no listing touched) and I removed
   the resulting QA rows. Residue 0; real revenue $0; real paying providers 0; gates
   OFF.
+- 2026-08-29 (later): owner decision recorded: the paid product is Find My Mahj
+  Premium, $89/year. Policy drafts, runbook, checklist, and decisions log normalized
+  to the name; 18 owner policy decisions untouched. No user-facing code carried the
+  old name; one code comment updated; no deploy needed.

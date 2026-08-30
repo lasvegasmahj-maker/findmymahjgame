@@ -76,7 +76,9 @@ What remains for real money:
 ## Step 2: Create the $89 per year membership price
 
 1. In the Stripe dashboard, go to Product catalog, then click "Add product"
-2. Name: Directory Membership in the sandbox. Before the live price, settle the name customers will see (the site says Premium; see docs/owner-decisions-pending.md item 9)
+2. Name: Find My Mahj Premium (owner decision 2026-08-29). The sandbox product created
+   earlier is still named Directory Membership; rename it in Product catalog before the
+   live-mode run. The live product must be created as Find My Mahj Premium.
 3. Price: 89.00 USD, Recurring, Yearly. Create only this one price. Do not create a monthly price; monthly pricing is a post-launch decision that depends on real provider feedback.
 4. Save, then click the price you just made and copy its ID. It looks like
    `price_1AbCdEfGh...`. You will paste this into Vercel in Step 4.
@@ -156,7 +158,8 @@ webhook secret), then repeat once with Live mode keys.
 - [ ] In Stripe, Developers, Webhooks: the endpoint shows recent deliveries with
       response 200
 - [ ] In Supabase: billing_subscriptions has one new row with status `active`
-- [ ] Confirm checkout shows the plain $89/year total with no promotion code field
+- [ ] Confirm checkout shows the product name Find My Mahj Premium and the plain
+      $89/year total with no promotion code field
 Note (2026-08-23): the checkout entry point is built. It is the signed-in provider dashboard's Membership section; the server derives the payer's email from their auth account and binds the subscription to their own claimed, published teacher listing. Nothing client-sent can point it elsewhere, checkout refuses (with a log line) when the owned listing is missing or ambiguous rather than take money that grants nothing, and the button appears only once the Stripe env vars are set.
 
 - [ ] At activation, confirm in Stripe TEST MODE with a QA test account (test accounts pass the payments gate while it is OFF): claim a listing, choose Premium from the dashboard, complete test checkout, and verify the webhook stamps premium_until = the paid period end on that listing and billing_subscriptions shows the active subscription. The admin Data quality panel flags any active subscription not linked to a listing

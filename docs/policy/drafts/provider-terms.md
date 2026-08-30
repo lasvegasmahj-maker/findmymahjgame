@@ -49,10 +49,9 @@ go through a short review, the same review every new listing gets, to keep the d
 accurate. [OWNER TO CONFIRM: which specific fields are instant versus reviewed; this is a
 product decision, not one this document can state on its own].
 
-## Directory Membership and paid features
+## Find My Mahj Premium and paid features
 
-Being listed, claiming your listing, and appearing in search are always free. Paid Directory
-Membership adds visibility features on top of your free listing (a verified badge, featured
+Being listed, claiming your listing, and appearing in search are always free. Find My Mahj Premium adds visibility features on top of your free listing (a verified badge, featured
 placement, and similar). Money never buys the right to exist in the directory or determines
 whether your listing is accurate; it only buys promotion. Full pricing, renewal, and cancellation
 terms are in `docs/policy/drafts/billing-disclosures.md`.
@@ -93,7 +92,7 @@ We may remove a listing and end a provider relationship if these terms are viola
 is found to be inaccurate or inappropriate, or if we determine in good faith that the listing is
 not a fit for the platform. If you have paid for a membership and we remove your listing without
 cause on your part, [OWNER TO CONFIRM: refund policy for this scenario, since the general
-Directory Membership billing terms in `docs/policy/drafts/billing-disclosures.md` describe
+Find My Mahj Premium billing terms in `docs/policy/drafts/billing-disclosures.md` describe
 voluntary cancellation, not removal by us].
 
 ## Limitation of liability

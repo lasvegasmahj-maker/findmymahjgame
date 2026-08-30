@@ -50,3 +50,9 @@ Provider Premium launches with ONE paid option: $89/year. No monthly Stripe pric
 
 Monthly pricing is POST-LAUNCH and DATA-DEPENDENT. Revisit only if meaningful provider feedback shows that annual payment is a conversion barrier. Initial hypothesis if that happens: approximately $9.99/month, with $89/year retained as the better-value annual option. Nothing is implemented for this now; do not add a monthly price, a second price env var, or plan-selection UI under the build freeze.
 
+## Addendum 2026-08-29: product name
+
+Owner decision: the paid provider product is named Find My Mahj Premium ($89/year).
+"Directory Membership" is retired as a customer-facing name; where it appears above
+it describes copy that existed at the time and is historical. Everything else in
+the approved model is unchanged.

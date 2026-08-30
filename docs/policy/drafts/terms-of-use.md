@@ -51,7 +51,7 @@ that works.
 ## Provider listings: teachers, organizers, and businesses
 
 Teachers, organizers, and businesses can create a free listing. Some features (visibility,
-badges, and other promotion) are part of paid Directory Membership; see
+badges, and other promotion) are part of Find My Mahj Premium, the paid provider tier; see
 our Billing Disclosures at [OWNER TO CONFIRM final URL] and our Provider Terms at [OWNER TO CONFIRM final URL] for how
 claiming a listing, ownership, and membership work. Being listed is always free. Money never
 buys the right to exist in the directory, only visibility and promotion on top of it.

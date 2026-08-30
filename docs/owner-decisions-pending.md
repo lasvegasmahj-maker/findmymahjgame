@@ -42,8 +42,14 @@ closed-gate default already in place; nothing blocks engineering.
    matching), but confirm whether it should stay live at launch or move behind a
    gate. No change made autonomously.
 
-9. Customer-facing product name (2026-08-29). The sandbox Stripe price is named
-   Directory Membership, which is what the Stripe checkout page, receipt, and card
-   statement show, while the site sells it as Premium ("Choose Premium: $89/year")
-   and the policy drafts say Directory Membership. Pick one name for every surface
-   before creating the live price; suggestion: Find My Mahj Game Premium.
+9. RESOLVED 2026-08-29 (owner decision): the paid provider product is named
+   Find My Mahj Premium, priced $89/year, customer-facing everywhere (site, Stripe
+   product, receipts, policy documents). "Directory Membership" is retired as a
+   customer-facing name; it survives only in dated historical records. Structure
+   unchanged: Provider Basic free forever; Find My Mahj Premium $89/year, annual
+   only at launch. Rules unchanged: players free forever; Premium buys no organic
+   placement, no Ask ranking, no territory or exclusivity; payment is separate from
+   verification; the qualifying founding trial is 90 days from claim, no card; after
+   it, providers choose Premium or revert to Basic. Remaining step: rename the
+   sandbox Stripe test product (owner, Stripe dashboard) and create the future live
+   product as Find My Mahj Premium.

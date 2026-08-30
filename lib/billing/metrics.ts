@@ -28,7 +28,7 @@ const ZERO: Omit<RevenueMetrics, "configured"> = {
 };
 
 // Amounts in cents keyed by Stripe price id. The only approved price is the $89/year
-// directory membership (8900 cents); its Stripe price id arrives via env so the map can
+// Find My Mahj Premium (8900 cents); its Stripe price id arrives via env so the map can
 // be built without hardcoding an account-specific id in the repo. Unknown price ids
 // count as zero rather than guessing.
 function priceAmounts(): Record<string, number> {

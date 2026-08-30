@@ -50,7 +50,7 @@ our system automatically strips those out before anything is stored. Any text va
 is capped at a short length so it cannot carry identifying detail. We also collect standard
 server logs (IP address, browser type, pages visited) to keep the site running and secure.
 
-**Payments:** if you pay for a Directory Membership, payment is handled entirely by Stripe, our
+**Payments:** if you pay for Find My Mahj Premium, payment is handled entirely by Stripe, our
 payment processor. We never see or store your card number. We keep only a record that a payment
 happened, its status, and a Stripe reference ID, so we can show you your membership status and
 keep your listing's benefits current.

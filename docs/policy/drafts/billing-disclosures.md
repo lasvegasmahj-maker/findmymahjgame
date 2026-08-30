@@ -1,4 +1,4 @@
-# Directory Membership: Billing Disclosures
+# Find My Mahj Premium: Billing Disclosures
 
 **DRAFT FOR OWNER REVIEW, NOT YET IN EFFECT.** This is a working draft for Shauna and counsel to
 review and edit. No billing disclosure document exists anywhere on the site today; pricing
@@ -29,7 +29,7 @@ decide. Do not publish this document with any bracket still open.
 
 ## Who pays, and who does not
 
-Directory Membership is for teachers, organizers, and businesses. Players browsing, searching,
+Find My Mahj Premium is for teachers, organizers, and businesses. Players browsing, searching,
 creating a player listing, or using Mahj Match never pay anything.
 
 ## What Premium costs
@@ -86,7 +86,7 @@ records and Stripe's ever disagree, Stripe's record is always the correct one.
 
 [OWNER TO CONFIRM: refund policy for the $89/year Premium membership. The former advertiser
 pricing model had a 30-day prorated refund window for annual plans; whether that carries forward
-to Directory Membership, and whether it is the same policy as the separate advertiser/sponsor
+to Find My Mahj Premium, and whether it is the same policy as the separate advertiser/sponsor
 track described in Advertiser Terms, needs a decision.]
 
 ## Founding Advisor and Charter Member pricing

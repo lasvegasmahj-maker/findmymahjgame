@@ -10,9 +10,11 @@ What: the sandbox account, $89/year price, webhook, and env vars are in place, a
 
 Before anything (Stripe Test mode): DONE 2026-08-29. You canceled all four QA subscriptions in the connected sandbox (named FindMyMahj sandbox; the sibling sandbox named Las Vegas Mahjong is not the connected one) and I verified the cancellation path end to end.
 
+Rename the sandbox test product (2 minutes, no money involved): in Stripe, sandbox "FindMyMahj sandbox", open Product catalog (https://dashboard.stripe.com/test/products), click the product named Directory Membership, click Edit product, set Name to Find My Mahj Premium, save. The price id does not change. Tell me and I confirm the checkout page shows the new name.
+
 Live keys:
 1. Turn on the Live toggle at the top of https://dashboard.stripe.com
-2. Create the $89/year price again in Live mode (runbook Step 2). First decide the product name customers will see on the checkout page, receipt, and card statement; the sandbox price says Directory Membership while the site says Premium (owner-decisions item 9; suggestion: Find My Mahj Game Premium)
+2. Create the $89/year price again in Live mode (runbook Step 2) with the product name exactly: Find My Mahj Premium
 3. Create the webhook endpoint again in Live mode (runbook Step 5)
 4. Paste the three live values into Vercel Production: STRIPE_SECRET_KEY (from https://dashboard.stripe.com/apikeys), STRIPE_PRICE_MEMBERSHIP_ANNUAL (the live price id), STRIPE_WEBHOOK_SECRET (the live webhook signing secret). STRIPE_PUBLISHABLE_KEY is not read by the app today; leave it or update it for completeness
 5. Tell me. I redeploy and run the runbook Step 8 checklist in live mode through a QA account, which charges your real card $89.00 once
