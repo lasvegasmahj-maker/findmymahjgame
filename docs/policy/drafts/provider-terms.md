@@ -51,18 +51,25 @@ product decision, not one this document can state on its own].
 
 ## Find My Mahj Premium and paid features
 
-Being listed, claiming your listing, and appearing in search are always free. Find My Mahj Premium adds visibility features on top of your free listing (a verified badge, featured
-placement, and similar). Money never buys the right to exist in the directory or determines
-whether your listing is accurate; it only buys promotion. Full pricing, renewal, and cancellation
-terms are in `docs/policy/drafts/billing-disclosures.md`.
+Being listed, claiming your listing, and appearing in search are always free, and Basic and
+Premium listings get the same neutral placement in search, browse, and Ask Find My Mahj. Find My
+Mahj Premium ($89 per year) adds business tools on top of your free listing: structured lesson
+requests from players delivered straight to you (on teacher listings), and the Premium Provider
+badge. You cannot buy Charter Member or Founding Advisor recognition; they layer on top of Premium
+(locked-in pricing, and for Founding Advisors a free period) and are not products of their own.
+See Status badges below. Money never buys the right to exist in the directory, verification of
+your listing, higher placement or ranking, or any territory or exclusivity; verification comes
+only from the claim process, and payment is separate from it. Full pricing, renewal, and
+cancellation terms are in `docs/policy/drafts/billing-disclosures.md`.
 
 ## Status badges
 
 Some badges on your profile are earned, not purchased: a Charter Member badge recognizes early
-supporters who joined during launch and kept an active profile. A Verified badge is granted by a
-person on our team after a basic check that you are a real teacher, organizer, or business, not
-something you can buy directly. A Founding Advisor badge is by invitation only. Badges can stack
-on one profile.
+supporters who joined during launch and kept an active profile. You earn a Verified badge through
+the claim process: we grant it automatically when the evidence is clear, otherwise a person on our
+team reviews it. You cannot buy it. A Founding Advisor badge is by invitation only. Only the
+Premium Provider badge depends on Premium membership (paid, or during the complimentary trial).
+Badges can stack on one profile.
 
 ## Accuracy and your responsibilities
 
@@ -97,9 +104,10 @@ voluntary cancellation, not removal by us].
 
 ## Limitation of liability
 
-Find My Mahj Game does not guarantee any specific number of views, clicks, or inquiries from
-your listing. We are a directory and matching platform; membership fees pay for visibility and
-promotion, not for a guaranteed outcome.
+Find My Mahj Game does not guarantee any specific number of views, clicks, or inquiries from your
+listing. We are a directory and matching platform; membership fees pay for business tools (lesson
+requests on teacher listings, and the Premium Provider badge), never for placement, and never for
+a guaranteed outcome.
 
 ## Changes to these terms
 
