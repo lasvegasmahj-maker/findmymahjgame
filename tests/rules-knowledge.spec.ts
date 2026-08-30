@@ -43,10 +43,12 @@ test.describe("knowledge base fact checks", () => {
         expect(e.provenance.evidence, e.id).not.toBe("verified");
       }
       if (e.source === "research_verified") expect(e.provenance.evidence, e.id).toBe("owner_review_pending");
+      // An open owner question always says so; a research entry may defer one contested
+      // point the same way while stating the settled rest.
       if (e.source === "owner_question") {
         expect(e.provenance.evidence, e.id).toBe("owner_question_pending");
         expect(e.approved_answer, e.id).toMatch(/instructor is confirming/);
-      } else {
+      } else if (e.source === "owner_approved") {
         expect(e.approved_answer, e.id).not.toMatch(/instructor is confirming/);
       }
       // Provenance is metadata only: titles and article numbers, never source prose.

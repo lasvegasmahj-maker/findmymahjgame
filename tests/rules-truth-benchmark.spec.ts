@@ -138,6 +138,8 @@ const CASES: Case[] = [
   R("list the categories on the current card"),
   R("what do the hands on this year's card mean"),
   R("explain what the hands on the 2026 card mean"),
+  R("what does the first hand on the card mean"),
+  R("what does the 2026 card hand mean"),
   // Players, tournaments, house, strategy, sources
   A("can three people play", "players-count"),
   A("how do you play with 3", "players-count"),

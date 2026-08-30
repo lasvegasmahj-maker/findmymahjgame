@@ -102,6 +102,13 @@ test.describe("multi-turn resolution", () => {
     expect(r.needs_clarification).toMatch(/You can answer with "Yes, American mahjong" or "No, another style"\.$/);
   });
 
+  test("a negation inside a topic reply keeps the named topic", () => {
+    const q = "What happens if my elbow knocks over the rack?";
+    expect(lookupRule({ question: "no, jokers", clarify: { id: "topic", question: q } }).entry_id).toBe("jokers-basics");
+    expect(lookupRule({ question: "I don't know, jokers", clarify: { id: "topic", question: q } }).entry_id).toBe("jokers-basics");
+    expect(lookupRule({ question: "what is a joker?", clarify: { id: "call-purpose", question: CALL } }).entry_id).toBe("jokers-basics");
+  });
+
   test("a negated reply never resolves to the option it refuses", () => {
     expect(lookupRule({ question: "no, not concealed", clarify: { id: "hand-type", question: "Can I call for a pung with my hand?" } }).entry_id).not.toBe("closed-hand-final-tile");
     expect(lookupRule({ question: "not for an exposure", clarify: { id: "call-purpose", question: CALL } }).entry_id).not.toBe("calling-for-exposure");

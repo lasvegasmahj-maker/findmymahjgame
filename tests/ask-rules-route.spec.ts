@@ -101,7 +101,7 @@ test.describe("Ask route: rules clarification turns", () => {
     expect(first.answer).not.toMatch(/cannot verify/i);
     const again = await ask(request, "???", { id: "topic", question: q });
     expect(again.rules.clarify.id).toBe("topic");
-    expect(again.answer).toMatch(/^I want to get this right\. Which part of the game is your question about\? You can answer with "/);
+    expect(again.answer).toMatch(/^I want to get this right\. Which part of the game is your question about\? Pick one of the choices below, or type it\./);
   });
 
   test("a mixed directory-plus-rules question never ships a clarification for the client to act on", async ({ request }) => {
