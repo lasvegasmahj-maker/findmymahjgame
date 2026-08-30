@@ -29,6 +29,7 @@ const RULESET = "american_nmjl" as const;
 const SOURCE = "owner_approved" as const;
 const VERIFIED = "2026-08-22" as const;
 const VERIFIED_REVIEW = "2026-08-26" as const;
+const VERIFIED_WORDING = "2026-08-29" as const;
 
 // Concept matchers describe ideas, not phrasings, so word order, punctuation, and
 // paraphrase all resolve to the same concept.
@@ -325,7 +326,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     house_note:
       "The card closes the calling window once the player next in turn has picked and racked, or discarded; some tables police that moment loosely, so confirm your table follows the card.",
     source: SOURCE,
-    last_verified: VERIFIED,
+    last_verified: VERIFIED_WORDING,
     confidence: "high",
   },
   {
@@ -439,7 +440,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     varies_by_house: true,
     house_note: "Courtesies differ from table to table by design.",
     source: SOURCE,
-    last_verified: VERIFIED,
+    last_verified: VERIFIED_WORDING,
     confidence: "high",
   },
   {
