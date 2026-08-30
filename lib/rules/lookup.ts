@@ -190,8 +190,6 @@ function handleReply(ctx: ClarifyContext, reply: string): RulesLookupResult {
       };
     }
   }
-  // The reply matched no option. A full new question moves on; anything else gets the
-  // same clarification once more with the choices spelled out.
   const fixed = spellfix(normalizeQuestion(reply));
   if (fixed.length >= 20 && retrieve(fixed)) return lookupRule({ question: reply });
   const c = resolved.clarification;

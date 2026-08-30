@@ -1003,7 +1003,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [PAYMENT],
     blocks: [ERROR_CUE, MISNAMED, DEAD, TOURNAMENT],
     approved_answer:
-      "Every hand on the card shows its value. When you win on another player's discard, that player pays you double the value and the other two pay the value. When you draw the winning tile yourself, all three players pay double. A hand that could have used jokers but has none is worth double, and both doubles can apply to the same hand. A wall game pays nothing.",
+      "Every hand on the card shows its value. When you win on another player's discard, that player pays you double the value and the other two pay the value. When you draw the winning tile yourself, all three players pay double. A hand that could have used jokers but has none is worth double, and both doubles can apply to the same hand. By League rule a wall game pays nothing; some tables settle it by their own custom, so agree on that before the first hand.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note:
@@ -1139,7 +1139,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [OFFICIAL],
     blocks: [CARD_WORD, TOURNAMENT],
     approved_answer:
-      "American mahjong's official rules come from the National Mah Jongg League: the card it publishes every spring and its rulebook, Mah Jongg Made Easy, along with the rulings in its bulletins. Find My Mahj answers only from those rules; our instructor reviews every answer we add, and we say so whenever something is a table courtesy or a house rule instead of a League rule.",
+      "American mahjong's official rules come from the National Mah Jongg League: the card it publishes every spring and its rulebook, Mah Jongg Made Easy, along with the rulings in its bulletins. Find My Mahj answers only from those rules; our instructor is reviewing every answer we add, and when a ruling is still being confirmed the answer says so. We also say so whenever something is a table courtesy or a house rule instead of a League rule.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",

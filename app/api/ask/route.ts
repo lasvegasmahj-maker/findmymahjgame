@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { extractIntent, rephraseApprovedAnswer } from "@/lib/ask-llm";
 import { parseAskIntent, detectAskTopic } from "@/lib/ask-intent";
 import { normalizeQuestion, lookupRule, summarizeRulesGap, type RulesLookupResult } from "@/lib/rules/lookup";
-import { isExactOption } from "@/lib/rules/clarify";
+import { answersOption } from "@/lib/rules/clarify";
 import { lazyServerClient } from "@/lib/supabase-server";
 import { searchEventsWithRelaxation, searchVenues, describeRelaxations } from "@/lib/search";
 import { resolveLocation } from "@/lib/resolve-location";
@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
       : null;
   // A player who changes their mind mid-clarification and types a directory question gets
   // the search, not a forced rules reply. A clicked option label is never a new question.
-  if (clarify && !isExactOption(clarify, question) && looksLikeDirectorySearch(question) && detectAskTopic(question) === "directory") {
+  if (clarify && !answersOption(clarify, question) && looksLikeDirectorySearch(question) && detectAskTopic(question) === "directory") {
     clarify = null;
   }
   const recordClass = await resolveAskRecordClass(req);

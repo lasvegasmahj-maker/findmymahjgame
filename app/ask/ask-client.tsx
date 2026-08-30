@@ -45,8 +45,6 @@ export default function AskClient() {
   const [busy, setBusy] = useState(false);
   const [resp, setResp] = useState<AskResponse | null>(null);
 
-  // A pending clarification travels back with the next reply (typed or clicked), so a
-  // rules question that needed one more fact resolves on the second turn.
   async function ask(question: string, clarify: Clarify | null = null) {
     const query = question.trim();
     if (!query || busy) return;
@@ -127,7 +125,7 @@ export default function AskClient() {
                   disabled={busy}
                   onClick={() => ask(o.label, pending)}
                   className="btn-cta-outline"
-                  style={{ minHeight: 44, borderRadius: 50, fontSize: "0.95rem" }}
+                  style={{ minHeight: 44, borderRadius: 50, fontSize: "0.95rem", padding: "0.5rem 1.1rem" }}
                 >
                   {o.label}
                 </button>

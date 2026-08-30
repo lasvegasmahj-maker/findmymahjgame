@@ -55,7 +55,7 @@ const HAND_TYPE_LETTER = /\b[CX]\b/i;
 const PURPOSE_CUE = new RegExp(`${MAHJONG_CUE.source}|${EXPOSURE_CUE.source}|\\bpairs?\\b|\\bsingles?\\b`, "i");
 const OTHER_SPECIFIC = /\b(own discard|call back|take back|both|two (players|people|of us)|same (tile|discard)|hold|wait|blind|charleston|courtesy|wall|dead|error|mistake|wrong|misnam)\b/i;
 
-export function stripTournament(q: string): string {
+function stripTournament(q: string): string {
   return q.replace(TOURNAMENT_PHRASE, " ").replace(/\s+/g, " ").replace(/\s([,.?!])/g, "$1").trim();
 }
 
@@ -167,8 +167,8 @@ export const TOPIC_GROUPS: Array<{ key: string; label: string; match: RegExp; en
   { key: "dead", label: "Dead hands and mistakes", match: /\b(dead|mistake|error|wrong)\b/i, entry: "dead-hand" },
 ];
 
-export const SOMETHING_ELSE_KEY = "other";
-export const SOMETHING_ELSE_LABEL = "Something else";
+const SOMETHING_ELSE_KEY = "other";
+const SOMETHING_ELSE_LABEL = "Something else";
 export const GAP_ANSWER =
   "Thanks, that one is not in our verified American mahjong rules yet, so I will not guess at it. We have logged the topic for our instructor to research and add. Until then, the National Mah Jongg League's rulebook and card settle it, and your table should follow the League rule rather than a table custom.";
 
@@ -232,11 +232,11 @@ function escapeRe(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-// A clicked option arrives as its label; it is never a new question.
-export function isExactOption(ctx: ClarifyContext, reply: string): boolean {
-  const c = ctx.id === "topic" ? topicClarification(ctx.question) : CLARIFICATIONS.find((x) => x.id === ctx.id);
-  const t = reply.trim().toLowerCase();
-  return !!c && c.options.some((o) => o.label.toLowerCase() === t || o.key.toLowerCase() === t);
+// "in a tournament" answers the tournament clarification even though a search parser would
+// read it as a place, so the route must ask the engine before treating a reply as a search.
+export function answersOption(ctx: ClarifyContext, reply: string): boolean {
+  const r = resolveReply(ctx, reply);
+  return !!r && "option" in r;
 }
 
 export function toPayload(c: Clarification, question: string): ClarifyPayload {

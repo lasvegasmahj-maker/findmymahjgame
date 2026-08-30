@@ -56,6 +56,8 @@ test.describe("Ask route: rules clarification turns", () => {
     expect(first.rules.clarify.id).toBe("tournament");
     const std = await ask(request, "Standard League play", { id: "tournament", question: q });
     expect(std.rules.entry_id).toBe("charleston-blind-pass");
+    const typed = await ask(request, "in a tournament", { id: "tournament", question: q });
+    expect(typed.rules.entry_id).toBe("tournament-rules");
   });
 
   test("an unmatched rules question offers topics; a reply that matches none re-asks", async ({ request }) => {

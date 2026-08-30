@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { lookupRule } from "../lib/rules/lookup";
-import { GAP_ANSWER, CLARIFICATIONS, topicClarification, isExactOption } from "../lib/rules/clarify";
+import { GAP_ANSWER, CLARIFICATIONS, topicClarification, answersOption } from "../lib/rules/clarify";
 import { RULES_KNOWLEDGE } from "../lib/rules/knowledge";
 import { detectAskTopic } from "../lib/ask-intent";
 
@@ -148,14 +148,15 @@ test.describe("multi-turn resolution", () => {
     expect(other.unsupported_reason).toBe("rules_gap");
   });
 
-  test("option labels are recognized exactly, including topic labels rebuilt from the question", () => {
-    expect(isExactOption({ id: "call-purpose", question: CALL }, "It would complete mahjong")).toBe(true);
-    expect(isExactOption({ id: "call-purpose", question: CALL }, "mahjong")).toBe(true);
-    expect(isExactOption({ id: "call-purpose", question: CALL }, "mahjong teacher near Naples FL")).toBe(false);
+  test("a reply that answers an option is recognized, a search typed instead is not", () => {
+    expect(answersOption({ id: "call-purpose", question: CALL }, "It would complete mahjong")).toBe(true);
+    expect(answersOption({ id: "call-purpose", question: CALL }, "mahjong")).toBe(true);
+    expect(answersOption({ id: "tournament", question: "Can I blind pass in a tournament?" }, "in a tournament")).toBe(true);
+    expect(answersOption({ id: "call-purpose", question: CALL }, "mahjong teacher near Naples FL")).toBe(false);
     const q = "What happens if my elbow knocks over the rack?";
     const first = lookupRule({ question: q });
-    expect(isExactOption({ id: "topic", question: q }, first.clarify!.options[0].label)).toBe(true);
-    expect(isExactOption({ id: "topic", question: q }, "Something else")).toBe(true);
+    expect(answersOption({ id: "topic", question: q }, first.clarify!.options[0].label)).toBe(true);
+    expect(answersOption({ id: "topic", question: q }, "Something else")).toBe(true);
   });
 
   test("an unknown clarification id falls back to answering the reply as a question", () => {

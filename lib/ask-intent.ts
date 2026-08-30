@@ -173,7 +173,6 @@ const RULES_SIGNAL_RES: RegExp[] = [
   /\b(first|second|last) (left|right|across)\b/i,
   /\b(call|claim)\b.{0,25}\bfor (mahjong|maj|mah ?jong+)\b|\bany tile\b/i,
   /\bwhat (she|he|they|someone) (just )?(threw|discarded|put down|tossed)\b|\bpick up\b.{0,20}\b(discard|tile|what)\b/i,
-
   /\b(skip|stop|decline|refuse|refuses|end)\b.{0,30}\b(passing|charleston|passes)\b|\bround of passing\b/i,
   ...RULES_TOPIC_SIGNALS,
   /\b(exchange|redeem|swap|trade)\b.{0,30}\bjokers?\b/i,
