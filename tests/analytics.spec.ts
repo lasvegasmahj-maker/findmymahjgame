@@ -194,8 +194,19 @@ test.describe("admin analytics", () => {
     test.skip(!supabase, "Supabase service credentials not available in this environment");
     test.skip(!ADMIN_PASSWORD, "ADMIN_PASSWORD not available in this environment");
 
-    // PostgREST caps a single select at 1,000 rows. Insert more than one page of
-    // test-classified events and require the rollup to count all of them.
+    // Inserting and paging 1,250 rows against production takes longer than the
+    // default budget, and a timeout restarts the worker and skips cleanup.
+    test.setTimeout(90_000);
+    // Sweep what an aborted earlier run left behind, but only rows old enough that
+    // they cannot belong to a sibling project running this test right now.
+    await supabase!
+      .from("analytics_events")
+      .delete()
+      .eq("record_class", "test")
+      .like("session_key", "analytics-page-%")
+      .lt("created_at", new Date(Date.now() - 10 * 60 * 1000).toISOString());
+
+    // PostgREST caps a single select at 1,000 rows without an error.
     const prefix = `analytics-page-${crypto.randomUUID()}`;
     const total = 1250;
     const toInsert = Array.from({ length: total }, (_, i) => ({
@@ -204,13 +215,14 @@ test.describe("admin analytics", () => {
       session_key: `${prefix}-${i}`,
       record_class: "test",
     }));
-    for (let i = 0; i < toInsert.length; i += 500) {
-      const { error } = await supabase!.from("analytics_events").insert(toInsert.slice(i, i + 500));
-      expect(error).toBeFalsy();
-    }
 
     const admin = await pwRequest.newContext({ baseURL: baseURL || "http://localhost:3000" });
     try {
+      for (let i = 0; i < toInsert.length; i += 500) {
+        const { error } = await supabase!.from("analytics_events").insert(toInsert.slice(i, i + 500));
+        expect(error).toBeFalsy();
+      }
+
       const login = await admin.post("/api/admin/login", { data: { password: ADMIN_PASSWORD } });
       expect(login.ok()).toBeTruthy();
 
@@ -222,8 +234,15 @@ test.describe("admin analytics", () => {
       expect(body.windows["30d"].test.eventCounts.zero_result_search).toBeGreaterThanOrEqual(total);
       expect(body.dataHealth.windowTruncated).toBe(false);
     } finally {
-      await supabase!.from("analytics_events").delete().like("session_key", `${prefix}-%`);
+      const { error: cleanupErr } = await supabase!.from("analytics_events").delete().eq("record_class", "test").like("session_key", `${prefix}-%`);
+      expect(cleanupErr).toBeFalsy();
       await admin.dispose();
     }
+    const { count, error: countErr } = await supabase!
+      .from("analytics_events")
+      .select("id", { count: "exact", head: true })
+      .like("session_key", `${prefix}-%`);
+    expect(countErr).toBeFalsy();
+    expect(count ?? 0).toBe(0);
   });
 });

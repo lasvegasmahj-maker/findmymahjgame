@@ -10,13 +10,25 @@ There is no promo code. The complimentary period is the app-managed 90-day Premi
 Players never pay anything, ever. Stripe (the payment company) holds the real financial
 records; our database only keeps a copy for the admin dashboard.
 
-Status 2026-08-29: Steps 1 through 6 are DONE in Stripe sandbox mode and the Step 8 test-mode checklist passed on production with a QA account, except the cancel step: no sandbox subscription has been cancelled yet, so the customer.subscription.deleted path is unexercised. The owner cancels the leftover QA sandbox subscriptions in the Stripe dashboard (Test mode, Subscriptions, cancel immediately) before the live-mode run; Claude then confirms the mirrored rows show status canceled and removes them. Terms used here:
-test-classified means marked as a QA account so it never counts as revenue;
-entitlement means the Premium date on a listing; dedupe means the webhook ignores an
-event it already processed; residue means leftover QA rows that the admin
-data-quality panel counts; the dark-launch rule means QA accounts may use features
-that are still switched off for everyone else; real_external means counted as a real,
-paying provider.
+## Status 2026-08-29
+
+Done in sandbox: Steps 1 through 6, and every Step 8 checklist item except the
+cancel item, in test mode on production with a QA account.
+
+Not yet exercised: the cancel event (customer.subscription.deleted). Nobody has canceled a sandbox subscription yet, and no automated test covers that
+event.
+
+Owner step before live mode: in Stripe Test mode, open Subscriptions and cancel each
+leftover QA subscription immediately. I then confirm the mirrored rows show status
+canceled and remove them.
+
+Terms used here:
+- test-classified: marked as a QA account so it never counts as revenue
+- entitlement: the Premium date on a listing
+- dedupe: the webhook ignores an event it already processed
+- Data quality panel: the /admin section that lists leftover QA rows and other issues
+- dark-launch rule: QA accounts may use features still switched off for everyone else
+- real_external: counted as a real, paying provider
 
 What remains for real money:
 
@@ -32,24 +44,24 @@ What remains for real money:
       Premium stays 0 and Verified paying customers stays 0 throughout because the QA
       payer is test-classified, and the Revenue and MRR card reads Not live yet while
       the gate is OFF. Those zeros are the correct result, not a failure.
-   c. Refund the $89.00 charge AND cancel the subscription immediately (not at
-      period end) in the Stripe dashboard.
+   c. Owner: at https://dashboard.stripe.com/subscriptions (Live mode) open the
+      subscription, Cancel subscription, cancel immediately (not at period end);
+      then Payments, open the $89.00 charge, Refund.
    d. Confirm billing_subscriptions shows status canceled via the
       customer.subscription.deleted event. The refund itself never appears in
       billing_events because the webhook is not subscribed to refund events.
    e. Leave the QA account, its listing, and its billing rows in place for 3 days.
       Stripe retries late deliveries for up to 3 days. A redelivered event dedupes
-      (200, duplicate: true) as long as its billing_events ledger row still exists; a
-      late event with a new id, or a redelivery after the ledger rows were deleted,
-      is classified again, and if the QA listing and owner are already gone it
-      classifies real_external and admin would show a phantom paying provider.
+      (200, duplicate: true) while its billing_events row still exists. A late event
+      with a new id, or a redelivery after we deleted the ledger rows, gets
+      classified again. If the QA listing and owner are already gone, the webhook
+      classifies it real_external and admin shows a phantom paying provider.
    f. After 3 days, remove the QA account, its listing, and its billing rows (delete
       the billing_events rows last, or keep them), the same cleanup as the sandbox
-      run, and confirm the admin data-quality residue is 0, Paid Premium is 0, and
-      Verified paying customers is 0. If a row for that subscription ever reappears
+      run, and confirm the Data quality panel on /admin lists no issues, Paid Premium reads 0, and Verified paying customers reads 0. If a row for that subscription ever reappears
       after cleanup, delete it from billing_subscriptions by stripe_subscription_id
-      and confirm those tiles return to 0.
-5. Step 7 when launch is authorized.
+      and confirm those counts return to 0.
+5. Flip Step 7 once the owner authorizes launch.
 
 ## Step 1: Create the Stripe account
 
@@ -63,7 +75,7 @@ What remains for real money:
 ## Step 2: Create the $89 per year membership price
 
 1. In the Stripe dashboard, go to Product catalog, then click "Add product"
-2. Name: Directory Membership
+2. Name: Directory Membership in the sandbox. Before the live price, settle the name customers will see (the site says Premium; see docs/owner-decisions-pending.md item 9)
 3. Price: 89.00 USD, Recurring, Yearly. Create only this one price. Do not create a monthly price; monthly pricing is a post-launch decision that depends on real provider feedback.
 4. Save, then click the price you just made and copy its ID. It looks like
    `price_1AbCdEfGh...`. You will paste this into Vercel in Step 4.
@@ -104,7 +116,7 @@ This is how our database stays in sync with Stripe automatically.
 
 ## Step 6: Run the database migration
 
-DONE 2026-08-24: all three billing migrations are applied to production:
+DONE 2026-08-24: I applied all three billing migrations to production:
 `supabase/migrations/2026-08-23-billing.sql`,
 `supabase/migrations/2026-08-24-billing-classification-backfill.sql`, and
 `supabase/migrations/2026-08-24-premium-entitlement.sql`.
@@ -157,7 +169,7 @@ Note (2026-08-23): the checkout entry point is built. It is the signed-in provid
 - [ ] Remove the QA account, its listing, and its billing rows (in live mode only
       after the 3-day wait in Status item 4e; the webhook never rolls premium_until
       back on cancel, so the QA listing would otherwise keep a paid date) and confirm
-      the admin data-quality residue is 0
+      the Data quality panel on /admin lists no issues
 
 When the live-mode run of this checklist passes, payments are ready. They launch only
 at Step 7, when the owner authorizes.

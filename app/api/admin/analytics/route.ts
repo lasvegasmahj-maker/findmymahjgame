@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAdminSessionToken, ADMIN_COOKIE } from "@/lib/admin-auth";
 import { lazyServerClient } from "@/lib/supabase-server";
+import { rateLimit } from "@/lib/rate-limit";
 
 // Read-only rollup of the first-party event stream, real traffic and test traffic kept
 // apart the whole way through. Every number here is a live count from analytics_events;
 // nothing is estimated or extrapolated. A funnel step that nothing has emitted yet reads
 // as zero, honestly, rather than being hidden or guessed at.
 
+export const maxDuration = 60;
+
 const supabase = lazyServerClient();
 
-type EventRow = { name: string; record_class: string; created_at: string };
+type EventRow = { id: string; name: string; record_class: string; created_at: string };
 type EventCounts = Record<string, number>;
 
 type WindowReport = {
@@ -52,37 +55,56 @@ function buildReport(rows: EventRow[], sinceIso: string, recordClass: string): W
   return { eventCounts, askIntent, funnels };
 }
 
-// PostgREST returns at most 1,000 rows per request no matter how many match, so a
-// single select silently drops everything past the first page once a 30-day window
-// holds more than 1,000 events (the readiness pass hit this at 1,939 rows: the real
-// bucket lost its newest events while every total still looked plausible). Page
-// through the window in a stable order so every row is counted.
+// PostgREST caps a select at 1,000 rows and reports no error, so page the window.
+// Keyset paging (cursor on created_at, id) rather than offsets: QA cleanups delete
+// rows from this table while the rollup may be reading it, and an offset would skip
+// rows after such a delete. Stops only on an empty page, which stays correct if the
+// server page size is ever lowered. Newest first, so a ceiling hit drops the oldest
+// days first and the 7-day window stays complete until the log is very large.
 const PAGE = 1000;
-const MAX_PAGES = 200;
+const MAX_PAGES = 100;
 
 async function readEventsSince(sinceIso: string): Promise<{ rows: EventRow[]; error: string | null; truncated: boolean }> {
   const rows: EventRow[] = [];
+  let after: { created_at: string; id: string } | null = null;
   for (let page = 0; page < MAX_PAGES; page++) {
-    const from = page * PAGE;
-    const { data, error } = await supabase
+    let query = supabase
       .from("analytics_events")
-      .select("name, record_class, created_at")
+      .select("id, name, record_class, created_at")
       .gte("created_at", sinceIso)
-      .order("created_at", { ascending: true })
-      .order("id", { ascending: true })
-      .range(from, from + PAGE - 1);
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(PAGE);
+    if (after) {
+      query = query.or(`created_at.lt."${after.created_at}",and(created_at.eq."${after.created_at}",id.lt."${after.id}")`);
+    }
+    const { data, error } = await query;
     if (error) return { rows: [], error: error.message, truncated: false };
     const batch = (data ?? []) as EventRow[];
+    if (batch.length === 0) return { rows, error: null, truncated: false };
     rows.push(...batch);
-    if (batch.length < PAGE) return { rows, error: null, truncated: false };
+    const last = batch[batch.length - 1];
+    after = { created_at: last.created_at, id: last.id };
   }
-  console.error(`admin analytics: window exceeded ${MAX_PAGES * PAGE} rows; report is truncated`);
-  return { rows, error: null, truncated: true };
+  // Reached the ceiling with a full last page: truncated only if something older
+  // exists past the cursor.
+  const { count, error: probeErr } = await supabase
+    .from("analytics_events")
+    .select("id", { count: "exact", head: true })
+    .gte("created_at", sinceIso)
+    .or(`created_at.lt."${after!.created_at}",and(created_at.eq."${after!.created_at}",id.lt."${after!.id}")`);
+  // An unknown remainder must never read as a complete window.
+  const truncated = Boolean(probeErr) || (count ?? 0) > 0;
+  if (truncated) console.error(`admin analytics: window exceeded ${MAX_PAGES} pages; report is truncated`);
+  return { rows, error: null, truncated };
 }
 
 export async function GET(req: NextRequest) {
   if (!verifyAdminSessionToken(req.cookies.get(ADMIN_COOKIE)?.value)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!(await rateLimit(req, "admin-analytics", 20, 60))) {
+    return NextResponse.json({ error: "Too many requests. Please wait a minute and try again." }, { status: 429 });
   }
 
   const now = Date.now();
@@ -113,9 +135,8 @@ export async function GET(req: NextRequest) {
       totalEvents: totalResult.count ?? 0,
       oldestEventAt: oldestResult.data?.created_at ?? null,
       newestEventAt: newestResult.data?.created_at ?? null,
-      // True only if the 30-day window exceeded the page ceiling below. Reported so a
-      // capped rollup can never pass as a complete one.
       windowTruncated: rowsResult.truncated,
+      windowRowsRead: rowsResult.rows.length,
     },
     notes: [
       "search_performed and zero_result_search are counted only from what has actually been posted to /api/events; the homepage does not instrument search yet, so these stay at zero until that ships.",

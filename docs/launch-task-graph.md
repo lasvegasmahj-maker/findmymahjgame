@@ -1,7 +1,9 @@
 # Find My Mahj Game: Launch Readiness Task Graph (2026-08-23 snapshot; superseded by docs/launch-readiness-2026-08-29.md)
 
-docs/owner-activation-checklist.md (Completed section) records every item below that
-still reads as awaiting or remaining as done. Read this file as history only.
+Some items below still read as awaiting or remaining. docs/owner-activation-checklist.md
+holds the current status of each (its Completed section lists the ones that are done)
+and docs/owner-decisions-pending.md holds the resolved decisions. Read this file as
+history only.
 
 Lead: Fable 5. All four launch gates OFF and staying OFF. Recovery: this file + `git branch -a` + CEO OS matrix.
 

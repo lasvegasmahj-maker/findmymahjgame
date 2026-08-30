@@ -3,7 +3,7 @@
 Recorded during the overnight autonomous build. Every item here has a safe
 closed-gate default already in place; nothing blocks engineering.
 
-1. UPDATED 2026-08-29: Stripe sandbox is configured and verified end to end. For
+1. UPDATED 2026-08-29: I configured the Stripe sandbox and verified it end to end. For
    real payments the three STRIPE_* Vercel values the app reads (STRIPE_SECRET_KEY,
    STRIPE_PRICE_MEMBERSHIP_ANNUAL, STRIPE_WEBHOOK_SECRET) must become their live
    equivalents, then a redeploy and the live-mode runbook Step 8. Until launch_payments flips, only
@@ -41,3 +41,9 @@ closed-gate default already in place; nothing blocks engineering.
    intentional (it is the existing "tables forming" feature, not algorithmic
    matching), but confirm whether it should stay live at launch or move behind a
    gate. No change made autonomously.
+
+9. Customer-facing product name (2026-08-29). The sandbox Stripe price is named
+   Directory Membership, which is what the Stripe checkout page, receipt, and card
+   statement show, while the site sells it as Premium ("Choose Premium: $89/year")
+   and the policy drafts say Directory Membership. Pick one name for every surface
+   before creating the live price; suggestion: Find My Mahj Game Premium.

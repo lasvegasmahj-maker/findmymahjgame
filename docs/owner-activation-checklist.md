@@ -6,14 +6,24 @@ The product is engineering-complete and frozen. Only the items below remain, and
 
 ### Stripe (live mode)
 Status: SANDBOX VERIFIED 2026-08-29, LIVE KEYS AWAITING OWNER
-What: the sandbox account, $89/year price, webhook, and env vars are in place, and the whole checkout, webhook, entitlement, and trial lifecycle passed on production with test data. For real payments:
+What: the sandbox account, $89/year price, webhook, and env vars are in place, and the whole checkout, webhook, entitlement, and trial lifecycle passed on production with test data. Three short lists below; the term test-classified is defined in docs/billing-launch-runbook.md under Terms used here.
+
+Before anything (Stripe Test mode):
+1. Open https://dashboard.stripe.com/test/subscriptions and cancel each leftover QA subscription immediately (they came from the sandbox checks; no money involved). Tell me when done. Each cancel writes a fresh QA-marked row in our database copy, which I confirm shows canceled and then remove.
+
+Live keys:
 1. Turn on the Live toggle at the top of https://dashboard.stripe.com
-2. Create the $89/year price again in Live mode (runbook Step 2)
+2. Create the $89/year price again in Live mode (runbook Step 2). First decide the product name customers will see on the checkout page, receipt, and card statement; the sandbox price says Directory Membership while the site says Premium (owner-decisions item 9; suggestion: Find My Mahj Game Premium)
 3. Create the webhook endpoint again in Live mode (runbook Step 5)
 4. Paste the three live values into Vercel Production: STRIPE_SECRET_KEY (from https://dashboard.stripe.com/apikeys), STRIPE_PRICE_MEMBERSHIP_ANNUAL (the live price id), STRIPE_WEBHOOK_SECRET (the live webhook signing secret). STRIPE_PUBLISHABLE_KEY is not read by the app today; leave it or update it for completeness
-5. Tell me
-Also, before any of that: in Stripe Test mode, open Subscriptions and cancel each leftover QA subscription immediately (they are from the sandbox checks; no money involved). That exercises the cancel path once in sandbox before it ever runs on a real charge. Tell me when done and I confirm the rows show canceled.
-What happens next: I redeploy and run the runbook Step 8 checklist in live mode through a QA account. That check charges your real card $89.00 once; right after, we refund the charge and cancel that subscription in Stripe so it never renews; after a 3-day wait for late Stripe deliveries, I remove the QA account and its rows. On the admin page, Paid Premium and Verified paying customers stay 0 during this check because the QA account is test-classified, and the Revenue and MRR card keeps saying Not live yet while the gate is OFF; that is the expected result. launch_payments stays OFF until you approve launch.
+5. Tell me. I redeploy and run the runbook Step 8 checklist in live mode through a QA account, which charges your real card $89.00 once
+
+During the live check (your actions):
+1. Cancel the subscription immediately at https://dashboard.stripe.com/subscriptions
+2. Refund the $89.00 charge at https://dashboard.stripe.com/payments
+3. Tell me. I confirm our database copy shows canceled
+
+Note: on the admin page, Paid Premium and Verified paying customers stay 0 during this check because the QA account is marked as a QA account and never counts as revenue, and the Revenue and MRR card keeps saying Not live yet while the gate is OFF; that is the expected result. After a 3-day wait for late Stripe deliveries I remove the QA account and its rows. launch_payments stays OFF until you approve launch.
 
 ### Search Console
 Status: READY, AWAITING OWNER CREDENTIAL

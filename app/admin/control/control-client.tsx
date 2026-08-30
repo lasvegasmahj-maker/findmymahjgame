@@ -219,16 +219,38 @@ function NotificationsPanel() {
 }
 
 function AnalyticsPanel() {
-  const [data, setData] = useState<{ windows: { "7d": { real: { eventCounts: Record<string, number> }; test: { eventCounts: Record<string, number> } } }; dataHealth: { totalEvents: number } } | null>(null);
+  const [data, setData] = useState<{ windows: { "7d": { real: { eventCounts: Record<string, number> }; test: { eventCounts: Record<string, number> } } }; dataHealth: { totalEvents: number; windowTruncated: boolean; windowRowsRead: number } } | null>(null);
+  const [failed, setFailed] = useState<number | null>(null);
   useEffect(() => {
-    void fetch("/api/admin/analytics", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then(setData).catch(() => {});
+    void fetch("/api/admin/analytics", { cache: "no-store" })
+      .then((r) => {
+        if (!r.ok) {
+          setFailed(r.status);
+          return null;
+        }
+        return r.json();
+      })
+      .then(setData)
+      .catch(() => setFailed(0));
   }, []);
+  if (failed !== null) {
+    return (
+      <Section title="Analytics">
+        <p style={{ color: "var(--pink-text)", fontWeight: 600 }}>
+          {failed === 429 ? "Analytics unavailable (too many requests). Wait a minute and reload." : failed === 401 ? "Admin session expired. Sign in again." : "Analytics unavailable right now. Reload in a minute."}
+        </p>
+      </Section>
+    );
+  }
   if (!data) return <Section title="Analytics"><p style={{ color: "var(--muted)" }}>Loading...</p></Section>;
   const real = data.windows["7d"].real.eventCounts || {};
   const names = Object.keys(real).sort((a, b) => real[b] - real[a]).slice(0, 12);
   return (
     <Section title="First-party analytics (real, last 7 days)">
       <p style={{ color: "var(--muted)", fontSize: "0.85rem", margin: "0 0 0.7rem" }}>{data.dataHealth.totalEvents} events recorded total. Test traffic is tracked separately and never mixed in here.</p>
+      {data.dataHealth.windowTruncated ? (
+        <p style={{ color: "var(--pink-text)", fontSize: "0.85rem", fontWeight: 600, margin: "0 0 0.7rem" }}>{`The report stopped after reading ${data.dataHealth.windowRowsRead.toLocaleString()} events and skipped older ones. The 7-day counts here are complete unless more than that many events landed in the last 7 days.`}</p>
+      ) : null}
       {names.length === 0 ? (
         <p style={{ color: "var(--muted)" }}>No real events in the last 7 days. This is expected before launch.</p>
       ) : (
