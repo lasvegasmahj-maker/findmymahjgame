@@ -152,6 +152,9 @@ const STOP_OR_AGREE = new RegExp(`${STOP.source}|${AGREE_SECOND.source}`, "i");
 const PAYMENT =
   /\b(pay|pays|paid|paying|payment|payments|payout|score|scores|scoring|scored|points|value|worth|double|doubled|doubles|owe|owes|money|bet|bets|stakes|quarters|dollars|coins|chips|settle|settles|jokerless|self[- ]?pick(ed)?|picked it (myself|yourself|herself|himself))\b/i;
 const QUINT_SEXTET = /\b(quints?|sextets?|five of a kind|six of a kind)\b/i;
+// Card groupings built from different tiles: a joker never fills these.
+const MIXED_GROUP =
+  /\b(news|n ?e ?w ?s|runs?|sequences?|consecutive|straight|year|years|the date|20[0-9]{2}|1 ?2 ?3|2 ?4 ?6|3 ?6 ?9|369|246|different tiles|mixed group|line of singles)\b/i;
 // Scoring vocabulary only: "do I have to pay to play mahjong in Naples" is a directory question.
 export const SCORING_ASK =
   /\b(who|how much) (pays|do (i|we|you) pay|does (everyone|each player|the discarder|the winner) pay)\b|\bpay(s|ing)? (the )?(winner|double|value|more|less|twice)\b|\bjokerless\b|\bpayout\b|\bself[- ]?pick(ed)?\b|\bdiscarder pays?\b|\b(pay|pays|paid|payment|payments|score|scoring|worth|value|double) (for|on|in|after|with|of) (a |the |my )?(wall game|self[- ]?pick|jokerless|win|winning|mahjong|maj|discard|hand)\b|\bhand (value|worth|is worth|pays)\b|\bvalue of (a |the |my )?hand\b|\b(win|wins|won) on a discard\b|\bworth double\b|\bdouble the value\b|\bscoring\b/i;
@@ -354,6 +357,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
       /\b(pairs?|singles?)\b.{0,60}jokers?/i,
     ],
     keywords: ["joker", "pair", "single"],
+    blocks: [MIXED_GROUP],
     approved_answer:
       "No. A joker can never be used in a pair or as a single tile. Jokers only work inside groups of 3 or more: a Pung, Kong, Quint, or Sextet. Hands built entirely from singles and pairs take no jokers at all.",
     ruleset: RULESET,
@@ -714,6 +718,23 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     provenance: researched("League rule that a call is never made for a single or pair except for mahjong; cross-checked via Mahj Life wiki article 178", 2024),
   },
   {
+    id: "joker-in-mixed-groups",
+    topic: "Jokers in runs, years, and NEWS",
+    question_patterns: [JOKER, MIXED_GROUP],
+    keywords: ["joker", "news", "year", "run"],
+    requires: [JOKER, MIXED_GROUP],
+    blocks: [JOKER_EXCHANGE, JOKER_PASS, DISCARDED],
+    approved_answer:
+      "No. A joker never fills a group made of different tiles, such as a run like 1 2 3, a year, the four winds together, or any line of singles, even though those groups have 3 or more tiles. Jokers only work inside a group of 3 or more identical tiles: a Pung, Kong, Quint, or Sextet. Those mixed groups must be built from the real tiles.",
+    ruleset: RULESET,
+    varies_by_house: false,
+    source: "research_verified",
+    last_verified: VERIFIED_AUDIT,
+    confidence: "high",
+    classification: "standard_nmjl_rule",
+    provenance: researched("League rulebook rule that jokers are never used in a block of single tiles; follows from the owner-approved joker entries; cross-checked via Mahj Life wiki article 221", 2024),
+  },
+  {
     id: "joker-discarded",
     topic: "Discarded jokers",
     question_patterns: [JOKER, DISCARDED],
@@ -1010,14 +1031,14 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     keywords: ["quint", "sextet", "call"],
     requires: [QUINT_SEXTET, CLAIM_VERB],
     approved_answer:
-      "Whether a discard may be called to complete a quint or a sextet is a detail our instructor is confirming against the League's current rules before we publish it here. Calling for a Pung or a Kong follows the usual rule: the tile must join a group of 3 or more identical tiles that goes face up on your rack.",
+      "Yes. A discard may be called to complete any group of 3 or more identical tiles, and that includes a Quint or a Sextet, as long as the tiles already in your hand, with jokers allowed, make up the rest of the group. The whole group then goes face up on your rack. A hand marked concealed cannot call for any exposure.",
     ruleset: RULESET,
     varies_by_house: false,
-    source: "owner_question",
+    source: "research_verified",
     last_verified: VERIFIED_AUDIT,
-    confidence: "medium",
-    classification: "nmjl_clarification",
-    provenance: ownerQuestion("May a discard be called to complete a quint or a sextet, or only a pung or kong"),
+    confidence: "high",
+    classification: "standard_nmjl_rule",
+    provenance: researched("League rulebook and bulletin rule that a discard may be claimed to expose a pung, kong, quint, or sextet; consistent with the owner-approved calling entry (3 or more identical tiles); cross-checked via Mahj Life wiki articles 146 and 221", 2020),
   },
   {
     id: "exposures-basics",

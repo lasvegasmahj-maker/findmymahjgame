@@ -152,10 +152,11 @@ rulebook summary; that entry now states only the supported core and carries ques
 2. Jokers in a dead hand: may a joker sitting in a dead player's exposure still be
    exchanged, and does it matter whether that exposure is the one that made the hand dead?
    (Entry dead-hand-jokers says the instructor is confirming.)
-3. Calling for a quint or sextet: may a discard be called to complete a quint or a sextet?
-   The owner-approved calling entry says "a group of 3 or more identical tiles", which reads as
-   yes; one secondary summary suggests sextets cannot be claimed as exposures. No change was
-   made; entry calling-quints-sextets says the instructor is confirming.
+3. Calling for a quint or sextet (confirmation): entry calling-quints-sextets now answers yes,
+   because the League rulebook and four bulletin rulings (located through Mahj Life articles 146
+   and 221) say a discard may be claimed to expose a pung, kong, quint, or sextet, and the
+   owner-approved calling entry already says "3 or more identical tiles". One secondary summary
+   had suggested sextets cannot be claimed; please confirm the yes.
 4. Last discard of the deal: when the wall is exhausted, may the final discard be claimed for
    an exposure, or only for mahjong? (Entry last-tile-of-wall states only the mahjong case.)
 5. Mahjong declared in error: how should payments be settled when other players have already
@@ -167,6 +168,21 @@ rulebook summary; that entry now states only the supported core and carries ques
 7. Wording flag: annual-card says players buy the card "directly from the League"; retailers
    also sell it. Keep or soften?
 8. Mahjong declared in error with tiles exposed: is the hand dead outright, or may the declaration be retracted with the exposed tiles staying committed (League rulebook 2024, p. 21)? Secondary summaries disagree, so entry mahjong-in-error now states only the supported core (no exposure means no penalty; play continues to the right) and says the instructor is confirming the rest.
+
+## Independent truth-verification panel (2026-08-30)
+
+A 21-agent adversarial panel (correctness refutation, conflation and classification, and
+copyright boundary lenses over all entries, with two confirmers per blocker) found no
+confirmed blocker. Its warnings on owner-approved wording are reported here for the owner,
+unchanged in the corpus: jokers described as "unique to American mahjong" (other variants use
+jokers); flowers "not numbered" (many sets print numbers or seasons that League play ignores);
+the calling-discard house note credits "the card" for the calling window and marks the entry
+as varying by table, while the window is a rulebook rule and only enforcement varies; the
+wall-game and courtesies entries treat "same dealer deals again" and "how a wall game is
+paid" as table customs, while the League's default is that the deal rotates and a wall game
+pays nothing; the blind-pass sentence tracks the League's own phrasing closely. Two panel
+findings led to corpus additions: a joker-in-mixed-groups entry (jokers never fill NEWS, a
+year, or a run) and the resolution of calling-quints-sextets above.
 
 ## Review needed
 

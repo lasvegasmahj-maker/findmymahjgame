@@ -54,6 +54,7 @@ export const HELD_OUT = [
   A("once I lay down a pung can I rearrange it later", "exposures-basics"),
   A("what's a sextet", "quints-sextets"),
   A("can you claim a discard for a quint", "calling-quints-sextets"),
+  A("my 2026 hand needs a 6, can a joker stand in for it", "joker-in-mixed-groups"),
   A("how do you actually win the game", "winning-mahjong"),
   A("i said mahjong and i was wrong, is my hand dead", "mahjong-in-error"),
   A("what's the penalty for a bad mahjong call", "mahjong-in-error"),

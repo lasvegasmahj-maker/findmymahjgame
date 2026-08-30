@@ -100,6 +100,9 @@ const CASES: Case[] = [
   A("what is an exposure", "exposures-basics"),
   A("can I change my exposure after I discard", "exposures-basics"),
   A("can i call for a sextet", "calling-quints-sextets"),
+  A("Can a joker be used in NEWS?", "joker-in-mixed-groups"),
+  A("can i put a joker in the year hand", "joker-in-mixed-groups"),
+  A("joker in a run of 1 2 3?", "joker-in-mixed-groups"),
   A("what is a quint", "quints-sextets"),
   A("do i need a joker for a quint", "quints-sextets"),
   // Winning, mistakes, payments
