@@ -10,7 +10,7 @@ remain for the owner. Source policy: docs/rules-sources.md.
 
 - Canonical rules audited: 50 entries in lib/rules/knowledge.ts (21 owner-approved, unchanged
   in wording; 26 written for this audit and research-verified against League rules; 3 open
-  owner questions whose answers state only the supported core and say the instructor is confirming the rest).
+  owner questions whose answers claim no rule and say the instructor is confirming).
 - Classification: 40 STANDARD NMJL RULE, 6 NMJL CLARIFICATION, 1 TOURNAMENT RULE,
   1 HOUSE/OPTIONAL RULE, 1 ETIQUETTE, 1 STRATEGY.
 - Provenance coverage: 50/50 entries carry ruleset, topic, classification, source type,
@@ -177,6 +177,21 @@ rulebook summary; that entry now states only the supported core and carries ques
 10. Payments: entry payments-basics states the League payment rules (discarder pays double,
    self-pick all pay double, jokerless doubles, both can stack). For Las Vegas Mahjong you chose
    neutral payment wording; should Find My Mahj state the amounts, or use the same neutral wording?
+
+11. Wrong tile count noticed before East's first discard: what is the League's remedy (start the
+   deal over, or correct the hand)? Entry dead-hand-details now says only that a wrong count
+   cannot be fixed once play has begun.
+12. Wrong joker exchange: the entry joker-exchange-timing now states, from the League rulebook
+   and 2024 bulletin as cross-checked, that after the next discard the hand holding the incorrect
+   exposure is dead while the redeemer plays on; please confirm.
+
+## Reviewer gate history (2026-08-30)
+
+- Round 1: FAIL. Blocker: naming-discards claimed a discarded joker is always named joker (unsupported); removed. Warnings fixed: mixed answers shipped a clarification the page acted on; payment and "is east" signals hijacked cost and place-name questions; the ruleset re-ask had an empty prompt; mahjong-in-error overstated the exposed-tiles outcome (now an owner question); last-tile-of-wall cited a house-rule article.
+- Round 2: FAIL. Blocker: everyday-word concept matchers (tips, direction, authority, out of tiles, don't want) had become standalone Ask-box signals and pulled plain directory questions into the rules path; they are now vocabulary-gated and suppressed by directory, commerce, and place wording. Warnings fixed: a directory question typed mid-clarification was trapped; gap telemetry logged replies and duplicates; the card guard skipped questions naming the card's hands.
+- Round 3: FAIL (reviewed the round-2 code). Blocker: group-size, hold-a-spot, call-it-in, hands-on-lessons, and Charlestown/Charlton phrasings still reached rules answers; all fixed and pinned in the directory regression test. Warnings fixed: picking-ahead and dead-hand-details asserted a dead-hand consequence the source did not settle (now an owner question); rules-source claimed instructor review of every answer (now claims only what is true).
+- Independent verification panels (see below) confirmed one more rule error: an exposure may be corrected only until the caller discards or exchanges a joker; both entries said discard only. Fixed.
+- Round 4: see the closing line of this record.
 
 ## Independent truth-verification panel (2026-08-30)
 

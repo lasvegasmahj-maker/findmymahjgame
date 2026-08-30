@@ -46,7 +46,7 @@ Every entry in `lib/rules/knowledge.ts` records:
 | `ruleset` | Always `american_nmjl`. |
 | `topic` | Short player-facing topic name. |
 | `classification` | `standard_nmjl_rule`, `nmjl_clarification`, `tournament_rule`, `house_optional_rule`, `etiquette`, or `strategy`. |
-| `source` | `owner_approved`, `research_verified`, or `owner_question` (an unresolved ruling filed for the owner; the answer states only the supported core and says the instructor is confirming the rest). |
+| `source` | `owner_approved`, `research_verified`, or `owner_question` (an unresolved ruling filed for the owner; the answer says the instructor is confirming it and claims no rule). |
 | `provenance.source_type` | `owner_approved`, `nmjl_primary`, `secondary_research`, or `arithmetic`. |
 | `provenance.source_title` | Which source class the rule was located in (no source text). |
 | `provenance.source_ref` | Cross-check reference, for example the League publication and the Mahj Life article number used to locate it. |

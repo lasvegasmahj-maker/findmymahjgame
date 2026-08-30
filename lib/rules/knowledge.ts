@@ -767,14 +767,14 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     keywords: ["joker", "exchange", "turn"],
     requires: [JOKER, JOKER_EXCHANGE, new RegExp(`${TIMING.source}|${ERROR_CUE.source}|\\b(own|my|your) (rack|exposure)\\b`, "i")],
     approved_answer:
-      "You may exchange a joker only during your own turn, after you have drawn from the wall or called a discard and before you discard. Hand over the tile the joker stands for and take the joker; you may redeem a joker from any exposure sitting face up on a rack, including your own. Once you discard, the chance passes until your next turn. If you exchange the wrong tile by mistake, fix it before you discard; after that discard the mistaken exposure makes your hand dead.",
+      "You may exchange a joker only during your own turn, after you have drawn from the wall or called a discard and before you discard. Hand over the tile the joker stands for and take the joker; you may redeem a joker from any exposure sitting face up on a rack, including your own. Once you discard, the chance passes until your next turn. If an exchange puts the wrong tile into an exposure, fix it before the next discard; after that discard, the hand holding the incorrect exposure is dead, while the player who handed over the wrong tile keeps playing.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
     last_verified: VERIFIED_AUDIT,
     confidence: "high",
     classification: "nmjl_clarification",
-    provenance: researched("League rulings on joker exchange timing and correction; cross-checked via Mahj Life wiki articles 172, 221, and 224 citing NMJL bulletin Q&A", 2024),
+    provenance: researched("League rulings on joker exchange timing and on a wrong exchange (the rack holding the incorrect exposure is dead, the redeemer plays on); cross-checked via Mahj Life wiki articles 172, 221, and 224 citing the League rulebook and 2024 bulletin Q&A", 2024),
   },
   {
     id: "two-players-same-tile",
@@ -850,11 +850,9 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [MAHJONG_CUE, ERROR_CUE],
     blocks: [JOKER_EXCHANGE, MISNAMED, TWO_PLAYERS],
     approved_answer:
-      "If you said mahjong but had not yet exposed any tiles, there is no penalty and you keep playing. Once you have exposed your tiles for a mahjong that turns out to be wrong, you cannot simply pick them back up as if nothing happened; the League's rulebook sets the consequence, and our instructor is confirming its exact current wording before we publish it here. After a false mahjong, play continues with the player to the right of the one who made the error.",
+      "A mahjong declared in error is covered by specific League rules, and the outcome depends on whether any tiles were exposed and on what the other players did next. Our instructor is confirming the exact current wording before we publish it here. Until then, ask your table to apply the League's rulebook to that deal rather than a table custom.",
     ruleset: RULESET,
-    varies_by_house: true,
-    house_note:
-      "If other players threw in their hands after the false call, ask your table how it settles that deal; the League's rulebook covers those payments.",
+    varies_by_house: false,
     source: "owner_question",
     last_verified: VERIFIED_AUDIT,
     confidence: "medium",
@@ -869,7 +867,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [DEAD, DEAD_DETAIL],
     blocks: [JOKER_EXCHANGE, ERROR_CUE],
     approved_answer:
-      "A hand goes dead when it can no longer win: holding the wrong number of tiles once play has begun, making an exposure that fits no hand on the card, or exposing tiles for a hand marked concealed. A dead player stops drawing and discarding but still pays the winner of that deal. You do not declare your own hand dead; the other players do. A short or long hand can be fixed only during the Charleston, before East's first discard.",
+      "A hand goes dead when it can no longer win: holding the wrong number of tiles once play has begun, making an exposure that fits no hand on the card, or exposing tiles for a hand marked concealed. A dead player stops drawing and discarding but still pays the winner of that deal. You do not declare your own hand dead; the other players do. Once play has begun, a wrong tile count cannot be fixed.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note:
