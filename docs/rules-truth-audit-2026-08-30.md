@@ -17,14 +17,20 @@ remain for the owner. Source policy: docs/rules-sources.md.
   source title, last-verified date, owner-review flag, and evidence status; every research
   entry also carries a cross-check reference and a year. No source text is stored.
 - Owner review required: 23 entries (every entry the owner has not yet approved).
-- Owner-approved wording: preserved verbatim with three exceptions, two corrected on 2026-08-30 and
-  one on 2026-08-31, all three restamped research_verified with owner review required, so each shows
-  the review badge until Shauna signs off. `courtesies-vs-rules` named who deals after a wall game as
-  a local custom, which the rulebook settles. `players-count` told a three-handed table to agree its
-  own format, which owner decision #6 says the League already publishes. `wall-game` carried the same
-  dealer claim as `courtesies-vs-rules` in its house note. All three are one fact: after a wall game
-  the deal passes to East's right, and no one pays. Everything else flagged for the owner is listed
-  below, not edited in.
+- Owner-approved wording: preserved verbatim, with one exception. `players-count` had its
+  three-player sentence corrected to match the owner's OWN decision #6, not to overrule her; it is
+  restamped research_verified with owner review required and shows the review badge until she signs
+  off on the replacement.
+- Two further edits were made and then REVERTED on 2026-08-31, and the reasoning is worth keeping.
+  `wall-game` and `courtesies-vs-rules` both say tables differ on who deals after a wall game.
+  Research says Mah Jongg Made Easy 2024 pp.15-16 settles it, so both were corrected across two
+  rounds. Gate 38 called that wrong on three counts and was right on all three: the owner is a
+  certified instructor and CLAUDE.md puts her ruling above research; the rulebook page was reached
+  through a secondary wiki, which this branch's own attribution policy says is not enough to claim we
+  read League text; and the second round rewrote the source-hierarchy rule that forbade the edit, in
+  the same commit that made the edit. Changing the rule that governs an edit is the owner's call.
+  Both entries are back to her wording, the source-hierarchy rule is restored, and the conflict is
+  filed as a question for her below.
 
 ## Owner-approved entries: claims, classification, flags
 
@@ -588,12 +594,19 @@ no-op and is not a way to turn a model on for rules answers.
 
 ### Left for Shauna, not edited in
 
-1. **Sign-off on three corrected sentences.** `players-count`, `courtesies-vs-rules` and
-   `wall-game` carried her verbatim wording; one sentence in each was corrected because it
-   stated a League-settled point as a table custom. All three are restamped
-   `research_verified` and all three now show "Our instructor is reviewing this answer"
-   until she approves the replacement. The three are the same fact seen from three sides:
-   after a wall game the deal passes to East's right, and no one pays.
+0. **The wall game, two questions, nothing edited.** Both are real conflicts between the
+   owner's wording and research, and both are hers to settle. (a) `wall-game` and
+   `courtesies-vs-rules` say tables differ on who deals again after a wall game. Mah Jongg
+   Made Easy 2024 pp.15-16, as quoted in Mahj Life article 137, says the player on East's
+   right becomes East. Does the rulebook settle it, or do tables differ? (b)
+   `courtesies-vs-rules` lists "how a wall game is paid" as a table custom, while
+   `wall-game`, `payments-basics` and `mahjong-in-error-settlement` all say no one pays.
+   Is the custom the kitty some tables keep, or is the payment itself a table matter?
+
+1. **Sign-off on one corrected sentence.** `players-count` carried her verbatim wording, and its
+   three-player sentence was corrected to match her own decision #6. It is restamped
+   `research_verified` and shows "Our instructor is reviewing this answer" until she
+   approves the replacement.
 2. **The 14 entries stamped on her 2026-08-30 decisions.** Their provenance says she
    approved the ruling on the researched basis, which is accurate, but the published prose
    is Claude's and the badge is off. If she has not read the published wording, those
@@ -710,3 +723,15 @@ and `pnpm test:e2e:webkit` exists alongside `pnpm test:e2e:mobile`.
 | `mahjong-in-error-settlement` | All three of its `requires` had become satisfiable by the hold-for-check cue alone, so any "hold your hand while the mahjong is checked" phrasing scored specificity 3 and took a settlement answer it was not asked for. | A mahjong cue is required again; the hold cue can substitute for the error and settlement cues only. |
 | `components/home/home-search-card.tsx` | The card already shows the whole answer, and its link re-asked the same question on /ask, so the ordinary journey logged two `ask_submitted` events and spent two rate-limit tokens for one question. Ask volume is a launch metric. | The link goes to a clean /ask and reads "Ask another question". The /ask?q= auto-answer stays, because that is what makes a shared link work. |
 | `docs/rules-sources.md`, audit summary and provenance table | The source policy still said owner-approved answers are never reworded, while this branch has corrected three. Counts read 33/22 against a corpus of 32/23, and the `wall-game` row still showed owner-approved. | The policy documents the path actually followed and names the three entries. Counts and the row corrected. |
+
+### Gate 38: FAIL, two blockers, fixed. One of them was mine to answer for.
+
+| File | Defect | Fix |
+|---|---|---|
+| `MISNAMED` | The matcher accepted "I called it a X but she/he/they ..." with a bare pronoun, which is not misname evidence. So "I called it a pung but they said it was mine", an ordinary claim dispute, was answered with the misname penalty: your hand can be dead and you alone pay the winner 4 times the hand. main answered `calling-for-exposure`. | The pronoun must introduce a naming or throwing act, and "said" is excluded because "they said it was mine" is a dispute, not a name. Pinned both ways. |
+| `wall-game`, `courtesies-vs-rules`, `docs/rules-sources.md` | **Reverted. This one was a process failure, not a routing bug.** Across two rounds I corrected the owner's ruling that tables differ on who deals after a wall game, on research that reached Mah Jongg Made Easy through a secondary wiki. In the second round I rewrote the source-hierarchy rule that forbade the edit, in the same commit that made the edit. The owner is a certified instructor, CLAUDE.md puts her ruling above research, we had not read the rulebook page ourselves, and changing the rule that governs an edit is her call, not mine. | Both entries are back to her exact wording with her stamp, the source-hierarchy rule is restored, and the conflict is filed as a question for her here and in `docs/league-clarification-request.md`. `players-count` stays corrected, because that one tracks her own decision #6 rather than overruling her. |
+
+Also from this round: the wall-game deal-rotation pattern is anchored on the wall game, so
+"who becomes east next" no longer gets an answer framed around a case it did not ask about;
+the home card's dead `askedQ` state and an untracked probe harness inside the typecheck
+surface are deleted.

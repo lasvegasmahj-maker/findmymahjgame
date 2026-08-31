@@ -133,7 +133,7 @@ const DISCARDED = /\b(discard|discards|discarded|discarding|thrown|throw|throws|
 const ERROR_CUE =
   /\b(error|mistake|mistakenly|wrong|wrongly|false|falsely|incorrect|invalid|not valid|isn'?t valid|didn'?t have|did not have|by accident|accidentally|premature|too early|oops|bad|botched|busted|penalt(y|ies))\b/i;
 export const MISNAMED =
-  /\bmis-?nam(e|ed|es|ing)\b|\bwrong name\b|\bnamed (it|the tile|a tile|my discard|the discard) wrong(ly)?\b|\bcalled it (the )?wrong\b|\bsaid the wrong tile\b|\bwrong tile name\b|\bnamed the wrong\b|\bmisspoke\b|\bcalled (it|the tile|my discard) (a|an) \w+ by mistake\b|\bannounced (it|the tile) (as )?the wrong\b|\bcalled it (a|an) [^.?!]{1,20} but (it was|it's|its|it is)\b|\bsaid [^.?!]{1,15} but (it was|it's|it is)\b|\bnamed it (a|an) [^.?!]{1,20}\bbut\b|\b(called|named|said) it (a|an|the) ?[\w ]{1,14}\bbut (it was|it'?s|its|it is|she|he|they|threw|discarded|actually)\b/i;
+  /\bmis-?nam(e|ed|es|ing)\b|\bwrong name\b|\bnamed (it|the tile|a tile|my discard|the discard) wrong(ly)?\b|\bcalled it (the )?wrong\b|\bsaid the wrong tile\b|\bwrong tile name\b|\bnamed the wrong\b|\bmisspoke\b|\bcalled (it|the tile|my discard) (a|an) \w+ by mistake\b|\bannounced (it|the tile) (as )?the wrong\b|\bcalled it (a|an) [^.?!]{1,20} but (it was|it's|its|it is)\b|\bsaid [^.?!]{1,15} but (it was|it's|it is)\b|\bnamed it (a|an) [^.?!]{1,20}\bbut\b|\b(called|named|said) it (a|an|the) ?[\w ]{1,14}\bbut (it was|it'?s|its|it is|threw|discarded|actually|(she|he|they) (threw|discarded|named|actually|really|had))\b/i;
 // "wait for a table" is the queue and "hold my tiles" is the rack, but "hold the tile"
 // is exactly the claim this matcher is for, so the rack sense needs a possessive.
 export const HOLD_WAIT =
@@ -669,7 +669,9 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [
       // "who deals after a wall game" belongs here: the dealing entry only covers the
       // opening deal and never says who becomes East next.
-      /\b(who|which player)\b[^.?!]{0,30}\b(deals?|is east|becomes east|deal again)\b/i,
+      // Anchored on the wall game. Unqualified rotation between hands is the dealing
+      // entry's question, and this answer is framed entirely around the wall running out.
+      /\b(who|which player)\b[^.?!]{0,30}\b(deals?|is east|becomes east|deal again)\b(?=[^.?!]{0,40}\b(wall game|wall|no winner|nobody won|draw)\b)|\b(wall game|no winner)\b[^.?!]{0,40}\b(who|which player)\b[^.?!]{0,30}\b(deals?|is east|becomes east|deal again)\b/i,
       /wall game/i,
       /(nobody|no one|no body) (wins|won|declared|declares|got|gets) ?(mahjong|maj)?/i,
       /run(s|ning)? out of tiles/i,
@@ -681,20 +683,12 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     ruleset: RULESET,
     varies_by_house: true,
     house_note:
-      "After a wall game the deal moves on as usual: the player on East's right becomes East.",
-    // Owner-approved apart from the house note, which Claude corrected on 2026-08-31.
-    // It said tables differ on who deals after a wall game; Mah Jongg Made Easy 2024
-    // pp.15-16 settles it, and this branch had already corrected the same claim in
-    // courtesies-vs-rules. Pending Shauna's sign-off it is not her wording, so it does
-    // not carry her stamp and it shows the review badge.
-    source: "research_verified",
-    last_verified: VERIFIED_WALL_GAME,
+      "Tables differ on whether the same dealer deals again after a wall game.",
+    source: SOURCE,
+    last_verified: VERIFIED,
     confidence: "high",
     classification: "standard_nmjl_rule",
-    provenance: researched(
-      "Owner-approved entry with the house note corrected: Mah Jongg Made Easy 2024 pp.15-16 settles who deals after a wall game (the player on East's right becomes East); located and cross-checked via Mahj Life wiki article 137",
-      2024,
-    ),
+    provenance: OWNER,
   },
   {
     id: "players-count",
@@ -754,22 +748,15 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     // The courtesy pass itself is described on its own entry.
     blocks: [/\bcourtesy pass\b/i, BLANK],
     approved_answer:
-      "It helps to separate official rules from table courtesies. Official rules come from the National Mah Jongg League and apply everywhere, such as the tile count, how calling works, and the courtesy pass, which is an optional League rule any player may decline. Courtesies are local customs a table agrees on, such as whether the table keeps a kitty for a wall game, or how long the table waits for a player who is deciding on a call. Agree on courtesies before the first hand so no one is surprised.",
+      "It helps to separate official rules from table courtesies. Official rules come from the National Mah Jongg League and apply everywhere, such as the tile count, how calling works, and the courtesy pass, which is an optional League rule any player may decline. Courtesies are local customs a table agrees on, such as how a wall game is paid or whether the same dealer deals again. Agree on courtesies before the first hand so no one is surprised.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note: "Courtesies differ from table to table by design.",
-    // Owner-approved apart from one example sentence, which Claude corrected on
-    // 2026-08-30 because the original named a League-settled point (who deals after
-    // a wall game) as a local custom. Pending Shauna's sign-off it is not her
-    // wording, so it does not carry her stamp and it shows the review badge.
-    source: "research_verified",
-    last_verified: VERIFIED_AUDIT,
+    source: SOURCE,
+    last_verified: VERIFIED_WORDING,
     confidence: "high",
     classification: "etiquette",
-    provenance: researched(
-      "Owner-approved entry with one example corrected: Mah Jongg Made Easy 2024 pp.15-16 settles who deals after a wall game (the player on East's right becomes East), so it is not a table courtesy; located and cross-checked via Mahj Life wiki article 137",
-      2024,
-    ),
+    provenance: OWNER,
   },
   {
     id: "dead-hand",

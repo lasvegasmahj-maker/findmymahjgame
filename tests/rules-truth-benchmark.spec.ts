@@ -1144,21 +1144,17 @@ test.describe("publish fidelity", () => {
     expect(parseAskIntent("where can I play mahjong in Naples").location).toBe("Naples");
   });
 
-  test("the wall game is answered the same way whichever entry a player reaches", () => {
-    // The branch corrected who deals after a wall game in one entry and left the same
-    // claim standing in another, so the site answered it two opposite ways.
+  test("the owner's wall game wording is served verbatim, and the conflict is a question", () => {
+    // Research says Mah Jongg Made Easy settles who deals after a wall game, but it
+    // reached that page through a secondary wiki, and the owner is a certified
+    // instructor whose ruling outranks research here. Two rounds of this branch edited
+    // her wording anyway; both edits are reverted and the point is filed for her.
     const wg = RULES_KNOWLEDGE.find((e) => e.id === "wall-game")!;
-    expect(wg.house_note).not.toMatch(/tables differ.*dealer|dealer deals again/i);
-    expect(wg.house_note).toMatch(/East's right becomes East/);
-    expect(wg.source).not.toBe("owner_approved");
-    expect(wg.provenance.owner_review_required).toBe(true);
-    // ...and how a wall game pays is a League rule, not a table custom.
+    expect(wg.house_note).toMatch(/Tables differ on whether the same dealer deals again/);
+    expect(wg.source).toBe("owner_approved");
     const cv = RULES_KNOWLEDGE.find((e) => e.id === "courtesies-vs-rules")!;
-    expect(cv.approved_answer).not.toMatch(/how a wall game is paid/i);
-    expect(cv.approved_answer).toMatch(/kitty for a wall game/);
-    for (const id of ["payments-basics", "mahjong-in-error-settlement"]) {
-      expect(RULES_KNOWLEDGE.find((e) => e.id === id)!.approved_answer, id).toMatch(/no one (pays|wins and no one pays)/i);
-    }
+    expect(cv.approved_answer).toMatch(/how a wall game is paid or whether the same dealer deals again/);
+    expect(cv.source).toBe("owner_approved");
   });
 
   test("a three seat question always lands somewhere, whatever else it asks", () => {
@@ -1277,16 +1273,22 @@ test.describe("publish fidelity", () => {
     expect(lookupRule({ question: "I discarded out of turn what happens" }).entry_id).toBe("picking-ahead");
   });
 
-  test("who deals after a wall game is not offered as a table courtesy", () => {
-    // The rulebook settles it: the deal passes to East's right. Listing it as a
-    // local custom told players the League was silent on a rule it publishes.
-    const cv = RULES_KNOWLEDGE.find((e) => e.id === "courtesies-vs-rules")!;
-    expect(cv.approved_answer).not.toMatch(/dealer deals again/i);
-    expect(cv.approved_answer).toMatch(/local customs a table agrees on/);
-    // One sentence of this entry is no longer the owner's wording, so it must not
-    // carry her stamp. It shows the review badge until she signs off.
-    expect(cv.source).not.toBe("owner_approved");
-    expect(cv.provenance.owner_review_required).toBe(true);
-    expect(cv.provenance.evidence).toBe("owner_review_pending");
+  test("a claim dispute is not a misnamed discard", () => {
+    // A bare pronoun after "I called it a X but ..." is not misname evidence, and the
+    // misname entry is a penalty rule: dead hand, pay the winner 4 times the hand.
+    for (const q of [
+      "I called it a pung but they said it was mine",
+      "I called it a bam but she took it first",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).not.toBe("misnamed-discard");
+    }
+    for (const q of [
+      "I called it a soap but she threw a white dragon",
+      "he called it a bam but it was actually a crak",
+      "what happens if I misname my discard",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("misnamed-discard");
+    }
   });
+
 });

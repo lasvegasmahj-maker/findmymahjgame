@@ -61,7 +61,6 @@ export default function HomeSearchCard() {
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
   const [resp, setResp] = useState<AskResponse | null>(null);
-  const [askedQ, setAskedQ] = useState("");
 
   const reducedMotion = useSyncExternalStore(subscribeReducedMotion, getReducedMotionSnapshot, getReducedMotionServerSnapshot);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
@@ -98,7 +97,6 @@ export default function HomeSearchCard() {
     if (!query || busy) return;
     setBusy(true);
     setResp(null);
-    if (!clarify) setAskedQ(query);
     try {
       const r = await fetch("/api/ask", {
         method: "POST",

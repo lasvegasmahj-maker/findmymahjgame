@@ -8,12 +8,10 @@ accurately, Ask Find My Mahj asks one targeted clarification. It never guesses.
 
 1. Owner-approved canonical Find My Mahj rule decisions (`source: "owner_approved"` in
    `lib/rules/knowledge.ts`). The owner is a certified American mahjong instructor. These
-   answers are reworded only where research shows they state a point the League has settled
-   as if it were unsettled, and then only with the entry restamped `research_verified` with
-   `owner_review_required`, so it carries the review badge until the owner signs off, and
-   with the correction logged in the audit record. Anything short of that is reported to the
-   owner, not edited in. Three entries have been corrected this way: `courtesies-vs-rules`,
-   `players-count` and `wall-game`.
+   answers are never reworded by research; a credible conflict is reported to the owner, not
+   edited in. `players-count` is the one exception on record: its three-player sentence was
+   corrected to match the owner's own decision #6, not to overrule her, and it is restamped
+   `research_verified` with `owner_review_required` until she signs off on the replacement.
 2. Primary National Mah Jongg League material that can be lawfully referenced: the League's
    current rule guidance, its rulebook Mah Jongg Made Easy, its bulletin questions and
    answers and rulings, and the instructions printed on the current card. No card hands, line
