@@ -535,3 +535,47 @@ test.describe("corpus invariants", () => {
     }
   });
 });
+
+// Gate 21 regression pin. A guard added to keep "call the studio back" out of the
+// rules path also swallowed the table sense of "call first" and "call ahead", so
+// four real priority questions were answered with a directory search. CONTACT_SENSE
+// must read the contact sense only, and both directions are pinned here together:
+// widening either side of this line has repeatedly broken the other.
+test.describe("call ahead / call first keeps its table sense", () => {
+  test("priority and claim questions reach a rule, never a directory search", () => {
+    for (const q of [
+      "who gets to call first when two of us want it",
+      "do I have to call first or can I just take it",
+      "she said hold, can I call ahead",
+      "am I allowed to call ahead",
+      "can I call ahead of someone else who wants the same tile",
+      "if two people call at once who gets it",
+    ]) {
+      expect(detectAskTopic(q), q).toBe("rules");
+      const r = lookupRule({ question: q });
+      expect(Boolean(r.entry_id || r.clarify), q).toBe(true);
+    }
+  });
+
+  test("contacting a teacher or venue still goes to the directory", () => {
+    for (const q of [
+      "how long do I wait for a call back about lessons",
+      "do I have to wait long to get a call back",
+      "can you hold my spot until I call the teacher",
+      "do I announce myself or just call the venue",
+      "should I call ahead to the studio",
+      "is it better to email or call the instructor",
+      "do they call back the same day",
+      "can I call ahead and reserve a seat",
+    ]) {
+      expect(detectAskTopic(q), q).toBe("directory");
+    }
+  });
+
+  test("a three player payment question is answered about payment, not dealing", () => {
+    expect(lookupRule({ question: "how much do three players pay" }).entry_id).toBe("payments-basics");
+    expect(lookupRule({ question: "who pays what with only three of us" }).entry_id).toBe("payments-basics");
+    expect(lookupRule({ question: "how do you deal for three players" }).entry_id).toBe("three-player-procedure");
+    expect(lookupRule({ question: "can you play with three people" }).entry_id).toBe("three-player-procedure");
+  });
+});

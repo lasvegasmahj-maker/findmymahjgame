@@ -18,11 +18,11 @@ export function AnswerText({ text, className }: { text: string; className?: stri
   for (const part of text.split(/(\s+)/)) {
     buf += part;
     if (/[.!?]["')\]]?\s*$/.test(part)) {
-      sentences.push(buf);
+      sentences.push(buf.trim());
       buf = "";
     }
   }
-  if (buf) sentences.push(buf);
+  if (buf.trim()) sentences.push(buf.trim());
   const paras: string[] = [];
   let current: string[] = [];
   for (const s of sentences) {

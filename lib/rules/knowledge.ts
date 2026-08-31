@@ -220,7 +220,7 @@ const EXCHANGE_CONTEXT =
   /\b(exchang\w+|redeem\w*|swap\w*|trad(e|ed|ing)|for (my|the|a|his|her) joker|took (my|the|her|his) joker|gave me)\b/i;
 const HOLD_WAIT = /\b(hold|wait)\b(?!\s+(a |an |the |my |your |our |her |his |their )?(spot|seat|place|table|room))/i;
 export const CONTACT_SENSE =
-  /\bcall\s+(back|ahead|first|the\s+(teacher|instructor|studio|venue|club|shop|store|number|office))\b|\b(phone call|voicemail|email|call\s+(me|you|us|them)\s+back)\b/i;
+  /\bcall\s+(back|the\s+(teacher|instructor|studio|venue|club|shop|store|number|office))\b|\bcall\s+ahead\s+(to|and)\b|\b(phone call|voicemail|email|call\s+(me|you|us|them)\s+back)\b/i;
 const HOLD_WAIT_ASK =
   /\b(call|calls|called|claim|claims|count|counts|mean|means|legal|legally|stop|stops|priority|say|says|saying|said|shout|shouted|allowed|same as|instead of)\b/i;
 const SETTLEMENT =
@@ -942,6 +942,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [THREE_PLAYER, THREE_PLAYER_HOW],
     keywords: ["three player", "three handed", "3 players"],
     requires: [THREE_PLAYER, THREE_PLAYER_HOW],
+    blocks: [SETTLEMENT, SCORING_ASK],
     approved_answer:
       "American mahjong seats 4 players, and the League's rulebook covers playing with 3. Build all 4 walls as usual with the full 152 tiles and leave one seat empty. Deal only to the three players, and the empty seat gets nothing. The deal ends with East holding 14 tiles and the other two holding 13. League publications describe the final pickup in two slightly different orders, and both reach those counts. Under League rules there is no Charleston with three players, so this is not a table preference. East opens with a discard, and play runs like the 4-player game. Anything beyond this is a table choice, such as an invented Charleston for three or a ghost hand dealt to the empty seat.",
     ruleset: RULESET,
