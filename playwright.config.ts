@@ -18,7 +18,7 @@ export default defineConfig({
     // WebKit Bus-errors on this Mac, so the default mobile project is Chromium
     // emulation and WebKit is opt-in with PW_WEBKIT=1.
     { name: "mobile-chromium", use: { ...devices["Pixel 7"] } },
-    ...(process.env.PW_WEBKIT ? [{ name: "mobile-safari", use: { ...devices["iPhone 13"] } }] : []),
+    ...(process.env.PW_WEBKIT === "1" ? [{ name: "mobile-safari", use: { ...devices["iPhone 13"] } }] : []),
   ],
   webServer: process.env.PLAYWRIGHT_BASE_URL
     ? undefined

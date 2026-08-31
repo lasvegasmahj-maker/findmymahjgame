@@ -9,6 +9,9 @@ import { synthesisDigitGuard } from "@/lib/rules/lookup";
 
 const MODEL = "claude-haiku-4-5-20251001";
 
+const CONSEQUENCE_RE =
+  /\b(dead hand|hand is dead|goes dead|owes? nothing|pays? nothing|pay(s)? the winner|no penalty|penalt(y|ies)|disqualif\w+|beats a call|wins over|priority|forfeit\w*)\b/i;
+
 const MONTH_RE = /\b(january|february|march|april|june|july|august|september|october|november|december)\b|\b(in|every|each|late|early|mid) may\b/i;
 
 // An answer that states a count is not eligible for rephrasing. No token-level check can
@@ -19,6 +22,10 @@ const MONTH_RE = /\b(january|february|march|april|june|july|august|september|oct
 // verbatim rather than being guarded after the fact.
 export function eligibleForRephrase(approved: string): boolean {
   if (/\d/.test(approved)) return false;
+  // Same reasoning for the answers that assign a consequence to a named party. The only
+  // remaining check is a 70 percent length floor, and at 855 characters that leaves room
+  // to drop a whole sentence, which here is the sentence saying who owes nothing.
+  if (CONSEQUENCE_RE.test(approved)) return false;
   // A partial rewrite of a long rule loses content, and costs more latency than it is worth.
   return approved.length <= 900;
 }

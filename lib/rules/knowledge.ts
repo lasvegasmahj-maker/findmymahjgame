@@ -672,11 +672,11 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     // plain count. The two give opposite answers on whether the League covers 3.
     blocks: [THREE_PLAYER_SEATS],
     approved_answer:
-      "American mahjong is built for 4 players. The League's rulebook also covers playing with 3, so a short table is not left to invent a format.",
+      "American mahjong is built for 4 players. The League's rulebook also covers playing with 3, so you do not have to make up your own rules when a fourth cannot make it.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note:
-      "Only what goes beyond the League's three-handed procedure is a table choice.",
+      "Anything the League's three-handed procedure does not cover is your table's choice.",
     // Owner-approved apart from the three-player sentence and house note, which
     // Claude corrected on 2026-08-30: they invited a table to agree its own
     // three-handed format, which owner decision #6 (three-player-procedure) says

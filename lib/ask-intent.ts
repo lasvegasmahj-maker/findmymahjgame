@@ -30,6 +30,8 @@ const PLACE_NAME = /^[A-Za-z0-9 .,'-]+$/;
 const STOP_TAIL =
   /\b(today|tonight|tomorrow|this week(end)?|next week(end)?|morning|afternoon|evening|night|please|thanks?)\b/gi;
 
+const PRONOUN_HEAD = /^(us|them|they|you|me|him|her|it|our|their|my|your)\b/i;
+
 function extractLocation(q: string): string | null {
   const zip = q.match(/\b(\d{5})\b/);
   if (zip) return zip[1];
@@ -37,9 +39,10 @@ function extractLocation(q: string): string | null {
     /\b(?:near|in|around|close to|by|at|visiting|of)\s+([A-Za-z][A-Za-z .,'-]{1,50})$/i
   );
   let candidate = m ? m[1] : null;
-  // "three of us who want to join a game" is not a place. Reading a pronoun as one
-  // put an invented town ("near Us On") into user-facing copy.
-  if (candidate && /^(us|them|you|me|it|our|their)\b/i.test(candidate.trim())) candidate = null;
+  // Rejected here as well as at the end, not instead of: "three of us who want to join a
+  // game in Naples" matches on "of", and dropping that candidate is what lets the
+  // fallback below find the city the player actually named.
+  if (candidate && PRONOUN_HEAD.test(candidate.trim())) candidate = null;
   if (!candidate) {
     const m2 = q.match(
       /\b(?:near|in|around|close to|visiting)\s+([A-Za-z][A-Za-z .'-]{1,40}?)(?=\s+(?:on|this|next|for)\b|[,?.!]|$)/i
@@ -50,6 +53,9 @@ function extractLocation(q: string): string | null {
   let loc = candidate.replace(STOP_TAIL, "").replace(/\bme\b.*$/i, "").trim();
   for (const [, re] of DAY_RES) loc = loc.replace(re, "").trim();
   loc = loc.replace(/[,?.!]+$/, "").replace(/\s{2,}/g, " ").trim();
+  // A pronoun is not a place: "near us" was being title-cased into an invented town
+  // ("Nothing reviewed matches near Us yet").
+  if (PRONOUN_HEAD.test(loc)) return null;
   if (!loc || loc.length < 2 || !PLACE_NAME.test(loc)) return null;
   return loc;
 }

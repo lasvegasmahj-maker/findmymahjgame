@@ -241,12 +241,9 @@ export function lookupRule(input: RulesLookupInput): RulesLookupResult {
 export function synthesisDigitGuard(input: string, output: string): boolean {
   // Whole number tokens, not digit characters: "152" and "16" in the input must not license
   // an invented "12" or "56" in the output.
-  // The sequence, not the set. A set check passes "East holds 13 and the others 14"
-  // against an approved "East holds 14 and the others 13", because the swap invents
-  // no new token; it only reassigns two that were already there. Every number in a
-  // rules answer has to stay attached to what it counts, so the run of digit tokens
-  // must come back in the same order. A rephrase that reorders them is refused and
-  // the approved wording ships instead, which is the safe direction.
+  // A unit-tested backstop, not the protection: eligibleForRephrase already keeps every
+  // answer containing a number away from the model, and no digit-level check can catch a
+  // count being reattached to a different thing anyway.
   const before = input.match(/\d+/g) ?? [];
   const after = output.match(/\d+/g) ?? [];
   if (before.length !== after.length) return false;

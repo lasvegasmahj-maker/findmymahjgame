@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { RULES_KNOWLEDGE } from "../lib/rules/knowledge";
 import { lookupRule, synthesisDigitGuard, type RulesLookupResult } from "../lib/rules/lookup";
-import { detectAskTopic } from "../lib/ask-intent";
+import { detectAskTopic, parseAskIntent } from "../lib/ask-intent";
 import { eligibleForRephrase } from "../lib/ask-llm";
 
 // The rules truth benchmark. Every case is classified up front as a CORRECT ANSWER (one
@@ -775,6 +775,52 @@ test.describe("publish fidelity", () => {
     // The digit guard stays as a tripwire for anything that does get rephrased.
     expect(synthesisDigitGuard("all 152 tiles and 4 walls", "all the tiles and 4 walls")).toBe(false);
     expect(synthesisDigitGuard("152 tiles", "152 tiles and 12 more")).toBe(false);
+  });
+
+  test("no answer that assigns a consequence is ever sent to the model", () => {
+    // Same reasoning as the counts. The only check left on a rephrase is a 70 percent
+    // length floor, and at 855 characters that leaves room to drop the sentence naming
+    // who owes nothing. These answers ship verbatim.
+    for (const id of [
+      "joker-exchange-wrong-tile",
+      "two-players-same-tile",
+      "misnamed-discard",
+      "dead-hand-jokers",
+      "calling-discard",
+      "picking-ahead",
+    ]) {
+      const e = RULES_KNOWLEDGE.find((x) => x.id === id)!;
+      expect(eligibleForRephrase(e.approved_answer), id).toBe(false);
+    }
+  });
+
+  test("a pronoun is never read as a place name", () => {
+    // "near us" was being title-cased into an invented town in user-facing copy.
+    for (const q of [
+      "find a game near us",
+      "any classes near you",
+      "is there a group near them",
+      "find a game near us on Saturday",
+      "can they hold a spot for three of us on Saturday",
+    ]) {
+      expect(parseAskIntent(q).location, q).toBeNull();
+    }
+    // ...and screening it must not cost the city the player did name.
+    expect(parseAskIntent("there are three of us who want to join a game in Naples").location).toBe("Naples");
+    expect(parseAskIntent("three of us near Boca Raton").location).toBe("Boca Raton");
+    expect(parseAskIntent("where can I play mahjong in Naples").location).toBe("Naples");
+    expect(parseAskIntent("games near 89138").location).toBe("89138");
+  });
+
+  test("a bare call back goes to the directory, on purpose", () => {
+    // Deliberate tradeoff, pinned so it is not incidental. "call back" with no object
+    // is genuinely ambiguous between phoning a teacher and taking back a discard, and
+    // the phrasings that resolve it either way are pinned above. Two attempts at
+    // re-cutting this boundary each broke the other side, so the ambiguous bare form
+    // stays with the directory and the resolved forms stay with the rules.
+    expect(detectAskTopic("can I call back?")).toBe("directory");
+    expect(detectAskTopic("can I call back what I just threw")).toBe("rules");
+    expect(detectAskTopic("may I call back my own throw")).toBe("rules");
   });
 
   test("a rules question that names an email recipient still gets its rule", () => {
