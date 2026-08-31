@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Search, Sparkles } from "lucide-react";
 import SearchBox from "@/components/home/search-box";
 import type { ClarifyPayload } from "@/lib/rules/clarify";
+import { AnswerText } from "@/components/ask/answer-text";
 import styles from "./home-search-card.module.css";
 
 // Same shape the /ask page consumes from POST /api/ask. Additive-only contract;
@@ -205,7 +206,7 @@ export default function HomeSearchCard() {
         {busy && <p className={styles.askStatus}>Looking that up...</p>}
         {!busy && resp && (
           <div className={styles.answer}>
-            <p className={styles.answerText}>{resp.error || resp.answer}</p>
+            <AnswerText text={resp.error || resp.answer} />
             {resp.pendingReview && (
               <p data-testid="home-ask-pending-review" className={styles.answerNote}>
                 Our instructor is reviewing this answer.

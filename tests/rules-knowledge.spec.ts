@@ -51,7 +51,6 @@ test.describe("knowledge base fact checks", () => {
       } else if (e.source === "owner_approved") {
         expect(e.approved_answer, e.id).not.toMatch(/instructor is confirming/);
       }
-      // Provenance is metadata only: titles and article numbers, never source prose.
       // Titles, page numbers, and article numbers only. Comfortably shorter than prose,
       // but long enough to carry a full multi-source trail.
       // A tripwire for source prose leaking into metadata, not a budget: citations are short.

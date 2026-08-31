@@ -96,6 +96,7 @@ const CASES: Case[] = [
   A("do i have to say the tile name when i discard", "naming-discards"),
   A("can I say same", "naming-discards"),
   A("I named the tile wrong, what happens?", "misnamed-discard"),
+  A("she called my misnamed discard and exposed a pung, what happens", "misnamed-discard"),
   A("do i have to call a discard if i can", "passing-on-a-discard"),
   A("can I just ignore a discard I could use", "passing-on-a-discard"),
   A("what is an exposure", "exposures-basics"),
@@ -474,6 +475,12 @@ test.describe("corpus invariants", () => {
       expect(String(r.answer), q).toMatch(/out loud|speak your claim|say so out loud/);
     }
     expect(lookupRule({ question: "do i have to call a discard if i can" }).entry_id).toBe("passing-on-a-discard");
+  });
+
+  test("a misnamed discard separates a bare call from a laid-down exposure", () => {
+    const e = RULES_KNOWLEDGE.find((x) => x.id === "misnamed-discard")!;
+    expect(e.approved_answer).toMatch(/only said call, correct the name and play on/);
+    expect(e.approved_answer).toMatch(/already laid tiles down on the wrong name[\s\S]*their hand is dead/);
   });
 
   test("no entry claims how a discarded joker is named", () => {

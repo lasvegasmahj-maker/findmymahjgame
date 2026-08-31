@@ -14,6 +14,9 @@ const MONTH_RE = /\b(january|february|march|april|june|july|august|september|oct
 export async function rephraseApprovedAnswer(approved: string, question: string): Promise<string> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return approved;
+  // A long rules answer costs more latency to rephrase than the rephrase is worth, and a
+  // partial rewrite of a long rule loses content, so it ships verbatim.
+  if (approved.length > 900) return approved;
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -22,7 +25,7 @@ export async function rephraseApprovedAnswer(approved: string, question: string)
         "anthropic-version": "2023-06-01",
         "content-type": "application/json",
       },
-      signal: AbortSignal.timeout(6000),
+      signal: AbortSignal.timeout(12000),
       body: JSON.stringify({
         model: MODEL,
         max_tokens: 1000,
