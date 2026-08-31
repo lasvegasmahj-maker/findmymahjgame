@@ -217,8 +217,6 @@ const WRONG_COUNT =
 // East is DEALT the extra tile; that is the deal, not a count that has gone wrong.
 const DEALER_EXTRA =
   /\b(dealer|east)\b[^.?!]{0,24}\bextra tile\b|\bextra tile\b[^.?!]{0,24}\b(dealer|east)\b/i;
-const BEFORE_PLAY =
-  /\b(before (east|the first discard|play|we start)|charleston|courtesy pass|the deal|dealt|dealing|re-?deal|redeal|start|starts|started|begins?|beginning|first discard)\b/i;
 const WRONG_TILE_GIVEN =
   /\b(wrong|incorrect) tile\b|\b(gave|handed|put|swapped|traded|exchanged|returned)\b[^.?!]{0,24}\bwrong\b/i;
 const EXCHANGE_CONTEXT =

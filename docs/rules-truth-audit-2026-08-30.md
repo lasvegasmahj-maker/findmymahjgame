@@ -23,7 +23,6 @@ remain for the owner. Source policy: docs/rules-sources.md.
   rulebook settles. `players-count` told a three-handed table to agree its own format, which owner
   decision #6 says the League already publishes. Everything else flagged for the owner is listed
   below, not edited in.
-  Items flagged for the owner are listed below, not edited in.
 
 ## Owner-approved entries: claims, classification, flags
 
@@ -479,3 +478,23 @@ Still open for Shauna, not edited: the duplicated house notes on `payments-basic
 `picking-ahead`, the "printed in capitals" claim in `picking-ahead`, the unhyphenated
 "5 tile Quint", and whether she has read the published wording of the 14 entries stamped
 on her 2026-08-30 decisions rather than only the rulings behind them.
+
+### Gate 28: PASS, no blockers, one self-inflicted regression reverted
+
+| File | Defect | Fix |
+|---|---|---|
+| `components/home/home-search-card.tsx`, `components/ask/answer-text.tsx` | The two-paragraph home-card clip added in the gate 27 round was worse than the length problem it solved, and both reviewers caught it independently. `house_note` is appended last, so the clip always ate the "this is a house rule, not a League rule" disclaimer, in the same round that stopped a model from deleting it. On `misnamed-discard` the visible half read "A call made on the wrong name does not stand" while the 4x payment and the dead hand sat below the cut, so a player saw the lenient half of a penalty rule and nothing telling her there was more. | Reverted. The home card shows the whole answer again and the truncation code is gone, with a comment recording why it must not come back. Home-card length is a design question for Shauna; showing half a penalty rule is not. |
+| `app/api/ask/route.ts` | `rulesVerified` had dropped its `owner_question_pending` check while the comment explaining that check stayed. Harmless today (no entry carries the state) but wrong the moment the next unresolved ruling is filed, and no test would catch it. | Guard restored, comment corrected. |
+| `lib/ask-llm.ts` | The rephrase prompt interpolated the raw player question into the same undelimited turn as the approved answer, with only a lower length bound on the output. A crafted question could have had the model publish prose of its own as an owner-approved rule. Dormant (`ASK_REPHRASE_ENABLED` unset) but a pre-flip risk. | The question is now a delimited untrusted block the system prompt tells the model never to obey, and the output is bounded above as well as below. |
+| `lib/rules/knowledge.ts` | `BEFORE_PLAY` was orphaned when the count entry moved to matching on `WRONG_COUNT` alone, leaving the branch's only eslint warning. | Deleted. |
+| `docs/rules-sources.md` | Still documented `owner_question` and `owner_question_pending` as live states after the owner resolved all 13 rulings. | Marked reserved and unused since 2026-08-30. |
+
+### Testing note
+
+The default `npx playwright test` run is desktop Chromium only. Mobile is `PW_MOBILE=1
+--project=mobile-chromium` and the real iOS lens is `PW_WEBKIT=1 --project=mobile-safari`,
+which cannot run on this Mac (WebKit Bus-errors). Running two projects at once puts two
+copies of the QA sign-in fixtures against one per-IP OTP budget and the suite fails on
+rate limits rather than assertions, so desktop and mobile are always run separately, at
+least five minutes apart. Every suite result recorded in this document was produced that
+way. A WebKit pass still has to happen somewhere other than this machine before release.

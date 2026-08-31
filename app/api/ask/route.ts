@@ -145,9 +145,10 @@ export async function POST(req: NextRequest) {
     if (unmatchedFinal || rules.unsupported_reason === "no_entry") void logRulesGap(rules.clarify?.question ?? question, rules);
   }
 
-  // An owner-question answer is honest but unverified; it must count that way everywhere.
-  // Research-verified answers awaiting owner review are still answers.
-  const rulesVerified = Boolean(rules?.matched);
+  // No entry carries owner_question today, but the state is held open for the next
+  // unresolved ruling, and such an answer is honest without being verified. Research
+  // verified answers awaiting owner review are still answers.
+  const rulesVerified = Boolean(rules?.matched && rules.evidence !== "owner_question_pending");
 
   if (topic === "rules" && rules) {
     const answer = await composeRulesAnswer(rules, question);

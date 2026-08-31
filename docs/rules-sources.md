@@ -48,14 +48,14 @@ Every entry in `lib/rules/knowledge.ts` records:
 | `ruleset` | Always `american_nmjl`. |
 | `topic` | Short player-facing topic name. |
 | `classification` | `standard_nmjl_rule`, `nmjl_clarification`, `tournament_rule`, `house_optional_rule`, `etiquette`, or `strategy`. |
-| `source` | `owner_approved`, `research_verified`, or `owner_question` (an unresolved ruling filed for the owner; the answer says the instructor is confirming it and claims no rule). |
+| `source` | `owner_approved`, `research_verified`, or `owner_question` (an unresolved ruling filed for the owner; the answer says the instructor is confirming it and claims no rule). Reserved and unused since 2026-08-30, when the owner resolved all 13 open rulings. |
 | `provenance.source_type` | `owner_approved`, `nmjl_primary`, `secondary_research`, or `arithmetic`. |
 | `provenance.source_title` | Which source class the rule was located in (no source text). |
 | `provenance.source_ref` | Cross-check reference, for example the League publication and the Mahj Life article number used to locate it. |
 | `provenance.source_year` | Year of the source or ruling where relevant. |
 | `last_verified` | Date the entry was last verified. |
 | `provenance.owner_review_required` | `true` for every entry the owner has not yet approved. |
-| `provenance.evidence` | `verified` (owner-approved), `owner_review_pending` (research-verified, awaiting the owner), or `owner_question_pending` (an open owner question). |
+| `provenance.evidence` | `verified` (owner-approved), `owner_review_pending` (research-verified, awaiting the owner), or `owner_question_pending` (an open owner question; reserved and unused since 2026-08-30). |
 | `varies_by_house` / `house_note` | Marks table-to-table variation without softening the League rule. |
 
 Tests enforce the structure: `tests/rules-knowledge.spec.ts` (well-formed entries, hard

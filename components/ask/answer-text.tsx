@@ -33,20 +33,13 @@ export function splitIntoParagraphs(text: string): string[] {
   return paras;
 }
 
-/**
- * maxParagraphs clips the home card, whose job is to answer enough that the reader knows
- * the site has the answer, not to reprint a 1600 character rule in the hero. /ask leaves
- * it unset and shows everything.
- */
-export function AnswerText({
-  text,
-  className,
-  maxParagraphs,
-}: {
-  text: string;
-  className?: string;
-  maxParagraphs?: number;
-}) {
+// Deliberately no truncation. Clipping the home card to the first paragraphs was tried
+// on 2026-08-31 and reverted: house_note is appended last, so the clip always ate the
+// "this is a house rule, not a League rule" disclaimer, and on misnamed-discard it left
+// only "a call made on the wrong name does not stand" while hiding the payment and the
+// dead hand. Half of a penalty rule reads as the whole rule. Length on the home card is
+// a design question for the owner; showing the whole rule is not.
+export function AnswerText({ text, className }: { text: string; className?: string }) {
   if (text.length <= LONG) {
     return className ? (
       <p className={className}>{text}</p>
@@ -54,9 +47,7 @@ export function AnswerText({
       <p style={{ fontSize: "1.1rem", color: "var(--navy)", fontWeight: 600, textAlign: "center", lineHeight: 1.55 }}>{text}</p>
     );
   }
-  const all = splitIntoParagraphs(text);
-  const paras = maxParagraphs && all.length > maxParagraphs ? all.slice(0, maxParagraphs) : all;
-  const clipped = paras.length < all.length;
+  const paras = splitIntoParagraphs(text);
   return (
     <div>
       {paras.map((p, i) => (
@@ -65,21 +56,13 @@ export function AnswerText({
           className={className}
           style={
             className
-              ? { fontWeight: 500, textAlign: "left", marginBottom: i === paras.length - 1 && !clipped ? 0 : "0.8rem" }
+              ? { fontWeight: 500, textAlign: "left", marginBottom: i === paras.length - 1 ? 0 : "0.8rem" }
               : { ...LONG_STYLE, margin: i === paras.length - 1 ? 0 : "0 0 0.8rem" }
           }
         >
           {p}
         </p>
       ))}
-      {clipped ? (
-        <p
-          className={className}
-          style={className ? { fontWeight: 500, textAlign: "left", opacity: 0.75, margin: 0 } : { ...LONG_STYLE, opacity: 0.75, margin: 0 }}
-        >
-          Read the rest of this answer on the Ask page.
-        </p>
-      ) : null}
     </div>
   );
 }
