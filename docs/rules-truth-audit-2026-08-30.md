@@ -354,3 +354,89 @@ The 26 research-verified entries and 3 owner-question entries carry
 `owner_review_required: true`. Approving one means setting `source: "owner_approved"`,
 `provenance.source_type: "owner_approved"`, `owner_review_required: false`, and updating
 `last_verified`.
+
+## Final review round (2026-08-30, gate 21 + publish-fidelity panel)
+
+Gate 21 passed with no blockers. Its warnings and the final three-lens
+publish-fidelity panel between them produced five confirmed defects. All five
+are fixed and pinned; nothing else in either report was acted on.
+
+| # | Entry / file | Defect a player would have acted on | Fix | Pin |
+|---|---|---|---|---|
+| 1 | `lib/ask-intent.ts` | Four priority questions ("who gets to call first when two of us want it", "do I have to call first or can I just take it", "she said hold, can I call ahead", "am I allowed to call ahead") were sent to a directory search. The corpus already answered all four. | `CONTACT_SENSE` now reads only the contact sense: "call back", "call the teacher/studio/venue/...", "call ahead to|and". Bare "call first" and "call ahead" belong to the table. | benchmark, "call ahead / call first keeps its table sense" (both directions) |
+| 2 | `three-player-procedure` | "how much do three players pay" was answered with the dealing procedure. | Entry blocks `SETTLEMENT` and `SCORING_ASK`, so payment questions reach `payments-basics`. | same block |
+| 3 | `mahjong-in-error-settlement` | A misname settlement question was answered by the false-mahjong settlement rule. The two name opposite payers at different multiples: this entry has the declarer pay one player double, `misnamed-discard` has the discarder alone pay the declarer 4x. A table would have collected from the wrong person. | Entry blocks `MISNAMED`. | benchmark, "publish fidelity" |
+| 4 | `charleston`, `charleston-stop` | "we only have 3 players, do we have to do the Charleston?" was answered "the first Charleston is required and cannot be stopped", contradicting owner decision #6. | Both entries block a new seats-only `THREE_PLAYER_SEATS`. `THREE_PLAYER` itself was also tightened: its bare "only 3" means three tiles in a Charleston question, which had mis-answered "do we pass only 3 tiles". | benchmark, "publish fidelity" |
+| 5 | `rules-source` | Published "our instructor is reviewing every answer we add, and when a ruling is still being confirmed the answer says so." Both halves overclaimed: not every answer is reviewed, and no answer's own text says a ruling is being confirmed. (The first pass at this removed the sentence outright on the premise that nothing marked a pending answer at all. That was wrong: both surfaces render a review badge from `rules.evidence === "owner_review_pending"`, at `app/ask/ask-client.tsx` and `components/home/home-search-card.tsx`. Gate 22 caught it, and removing the sentence had left the badge unexplained.) | Reworded to describe what the site actually does: "When our instructor is still reviewing an answer, we mark it, and we say so whenever something is a table courtesy or a house rule instead of a League rule, or whenever the League has not settled a point." | benchmark, "publish fidelity" |
+| 6 | `courtesies-vs-rules` | **Owner-approved wording changed — flagged for Shauna.** Listed "whether the same dealer deals again" as a local custom. Mah Jongg Made Easy 2024 pp.15-16 settles it (after a wall game the deal passes to East's right), so the entry told players the League was silent on a rule it publishes — in the very entry that teaches players how to sort rules from courtesies. | The example is now how long a table waits on a call, which our own `hold-or-wait` entry states is not a League rule. | benchmark, "publish fidelity" |
+
+### Gate 22 (final pre-push gate): PASS, no blockers
+
+Three of its warnings were wrong answers it reproduced live, so they were fixed
+with the same discipline; the rest went to the backlog below.
+
+| Entry / file | Defect | Fix | Pin |
+|---|---|---|---|
+| `lib/ask-intent.ts` | The contact guard hard-returned "directory" before any rules signal was read, and its rescue list was 15 hand-written words that omitted pung, kong, quint, sextet, flower, dragon, bam, crak, soap and expose. "can I call back a pung I already exposed" and "can I call back a flower after I expose it" got the generic directory reply. | The rescue now uses a new shared `MAHJ_ONLY_NOUN` in `knowledge.ts`: words that can only mean mahjong. `MAHJ_VOCAB` cannot do this job, because it contains "call" itself. The guard has to stay ahead of the signal set, since `OWN_DISCARD` treats a bare "call back" as an unconditional rules signal. | benchmark, "call ahead / call first keeps its table sense", both directions |
+| `joker-exchange` | No `blocks`, so it tied `dead-hand-jokers` on specificity and won the tiebreak on any redeem/swap phrasing. "can a joker in a dead hand be redeemed" was answered "you may hand over the real tile and take the joker" — the opposite of the rule the site published this round. Harmless while `dead-hand-jokers` was a placeholder; a contradiction once it became a substantive answer. | Blocks `DEAD`, matching its sibling `joker-exchange-timing`. | benchmark, "publish fidelity" |
+| `rules-source` | See row 5 above. | See row 5 above. | benchmark, "publish fidelity" |
+
+### Judged and deliberately not changed
+
+- **`calling-quints-sextets`** (owner-approved) states "a call must complete a
+  whole block as printed on the card, never part of one". The coherence lens
+  read this as a general rule that `calling-for-exposure` and `calling-discard`
+  contradict. It is not general: exposing a pung toward a printed kong and
+  completing it later is ordinary League play, and the entry's own `requires`
+  (`QUINT_SEXTET` + `CLAIM_VERB`) already confine the sentence to quint and
+  sextet questions, where it holds. The probes the lens offered as failures
+  ("can I expose three tiles when the card calls for four") get the correct
+  answer today. Owner-approved wording, correct as served — for Shauna to
+  narrow if she wants the sentence to read as quint/sextet-specific.
+
+### Post-launch backlog (nothing here changes an answer)
+
+- `components/ask/answer-text.tsx`: fixed this round (sentences kept a leading
+  space, so `BREAK_CUE` never matched its `^` anchor and long answers always
+  broke every three sentences). Listed because it was found as a style nit.
+- `wall-game` house_note and `players-count` house_note (both owner-approved)
+  describe real table variation but do not name the League default first.
+  Same family as defect 6; wording is the owner's call.
+- `exposures-basics` and `calling-for-exposure` state the exposure lock without
+  the decision-#12 carve-out for a wrong tile left by a joker exchange. Reached
+  only by a phrasing that carries no joker word.
+- `hold-or-wait` lists four acts that close the claiming window; four other
+  entries list two. The gap is a next player who has picked but not racked and
+  then starts a joker exchange.
+- Provenance precision: `calling-quints-sextets` (whole-block limit is not on
+  the cited League pages), `wrong-tile-count-before-play` (the one-seat
+  exception is p.14 bullet 1, not p.17), `calling-discard` house_note (says
+  "the card closes the calling window"; the corpus's own sourcing puts it in
+  the rulebook, p.17 #8).
+- `two-players-same-tile` and `hold-or-wait` each carry one sentence that
+  tracks Mahj Life's editorial phrasing more closely than the file's own
+  no-close-paraphrase standard allows. Restate from the rule.
+- `picking-ahead` (owner-approved) says the card-back rule is "the first rule"
+  and "printed in capitals". The rule itself is right, but a claim about ordinal
+  position and letter case on a printed card cannot come from the secondary
+  sources in its provenance, and this round's own attribution policy forbids it.
+  No player acts differently either way, so it is an owner question, not an edit:
+  confirm against a card in hand, or cut the two details.
+- `payments-basics` (owner-approved) says table customs cover kitties, antes and
+  loss caps in the answer, then again in the house_note two sentences later.
+- `lib/ask-intent.ts` restates `HOLD_WAIT`/`HOLD_WAIT_ASK`, `FINAL_DISCARD_SCENE`
+  and `WRONG_COUNT` inline instead of importing them, against the comment in
+  `knowledge.ts` that says these are shared so they cannot drift. They already
+  have: the inline final-discard alternation carries `exposure|mahjong` and the
+  shared one does not. `MAHJ_ONLY_NOUN` was added the right way this round.
+- The homepage concierge card renders a full-length rules answer with no cap
+  (1130px on a 390px viewport). Cap it at the first two paragraphs and let the
+  "Continue on the Ask page" link carry the rest.
+- `AnswerText` break cues are matched against current prose, which the runtime
+  model rephrase can rewrite. Author the paragraph breaks in the content
+  instead. The two surfaces also render the same answer at different type
+  scales and weights.
+- `misnamed-discard` draws the safe/dead line at "laid tiles down"; the sourcing
+  lens reads the League text as also disqualifying a caller who racked the
+  misnamed tile. This would extend an owner-approved consequence, so it is an
+  owner question, not an edit.

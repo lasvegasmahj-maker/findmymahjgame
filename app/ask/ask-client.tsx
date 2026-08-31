@@ -34,7 +34,6 @@ const EXAMPLES = [
   "Find an instructor near Phoenix",
 ];
 
-
 export default function AskClient() {
   // Prefill from /ask?q=... (the homepage "Continue on the Ask page" link).
   const searchParams = useSearchParams();

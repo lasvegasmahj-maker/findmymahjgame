@@ -550,6 +550,11 @@ test.describe("call ahead / call first keeps its table sense", () => {
       "am I allowed to call ahead",
       "can I call ahead of someone else who wants the same tile",
       "if two people call at once who gets it",
+      // A word that can only mean mahjong outranks the contact reading, even
+      // when the phrase itself is "call back".
+      "can I call back a pung I already exposed",
+      "can I call back a flower after I expose it",
+      "can I call back a tile I already discarded",
     ]) {
       expect(detectAskTopic(q), q).toBe("rules");
       const r = lookupRule({ question: q });
@@ -567,6 +572,8 @@ test.describe("call ahead / call first keeps its table sense", () => {
       "is it better to email or call the instructor",
       "do they call back the same day",
       "can I call ahead and reserve a seat",
+      "will the teacher call me back",
+      "leave a voicemail or email the club",
     ]) {
       expect(detectAskTopic(q), q).toBe("directory");
     }
@@ -626,12 +633,37 @@ test.describe("publish fidelity", () => {
   test("no published answer promises a review the site does not perform", () => {
     // Nothing appends a "still being confirmed" note to an answer, so the site
     // must not tell players that it does.
+    // The review badge is real (app/ask/ask-client.tsx, components/home/
+    // home-search-card.tsx), so rules-source must explain it. What it must not do
+    // is claim every answer is reviewed, or that an answer's own text says a
+    // ruling is still being confirmed. Nothing appends that to the text.
     const rs = RULES_KNOWLEDGE.find((e) => e.id === "rules-source")!;
-    expect(rs.approved_answer).not.toMatch(/instructor/i);
+    expect(rs.approved_answer).toMatch(/still reviewing an answer, we mark it/);
+    expect(rs.approved_answer).not.toMatch(/every answer we add/i);
     expect(rs.approved_answer).not.toMatch(/being confirmed/i);
     expect(rs.approved_answer).toMatch(/National Mah Jongg League/);
     for (const e of RULES_KNOWLEDGE) {
-      expect(e.approved_answer, e.id).not.toMatch(/our instructor is (confirming|reviewing)/i);
+      expect(e.approved_answer, e.id).not.toMatch(/our instructor is confirming/i);
+    }
+  });
+
+  test("a dead hand's jokers are answered by the dead-hand rule, not the exchange rule", () => {
+    // joker-exchange says you may take the joker; dead-hand-jokers says no one can
+    // redeem the ones in the exposure that killed the hand. Opposite answers.
+    for (const q of [
+      "can a joker in a dead hand be redeemed",
+      "can we redeem a joker from a dead hand",
+      "dead hand can I redeem the joker",
+      "can a joker in a dead hand be swapped",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("dead-hand-jokers");
+    }
+    for (const q of [
+      "can I redeem a joker",
+      "how does a joker exchange work",
+      "can I swap a joker from someone's exposure",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("joker-exchange");
     }
   });
 

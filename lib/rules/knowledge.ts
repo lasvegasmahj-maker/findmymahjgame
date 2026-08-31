@@ -223,6 +223,11 @@ const WRONG_TILE_GIVEN =
 const EXCHANGE_CONTEXT =
   /\b(exchang\w+|redeem\w*|swap\w*|trad(e|ed|ing)|for (my|the|a|his|her) joker|took (my|the|her|his) joker|gave me)\b/i;
 const HOLD_WAIT = /\b(hold|wait)\b(?!\s+(a |an |the |my |your |our |her |his |their )?(spot|seat|place|table|room))/i;
+// Words that can only mean mahjong. Everyday words the game also uses (call, hand,
+// deal, play, pass, wait) are deliberately absent: those are exactly what makes a
+// contact question look like a claim, so they cannot be what rescues one.
+export const MAHJ_ONLY_NOUN =
+  /\b(tiles?|discards?|discarded|discarding|jokers?|mahjong|mahj|maj|charleston|pungs?|kongs?|quints?|sextets?|exposures?|expos(e|es|ed|ing)|melds?|racks?|walls?|bams?|craks?|dots?|dragons?|flowers?|soap|blanks?|card|redeal)\b/i;
 export const CONTACT_SENSE =
   /\bcall\s+(back|the\s+(teacher|instructor|studio|venue|club|shop|store|number|office))\b|\bcall\s+ahead\s+(to|and)\b|\b(phone call|voicemail|email|call\s+(me|you|us|them)\s+back)\b/i;
 const HOLD_WAIT_ASK =
@@ -436,6 +441,8 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     ],
     keywords: ["joker", "exchange", "redeem", "swap"],
     requires: [JOKER, JOKER_EXCHANGE],
+    // A dead hand's jokers are dead-hand-jokers' rule, which says the opposite.
+    blocks: [DEAD],
     approved_answer:
       "Yes, joker exchange is allowed. When any player has an exposed group on the table that contains a joker, you may, on your own turn, hand over the real tile that joker stands for and take the joker into your hand. You can only redeem a joker from an exposure, never from tiles hidden in another player's hand.",
     ruleset: RULESET,
@@ -1289,7 +1296,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [OFFICIAL],
     blocks: [CARD_WORD, TOURNAMENT],
     approved_answer:
-      "American mahjong's official rules come from the National Mah Jongg League: the card it publishes every spring and its rulebook, Mah Jongg Made Easy, along with the rulings in its bulletins. Find My Mahj answers only from those rules. We say so whenever something is a table courtesy or a house rule instead of a League rule, and whenever the League has not settled a point.",
+      "American mahjong's official rules come from the National Mah Jongg League: the card it publishes every spring and its rulebook, Mah Jongg Made Easy, along with the rulings in its bulletins. Find My Mahj answers only from those rules. When our instructor is still reviewing an answer, we mark it, and we say so whenever something is a table courtesy or a house rule instead of a League rule, or whenever the League has not settled a point.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",

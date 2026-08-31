@@ -1,4 +1,4 @@
-import { blindReadsAsPlace, BLIND_PASS, HAND_CLOSED, RULES_TOPIC_SIGNALS, RULES_TOPIC_SIGNALS_CONDITIONAL, VARIANT_RE, CONTACT_SENSE, placeAfterPrep } from "@/lib/rules/knowledge";
+import { blindReadsAsPlace, BLIND_PASS, HAND_CLOSED, RULES_TOPIC_SIGNALS, RULES_TOPIC_SIGNALS_CONDITIONAL, VARIANT_RE, CONTACT_SENSE, MAHJ_ONLY_NOUN, placeAfterPrep } from "@/lib/rules/knowledge";
 import { normalizeQuestion, spellfix } from "@/lib/rules/lookup";
 import { DAY_NAMES, type DayName, type TimeOfDay } from "@/lib/schedule";
 import { RADIUS_OPTIONS, type RadiusMiles } from "@/lib/geo";
@@ -218,11 +218,11 @@ export function detectAskTopic(raw: string): AskTopic {
     return detectAskTopic(q.replace(/\bblind(\s+[A-Za-z]+)?\b/gi, ""));
   }
 
-  // "wait for a call back about lessons" is a phone call, not a claim. Only a mahjong noun
-  // in the same sentence can pull a contact question onto the rules path.
-  if (CONTACT_SENSE.test(q) && !/\b(tile|tiles|discard|discards|joker|jokers|mahjong|maj|charleston|exposure|exposures|rack|wall|card)\b/i.test(q)) {
-    return "directory";
-  }
+  // "wait for a call back about lessons" is a phone call, not a claim. It has to be
+  // caught here, ahead of the signal set, because OWN_DISCARD treats a bare "call back"
+  // as an unconditional rules signal. Only a word that can ONLY mean mahjong rescues it:
+  // MAHJ_VOCAB is no use, since it contains "call" itself.
+  if (CONTACT_SENSE.test(q) && !MAHJ_ONLY_NOUN.test(q)) return "directory";
 
   const questionForm = /\b(what|how|why|when|can|could|should|is|are|do|does|work|mean)\b/i.test(q);
   // The weak nouns (rules, rack, discard, deal) only signal a rules question when the
@@ -236,6 +236,7 @@ export function detectAskTopic(raw: string): AskTopic {
   const strongRules = RULES_SIGNAL_RES.some((re) => re.test(q)) || conditional;
   const rulesAsk = strongRules || (weakRulesNoun && questionForm) || variantAsk;
   if (!rulesAsk) return "directory";
+
 
   // Discovery needs a strong signal here. Bare "in" is not one: extractLocation reads
   // "in a pair" as a place, which would bolt a bogus search onto a pure rules question.
