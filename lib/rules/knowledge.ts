@@ -207,7 +207,11 @@ export function blindReadsAsPlace(question: string): boolean {
 }
 
 const THREE_PLAYER =
-  /\b(three|3)[- ](player|handed|person)\b|\b(three|3) (people|players|of us)\b|\bplay(ing)? with (just )?(three|3)\b|\bonly (three|3)\b|\bmissing a (fourth|4th)\b|\bwithout a (fourth|4th)\b/i;
+  /\b(three|3)[- ](player|handed|person)\b|\b(three|3) (people|players|of us)\b|\bplay(ing)? with (just )?(three|3)\b|\bonly (three|3)\b(?!\s+(tiles?|passes?|of them)\b)|\bmissing a (fourth|4th)\b|\bwithout a (fourth|4th)\b/i;
+// Seats only. THREE_PLAYER also matches a bare "only 3", which in a Charleston
+// question means three tiles, not three players.
+const THREE_PLAYER_SEATS =
+  /\b(three|3)[- ](player|handed|person)\b|\b(three|3) (people|players|of us)\b|\bplay(ing)? with (just )?(three|3)\b|\bonly (three|3) (of us|people|players)\b|\b(missing|without) a (fourth|4th)\b/i;
 const THREE_PLAYER_HOW =
   /\b(procedure|how|deal|deals|dealt|dealing|set ?up|start|starts|walls?|charleston|tiles?|rules?|official|work|works|count|counts|pass|passes|passing|play|still)\b/i;
 const WRONG_COUNT =
@@ -475,6 +479,8 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
       /\bcourtesy pass\b/i,
       JOKER_PASS,
     ],
+    // Three-handed play has its own Charleston rule; see three-player-procedure.
+    blocks: [THREE_PLAYER_SEATS],
     keywords: ["charleston", "passing"],
     approved_answer:
       "The Charleston is the tile passing that happens before play begins. In the first Charleston, every player passes 3 tiles right, then 3 across, then 3 left; this first round is required. If all four players agree, a second Charleston follows: 3 left, 3 across, 3 right. On the last pass of each Charleston you may pass blind, taking tiles from the pass coming to you without looking at them. Afterward, you and the player across from you may make an optional courtesy pass of up to 3 tiles. You may never pass a joker in the Charleston.",
@@ -684,7 +690,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     // The courtesy pass itself is described on its own entry.
     blocks: [/\bcourtesy pass\b/i, BLANK],
     approved_answer:
-      "It helps to separate official rules from table courtesies. Official rules come from the National Mah Jongg League and apply everywhere, such as the tile count, how calling works, and the courtesy pass, which is an optional League rule any player may decline. Courtesies are local customs a table agrees on, such as how a wall game is paid or whether the same dealer deals again. Agree on courtesies before the first hand so no one is surprised.",
+      "It helps to separate official rules from table courtesies. Official rules come from the National Mah Jongg League and apply everywhere, such as the tile count, how calling works, and the courtesy pass, which is an optional League rule any player may decline. Courtesies are local customs a table agrees on, such as how a wall game is paid or how long the table waits for a player who is deciding on a call. Agree on courtesies before the first hand so no one is surprised.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note: "Courtesies differ from table to table by design.",
@@ -926,6 +932,9 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [MAHJONG_CUE, ERROR_CUE, SETTLEMENT],
     keywords: ["mahjong", "error", "pay", "settle"],
     requires: [MAHJONG_CUE, ERROR_CUE, SETTLEMENT],
+    // A misname settlement is misnamed-discard's rule, not this one; the two
+    // state opposite payers, so this must not win a misname question.
+    blocks: [MISNAMED],
     approved_answer:
       "Settlement follows from how many hands are left standing. Everyone should hold their hands until someone checks the call, and you cannot take back a hand you threw in, because that hand is dead too. If at least two hands stay intact, play continues and no one pays yet; when someone later wins, the dead players pay along with everyone else, and a wall game means no one pays. If the false call leaves only one intact hand, the deal ends there and the player who declared in error pays that one player double the value of the hand the declarer was attempting, while players who threw in neither pay nor collect. If more than one player declared in error, the last one to do so carries that payment. A player who throws in a hand and wrecks the wall before anyone checks the call pays each player with an intact hand the lowest value printed on the card. One more thing worth knowing: another player who wanted that same claimed tile for mahjong may still take it and win, but a player who wanted it only for an exposure may not.",
     ruleset: RULESET,
@@ -1104,7 +1113,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [CHARLESTON_WORD, STOP_OR_AGREE],
     keywords: ["stop", "charleston", "second charleston", "optional"],
     requires: [new RegExp(`${CHARLESTON_WORD.source}|\\bpass(es|ed|ing)?\\b`, "i"), STOP_OR_AGREE],
-    blocks: [BLIND_PASS, COURTESY, JOKER, DISCARDED],
+    blocks: [BLIND_PASS, COURTESY, JOKER, DISCARDED, THREE_PLAYER_SEATS],
     approved_answer:
       "The first Charleston, three passes, is required and cannot be stopped once it begins. The second Charleston happens only if all four players agree, which is the same rule as saying any one player may stop it before it starts, without giving a reason. Once the second Charleston is under way, it continues to the end. A courtesy pass can still be offered after a stop.",
     ruleset: RULESET,
@@ -1280,7 +1289,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [OFFICIAL],
     blocks: [CARD_WORD, TOURNAMENT],
     approved_answer:
-      "American mahjong's official rules come from the National Mah Jongg League: the card it publishes every spring and its rulebook, Mah Jongg Made Easy, along with the rulings in its bulletins. Find My Mahj answers only from those rules; our instructor is reviewing every answer we add, and when a ruling is still being confirmed the answer says so. We also say so whenever something is a table courtesy or a house rule instead of a League rule.",
+      "American mahjong's official rules come from the National Mah Jongg League: the card it publishes every spring and its rulebook, Mah Jongg Made Easy, along with the rulings in its bulletins. Find My Mahj answers only from those rules. We say so whenever something is a table courtesy or a house rule instead of a League rule, and whenever the League has not settled a point.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",

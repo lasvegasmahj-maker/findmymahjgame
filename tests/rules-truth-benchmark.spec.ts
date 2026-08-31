@@ -579,3 +579,67 @@ test.describe("call ahead / call first keeps its table sense", () => {
     expect(lookupRule({ question: "can you play with three people" }).entry_id).toBe("three-player-procedure");
   });
 });
+
+// Publish-fidelity panel, final round. Four defects that a player would have
+// acted on at the table, each pinned with the probe that found it.
+test.describe("publish fidelity", () => {
+  test("a misname settlement is answered by the misname rule, not the false-mahjong rule", () => {
+    // The two entries name opposite payers at different multiples, so whichever
+    // one answers has to be the one whose rule the table is actually in.
+    for (const q of [
+      "she named the wrong tile and I declared mahjong, who pays?",
+      "he misspoke and named the wrong tile, she called mahjong, who pays what",
+      "I said the wrong tile name and someone declared mahjong on it, do I owe money?",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("misnamed-discard");
+    }
+    for (const q of [
+      "someone declared mahjong by mistake, who pays",
+      "false mahjong and two of us threw in, do we pay",
+      "he called mahjong in error, do I owe him anything",
+      "I threw my hand in after a false mahjong, what do I pay",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("mahjong-in-error-settlement");
+    }
+  });
+
+  test("a three handed table is never told the Charleston is required", () => {
+    for (const q of [
+      "we only have 3 players, do we have to do the Charleston?",
+      "is there a charleston with three players",
+      "do you do the charleston 3 handed",
+      "with only 3 of us do we still pass tiles",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("three-player-procedure");
+    }
+    // ...and "only 3" in a Charleston question means three tiles, not three seats.
+    for (const q of [
+      "do we pass only 3 tiles",
+      "you only pass 3 tiles right?",
+      "only three passes in the first charleston?",
+      "what is the charleston",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("charleston");
+    }
+  });
+
+  test("no published answer promises a review the site does not perform", () => {
+    // Nothing appends a "still being confirmed" note to an answer, so the site
+    // must not tell players that it does.
+    const rs = RULES_KNOWLEDGE.find((e) => e.id === "rules-source")!;
+    expect(rs.approved_answer).not.toMatch(/instructor/i);
+    expect(rs.approved_answer).not.toMatch(/being confirmed/i);
+    expect(rs.approved_answer).toMatch(/National Mah Jongg League/);
+    for (const e of RULES_KNOWLEDGE) {
+      expect(e.approved_answer, e.id).not.toMatch(/our instructor is (confirming|reviewing)/i);
+    }
+  });
+
+  test("who deals after a wall game is not offered as a table courtesy", () => {
+    // The rulebook settles it: the deal passes to East's right. Listing it as a
+    // local custom told players the League was silent on a rule it publishes.
+    const cv = RULES_KNOWLEDGE.find((e) => e.id === "courtesies-vs-rules")!;
+    expect(cv.approved_answer).not.toMatch(/dealer deals again/i);
+    expect(cv.approved_answer).toMatch(/local customs a table agrees on/);
+  });
+});
