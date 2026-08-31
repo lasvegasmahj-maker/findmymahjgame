@@ -586,10 +586,12 @@ no-op and is not a way to turn a model on for rules answers.
 
 ### Left for Shauna, not edited in
 
-1. **Sign-off on two corrected sentences.** `players-count` and `courtesies-vs-rules`
-   carried her verbatim wording; one sentence in each was corrected because it stated a
-   League-settled point as a table custom. Both are restamped `research_verified` and both
-   now show "Our instructor is reviewing this answer" until she approves the replacement.
+1. **Sign-off on three corrected sentences.** `players-count`, `courtesies-vs-rules` and
+   `wall-game` carried her verbatim wording; one sentence in each was corrected because it
+   stated a League-settled point as a table custom. All three are restamped
+   `research_verified` and all three now show "Our instructor is reviewing this answer"
+   until she approves the replacement. The three are the same fact seen from three sides:
+   after a wall game the deal passes to East's right, and no one pays.
 2. **The 14 entries stamped on her 2026-08-30 decisions.** Their provenance says she
    approved the ruling on the researched basis, which is accurate, but the published prose
    is Claude's and the badge is off. If she has not read the published wording, those
@@ -655,3 +657,31 @@ Two more of the same two-sided-block shape, and one invented place name:
   dead-hand entry and lost the payment consequence.
 - "how does payment work in mahjong" answered "Nothing reviewed matches near Mahjong yet."
   The game is now rejected as a place name, the same way pronouns are.
+
+### Gate 35: FAIL, two blockers, fixed
+
+Both blockers were the same fact, and the branch had already corrected it once. The wall
+game rule was fixed in `courtesies-vs-rules` and left standing in `wall-game`, and within
+the corrected sentence itself only the dealer half was fixed while the payment half still
+called a League rule a table custom. So the site answered "who deals after a wall game"
+and "who pays for one" differently depending on which entry a player reached.
+
+| File | Defect | Fix |
+|---|---|---|
+| `wall-game` | house_note said "Tables differ on whether the same dealer deals again after a wall game." Mah Jongg Made Easy 2024 pp.15-16 settles it, which is what this branch's own corrected provenance on `courtesies-vs-rules` cites. | The note states the rule. Third edit to owner-verbatim copy, restamped `research_verified` with owner review required, so it shows the badge until Shauna signs off. |
+| `courtesies-vs-rules` | Still listed "how a wall game is paid" as a local custom, while `wall-game`, `payments-basics` and `mahjong-in-error-settlement` all say no one pays. | Names an actual custom instead: whether the table keeps a kitty. |
+
+Four warnings from the same round, all the two-sided-block shape or a missing signal:
+
+- `players-count` and `three-player-procedure` could refuse the same question. The rule is
+  now explicit: a question naming another topic has that topic's entry, so `players-count`
+  stays blocked there, and it steps back in only where `three-player-procedure` refuses and
+  nothing else would answer, which is payment, settlement, and where-to-play.
+- `three-player-procedure` was answering "only three of us tonight where can we play" with
+  816 characters of wall-building before the listings. It now yields on a where-to-play
+  question.
+- "should I hold my hand when someone calls mahjong" and "I discarded out of turn what
+  happens" had no rules signal at all and ran directory searches, the second against an
+  invented town called Turn What Happens. Both senses now have a signal.
+- `PAYMENT` gained collect, settlement and their forms, which also closes the backlog item
+  where "how do payments work when someone wins" could not reach `payments-basics`.

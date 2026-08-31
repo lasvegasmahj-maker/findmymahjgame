@@ -162,7 +162,7 @@ const AGREE_SECOND =
   /\b(agree|agrees|agreement|unanimous|everyone|all four|all 4)\b[^.?!]{0,30}\b(second|another|charleston)\b|\b(second|another) charleston\b[^.?!]{0,30}\b(agree|agrees|unanimous|everyone|all four|all 4)\b/i;
 const STOP_OR_AGREE = new RegExp(`${STOP.source}|${AGREE_SECOND.source}`, "i");
 const PAYMENT =
-  /\b(pay|pays|paid|paying|payment|payments|payout|score|scores|scoring|scored|points|value|worth|double|doubled|doubles|owe|owes|money|bet|bets|stakes|quarters|dollars|coins|chips|settle|settles|jokerless|self[- ]?pick(ed)?|picked it (myself|yourself|herself|himself))\b/i;
+  /\b(pay|pays|paid|paying|payment|payments|payout|score|scores|scoring|scored|points|value|worth|double|doubled|doubles|owe|owes|money|bet|bets|stakes|quarters|dollars|coins|chips|settle|settles|settlement|settlements|collect|collects|collected|jokerless|self[- ]?pick(ed)?|picked it (myself|yourself|herself|himself))\b/i;
 const QUINT_SEXTET = /\b(quints?|sextets?|five of a kind|six of a kind)\b/i;
 const MIXED_GROUP =
   /\b(news|n ?e ?w ?s|runs?|sequences?|consecutive|straight|year|years|20[0-9]{2} hand|1 ?2 ?3|2 ?4 ?6|3 ?6 ?9|369|246|different tiles|mixed group|line of singles)\b/i;
@@ -224,6 +224,9 @@ const WRONG_COUNT =
 // about declining, not about how a claim is spoken.
 const DECLINE_CUE =
   /\b(do ?n[o']?t want|do not want|dont want|not want|pass on|passing on|passed on|skip|skipping|ignore|decline|declining|let it go|leave it|not take|do ?n[o']?t need|do not need)\b/i;
+// Asking where to play is not asking how to deal.
+const DIRECTORY_ASK =
+  /\b(where|near|nearby|find|looking for|join|club|clubs|group|groups|venue|venues|teacher|teachers|lesson|lessons|class|classes|learn)\b/i;
 // Nouns that name a different rule. If one is present, the question is about that, not
 // about three-handed play, however many people are in the room.
 const OTHER_TOPIC =
@@ -669,26 +672,46 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     ruleset: RULESET,
     varies_by_house: true,
     house_note:
-      "Tables differ on whether the same dealer deals again after a wall game.",
-    source: SOURCE,
-    last_verified: VERIFIED,
+      "After a wall game the deal moves on as usual: the player on East's right becomes East.",
+    // Owner-approved apart from the house note, which Claude corrected on 2026-08-31.
+    // It said tables differ on who deals after a wall game; Mah Jongg Made Easy 2024
+    // pp.15-16 settles it, and this branch had already corrected the same claim in
+    // courtesies-vs-rules. Pending Shauna's sign-off it is not her wording, so it does
+    // not carry her stamp and it shows the review badge.
+    source: "research_verified",
+    last_verified: VERIFIED_AUDIT,
     confidence: "high",
     classification: "standard_nmjl_rule",
-    provenance: OWNER,
+    provenance: researched(
+      "Owner-approved entry with the house note corrected: Mah Jongg Made Easy 2024 pp.15-16 settles who deals after a wall game (the player on East's right becomes East); located and cross-checked via Mahj Life wiki article 137",
+      2024,
+    ),
   },
   {
     id: "players-count",
     topic: "Number of players",
     question_patterns: [
       /how many (players|people)/i,
-      /play with (five|5|two|2)/i,
-      /\b(five|5|two|2) (people|players|of us)\b/i,
+      /play with (three|3|five|5|two|2)/i,
+      /\b(three|3|five|5|two|2) (people|players|of us)\b/i,
       /number of players/i,
+      /\b(three|3)[- ](player|person|handed)\b/i,
     ],
     keywords: ["players", "people", "how many players"],
     // A seats-of-three question is three-player-procedure's; this entry answers the
-    // plain count. Stands down where that entry also refuses, so neither leaves a hole.
-    blocks: [(q: string) => THREE_PLAYER_SEATS.test(q) && !OTHER_TOPIC.test(q)],
+    // plain count. It stands down wherever that entry also refuses, so a question can
+    // never fall between the two of them.
+    // A question naming another topic has that topic's entry, so this one stays blocked
+    // there. It only steps back in where three-player-procedure refuses and nothing else
+    // would answer: payment, settlement, and where-to-play.
+    blocks: [
+      (q: string) =>
+        THREE_PLAYER_SEATS.test(q) &&
+        !SETTLEMENT.test(q) &&
+        !SCORING_ASK.test(q) &&
+        !PAYMENT.test(q) &&
+        !DIRECTORY_ASK.test(q),
+    ],
     approved_answer:
       "American mahjong is built for 4 players. The League's rulebook also covers playing with 3, covering the deal and the fact that there is no Charleston, so you are not inventing a format when a fourth cannot make it.",
     ruleset: RULESET,
@@ -722,7 +745,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     // The courtesy pass itself is described on its own entry.
     blocks: [/\bcourtesy pass\b/i, BLANK],
     approved_answer:
-      "It helps to separate official rules from table courtesies. Official rules come from the National Mah Jongg League and apply everywhere, such as the tile count, how calling works, and the courtesy pass, which is an optional League rule any player may decline. Courtesies are local customs a table agrees on, such as how a wall game is paid or how long the table waits for a player who is deciding on a call. Agree on courtesies before the first hand so no one is surprised.",
+      "It helps to separate official rules from table courtesies. Official rules come from the National Mah Jongg League and apply everywhere, such as the tile count, how calling works, and the courtesy pass, which is an optional League rule any player may decline. Courtesies are local customs a table agrees on, such as whether the table keeps a kitty for a wall game, or how long the table waits for a player who is deciding on a call. Agree on courtesies before the first hand so no one is surprised.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note: "Courtesies differ from table to table by design.",
@@ -1002,7 +1025,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     // retrieve() ranks specificity above score, so one `requires` here outranked all 18
     // entries that have none. A question that merely happens to mention three of us is
     // about whatever noun it names, so those nouns take it back.
-    blocks: [SETTLEMENT, SCORING_ASK, PAYMENT, OTHER_TOPIC],
+    blocks: [SETTLEMENT, SCORING_ASK, PAYMENT, OTHER_TOPIC, DIRECTORY_ASK],
     approved_answer:
       "American mahjong seats 4 players, and the League's rulebook covers playing with 3. Build all 4 walls as usual with the full 152 tiles and leave one seat empty. Deal only to the three players, and the empty seat gets nothing. The deal ends with East holding 14 tiles and the other two holding 13. League publications describe the final pickup in two slightly different orders, and both reach those counts. Under League rules there is no Charleston with three players, so this is not a table preference. East opens with a discard, and play runs like the 4-player game. Anything beyond this is a table choice, such as an invented Charleston for three or a ghost hand dealt to the empty seat.",
     ruleset: RULESET,

@@ -1144,6 +1144,54 @@ test.describe("publish fidelity", () => {
     expect(parseAskIntent("where can I play mahjong in Naples").location).toBe("Naples");
   });
 
+  test("the wall game is answered the same way whichever entry a player reaches", () => {
+    // The branch corrected who deals after a wall game in one entry and left the same
+    // claim standing in another, so the site answered it two opposite ways.
+    const wg = RULES_KNOWLEDGE.find((e) => e.id === "wall-game")!;
+    expect(wg.house_note).not.toMatch(/tables differ.*dealer|dealer deals again/i);
+    expect(wg.house_note).toMatch(/East's right becomes East/);
+    expect(wg.source).not.toBe("owner_approved");
+    expect(wg.provenance.owner_review_required).toBe(true);
+    // ...and how a wall game pays is a League rule, not a table custom.
+    const cv = RULES_KNOWLEDGE.find((e) => e.id === "courtesies-vs-rules")!;
+    expect(cv.approved_answer).not.toMatch(/how a wall game is paid/i);
+    expect(cv.approved_answer).toMatch(/kitty for a wall game/);
+    for (const id of ["payments-basics", "mahjong-in-error-settlement"]) {
+      expect(RULES_KNOWLEDGE.find((e) => e.id === id)!.approved_answer, id).toMatch(/no one (pays|wins and no one pays)/i);
+    }
+  });
+
+  test("a three seat question always lands somewhere, whatever else it asks", () => {
+    // three-player-procedure refuses payment, topic and where-to-play questions, so
+    // players-count has to stand down in exactly those cases and no others.
+    const cases: Array<[string, string]> = [
+      ["three of us are playing what does the winner collect", "payments-basics"],
+      ["is there a settlement rule for three players", "payments-basics"],
+      ["how much do three players pay", "payments-basics"],
+      ["three of us are new to mahjong where can we learn", "players-count"],
+      ["only three of us tonight where can we play", "players-count"],
+      ["we have three players is that ok", "three-player-procedure"],
+      ["how do you deal for three players", "three-player-procedure"],
+      ["is there a charleston with three players", "three-player-procedure"],
+      ["can I pass a joker if there are only three of us", "charleston"],
+      ["how many players do you need for mahjong", "players-count"],
+    ];
+    for (const [q, id] of cases) expect(lookupRule({ question: q }).entry_id, q).toBe(id);
+  });
+
+  test("holding your hand and discarding out of turn reach the rules path", () => {
+    // Neither sense had a signal, so both ran a directory search, one of them against an
+    // invented town called Turn What Happens.
+    for (const q of [
+      "should I hold my hand when someone calls mahjong",
+      "do we hold our hands until the mahjong is checked",
+      "I discarded out of turn what happens",
+    ]) {
+      expect(detectAskTopic(q), q).toBe("rules");
+    }
+    expect(lookupRule({ question: "I discarded out of turn what happens" }).entry_id).toBe("picking-ahead");
+  });
+
   test("who deals after a wall game is not offered as a table courtesy", () => {
     // The rulebook settles it: the deal passes to East's right. Listing it as a
     // local custom told players the League was silent on a rule it publishes.

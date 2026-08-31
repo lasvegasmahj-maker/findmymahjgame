@@ -155,6 +155,12 @@ const RULES_SIGNAL_RES: RegExp[] = [
   /\b(same tile|same discard|two players (call|want)|both (call|want)|who gets the tile|who gets it)\b/i,
   /\b(pick|picking|picked|draw|drawing|drew) (ahead|out of turn|early|too soon|before (my|her|his|their) turn)\b/i,
   TAKE_BACK_RE,
+  // Holding your hand while a mahjong is checked is a rules question; the rack-sense
+  // exclusion in HOLD_WAIT deliberately keeps "hold my tiles" out of the claim matchers,
+  // so this sense needs its own signal or it reaches nothing at all.
+  /\b(hold|keep)\b[^.?!]{0,24}\bhands?\b[^.?!]{0,30}\b(mahjong|maj|call|called|check|checked|verified)\b/i,
+  // "out of turn" has no directory sense.
+  /\bout of turn\b/i,
   /\bmis-?nam(e|ed|es|ing)\b|\bwrong name\b/i,
   /\b(false|wrong|mistaken|bad) (mahjong|maj|mah ?jong+)\b|\b(mahjong|maj|mah ?jong+) (in error|by mistake|by accident|wrongly|incorrectly)\b|\bdeclared (mahjong|maj|mah ?jong+)\b/i,
   /\b(name|announce|say) (the |each |every |a |my |your )?(tile|discard)\b|\bsay same\b|\bsaying same\b/i,
