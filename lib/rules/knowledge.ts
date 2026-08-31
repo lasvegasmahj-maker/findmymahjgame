@@ -214,6 +214,10 @@ const WRONG_COUNT =
   /\b(wrong number|wrong count|miscount|too many tiles|too few tiles|12 tiles|(too many|extra|an extra|holding|ended up with|i have|ive got|i've got|stuck with) [^.?!]{0,10}14 tiles|short a tile|missing a tile|extra tile(?!\s+sets?\b)|one too many|one too few|short one)\b/i;
 const BEFORE_PLAY =
   /\b(before (east|the first discard|play|we start)|charleston|courtesy pass|the deal|dealt|dealing|re-?deal|redeal|start|starts|started|begins?|beginning|first discard)\b/i;
+const WRONG_TILE_GIVEN =
+  /\b(wrong|incorrect) tile\b|\b(gave|handed|put|swapped|traded|exchanged|returned)\b[^.?!]{0,24}\bwrong\b/i;
+const EXCHANGE_CONTEXT =
+  /\b(exchang\w+|redeem\w*|swap\w*|trad(e|ed|ing)|for (my|the|a|his|her) joker|took (my|the|her|his) joker|gave me)\b/i;
 const HOLD_WAIT = /\b(hold|wait)\b(?!\s+(a |an |the |my |your |our |her |his |their )?(spot|seat|place|table|room))/i;
 const HOLD_WAIT_ASK =
   /\b(call|calls|called|claim|claims|count|counts|mean|means|legal|legally|stop|stops|priority|say|says|saying|said|shout|shouted|allowed|same as|instead of)\b/i;
@@ -789,7 +793,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [JOKER, DISCARDED],
     blocks: [JOKER_EXCHANGE, JOKER_PASS, /\bpairs?\b/i, MISNAMED],
     approved_answer:
-      "You may discard a joker on your turn, but once a joker is discarded it is out of the game. No one may call a discarded joker for any reason, not for an exposure and not for mahjong, and it cannot be picked up later through a joker exchange.",
+      "You may discard a joker on your turn, but once a joker is discarded it is out of the game. No one may call a discarded joker for any reason, not for an exposure and not for mahjong, and it cannot be picked up later through a joker exchange. One exception sits outside this rule: if you throw a joker but name it as an ordinary tile, the misnamed discard rules govern what happens, not this one.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
@@ -818,9 +822,9 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
   {
     id: "joker-exchange-wrong-tile",
     topic: "A joker exchanged for the wrong tile",
-    question_patterns: [JOKER_EXCHANGE, ERROR_CUE],
+    question_patterns: [JOKER_EXCHANGE, WRONG_TILE_GIVEN, EXCHANGE_CONTEXT],
     keywords: ["joker", "exchange", "wrong tile"],
-    requires: [JOKER, JOKER_EXCHANGE, ERROR_CUE, /\b(exchang\w+|redeem\w*|swap\w*|trad(e|ed|ing))\b/i],
+    requires: [JOKER, WRONG_TILE_GIVEN, EXCHANGE_CONTEXT],
     approved_answer:
       "Catch it before the next discard and there is no penalty: take the wrong tile back, put the right one in, and play continues. Once that discard has been made and the exposure is still wrong, the player whose rack holds the incorrect exposure has a dead hand for that deal. The player who handed over the wrong tile keeps playing and owes nothing, because the League makes each player responsible for the exposures on their own rack. A dead player stops drawing and discarding and still pays the winner. Keep this separate from a different rule: changing an otherwise valid exposure after you have completed a joker exchange is not allowed, and that has nothing to do with fixing an exchange that went wrong. You can avoid the whole problem by announcing the exchange before anyone touches a tile and passing the tile from hand to hand, so you both see it.",
     ruleset: RULESET,
@@ -888,7 +892,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     keywords: ["misnamed", "wrong name"],
     requires: [MISNAMED],
     approved_answer:
-      "Name every discard aloud as you place it face up, because the correct name is what makes the tile claimable. When your tile repeats the discard just before it, the League accepts saying same. If you say the wrong name, fix it with words only: state the correct name of the tile you actually threw. Never swap tiles, even if the tile you named by mistake sits in your hand. Once you correct the name and nobody has acted on the error, play continues with no penalty and any player may claim the tile normally. A call made on the wrong name does not stand. If that player only said call, correct the name and play on, with no penalty to anyone. If that player already laid tiles down on the wrong name, the exposure is invalid and their hand is dead for that deal, and you owe nothing. If a player declares mahjong based on the wrong name, the deal ends there: you alone pay that player 4 times the value of the hand, and the other two players pay nothing. That penalty applies even when the tile you threw was really a joker, because the claim rests on what you said. If two players declare mahjong at once, one on the wrong name and one needing the tile you actually threw, the player who needs the actual tile wins. If nobody catches the misname before the next player picks and racks, the chance to claim that tile is gone and nobody pays a penalty. Watch each discard with your eyes, not just your ears.",
+      "Name every discard aloud as you place it face up, because the correct name is what makes the tile claimable. When your tile repeats the discard just before it, the League accepts saying same. If you say the wrong name, fix it with words only: state the correct name of the tile you actually threw. Never swap tiles, even if the tile you named by mistake sits in your hand. Once you correct the name and nobody has acted on the error, play continues with no penalty and any player may claim the tile normally. A call made on the wrong name does not stand. If that player only said call, correct the name and play on, with no penalty to anyone. If that player already laid tiles down on the wrong name, the exposure is invalid and their hand is dead for that deal, and you owe nothing. If a player declares mahjong based on the wrong name, the deal ends there: you alone pay that player 4 times the value of the hand, and the other two players pay nothing. That penalty applies even when the tile you threw was really a joker, because the claim rests on what you said. That is the one case where a discarded joker matters to a claim; otherwise no one may ever call a discarded joker. If two players declare mahjong at once, one on the wrong name and one needing the tile you actually threw, the player who needs the actual tile wins. If nobody catches the misname before the next player picks and racks, the chance to claim that tile is gone and nobody pays a penalty. Watch each discard with your eyes, not just your ears.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "owner_approved",
@@ -937,11 +941,11 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     keywords: ["three player", "three handed", "3 players"],
     requires: [THREE_PLAYER, THREE_PLAYER_HOW],
     approved_answer:
-      "American mahjong seats 4 players, and the League's rulebook covers playing with 3. Build all 4 walls as usual with the full 152 tiles and leave one seat empty. Deal only to the 3 players, and the empty seat gets nothing. The deal ends with East holding 14 tiles and the other two holding 13. League publications describe the final pickup in two slightly different orders, and both reach those counts. There is no Charleston with 3 players. That is the League's official rule, not a table preference. East opens with a discard, and play runs like the 4-player game. Anything beyond this is a table choice, such as an invented Charleston for 3, a ghost hand dealt to the empty seat, or a betting arrangement.",
+      "American mahjong seats 4 players, and the League's rulebook covers playing with 3. Build all 4 walls as usual with the full 152 tiles and leave one seat empty. Deal only to the three players, and the empty seat gets nothing. The deal ends with East holding 14 tiles and the other two holding 13. League publications describe the final pickup in two slightly different orders, and both reach those counts. Under League rules there is no Charleston with three players, so this is not a table preference. East opens with a discard, and play runs like the 4-player game. Anything beyond this is a table choice, such as an invented Charleston for three or a ghost hand dealt to the empty seat.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note:
-      "Anything past the official baseline, including a three-player Charleston or a ghost hand, is a table choice.",
+      "Agree on any table variation before you start.",
     source: "owner_approved",
     last_verified: OWNER_DECIDED,
     confidence: "high",
@@ -1133,7 +1137,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [PAYMENT],
     blocks: [ERROR_CUE, MISNAMED, DEAD, TOURNAMENT],
     approved_answer:
-      "The League sets who pays and how much. Your table sets what a point is worth. Who pays: the winner announces the hand and its value, then tells each player what to pay. Win on another player's discard and that discarder pays double the hand's value while the other 2 players each pay the single value. Pick your own winning tile from the wall and all 3 players pay double. Completing your hand by redeeming a joker as your last move before declaring counts as a self pick. Jokerless: if your hand could have used jokers and has none when you declare, the value doubles again, and that stacks, so a jokerless win on a discard costs the discarder 4 times the value while the other 2 pay double. Say the hand is jokerless when you declare, because you lose the bonus if you forget. Hands in the Singles and Pairs group get no jokerless bonus, since their printed value already accounts for it, but the self pick double still applies. A player whose hand went dead still pays the winner. If the wall runs out and nobody declares mahjong, no one wins and no one pays. Amounts: the card prints a value beside each hand, and those values are points. The League does not require you to play for money. Many tables treat a point as a penny, but chips, paper scoring, and playing for nothing are all fine. A wall game kitty, an ante, and any cap on losses are table customs, not League rules. Sanctioned tournaments score differently, so follow the director's rules there.",
+      "The League sets who pays and how much. Your table sets what a point is worth. Who pays: the winner announces the hand and its value, then tells each player what to pay. Win on another player's discard and that discarder pays double the hand's value while the other two players each pay the single value. Pick your own winning tile from the wall and all three players pay double. Completing your hand by redeeming a joker as your last move before declaring counts as a self pick. Jokerless: if your hand could have used jokers and has none when you declare, the value doubles again, and that stacks, so a jokerless win on a discard costs the discarder 4 times the value while the other two pay double. Say the hand is jokerless when you declare, because you lose the bonus if you forget. Hands in the Singles and Pairs group get no jokerless bonus, since their printed value already accounts for it, but the self pick double still applies. A player whose hand went dead still pays the winner. If the wall runs out and nobody declares mahjong, no one wins and no one pays. Amounts: the card prints a value beside each hand, and those values are points. The League does not require you to play for money. Many tables treat a point as a penny, but chips, paper scoring, and playing for nothing are all fine. A wall game kitty, an ante, and any cap on losses are table customs, not League rules. Sanctioned tournaments score differently, so follow the director's rules there.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note:
@@ -1254,7 +1258,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [LAST_OF_WALL],
     blocks: [HAND_CLOSED],
     approved_answer:
-      "League rules do not change as the wall gets short. While any tiles remain in the wall, you may call a discard for an exposure or for mahjong, right down to the last tile. A table that bans calls near the end plays a house rule, often called a cold wall. Groups define it differently, since some bar only exposure calls and others bar every claim, and the League has never sanctioned any version of it. Anyone may still claim the very last discard of the deal for mahjong. On whether you may instead call that final discard only to make an exposure, we found no published League ruling either way, so agree at your table how you will handle it until the League settles it. If the last tile of the wall is drawn and discarded and no one declares mahjong, the hand ends with no winner and no one pays.",
+      "League rules do not change as the wall gets short. While any tiles remain in the wall, you may call a discard for an exposure or for mahjong, right down to the last tile. A table that bans calls near the end plays a house rule, often called a cold wall. Groups define it differently, since some bar only exposure calls and others bar every claim, and no League rulebook or bulletin we found carves out an exception for a short wall. Anyone may still claim the very last discard of the deal for mahjong. On whether you may instead call that final discard only to make an exposure, we found no published League ruling either way, so agree at your table how you will handle it until the League settles it. If the last tile of the wall is drawn and discarded and no one declares mahjong, the hand ends with no winner and no one pays.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note:

@@ -91,6 +91,8 @@ export const HELD_OUT = [
   C("Is chow allowed in Chinese mahjong?", "ruleset"),
   C("riichi rules for pon", "ruleset"),
   A("jocker exchange, when?", "joker-exchange-timing", "joker-exchange"),
+  A("she gave me the wrong tile for my joker", "joker-exchange-wrong-tile"),
+  A("someone put the wrong tile in when they took my joker", "joker-exchange-wrong-tile"),
   A("charelston pass rules", "charleston"),
   A("dead hand jokers", "dead-hand-jokers"),
   A("courtesy pass optional?", "courtesy-pass", "courtesies-vs-rules"),

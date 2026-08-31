@@ -25,7 +25,7 @@ export async function rephraseApprovedAnswer(approved: string, question: string)
         "anthropic-version": "2023-06-01",
         "content-type": "application/json",
       },
-      signal: AbortSignal.timeout(12000),
+      signal: AbortSignal.timeout(8000),
       body: JSON.stringify({
         model: MODEL,
         max_tokens: 1000,
