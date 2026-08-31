@@ -37,6 +37,9 @@ function extractLocation(q: string): string | null {
     /\b(?:near|in|around|close to|by|at|visiting|of)\s+([A-Za-z][A-Za-z .,'-]{1,50})$/i
   );
   let candidate = m ? m[1] : null;
+  // "three of us who want to join a game" is not a place. Reading a pronoun as one
+  // put an invented town ("near Us On") into user-facing copy.
+  if (candidate && /^(us|them|you|me|it|our|their)\b/i.test(candidate.trim())) candidate = null;
   if (!candidate) {
     const m2 = q.match(
       /\b(?:near|in|around|close to|visiting)\s+([A-Za-z][A-Za-z .'-]{1,40}?)(?=\s+(?:on|this|next|for)\b|[,?.!]|$)/i

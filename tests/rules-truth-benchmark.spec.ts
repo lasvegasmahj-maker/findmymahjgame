@@ -667,6 +667,79 @@ test.describe("publish fidelity", () => {
     }
   });
 
+  test("only three of something is not a three handed table", () => {
+    // THREE_PLAYER's bare "only 3" read any "only 3 <noun>" as three seats, so a
+    // joker question was answered with the three-player dealing procedure.
+    for (const q of [
+      "only 3 jokers left how many can I use",
+      "only 3 exposures how does that work",
+      "there are only 3 dragons how do I count them",
+      "do we pass only 3 tiles",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).not.toBe("three-player-procedure");
+    }
+  });
+
+  test("every seats-of-three question gets the same three player answer", () => {
+    // players-count said three handed play is a table adaptation; three-player-
+    // procedure says the League publishes it. Which one a player got depended on
+    // whether their phrasing happened to carry a procedure word.
+    for (const q of [
+      "we have three players is that ok",
+      "only 3 players tonight what do we do",
+      "can you play mahjong with 3 players",
+      "three player mahjong rules",
+      "how do you deal for three players",
+      "only 3 of us how do we deal",
+      "we are playing with three people",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("three-player-procedure");
+    }
+    for (const q of [
+      "how many players do you need for mahjong",
+      "how many people play mahjong",
+      "what is the standard number of players",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("players-count");
+    }
+  });
+
+  test("misnaming your own discard reaches the misname rule, not the no-take-backs rule", () => {
+    // own-discard told a player who had just misnamed that nothing can be done;
+    // the misname rule says correct it with words and play continues.
+    for (const q of [
+      "what happens if I misname my discard",
+      "I misspoke naming my discard",
+      "I named the wrong tile on my discard",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("misnamed-discard");
+    }
+    for (const q of [
+      "can I call back my own discard",
+      "can I take back the tile I just discarded",
+      "can I use my own discard for mahjong",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("own-discard");
+    }
+  });
+
+  test("a rules question that names an email recipient still gets its rule", () => {
+    for (const q of [
+      "who do I email to ask about the official rules",
+      "where do the official rules come from",
+    ]) {
+      expect(detectAskTopic(q), q).toBe("rules");
+      expect(lookupRule({ question: q }).entry_id, q).toBe("rules-source");
+    }
+    for (const q of [
+      "can you email me the class schedule",
+      "email the studio about lessons",
+      "leave a voicemail or email the club",
+    ]) {
+      expect(detectAskTopic(q), q).toBe("directory");
+    }
+  });
+
   test("who deals after a wall game is not offered as a table courtesy", () => {
     // The rulebook settles it: the deal passes to East's right. Listing it as a
     // local custom told players the League was silent on a rule it publishes.

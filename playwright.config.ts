@@ -15,9 +15,10 @@ export default defineConfig({
   use: { baseURL, trace: "on-first-retry" },
   projects: [
     { name: "desktop-chromium", use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile-safari", use: { ...devices["iPhone 13"] } },
-    // WebKit Bus-errors on this Mac, so mobile checks run on Chromium emulation.
+    // WebKit Bus-errors on this Mac, so the default mobile project is Chromium
+    // emulation and WebKit is opt-in with PW_WEBKIT=1.
     { name: "mobile-chromium", use: { ...devices["Pixel 7"] } },
+    ...(process.env.PW_WEBKIT ? [{ name: "mobile-safari", use: { ...devices["iPhone 13"] } }] : []),
   ],
   webServer: process.env.PLAYWRIGHT_BASE_URL
     ? undefined

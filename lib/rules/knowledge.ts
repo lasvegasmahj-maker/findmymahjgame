@@ -229,7 +229,7 @@ const HOLD_WAIT = /\b(hold|wait)\b(?!\s+(a |an |the |my |your |our |her |his |th
 export const MAHJ_ONLY_NOUN =
   /\b(tiles?|discards?|discarded|discarding|jokers?|mahjong|mahj|maj|charleston|pungs?|kongs?|quints?|sextets?|exposures?|expos(e|es|ed|ing)|melds?|racks?|walls?|bams?|craks?|dots?|dragons?|flowers?|soap|blanks?|card|redeal)\b/i;
 export const CONTACT_SENSE =
-  /\bcall\s+(back|the\s+(teacher|instructor|studio|venue|club|shop|store|number|office))\b|\bcall\s+ahead\s+(to|and)\b|\b(phone call|voicemail|email|call\s+(me|you|us|them)\s+back)\b/i;
+  /\bcall\s+(back|the\s+(teacher|instructor|studio|venue|club|shop|store|number|office))\b|\bcall\s+ahead\s+(to|and)\b|\b(phone call|voicemail|call\s+(me|you|us|them)\s+back)\b|\bemail\s+(me|us|you|them|the\s+(teacher|instructor|studio|venue|club|shop|store|office))\b/i;
 const HOLD_WAIT_ASK =
   /\b(call|calls|called|claim|claims|count|counts|mean|means|legal|legally|stop|stops|priority|say|says|saying|said|shout|shouted|allowed|same as|instead of)\b/i;
 const SETTLEMENT =
@@ -672,6 +672,9 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
       /\b(three|3)[- ](player|person|handed)\b/i,
     ],
     keywords: ["players", "people", "how many players"],
+    // A seats-of-three question is three-player-procedure's; this entry answers the
+    // plain count. The two give opposite answers on whether the League covers 3.
+    blocks: [THREE_PLAYER_SEATS],
     approved_answer:
       "American mahjong is built for 4 players. Many groups adapt it when only 3 can play, but the standard game seats 4.",
     ruleset: RULESET,
@@ -880,6 +883,9 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [OWN_DISCARD],
     keywords: ["own discard", "take back"],
     requires: [OWN_DISCARD],
+    // Misnaming your own discard is misnamed-discard's rule, which says the
+    // opposite: correct it with words and play continues.
+    blocks: [MISNAMED],
     approved_answer:
       "No. You may never call back a tile you just discarded, for any purpose, including mahjong or a joker exchange. Once you have named it or placed it in the discard area, it is available only to the other players.",
     ruleset: RULESET,
@@ -962,9 +968,12 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
   {
     id: "three-player-procedure",
     topic: "Playing with three players",
-    question_patterns: [THREE_PLAYER, THREE_PLAYER_HOW],
+    // Seats only, and seats alone. THREE_PLAYER's bare "only 3" made "only 3 jokers
+    // left" a three-handed table, and requiring THREE_PLAYER_HOW as well lost
+    // "we have three players is that ok", which carries no procedure word.
+    question_patterns: [THREE_PLAYER_SEATS],
     keywords: ["three player", "three handed", "3 players"],
-    requires: [THREE_PLAYER, THREE_PLAYER_HOW],
+    requires: [THREE_PLAYER_SEATS],
     blocks: [SETTLEMENT, SCORING_ASK],
     approved_answer:
       "American mahjong seats 4 players, and the League's rulebook covers playing with 3. Build all 4 walls as usual with the full 152 tiles and leave one seat empty. Deal only to the three players, and the empty seat gets nothing. The deal ends with East holding 14 tiles and the other two holding 13. League publications describe the final pickup in two slightly different orders, and both reach those counts. Under League rules there is no Charleston with three players, so this is not a table preference. East opens with a discard, and play runs like the 4-player game. Anything beyond this is a table choice, such as an invented Charleston for three or a ghost hand dealt to the empty seat.",

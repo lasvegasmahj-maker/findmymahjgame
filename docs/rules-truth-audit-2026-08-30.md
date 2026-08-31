@@ -9,14 +9,14 @@ remain for the owner. Source policy: docs/rules-sources.md.
 ## Summary
 
 - Canonical rules audited: 55 entries in lib/rules/knowledge.ts. After the owner's decisions of
-  2026-08-30, 35 are owner-approved and 20 remain research-verified pending review.
+  2026-08-30, 34 are owner-approved and 21 remain research-verified pending review.
   No entry defers to the instructor any more.
 - Classification: 47 STANDARD NMJL RULE, 4 NMJL CLARIFICATION, 1 TOURNAMENT RULE,
   1 HOUSE/OPTIONAL RULE, 1 ETIQUETTE, 1 STRATEGY.
 - Provenance coverage: 55/55 entries carry ruleset, topic, classification, source type,
   source title, last-verified date, owner-review flag, and evidence status; every research
   entry also carries a cross-check reference and a year. No source text is stored.
-- Owner review required: 20 entries (every entry the owner has not yet approved).
+- Owner review required: 21 entries (every entry the owner has not yet approved).
 - Owner-approved wording: preserved verbatim; no credible source conflict required a change.
   Items flagged for the owner are listed below, not edited in.
 
@@ -69,7 +69,7 @@ remain for the owner. Source policy: docs/rules-sources.md.
 | `the-wall` | STANDARD NMJL RULE | owner approved | Find My Mahj owner approval (certified American mahjong instructor) | 2026-08-22 |
 | `wall-game` | STANDARD NMJL RULE | owner approved | Find My Mahj owner approval (certified American mahjong instructor) | 2026-08-22 |
 | `players-count` | STANDARD NMJL RULE | owner approved | Find My Mahj owner approval (certified American mahjong instructor) | 2026-08-22 |
-| `courtesies-vs-rules` | ETIQUETTE | owner approved | Find My Mahj owner approval (certified American mahjong instructor) | 2026-08-29 |
+| `courtesies-vs-rules` | ETIQUETTE | research_verified | Owner-approved apart from one example corrected 2026-08-30; owner review required | 2026-08-30 |
 | `dead-hand` | STANDARD NMJL RULE | owner approved | Find My Mahj owner approval (certified American mahjong instructor) | 2026-08-22 |
 | `calling-for-mahjong` | STANDARD NMJL RULE | research-verified, owner review pending | League rule on calling any tile for mahjong; cross-checked via Mahj Life wiki article 178 and the owner-approved calling and closed-hand entries | 2026-08-30 |
 | `calling-for-exposure` | STANDARD NMJL RULE | research-verified, owner review pending | League rules on exposures and commitment to a called discard; cross-checked via Mahj Life wiki articles 177, 178, and 289 | 2026-08-30 |
@@ -300,7 +300,7 @@ says an item was fixed, the shipped wording in lib/rules/knowledge.ts differs.
 | `card-notation` | 2 | "On the card, each color stands for a different suit, not a fixed one" with no carve-out for F, N/E/W/S, and the zero (Soap). | Add one clause: "Flowers, winds, and the zero are not suit tiles, so their color on the card does not tie them to a suit." Optionally add: "Anything in parentheses on the card overrides the colors." |
 | `card-notation/source-ref-162` | 1 | source_ref: "Card legend conventions (colors as suits, C and X, F and D, Soap as zero); cross-checked via Mahj Life wiki articles 162, 254, and 269" | Re-point the ref: keep 254 and 269, replace 162 with 144 for C and X, and state that F, D, and wind letters are verified against the card's printed legend (owner to confirm against the current card) rather than a Mahj Life article. |
 | `charleston-blind-pass` | 1 | "If you do not want to pass three tiles from your own hand, you may take one, two, or all three tiles being passed to you and pass them onward without looking at them." | Owner decision only (entry is owner_approved). If the owner wants more distance from the card text, the same rule can be stated without the League's construction, for example by saying the player may top up their pass with any of the incoming tiles, unseen, so that three tiles still go out. |
-| `courtesies-vs-rules` | 3 | "Courtesies are local customs a table agrees on, such as how a wall game is paid or whether the same dealer deals again." | Owner-approved text, so no rewording proposed; owner to confirm she is comfortable with these two examples or swap in examples the League genuinely leaves open (e.g. betting on a wall game, seat rotation schedule, snack breaks). |
+| `courtesies-vs-rules` | 3 | "Courtesies are local customs a table agrees on, such as how a wall game is paid or how long the table waits for a player who is deciding on a call." (corrected 2026-08-30; the retired example named who deals after a wall game, which the rulebook settles) | Owner-approved text, so no rewording proposed; owner to confirm she is comfortable with these two examples or swap in examples the League genuinely leaves open (e.g. betting on a wall game, seat rotation schedule, snack breaks). |
 | `dead-hand-details` | 2 | A short or long hand can be fixed only during the Charleston, before East's first discard. | Replace 'can be fixed only during the Charleston' with 'must be caught before East's first discard; the deal is then thrown in and redealt (the one exception: East's left-hand neighbor who is short one tile takes the next wall tile)'. |
 | `dead-hand-details/paraphrase` | 1 | "A dead player stops drawing and discarding but still pays the winner of that deal. You do not declare your own hand dead; the other players do." | Optional: recast the self-declaration sentence, e.g. Only another player can call your hand dead. Leave the first sentence, which follows the owner-approved wording. |
 | `dead-hand-details/varies-by-house` | 1 | varies_by_house: true; house_note: 'Tables enforce dead hand challenges with different levels of strictness.' | Set varies_by_house false; if the note stays, reword it as etiquette ('how vigilantly a table polices this is up to the table; the rule is the League's'). |
