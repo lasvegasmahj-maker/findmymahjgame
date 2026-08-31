@@ -9,14 +9,14 @@ remain for the owner. Source policy: docs/rules-sources.md.
 ## Summary
 
 - Canonical rules audited: 55 entries in lib/rules/knowledge.ts. After the owner's decisions of
-  2026-08-30, 34 are owner-approved and 21 remain research-verified pending review.
+  2026-08-30, 33 are owner-approved and 22 remain research-verified pending review.
   No entry defers to the instructor any more.
 - Classification: 47 STANDARD NMJL RULE, 4 NMJL CLARIFICATION, 1 TOURNAMENT RULE,
   1 HOUSE/OPTIONAL RULE, 1 ETIQUETTE, 1 STRATEGY.
 - Provenance coverage: 55/55 entries carry ruleset, topic, classification, source type,
   source title, last-verified date, owner-review flag, and evidence status; every research
   entry also carries a cross-check reference and a year. No source text is stored.
-- Owner review required: 21 entries (every entry the owner has not yet approved).
+- Owner review required: 22 entries (every entry the owner has not yet approved).
 - Owner-approved wording: preserved verbatim with two exceptions, both corrected on 2026-08-30, both
   restamped research_verified with owner review required, so each shows the review badge until Shauna
   signs off. `courtesies-vs-rules` named who deals after a wall game as a local custom, which the
@@ -464,3 +464,18 @@ with the same discipline; the rest went to the backlog below.
 | `lib/ask-llm.ts`, `lib/rules/lookup.ts` | `synthesisDigitGuard` compared digit tokens as a set, so a rephrase that swapped "East holds 14 and the others 13" into "East holds 13 and the others 14" invented no new token and shipped. Every hard tile count in the corpus was one reassignment away from going live wrong. Tightening the guard to sequence equality was tried first and does not close it: the swap can keep the same order ("East starts with 13 and everyone else 14" against an approved "each player 13, except East 14"), so no digit-level check can catch a number being reattached. | The class is closed upstream instead: `eligibleForRephrase` keeps any answer containing a number away from the model entirely, so every count in the corpus ships verbatim. The sequence check stays as a tripwire for invented or dropped numbers on anything that is rephrased. Both pinned, including a corpus-wide assertion that no numeric answer is eligible. |
 | `lib/rules/knowledge.ts`, `lib/ask-intent.ts` | "can I call back what I just threw" and "may I call back my own throw" fell out of the rules path: the contact guard fired on the bare "call back" and `MAHJ_ONLY_NOUN` had no throw verb to rescue it. That is the wording a player uses in the moment. | Throw verbs added to `MAHJ_ONLY_NOUN`; "my own throw" added to `OWN_DISCARD`. Pinned. |
 | `lib/rules/knowledge.ts` | `THREE_PLAYER` and `THREE_PLAYER_HOW` were orphaned when `three-player-procedure` moved to the seats-only matcher, leaving the only two eslint warnings on the branch. | Both deleted. |
+
+### Gate 27: FAIL, one blocker, fixed
+
+| Entry / file | Defect | Fix |
+|---|---|---|
+| `dead-hand` (owner wording, untouched) | Its answer states the rule flat, "a hand is dead when a player holds the wrong number of tiles", with no before/after East's first discard qualifier, and it won retrieval on the plainest phrasing. So a player counting 12 tiles during the Charleston, the most common way this comes up, was told her hand was dead when the League has the table redeal with no penalty. Two entries in the shipped corpus gave opposite rulings on the same fact and the wrong one won. | Routing only, no owner wording edited. `wrong-tile-count-before-play` now answers every wrong-count question, because its text already covers both sides of East's first discard in one place. `dead-hand`, `dead-hand-details` and `hand-size` all yield to it on a count; `dead-hand-details` keeps the other ways a hand dies, and the dealer's 14th tile is excluded so "does the dealer have an extra tile" still reaches `dealing`. Pinned. |
+| `lib/ask-intent.ts` | The contact demotion returned "directory" ahead of every signal, so it also removed the mixed outcome: "should I call the venue back to ask about the courtesy pass" lost the courtesy-pass answer entirely. | Only one signal in the list, `TAKE_BACK_RE` ("call back", "take back"), can be tripped by a telephone phrase. Every other rules signal now overrides the demotion. This is the fourth cut at this boundary and the first that holds both directions; both are pinned together. |
+| `lib/ask-llm.ts` | 15 answers were still eligible for a model rephrase whose only remaining content check was a 70 percent length floor, and adding `ANTHROPIC_API_KEY` for the search intent extractor would have switched that on as a side effect. | Rewriting a rule now needs its own switch, `ASK_REPHRASE_ENABLED=1`. Intent extraction still runs on the key alone, because its output is validated into a filter object and cannot invent a fact. Pinned with a test that fails if the model is called with the switch off. |
+| `playwright.config.ts` | Adding `mobile-chromium` unconditionally put two copies of the QA sign-in fixtures against the same per-IP OTP budget, so a bare `npx playwright test` failed on rate limits rather than assertions. That made the pre-push gate non-deterministic. | Both mobile lenses are opt-in: `PW_MOBILE=1` for Chromium emulation, `PW_WEBKIT=1` for the real iOS lens wherever it can run. Desktop and mobile are run separately, which is how every suite result in this document was produced. |
+| `components/ask/answer-text.tsx`, `components/home/home-search-card.tsx` | The homepage concierge card rendered whole 1,300 to 1,600 character answers, about 1.6 phone screens inside the hero, and the "Continue on the Ask page" link pointed at identical text. Raised by four consecutive gates. | The home card takes the first two paragraphs and closes with a line pointing at the full answer; /ask is unchanged. Also fixed: a `BREAK_CUE` entry ("Timing decides") that matched no sentence in the corpus, orphaned single-sentence paragraphs, and the trailing margin under the last paragraph. |
+
+Still open for Shauna, not edited: the duplicated house notes on `payments-basics` and
+`picking-ahead`, the "printed in capitals" claim in `picking-ahead`, the unhyphenated
+"5 tile Quint", and whether she has read the published wording of the 14 entries stamped
+on her 2026-08-30 decisions rather than only the rulings behind them.

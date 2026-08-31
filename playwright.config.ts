@@ -15,9 +15,14 @@ export default defineConfig({
   use: { baseURL, trace: "on-first-retry" },
   projects: [
     { name: "desktop-chromium", use: { ...devices["Desktop Chrome"] } },
-    // WebKit Bus-errors on this Mac, so the default mobile project is Chromium
-    // emulation and WebKit is opt-in with PW_WEBKIT=1.
-    { name: "mobile-chromium", use: { ...devices["Pixel 7"] } },
+    // Both mobile lenses are opt-in. Running a second project alongside desktop puts two
+    // copies of the QA sign-in fixtures against the same per-IP OTP budget, and the suite
+    // starts failing on rate limits rather than assertions. WebKit additionally
+    // Bus-errors on this Mac, so PW_MOBILE=1 gets Chromium emulation and PW_WEBKIT=1 gets
+    // the real iOS lens wherever it can actually run.
+    ...(process.env.PW_MOBILE === "1"
+      ? [{ name: "mobile-chromium", use: { ...devices["Pixel 7"] } }]
+      : []),
     ...(process.env.PW_WEBKIT === "1" ? [{ name: "mobile-safari", use: { ...devices["iPhone 13"] } }] : []),
   ],
   webServer: process.env.PLAYWRIGHT_BASE_URL

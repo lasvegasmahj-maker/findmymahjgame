@@ -2,7 +2,8 @@ import { test, expect } from "@playwright/test";
 import { RULES_KNOWLEDGE } from "../lib/rules/knowledge";
 import { lookupRule, synthesisDigitGuard, type RulesLookupResult } from "../lib/rules/lookup";
 import { detectAskTopic, parseAskIntent } from "../lib/ask-intent";
-import { eligibleForRephrase } from "../lib/ask-llm";
+import { eligibleForRephrase, rephraseApprovedAnswer } from "../lib/ask-llm";
+import { splitIntoParagraphs } from "../components/ask/answer-text";
 
 // The rules truth benchmark. Every case is classified up front as a CORRECT ANSWER (one
 // or more acceptable entries, each of which states the applicable rule), a
@@ -837,6 +838,85 @@ test.describe("publish fidelity", () => {
       "leave a voicemail or email the club",
     ]) {
       expect(detectAskTopic(q), q).toBe("directory");
+    }
+  });
+
+  test("a wrong tile count is answered by the entry that carries the timing", () => {
+    // dead-hand states the rule flat ("holds the wrong number of tiles"), with no
+    // before/after East's first discard qualifier, and it used to win the plainest
+    // phrasing. A player counting 12 during the Charleston was told her hand was dead
+    // when the League has the table redeal with no penalty.
+    for (const q of [
+      "someone has the wrong number of tiles is their hand dead",
+      "I have 12 tiles is my hand dead",
+      "is my hand dead if I have too many tiles",
+      "she has the wrong number of tiles during the charleston",
+      "I counted 12 tiles before east discarded",
+      "what happens if I have an extra tile after play started",
+      "do we redeal if someone is short a tile",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("wrong-tile-count-before-play");
+    }
+    const e = RULES_KNOWLEDGE.find((x) => x.id === "wrong-tile-count-before-play")!;
+    expect(e.approved_answer).toMatch(/before East's first discard/);
+    expect(e.approved_answer).toMatch(/After East's first discard, none of this works/);
+    // East is dealt the extra tile; that is the deal, not a count gone wrong.
+    expect(lookupRule({ question: "does the dealer have an extra tile" }).entry_id).toBe("dealing");
+    // ...and the other ways a hand dies still reach the dead-hand entries.
+    expect(lookupRule({ question: "what makes a hand dead" }).entry_id).toBe("dead-hand-details");
+    expect(lookupRule({ question: "how many tiles do I hold" }).entry_id).toBe("hand-size");
+  });
+
+  test("a contact phrase does not swallow the rules half of a mixed question", () => {
+    // The demotion exists for "wait for a call back about lessons". Only TAKE_BACK_RE
+    // can be tripped by a telephone phrase, so every other rules signal still wins.
+    for (const q of [
+      "should I call the venue back to ask about the courtesy pass",
+      "if I call the teacher back can she explain jokers",
+    ]) {
+      expect(detectAskTopic(q), q).not.toBe("directory");
+      expect(lookupRule({ question: q }).entry_id, q).toBeTruthy();
+    }
+  });
+
+  test("rewriting an owner-approved rule needs its own switch", async () => {
+    // An API key added for search intent extraction must not, by itself, let a model
+    // start rewriting rule text. Two switches, deliberately. With a key present and the
+    // rephrase switch off, the model must not be called at all.
+    const env = process.env;
+    const prevKey = env.ANTHROPIC_API_KEY;
+    const prevFlag = env.ASK_REPHRASE_ENABLED;
+    const prevFetch = globalThis.fetch;
+    let called = false;
+    globalThis.fetch = (async () => {
+      called = true;
+      throw new Error("the model must not be called");
+    }) as typeof fetch;
+    try {
+      env.ANTHROPIC_API_KEY = "sk-test-not-a-real-key";
+      delete env.ASK_REPHRASE_ENABLED;
+      const approved = "You may never pass a joker in the Charleston.";
+      expect(await rephraseApprovedAnswer(approved, "can I pass a joker")).toBe(approved);
+      expect(called).toBe(false);
+    } finally {
+      globalThis.fetch = prevFetch;
+      if (prevKey === undefined) delete env.ANTHROPIC_API_KEY;
+      else env.ANTHROPIC_API_KEY = prevKey;
+      if (prevFlag === undefined) delete env.ASK_REPHRASE_ENABLED;
+      else env.ASK_REPHRASE_ENABLED = prevFlag;
+    }
+  });
+
+  test("long answers paragraph without stranding a lone sentence", () => {
+    for (const id of ["hold-or-wait", "picking-ahead", "misnamed-discard", "payments-basics"]) {
+      const a = RULES_KNOWLEDGE.find((e) => e.id === id)!.approved_answer;
+      const paras = splitIntoParagraphs(a);
+      expect(paras.length, id).toBeGreaterThan(1);
+      // lossless: every word survives the split
+      expect(paras.join(" ").replace(/\s+/g, " "), id).toBe(a.replace(/\s+/g, " "));
+      for (const p of paras) {
+        expect((p.match(/[.!?]/g) ?? []).length, `${id}: ${p}`).toBeGreaterThan(1);
+      }
     }
   });
 

@@ -42,6 +42,8 @@ export type KnowledgeEntry = {
   ruleset: "american_nmjl";
   varies_by_house: boolean;
   house_note?: string;
+  // owner_question is unused today: the owner resolved all 13 open rulings on
+  // 2026-08-30. Held open, with its evidence value, for the next unresolved one.
   source: "owner_approved" | "research_verified" | "owner_question";
   last_verified: `${number}-${number}-${number}`;
   confidence: RulesConfidence;
@@ -212,6 +214,9 @@ const THREE_PLAYER_SEATS =
   /\b(three|3)[- ](player|handed|person)\b|\b(three|3) (people|players|of us)\b|\bplay(ing)? with (just )?(three|3)\b|\bonly (three|3) (of us|people|players)\b|\b(missing|without) a (fourth|4th)\b/i;
 const WRONG_COUNT =
   /\b(wrong number|wrong count|miscount|too many tiles|too few tiles|12 tiles|(too many|extra|an extra|holding|ended up with|i have|ive got|i've got|stuck with) [^.?!]{0,10}14 tiles|short a tile|missing a tile|extra tile(?!\s+sets?\b)|one too many|one too few|short one)\b/i;
+// East is DEALT the extra tile; that is the deal, not a count that has gone wrong.
+const DEALER_EXTRA =
+  /\b(dealer|east)\b[^.?!]{0,24}\bextra tile\b|\bextra tile\b[^.?!]{0,24}\b(dealer|east)\b/i;
 const BEFORE_PLAY =
   /\b(before (east|the first discard|play|we start)|charleston|courtesy pass|the deal|dealt|dealing|re-?deal|redeal|start|starts|started|begins?|beginning|first discard)\b/i;
 const WRONG_TILE_GIVEN =
@@ -672,7 +677,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     // plain count. The two give opposite answers on whether the League covers 3.
     blocks: [THREE_PLAYER_SEATS],
     approved_answer:
-      "American mahjong is built for 4 players. The League's rulebook also covers playing with 3, so you do not have to make up your own rules when a fourth cannot make it.",
+      "American mahjong is built for 4 players. The League's rulebook also covers playing with 3, so the core of the game is settled even when a fourth cannot make it.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note:
@@ -723,6 +728,9 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
   },
   {
     id: "dead-hand",
+    // Owner wording, left verbatim. A wrong tile count is answered by the entries that
+    // carry the before/after East's first discard timing; this one states it flat.
+    blocks: [WRONG_COUNT],
     topic: "Dead hands",
     question_patterns: [
       /dead hand/i,
@@ -993,10 +1001,14 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
   },
   {
     id: "wrong-tile-count-before-play",
-    topic: "Wrong tile count before East's first discard",
-    question_patterns: [WRONG_COUNT, BEFORE_PLAY],
+    topic: "Wrong tile count",
+    // Reached by the count alone. The answer covers both sides of East's first discard,
+    // so a player who does not mention timing still gets the whole rule instead of one
+    // half of it from a neighbouring entry.
+    question_patterns: [WRONG_COUNT],
     keywords: ["wrong number", "12 tiles", "redeal"],
-    requires: [WRONG_COUNT, BEFORE_PLAY],
+    requires: [WRONG_COUNT],
+    blocks: [DEALER_EXTRA],
     approved_answer:
       "Count your tiles before East's first discard. The League treats that discard as the start of the deal, so it is your cutoff for fixing anything. Count again when the Charleston ends, because that is the last easy moment to catch a mistake. If any player holds the wrong number of tiles at that point, the table throws all the hands in, rebuilds the walls, and deals again. No one pays a penalty, because a fresh deal is a reset and not a punishment. One correction escapes that. If the player seated to East's left holds 12 tiles because that player never took a 13th tile during the deal, that player takes the next tile from the wall and play continues, because that tile was rightfully theirs. League answers put this correction on the table from before the Charleston right up to East's first discard. It covers that seat only, and it covers a player who is short, not a player holding too many. After East's first discard, none of this works. A player holding the wrong number of tiles has a dead hand, and no one can fix the count. Another player has to call it, because you never declare your own hand dead, and the dead player still pays the winner of that deal. The habit that prevents almost all of it: everyone counts to 13, East counts to 14, before East discards.",
     ruleset: RULESET,
@@ -1036,7 +1048,9 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [DEAD, DEAD_DETAIL],
     keywords: ["dead", "too many tiles", "wrong number"],
     requires: [DEAD, DEAD_DETAIL],
-    blocks: [JOKER_EXCHANGE, ERROR_CUE],
+    // A wrong tile count goes to the entry that answers both timings in one place; this
+    // one keeps the other ways a hand dies.
+    blocks: [JOKER_EXCHANGE, ERROR_CUE, WRONG_COUNT],
     approved_answer:
       "A hand goes dead when it can no longer win, for example when a player holds the wrong number of tiles after East's first discard, draws out of turn, makes an exposure that fits no hand on the card, or exposes tiles for a hand marked concealed. A dead player stops drawing and discarding but still pays the winner of that deal. You do not declare your own hand dead; the other players do. After East's first discard, a wrong tile count cannot be fixed.",
     ruleset: RULESET,
@@ -1107,7 +1121,9 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [HAND_SIZE, /how many tiles/i],
     keywords: ["how many tiles", "hand", "rack"],
     requires: [HAND_SIZE],
-    blocks: [DEAD, JOKER, /\bpairs?\b|\bsingles?\b|\bexpos|\bdealer\b|\beast\b/i],
+    // "How many do I hold" is this entry's. A count that has already gone wrong is the
+    // count entry's, which answers both sides of East's first discard.
+    blocks: [DEAD, JOKER, WRONG_COUNT, /\bpairs?\b|\bsingles?\b|\bexpos|\bdealer\b|\beast\b/i],
     approved_answer:
       "You hold 13 tiles between turns. When you draw or call, you have 14; after you discard, you are back to 13. A finished mahjong is 14 tiles. Count quietly whenever you are unsure, because the wrong number of tiles once play has begun makes a hand dead.",
     ruleset: RULESET,

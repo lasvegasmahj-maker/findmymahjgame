@@ -206,7 +206,7 @@ export default function HomeSearchCard() {
         {busy && <p className={styles.askStatus}>Looking that up...</p>}
         {!busy && resp && (
           <div className={styles.answer}>
-            <AnswerText text={resp.error || resp.answer} className={styles.answerText} />
+            <AnswerText text={resp.error || resp.answer} className={styles.answerText} maxParagraphs={2} />
             {resp.pendingReview && (
               <p data-testid="home-ask-pending-review" className={styles.answerNote}>
                 Our instructor is reviewing this answer.

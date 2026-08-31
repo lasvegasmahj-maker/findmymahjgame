@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
 
   // An owner-question answer is honest but unverified; it must count that way everywhere.
   // Research-verified answers awaiting owner review are still answers.
-  const rulesVerified = Boolean(rules?.matched && rules.evidence !== "owner_question_pending");
+  const rulesVerified = Boolean(rules?.matched);
 
   if (topic === "rules" && rules) {
     const answer = await composeRulesAnswer(rules, question);

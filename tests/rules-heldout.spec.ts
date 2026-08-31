@@ -2,10 +2,14 @@ import { test, expect } from "@playwright/test";
 import { lookupRule } from "../lib/rules/lookup";
 import { detectAskTopic } from "../lib/ask-intent";
 
-// Blind held-out set. Written after the routing logic and the main benchmark were
-// finished, run once as the blind evaluation, then kept as a regression guard. Each case
-// is classified up front as CORRECT ANSWER (acceptable entries), CLARIFICATION (id), or
-// REFUSAL; nothing here was used to tune a matcher before its first run.
+// Held-out set. The original cases were written after the routing logic and the main
+// benchmark were finished, run once as the blind evaluation, then kept as a regression
+// guard; nothing in that first set was used to tune a matcher before its first run.
+// It is no longer a blind score: cases for the entries added on 2026-08-30 were written
+// alongside those entries, and a few older cases have been widened where a routing change
+// produced a fuller answer than the one first recorded. Treat the pass rate as a
+// regression guard, not as an evaluation result. Each case is classified as CORRECT
+// ANSWER (acceptable entries), CLARIFICATION (id), or REFUSAL.
 
 type Expect = { kind: "answer"; entry: string[] } | { kind: "clarify"; id: string } | { kind: "refuse" };
 const A = (q: string, ...entry: string[]) => ({ q, ex: { kind: "answer", entry } as Expect });
@@ -26,7 +30,10 @@ export const HELD_OUT = [
   A("How many of each tile are there?", "tile-count", "suits"),
   A("does the dealer have an extra tile", "dealing"),
   A("How many should I be holding after I discard?", "hand-size"),
-  A("i only have 12 tiles, is my hand dead", "dead-hand-details", "hand-size"),
+  // Accepts wrong-tile-count-before-play since 2026-08-31: that entry now answers both
+  // sides of East's first discard in one place, which is a strictly fuller answer here
+  // than the dead-hand summary it used to get.
+  A("i only have 12 tiles, is my hand dead", "wrong-tile-count-before-play", "dead-hand-details", "hand-size"),
   A("explain the passing before the game starts", "charleston"),
   A("How do you pass tiles?", "charleston"),
   A("How does passing work?", "charleston"),

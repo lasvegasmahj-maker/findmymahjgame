@@ -115,6 +115,10 @@ export function parseAskIntent(raw: string): AskIntent {
 // "mixed", and everything else stays "directory" so the existing search path is untouched.
 export type AskTopic = "directory" | "rules" | "mixed";
 
+// The only rules signal a telephone phrase can trip by accident: "call back" and "take
+// back" mean the discard at the table and the callback in the lobby.
+const TAKE_BACK_RE = /\b(my own discard|own discard|call back|take back|take it back)\b/i;
+
 const RULES_SIGNAL_RES: RegExp[] = [
   /\bjokers?\b/i,
   /(?<!(?:near|in|around|at|visiting|by|to|from)\s)\bcharleston\b/i,
@@ -150,7 +154,7 @@ const RULES_SIGNAL_RES: RegExp[] = [
 
   /\b(same tile|same discard|two players (call|want)|both (call|want)|who gets the tile|who gets it)\b/i,
   /\b(pick|picking|picked|draw|drawing|drew) (ahead|out of turn|early|too soon|before (my|her|his|their) turn)\b/i,
-  /\b(my own discard|own discard|call back|take back|take it back)\b/i,
+  TAKE_BACK_RE,
   /\bmis-?nam(e|ed|es|ing)\b|\bwrong name\b/i,
   /\b(false|wrong|mistaken|bad) (mahjong|maj|mah ?jong+)\b|\b(mahjong|maj|mah ?jong+) (in error|by mistake|by accident|wrongly|incorrectly)\b|\bdeclared (mahjong|maj|mah ?jong+)\b/i,
   /\b(name|announce|say) (the |each |every |a |my |your )?(tile|discard)\b|\bsay same\b|\bsaying same\b/i,
@@ -227,11 +231,17 @@ export function detectAskTopic(raw: string): AskTopic {
     return detectAskTopic(q.replace(/\bblind(\s+[A-Za-z]+)?\b/gi, ""));
   }
 
-  // "wait for a call back about lessons" is a phone call, not a claim. It has to be
-  // caught here, ahead of the signal set, because OWN_DISCARD treats a bare "call back"
-  // as an unconditional rules signal. Only a word that can ONLY mean mahjong rescues it:
-  // MAHJ_VOCAB is no use, since it contains "call" itself.
-  if (CONTACT_SENSE.test(q) && !MAHJ_ONLY_NOUN.test(q)) return "directory";
+  // "wait for a call back about lessons" is a phone call, not a claim, and TAKE_BACK_RE
+  // is the one signal that reads it as one. Any OTHER rules signal still wins, so
+  // "call the venue back to ask about the courtesy pass" keeps its rules half. MAHJ_VOCAB
+  // cannot be the rescue here, because it contains "call" itself.
+  if (
+    CONTACT_SENSE.test(q) &&
+    !MAHJ_ONLY_NOUN.test(q) &&
+    !RULES_SIGNAL_RES.some((re) => re !== TAKE_BACK_RE && re.test(q))
+  ) {
+    return "directory";
+  }
 
   const questionForm = /\b(what|how|why|when|can|could|should|is|are|do|does|work|mean)\b/i.test(q);
   // The weak nouns (rules, rack, discard, deal) only signal a rules question when the

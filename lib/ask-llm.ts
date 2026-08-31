@@ -31,6 +31,10 @@ export function eligibleForRephrase(approved: string): boolean {
 }
 
 export async function rephraseApprovedAnswer(approved: string, question: string): Promise<string> {
+  // Deliberately a second switch. ANTHROPIC_API_KEY alone turns on intent extraction,
+  // which cannot invent a fact because its output is validated into a filter object.
+  // Rewriting an owner-approved rule is a different risk and needs its own opt-in.
+  if (process.env.ASK_REPHRASE_ENABLED !== "1") return approved;
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return approved;
   if (!eligibleForRephrase(approved)) return approved;
