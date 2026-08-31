@@ -16,6 +16,8 @@ export default defineConfig({
   projects: [
     { name: "desktop-chromium", use: { ...devices["Desktop Chrome"] } },
     { name: "mobile-safari", use: { ...devices["iPhone 13"] } },
+    // WebKit Bus-errors on this Mac, so mobile checks run on Chromium emulation.
+    { name: "mobile-chromium", use: { ...devices["Pixel 7"] } },
   ],
   webServer: process.env.PLAYWRIGHT_BASE_URL
     ? undefined

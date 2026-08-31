@@ -673,5 +673,10 @@ test.describe("publish fidelity", () => {
     const cv = RULES_KNOWLEDGE.find((e) => e.id === "courtesies-vs-rules")!;
     expect(cv.approved_answer).not.toMatch(/dealer deals again/i);
     expect(cv.approved_answer).toMatch(/local customs a table agrees on/);
+    // One sentence of this entry is no longer the owner's wording, so it must not
+    // carry her stamp. It shows the review badge until she signs off.
+    expect(cv.source).not.toBe("owner_approved");
+    expect(cv.provenance.owner_review_required).toBe(true);
+    expect(cv.provenance.evidence).toBe("owner_review_pending");
   });
 });

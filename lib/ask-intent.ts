@@ -237,7 +237,6 @@ export function detectAskTopic(raw: string): AskTopic {
   const rulesAsk = strongRules || (weakRulesNoun && questionForm) || variantAsk;
   if (!rulesAsk) return "directory";
 
-
   // Discovery needs a strong signal here. Bare "in" is not one: extractLocation reads
   // "in a pair" as a place, which would bolt a bogus search onto a pure rules question.
   const intent = parseAskIntent(q);

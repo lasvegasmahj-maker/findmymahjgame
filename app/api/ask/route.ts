@@ -54,8 +54,11 @@ async function logRulesGap(question: string, rules: RulesLookupResult) {
 async function composeRulesAnswer(rules: RulesLookupResult, question: string): Promise<string> {
   if (rules.needs_clarification) return rules.needs_clarification;
   if (!rules.matched || !rules.answer) return rules.answer ?? "";
-  const approved = rules.house_note ? `${rules.answer} ${rules.house_note}` : rules.answer;
-  return rephraseApprovedAnswer(approved, question);
+  // The house_note is appended AFTER the rephrase, never sent into it. Dropping a
+  // 46-character disclaimer costs too little length to trip the shrink guard, so a
+  // model could quietly delete "this is a table choice" from an owner-decided rule.
+  const body = await rephraseApprovedAnswer(rules.answer, question);
+  return rules.house_note ? `${body} ${rules.house_note}` : body;
 }
 
 // Anonymous asks count as real usage unless the request carries a session cookie whose

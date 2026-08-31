@@ -701,11 +701,18 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     ruleset: RULESET,
     varies_by_house: true,
     house_note: "Courtesies differ from table to table by design.",
-    source: SOURCE,
-    last_verified: VERIFIED_WORDING,
+    // Owner-approved apart from one example sentence, which Claude corrected on
+    // 2026-08-30 because the original named a League-settled point (who deals after
+    // a wall game) as a local custom. Pending Shauna's sign-off it is not her
+    // wording, so it does not carry her stamp and it shows the review badge.
+    source: "research_verified",
+    last_verified: VERIFIED_AUDIT,
     confidence: "high",
     classification: "etiquette",
-    provenance: OWNER,
+    provenance: researched(
+      "Owner-approved entry with one example corrected: Mah Jongg Made Easy 2024 pp.15-16 settles who deals after a wall game (the player on East's right becomes East), so it is not a table courtesy; located and cross-checked via Mahj Life wiki article 137",
+      2024,
+    ),
   },
   {
     id: "dead-hand",

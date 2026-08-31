@@ -368,7 +368,7 @@ are fixed and pinned; nothing else in either report was acted on.
 | 3 | `mahjong-in-error-settlement` | A misname settlement question was answered by the false-mahjong settlement rule. The two name opposite payers at different multiples: this entry has the declarer pay one player double, `misnamed-discard` has the discarder alone pay the declarer 4x. A table would have collected from the wrong person. | Entry blocks `MISNAMED`. | benchmark, "publish fidelity" |
 | 4 | `charleston`, `charleston-stop` | "we only have 3 players, do we have to do the Charleston?" was answered "the first Charleston is required and cannot be stopped", contradicting owner decision #6. | Both entries block a new seats-only `THREE_PLAYER_SEATS`. `THREE_PLAYER` itself was also tightened: its bare "only 3" means three tiles in a Charleston question, which had mis-answered "do we pass only 3 tiles". | benchmark, "publish fidelity" |
 | 5 | `rules-source` | Published "our instructor is reviewing every answer we add, and when a ruling is still being confirmed the answer says so." Both halves overclaimed: not every answer is reviewed, and no answer's own text says a ruling is being confirmed. (The first pass at this removed the sentence outright on the premise that nothing marked a pending answer at all. That was wrong: both surfaces render a review badge from `rules.evidence === "owner_review_pending"`, at `app/ask/ask-client.tsx` and `components/home/home-search-card.tsx`. Gate 22 caught it, and removing the sentence had left the badge unexplained.) | Reworded to describe what the site actually does: "When our instructor is still reviewing an answer, we mark it, and we say so whenever something is a table courtesy or a house rule instead of a League rule, or whenever the League has not settled a point." | benchmark, "publish fidelity" |
-| 6 | `courtesies-vs-rules` | **Owner-approved wording changed — flagged for Shauna.** Listed "whether the same dealer deals again" as a local custom. Mah Jongg Made Easy 2024 pp.15-16 settles it (after a wall game the deal passes to East's right), so the entry told players the League was silent on a rule it publishes — in the very entry that teaches players how to sort rules from courtesies. | The example is now how long a table waits on a call, which our own `hold-or-wait` entry states is not a League rule. | benchmark, "publish fidelity" |
+| 6 | `courtesies-vs-rules` | **Owner-approved wording changed, flagged for Shauna.** Listed "whether the same dealer deals again" as a local custom. Mah Jongg Made Easy 2024 pp.15-16 settles it (after a wall game the deal passes to East's right), so the entry told players the League was silent on a rule it publishes, in the very entry that teaches players how to sort rules from courtesies. | The example is now how long a table waits on a call, which our own `hold-or-wait` entry states is not a League rule. | benchmark, "publish fidelity" |
 
 ### Gate 22 (final pre-push gate): PASS, no blockers
 
@@ -378,8 +378,18 @@ with the same discipline; the rest went to the backlog below.
 | Entry / file | Defect | Fix | Pin |
 |---|---|---|---|
 | `lib/ask-intent.ts` | The contact guard hard-returned "directory" before any rules signal was read, and its rescue list was 15 hand-written words that omitted pung, kong, quint, sextet, flower, dragon, bam, crak, soap and expose. "can I call back a pung I already exposed" and "can I call back a flower after I expose it" got the generic directory reply. | The rescue now uses a new shared `MAHJ_ONLY_NOUN` in `knowledge.ts`: words that can only mean mahjong. `MAHJ_VOCAB` cannot do this job, because it contains "call" itself. The guard has to stay ahead of the signal set, since `OWN_DISCARD` treats a bare "call back" as an unconditional rules signal. | benchmark, "call ahead / call first keeps its table sense", both directions |
-| `joker-exchange` | No `blocks`, so it tied `dead-hand-jokers` on specificity and won the tiebreak on any redeem/swap phrasing. "can a joker in a dead hand be redeemed" was answered "you may hand over the real tile and take the joker" — the opposite of the rule the site published this round. Harmless while `dead-hand-jokers` was a placeholder; a contradiction once it became a substantive answer. | Blocks `DEAD`, matching its sibling `joker-exchange-timing`. | benchmark, "publish fidelity" |
+| `joker-exchange` | No `blocks`, so it tied `dead-hand-jokers` on specificity and won the tiebreak on any redeem/swap phrasing. "can a joker in a dead hand be redeemed" was answered "you may hand over the real tile and take the joker", the opposite of the rule the site published this round. Harmless while `dead-hand-jokers` was a placeholder; a contradiction once it became a substantive answer. | Blocks `DEAD`, matching its sibling `joker-exchange-timing`. | benchmark, "publish fidelity" |
 | `rules-source` | See row 5 above. | See row 5 above. | benchmark, "publish fidelity" |
+
+### Gate 23 (after the gate 22 fixes): PASS, no blockers
+
+| Entry / file | Defect | Fix |
+|---|---|---|
+| `app/api/ask/route.ts` | `composeRulesAnswer` concatenated `house_note` onto the answer BEFORE the model rephrase. Dropping a 46-character disclaimer costs 6 percent of length, well inside the 0.7 shrink floor, and the digit guard only checks numbers, so a model could quietly delete "Agree on any table variation before you start." from an owner-decided answer. Dormant today (no `ANTHROPIC_API_KEY` anywhere), live the moment a key is added. | The note is appended after the rephrase and never sent into it. |
+| `courtesies-vs-rules` | My own defect. I corrected one sentence of owner-verbatim copy (row 6 above) but left `provenance: OWNER` and a `2026-08-29` stamp, so wording Shauna never wrote was attributed to her. | Restamped `research_verified` with `owner_review_required: true`, which also makes the answer show the "Our instructor is reviewing this answer" badge until she signs off. Pinned. |
+| `playwright.config.ts` | The mobile Chromium project lived in a duplicate config file carrying the same `webServer` fallback that kills a shared server. | Folded into the single config as `mobile-chromium`; the duplicate is deleted. |
+| `tests/rules-knowledge.spec.ts` | I had loosened the provenance-length tripwire to 700; the real maximum is 508. | Re-armed at 550. |
+| `docs/rules-truth-audit-2026-08-30.md` | I introduced three em dashes, against the hard rule in CLAUDE.md. | Removed. |
 
 ### Judged and deliberately not changed
 
@@ -391,7 +401,7 @@ with the same discipline; the rest went to the backlog below.
   (`QUINT_SEXTET` + `CLAIM_VERB`) already confine the sentence to quint and
   sextet questions, where it holds. The probes the lens offered as failures
   ("can I expose three tiles when the card calls for four") get the correct
-  answer today. Owner-approved wording, correct as served — for Shauna to
+  answer today. Owner-approved wording, correct as served, for Shauna to
   narrow if she wants the sentence to read as quint/sextet-specific.
 
 ### Post-launch backlog (nothing here changes an answer)
