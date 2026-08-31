@@ -133,9 +133,10 @@ const ERROR_CUE =
   /\b(error|mistake|mistakenly|wrong|wrongly|false|falsely|incorrect|invalid|not valid|isn'?t valid|didn'?t have|did not have|by accident|accidentally|premature|too early|oops|bad|botched|busted|penalt(y|ies))\b/i;
 export const MISNAMED =
   /\bmis-?nam(e|ed|es|ing)\b|\bwrong name\b|\bnamed (it|the tile|a tile|my discard|the discard) wrong(ly)?\b|\bcalled it (the )?wrong\b|\bsaid the wrong tile\b|\bwrong tile name\b|\bnamed the wrong\b|\bmisspoke\b|\bcalled (it|the tile|my discard) (a|an) \w+ by mistake\b|\bannounced (it|the tile) (as )?the wrong\b|\bcalled it (a|an) [^.?!]{1,20} but (it was|it's|its|it is)\b|\bsaid [^.?!]{1,15} but (it was|it's|it is)\b|\bnamed it (a|an) [^.?!]{1,20}\bbut\b|\b(called|named|said) it (a|an|the) ?[\w ]{1,14}\bbut (it was|it'?s|its|it is|she|he|they|threw|discarded|actually)\b/i;
-// "wait for a table" and "hold my tiles" are the queue and the rack, not a claim.
-const HOLD_WAIT =
-  /\b(hold|wait)\b(?!\s+(for\s+)?(a |an |the |my |your |our |her |his |their )?(spot|seat|place|table|room|tiles?|rack|racks?|cards?|hand))/i;
+// "wait for a table" is the queue and "hold my tiles" is the rack, but "hold the tile"
+// is exactly the claim this matcher is for, so the rack sense needs a possessive.
+export const HOLD_WAIT =
+  /\b(hold|wait)\b(?!\s+(for\s+)?((a |an |the |my |your |our |her |his |their )?(spot|seat|place|table|room)|(my |your |our |her |his |their )(tiles?|racks?|cards?|hand)))/i;
 export const TWO_PLAYERS = new RegExp(
   `\\b(both|two (players|people|of us)|more than one|same (tile|discard)|at the same time|simultaneous(ly)?|who gets|who has priority|priority|first dibs)\\b|${HOLD_WAIT.source}`,
   "i",
@@ -218,7 +219,7 @@ export function blindReadsAsPlace(question: string): boolean {
 const THREE_PLAYER_SEATS =
   /\b(three|3)[- ](player|handed|person)\b|\b(three|3) (people|players|of us)\b|\bplay(ing)? with (just )?(three|3)\b|\bonly (three|3) (of us|people|players)\b|\b(missing|without) a (fourth|4th)\b/i;
 const WRONG_COUNT =
-  /\b(wrong number|wrong count|miscount|too many tiles|too few tiles|12 tiles|(too many|extra|an extra|holding|ended up with|i have|ive got|i've got|stuck with) [^.?!]{0,10}14 tiles|short a tile|missing a tile|extra tile(?!\s+sets?\b)|one too many|one too few|short one)\b/i;
+  /\b(wrong number|wrong count|miscount|too many tiles|too few tiles|(have|has|holding|had|counted|only got|left with|short|stuck with|ended up with) [^.?!]{0,10}12 tiles|(too many|an extra|one too many|ended up with|stuck with) [^.?!]{0,10}14 tiles|short a tile|missing a tile|extra tile(?!\s+sets?\b)|one too many|one too few|short one)\b/i;
 // East is DEALT the extra tile; that is the deal, not a count that has gone wrong.
 const DEALER_EXTRA =
   /\b(dealer|east)\b[^.?!]{0,24}\bextra tile\b|\bextra tile\b[^.?!]{0,24}\b(dealer|east)\b/i;

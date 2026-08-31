@@ -961,6 +961,49 @@ test.describe("publish fidelity", () => {
     }
   });
 
+  test("holding 14 mid turn is the normal count, not a wrong one", () => {
+    // Holding 14 after a draw or a call is correct. Reading it as a wrong count answered
+    // it with the redeal-and-dead-hand rule, which is a wrong League rule to a player.
+    for (const q of [
+      "I have 14 tiles after I picked",
+      "i have 14 tiles is that right",
+      "I just picked and now I have 14 tiles",
+      "how many tiles do I hold",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("hand-size");
+    }
+    for (const q of ["does the dealer get 14 tiles at the deal", "east starts with 14 tiles right"]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("dealing");
+    }
+    // A count that has actually gone wrong still reaches the count entry.
+    for (const q of [
+      "I have too many tiles, 14 tiles after I discarded",
+      "I only have 12 tiles is my hand dead",
+      "do we redeal if someone is short a tile",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("wrong-tile-count-before-play");
+    }
+    // ...and a Charleston count is a Charleston question.
+    for (const q of ["do we pass 12 tiles total in the charleston", "we only pass 12 tiles in the charleston"]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("charleston");
+    }
+  });
+
+  test("hold the tile is a claim; hold my tiles and wait for a table are not", () => {
+    for (const q of [
+      "hold the tile is that a call",
+      "I said wait for the tile does that count as a call",
+      "can I hold the tile while I think",
+      "if I say hold does that count as calling it",
+      "does saying wait count as a call",
+    ]) {
+      expect(detectAskTopic(q), q).toBe("rules");
+      expect(["hold-or-wait", "two-players-same-tile"], q).toContain(lookupRule({ question: q }).entry_id);
+    }
+    expect(lookupRule({ question: "I had to wait for a table, can I call a discard to make a pung" }).entry_id).toBe("calling-for-exposure");
+    expect(detectAskTopic("can you hold my spot until I call the teacher")).toBe("directory");
+  });
+
   test("who deals after a wall game is not offered as a table courtesy", () => {
     // The rulebook settles it: the deal passes to East's right. Listing it as a
     // local custom told players the League was silent on a rule it publishes.

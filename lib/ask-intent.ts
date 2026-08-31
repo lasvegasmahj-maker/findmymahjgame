@@ -1,4 +1,4 @@
-import { blindReadsAsPlace, BLIND_PASS, HAND_CLOSED, RULES_TOPIC_SIGNALS, RULES_TOPIC_SIGNALS_CONDITIONAL, VARIANT_RE, CONTACT_SENSE, MAHJ_ONLY_NOUN, placeAfterPrep } from "@/lib/rules/knowledge";
+import { blindReadsAsPlace, BLIND_PASS, HAND_CLOSED, RULES_TOPIC_SIGNALS, RULES_TOPIC_SIGNALS_CONDITIONAL, VARIANT_RE, CONTACT_SENSE, MAHJ_ONLY_NOUN, HOLD_WAIT, placeAfterPrep } from "@/lib/rules/knowledge";
 import { normalizeQuestion, spellfix } from "@/lib/rules/lookup";
 import { DAY_NAMES, type DayName, type TimeOfDay } from "@/lib/schedule";
 import { RADIUS_OPTIONS, type RadiusMiles } from "@/lib/geo";
@@ -158,7 +158,7 @@ const RULES_SIGNAL_RES: RegExp[] = [
   /\bmis-?nam(e|ed|es|ing)\b|\bwrong name\b/i,
   /\b(false|wrong|mistaken|bad) (mahjong|maj|mah ?jong+)\b|\b(mahjong|maj|mah ?jong+) (in error|by mistake|by accident|wrongly|incorrectly)\b|\bdeclared (mahjong|maj|mah ?jong+)\b/i,
   /\b(name|announce|say) (the |each |every |a |my |your )?(tile|discard)\b|\bsay same\b|\bsaying same\b/i,
-  /\b(hold|wait)\b.{0,30}\b(tile|discard)\b/i,
+  new RegExp(`${HOLD_WAIT.source}.{0,30}\\b(tile|discard)\\b`, "i"),
   /\b(too many|too few|wrong number of|right number of|correct number of) tiles\b|\bhow many tiles (should|do|must) (i|you|we)\b/i,
   /\bwhich hand should i\b|\bhow do i (pick|choose|decide on) (a|my) hand\b/i,
   /\b(order of play|turn order|whose turn|which way (do|does) (play|the turns?|it) go)\b/i,
@@ -199,7 +199,7 @@ const CONDITIONAL_RULES_SIGNALS: RegExp[] = [
   /\bhow many of each\b/i,
   /\b(three|3) of us\b[^.?!]{0,40}\b(pass|passing|charleston|deal|dealt|redeal|tiles each|how many tiles)\b/i,
   /\bre-?deal\b|\b(12|14) tiles\b|\bwrong number of tiles\b|\bshort a tile\b|\bextra tile\b(?!\s+sets?\b)/i,
-  /\b(hold|wait)\b(?!\s+(a |an |the |my |your |our |her |his |their )?(spot|seat|place|table|room))[^.?!]{0,30}\b(call|claim|tile|discard|priority|count|counts|mean)\b(?![^.?!]{0,12}\b(back|ahead|first)\b)|\b(call|claim|tile|discard|priority)\b[^.?!]{0,30}\b(hold|wait)\b(?!\s+(a |an |the |my |your |our |her |his |their )?(spot|seat|place|table|room))/i,
+  new RegExp(`${HOLD_WAIT.source}[^.?!]{0,30}\\b(call|claim|tile|discard|priority|count|counts|mean)\\b(?![^.?!]{0,12}\\b(back|ahead|first)\\b)|\\b(call|claim|tile|discard|priority)\\b[^.?!]{0,30}${HOLD_WAIT.source}`, "i"),
   /\bcold wall\b|\bhot wall\b|\b(final|last) discard\b[^.?!]{0,40}\b(wall|deal|game|exposure|mahjong)\b|\b(wall|deal)\b[^.?!]{0,40}\b(final|last) discard\b/i,
   /\bblanks?\b(?! (check|page|space|form))/i,
   /\btournament (rules?|play|director)\b/i,

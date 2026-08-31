@@ -516,3 +516,16 @@ the final discard unsettled (both owner-approved, and the second is her decision
 wording), the mixed numeral style for player counts, and the height of a long answer on
 the home hero card. The card now shows the whole rule, which is the safe state; capping
 it is a design call, and the one cap that was tried hid the half of the rule that bites.
+
+### Gate 30: FAIL, one blocker, fixed
+
+Every finding in this round was collateral from the routing changes two rounds earlier,
+which is why the reviewer diffed routing against a worktree of origin/main rather than
+reading the diff alone. That comparison is worth repeating on any future matcher change.
+
+| File | Defect | Fix |
+|---|---|---|
+| `WRONG_COUNT` | It matched the normal mid-turn count. Holding 14 after a draw or a call is correct, but "i have 14 tiles is that right" was answered with the redeal-and-dead-hand rule because the matcher accepted a bare possession verb next to 14 and `hand-size` had been blocked on it. main answered `hand-size` correctly. A wrong League rule on the Ask surface. | The 14 branch now needs an explicit wrongness cue (too many, an extra, one too many, ended up with, stuck with) and the 12 branch needs a holding verb, which also stops "do we pass 12 tiles total in the charleston" being answered with a redeal. Pinned on both sides. |
+| `HOLD_WAIT` | The lookahead added last round over-corrected: it excluded "hold the tile" and "wait for the tile", which are the claim sense the entry exists for. "hold the tile is that a call" fell through to a topic clarification and "can I hold the tile while I think" was answered "you hold 13 tiles between turns". | The queue sense keeps its article-optional form; the rack sense now needs a possessive, so "hold my tiles" stays out and "hold the tile" comes back. Pinned. |
+| `lib/ask-intent.ts` | Three copies of the hold/wait matcher, already disagreeing: the router called "hold the tile is that a call" a rules question while the retriever refused to match it, so the request ended in a clarification with no answer available. | Both router copies are composed from the exported `HOLD_WAIT`. One definition now, which is what the file's own comment asks for. |
+| `package.json` | The mobile lens was an env var someone had to remember. | `pnpm test:e2e:mobile` runs it. It stays out of the default run because two projects at once contend for one per-IP OTP budget. |
