@@ -1004,6 +1004,57 @@ test.describe("publish fidelity", () => {
     expect(detectAskTopic("can you hold my spot until I call the teacher")).toBe("directory");
   });
 
+  test("three people in the room does not make every question a three player question", () => {
+    // retrieve() ranks specificity above score, so this entry's single `requires`
+    // outranked all 18 entries that have none, and any question mentioning three of us
+    // was answered with the three-handed dealing procedure.
+    const notThree: Array<[string, string]> = [
+      ["three of us are wondering if a joker can be used in a pair", "joker-in-pair"],
+      ["three of us want to know how many tiles are in a set", "tile-count"],
+      ["three of us cannot remember what a soap is", "dragons"],
+      ["three handed and someone asked what the flowers are", "flowers"],
+      ["there are three of us and a wall game happened", "wall-game"],
+      ["three of us are playing and the wall ran out what happens", "the-wall"],
+      ["how do we score with three players", "payments-basics"],
+    ];
+    for (const [q, id] of notThree) expect(lookupRule({ question: q }).entry_id, q).toBe(id);
+    for (const q of [
+      "we have three players is that ok",
+      "only 3 players tonight what do we do",
+      "can you play mahjong with 3 players",
+      "three player mahjong rules",
+      "how do you deal for three players",
+      "we are playing with three people",
+      "is there a charleston with three players",
+      "we only have 3 players, do we have to do the Charleston?",
+      // A short table asking whether the Charleston is optional is answered by the
+      // three-player rule, which is that the League publishes none for three.
+      "three people say the charleston is optional",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("three-player-procedure");
+    }
+    // Never the redeal rule. This phrasing did not resolve cleanly on main either, so
+    // the guard is that it cannot reach the wrong answer, not that it reaches a set one.
+    expect(lookupRule({ question: "i counted 12 tiles how many are in a set" }).entry_id).not.toBe("wrong-tile-count-before-play");
+  });
+
+  test("turning a tile down is answered by the rule about turning it down", () => {
+    // SPOKEN_CLAIM keeps "do I have to say my call out loud" with hold-or-wait, but it
+    // also fired on the decline questions this entry exists for, and hold-or-wait never
+    // says you may stay silent to pass.
+    for (const q of [
+      "do i have to say anything if i do not want the discard",
+      "do i need to say anything when i pass on a tile",
+      "do i need to say anything if i do not want the tile",
+      "do I have to call a discard",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("passing-on-a-discard");
+    }
+    for (const q of ["do I have to say call out loud", "do I have to say my claim out loud", "does saying wait count as a call"]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("hold-or-wait");
+    }
+  });
+
   test("who deals after a wall game is not offered as a table courtesy", () => {
     // The rulebook settles it: the deal passes to East's right. Listing it as a
     // local custom told players the League was silent on a rule it publishes.

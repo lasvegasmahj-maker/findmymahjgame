@@ -220,6 +220,14 @@ const THREE_PLAYER_SEATS =
   /\b(three|3)[- ](player|handed|person)\b|\b(three|3) (people|players|of us)\b|\bplay(ing)? with (just )?(three|3)\b|\bonly (three|3) (of us|people|players)\b|\b(missing|without) a (fourth|4th)\b/i;
 const WRONG_COUNT =
   /\b(wrong number|wrong count|miscount|too many tiles|too few tiles|(have|has|holding|had|counted|only got|left with|short|stuck with|ended up with) [^.?!]{0,10}12 tiles|(too many|an extra|one too many|ended up with|stuck with) [^.?!]{0,10}14 tiles|short a tile|missing a tile|extra tile(?!\s+sets?\b)|one too many|one too few|short one)\b/i;
+// Turning a tile down. "do I have to say anything if I do not want it" is a question
+// about declining, not about how a claim is spoken.
+const DECLINE_CUE =
+  /\b(do ?n[o']?t want|do not want|dont want|not want|pass on|passing on|passed on|skip|skipping|ignore|decline|declining|let it go|leave it|not take|do ?n[o']?t need|do not need)\b/i;
+// Nouns that name a different rule. If one is present, the question is about that, not
+// about three-handed play, however many people are in the room.
+const OTHER_TOPIC =
+  /\b(jokers?|pairs?|soap|dragons?|flowers?|bams?|craks?|dots?|winds?|quints?|sextets?|kongs?|pungs?|blanks?|exposures?|in a set|in the box|wall game|wall ran out|ran out|dead hand|mahjong in error|misnam\w+|redeem\w*|card)\b/i;
 // East is DEALT the extra tile; that is the deal, not a count that has gone wrong.
 const DEALER_EXTRA =
   /\b(dealer|east)\b[^.?!]{0,24}\bextra tile\b|\bextra tile\b[^.?!]{0,24}\b(dealer|east)\b/i;
@@ -988,7 +996,10 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [THREE_PLAYER_SEATS],
     keywords: ["three player", "three handed", "3 players"],
     requires: [THREE_PLAYER_SEATS],
-    blocks: [SETTLEMENT, SCORING_ASK],
+    // retrieve() ranks specificity above score, so one `requires` here outranked all 18
+    // entries that have none. A question that merely happens to mention three of us is
+    // about whatever noun it names, so those nouns take it back.
+    blocks: [SETTLEMENT, SCORING_ASK, PAYMENT, OTHER_TOPIC],
     approved_answer:
       "American mahjong seats 4 players, and the League's rulebook covers playing with 3. Build all 4 walls as usual with the full 152 tiles and leave one seat empty. Deal only to the three players, and the empty seat gets nothing. The deal ends with East holding 14 tiles and the other two holding 13. League publications describe the final pickup in two slightly different orders, and both reach those counts. Under League rules there is no Charleston with three players, so this is not a table preference. East opens with a discard, and play runs like the 4-player game. Anything beyond this is a table choice, such as an invented Charleston for three or a ghost hand dealt to the empty seat.",
     ruleset: RULESET,
@@ -1010,7 +1021,8 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [WRONG_COUNT],
     keywords: ["wrong number", "12 tiles", "redeal"],
     requires: [WRONG_COUNT],
-    blocks: [DEALER_EXTRA],
+    // How many tiles a SET contains is tile-count's question, not a count gone wrong.
+    blocks: [DEALER_EXTRA, /\bin (a|the|my|one) set\b|\bin the box\b/i],
     approved_answer:
       "Count your tiles before East's first discard. The League treats that discard as the start of the deal, so it is your cutoff for fixing anything. Count again when the Charleston ends, because that is the last easy moment to catch a mistake. If any player holds the wrong number of tiles at that point, the table throws all the hands in, rebuilds the walls, and deals again. No one pays a penalty, because a fresh deal is a reset and not a punishment. One correction escapes that. If the player seated to East's left holds 12 tiles because that player never took a 13th tile during the deal, that player takes the next tile from the wall and play continues, because that tile was rightfully theirs. League answers put this correction on the table from before the Charleston right up to East's first discard. It covers that seat only, and it covers a player who is short, not a player holding too many. After East's first discard, none of this works. A player holding the wrong number of tiles has a dead hand, and no one can fix the count. Another player has to call it, because you never declare your own hand dead, and the dead player still pays the winner of that deal. The habit that prevents almost all of it: everyone counts to 13, East counts to 14, before East discards.",
     ruleset: RULESET,
@@ -1031,7 +1043,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
       HOLD_WAIT_ASK,
       /\b(tile|discard|call|calls|claim|play|game|turn)\b/i,
     ],
-    blocks: [CHARLESTON_WORD, BLIND_PASS, MISNAMED, CONTACT_SENSE, new RegExp(`${NAMING.source}[^.?!]{0,20}\\b(tile|discard)s?\\b`, "i")],
+    blocks: [CHARLESTON_WORD, BLIND_PASS, MISNAMED, CONTACT_SENSE, DECLINE_CUE, new RegExp(`${NAMING.source}[^.?!]{0,20}\\b(tile|discard)s?\\b`, "i")],
     approved_answer:
       "Priority does not turn on which word you pick. The League does ask you to say call, take, or I want that when you actually claim the tile, and it lets you say hold or wait first while you decide. So after you say hold and make up your mind, say call before you take the tile. The one thing you may never do is reach in silently, because you have to speak your claim out loud. Two separate things settle it. Priority decides who is entitled to the tile: a claim for mahjong beats a claim for an exposure, and when two players want it for the same reason the player whose turn comes next gets preference. Commitment decides when the tile becomes yours: you own the call once you place the tile on top of your rack or expose tiles from your hand. Until you do one of those, you may change your mind, return the tile, and draw from the wall instead. Put those together and the common table argument disappears. If you are next in turn and you say hold, the table should give you a reasonable moment, and another player should not expose ahead of you. You lose that tile by going quiet, because a player later in turn order who calls it and then racks it or exposes tiles has finished a claim you never finished. You also lose it if someone claims it for mahjong, because mahjong outranks an exposure. The whole window closes for everybody once the next player racks the tile they picked, discards and names a tile, starts a joker exchange, or declares mahjong.",
     ruleset: RULESET,
@@ -1175,7 +1187,16 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [DECLINE_CALL],
     keywords: ["have to call", "skip", "ignore"],
     requires: [DECLINE_CALL],
-    blocks: [CHARLESTON_WORD, BLIND_PASS, COURTESY, JOKER, SPOKEN_CLAIM],
+    // SPOKEN_CLAIM keeps "do I have to say my call out loud" with hold-or-wait, but it
+    // also fires on "do I have to say anything if I do not want it", which is this
+    // entry's own question, so a decline cue takes it back.
+    blocks: [
+      CHARLESTON_WORD,
+      BLIND_PASS,
+      COURTESY,
+      JOKER,
+      (q: string) => SPOKEN_CLAIM.test(q) && !DECLINE_CUE.test(q),
+    ],
     approved_answer:
       "You never have to call a discard. If you do not want it, say nothing and let play continue. If you do want it, say so out loud, because you may never reach in silently. Once the next player has drawn and racked a tile, or discarded, that discard is out of reach for everyone.",
     ruleset: RULESET,

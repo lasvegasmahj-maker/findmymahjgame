@@ -529,3 +529,23 @@ reading the diff alone. That comparison is worth repeating on any future matcher
 | `HOLD_WAIT` | The lookahead added last round over-corrected: it excluded "hold the tile" and "wait for the tile", which are the claim sense the entry exists for. "hold the tile is that a call" fell through to a topic clarification and "can I hold the tile while I think" was answered "you hold 13 tiles between turns". | The queue sense keeps its article-optional form; the rack sense now needs a possessive, so "hold my tiles" stays out and "hold the tile" comes back. Pinned. |
 | `lib/ask-intent.ts` | Three copies of the hold/wait matcher, already disagreeing: the router called "hold the tile is that a call" a rules question while the retriever refused to match it, so the request ended in a clarification with no answer available. | Both router copies are composed from the exported `HOLD_WAIT`. One definition now, which is what the file's own comment asks for. |
 | `package.json` | The mobile lens was an env var someone had to remember. | `pnpm test:e2e:mobile` runs it. It stays out of the default run because two projects at once contend for one per-IP OTP budget. |
+
+### Gate 31: FAIL, two blockers, fixed
+
+This was the first gate run with the routing diff required in the reviewer prompt: build a
+worktree of origin/main, run the same 185 player-phrased questions through `lookupRule`
+and `detectAskTopic` on both trees, and diff the results. It found two regressions in one
+pass that six previous gates had read past, including one that broke a question printed
+on the /ask page as a canned example. That instruction stays in the gate.
+
+| File | Defect | Fix |
+|---|---|---|
+| `three-player-procedure` | `retrieve()` ranks specificity above score, and this entry's single `requires` outranked all 18 entries that carry none. So any question that merely mentioned three of us was answered with the three-handed dealing procedure: "three of us are wondering if a joker can be used in a pair" (the site's own example) returned "leave one seat empty", and so did questions about soap, flowers, the wall, a wall game, tile counts and scoring. | The entry now yields to `OTHER_TOPIC`, the nouns that name a different rule, and to payment wording. A short table asking about the Charleston still reaches it, because owner decision #6 is that the League publishes no Charleston for three. Both directions pinned, 25 probes. |
+| `passing-on-a-discard` | Its `SPOKEN_CLAIM` block fired on the questions the entry exists to answer. "do i have to say anything if i do not want the discard" went to `hold-or-wait`, which never says you may stay silent to decline and leads with "you have to speak your claim out loud". main answered it correctly. | The block is now a predicate that stands down when a decline cue is present, and `hold-or-wait` blocks the same cue. "do I have to say my call out loud" is unchanged. Pinned. |
+| `wrong-tile-count-before-play` | Same specificity pathology, smaller blast radius: "i counted 12 tiles how many are in a set" reached the redeal rule. | Set-inventory wording is blocked. |
+
+The underlying pathology is worth recording rather than hiding: specificity-before-score
+means one `requires` beats any amount of keyword evidence. Every fix here works around it
+at the entry level. Reordering the comparator would address the class rather than the
+instances, but it changes every route in the corpus, so it is a deliberate post-launch
+task with the routing diff as its acceptance test, not a change to make on the way out.
