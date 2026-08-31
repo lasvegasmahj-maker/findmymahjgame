@@ -1091,6 +1091,59 @@ test.describe("publish fidelity", () => {
     }
   });
 
+  test("two entries never block each other into silence", () => {
+    // charleston refuses a three-handed question and three-player-procedure refuses one
+    // naming another topic, so a question that is both lost every candidate and got a
+    // clarification where main had the answer.
+    for (const q of ["can I pass a joker if there are only three of us", "can we pass jokers with three players"]) {
+      const e = lookupRule({ question: q });
+      expect(e.entry_id, q).toBe("charleston");
+      expect(e.answer, q).toMatch(/never pass a joker/i);
+    }
+    // Same shape on the spoken-claim side.
+    for (const q of [
+      "Do I have to say call out loud?",
+      "do I have to say call out loud before I take the tile",
+      "do I have to say my claim out loud",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("hold-or-wait");
+    }
+    expect(lookupRule({ question: "do I have to name the tile I discard" }).entry_id).toBe("naming-discards");
+  });
+
+  test("out of turn covers the discard side as well as the draw", () => {
+    for (const q of [
+      "I drew out of turn is my hand dead",
+      "is my hand dead if I discard out of turn",
+      "is a hand dead if you pick out of turn",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("picking-ahead");
+    }
+  });
+
+  test("no answer claims how League material is printed", () => {
+    // Ordinal position and letter case on a printed card cannot come from the secondary
+    // sources these entries cite, and this branch publishes the policy that says so.
+    for (const e of RULES_KNOWLEDGE) {
+      expect(e.approved_answer, e.id).not.toMatch(/printed in (capitals|bold|italics)/i);
+      expect(e.approved_answer, e.id).not.toMatch(/\bthe (first|second|third|last) rule on the (back|front)\b/i);
+    }
+  });
+
+  test("a discarded joker may never be called, with no carve-out", () => {
+    // The exception was removed once as unsupported and came back. It names no source.
+    const jd = RULES_KNOWLEDGE.find((e) => e.id === "joker-discarded")!;
+    expect(jd.approved_answer).toMatch(/no one may call a discarded joker/i);
+    expect(jd.approved_answer).not.toMatch(/exception sits outside/i);
+    const md = RULES_KNOWLEDGE.find((e) => e.id === "misnamed-discard")!;
+    expect(md.approved_answer).not.toMatch(/really a joker|one case where a discarded joker/i);
+  });
+
+  test("the game itself is never read as a place", () => {
+    expect(parseAskIntent("how does payment work in mahjong").location).toBeNull();
+    expect(parseAskIntent("where can I play mahjong in Naples").location).toBe("Naples");
+  });
+
   test("who deals after a wall game is not offered as a table courtesy", () => {
     // The rulebook settles it: the deal passes to East's right. Listing it as a
     // local custom told players the League was silent on a rule it publishes.

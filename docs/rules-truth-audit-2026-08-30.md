@@ -595,13 +595,18 @@ no-op and is not a way to turn a model on for rules answers.
    is Claude's and the badge is off. If she has not read the published wording, those
    entries should carry the badge too. This is the one honesty question the branch cannot
    settle on its own.
-3. **`picking-ahead`**: "The first rule on the back of the card bars picking or looking
-   ahead, printed in capitals." Ordinal position and letter case on a printed card cannot
-   come from the secondary sources in its provenance, and this branch publishes the policy
-   that forbids the claim. Confirm from a card in hand, or cut the two details.
-4. **`misnamed-discard`**: the sentence carving a joker exception out of "no one may ever
-   call a discarded joker". Its provenance names no joker source, and a joker-naming claim
-   was pulled twice in earlier rounds as unsupported.
+3. **`picking-ahead`, already cut, restore only with a source.** It said "The first rule
+   on the back of the card bars picking or looking ahead, printed in capitals." Ordinal
+   position and letter case cannot come from the secondary sources in its provenance, and
+   this branch publishes the policy forbidding the claim, so the sentence now reads "The
+   back of the card bars picking or looking ahead." The ruling is unchanged. If Shauna
+   confirms both details from a card in hand they can go back, with the card cited.
+4. **`misnamed-discard`, already cut, needs a source or stays out.** It carved a joker
+   exception out of "no one may ever call a discarded joker", its provenance named no
+   joker source, and gate round 15 had already removed a joker-naming claim as
+   unsupported before it came back. Both sentences and the matching cross-reference in
+   `joker-discarded` are removed, so that rule now stands unqualified. If the exception is
+   real, it needs a League citation before it is published again.
 5. **Duplicated house notes** on `payments-basics` and `picking-ahead`, and the
    `last-tile-of-wall` wording that grants a call "right down to the last tile" and then
    calls the final discard unsettled. All owner-approved text.
@@ -630,3 +635,23 @@ no-op and is not a way to turn a model on for rules answers.
   ahead of the topic branch.
 - The sentence splitter treats any period-terminated token as a sentence end, so a future
   answer containing "p. 26" would split mid-sentence.
+
+### Gate 34: FAIL, three blockers, fixed
+
+| File | Defect | Fix |
+|---|---|---|
+| `charleston`, `charleston-stop`, `players-count` | Two entries blocking each other left a hole. `charleston` refuses a three-handed question and `three-player-procedure` refuses one naming another topic, so "can I pass a joker if there are only three of us" lost both candidates and got a clarification where main answered "You may never pass a joker in the Charleston". The hole was generic: three seats plus any of the eighteen other-topic nouns. | Each block is now a predicate that stands down exactly where the other entry refuses, so one of the two is always eligible. Pinned, including that the answer still says a joker may never be passed. |
+| `picking-ahead` | Published "The first rule on the back of the card bars picking or looking ahead, printed in capitals." with the review badge off. No source in its provenance can establish ordinal position or letter case, and this branch publishes the policy forbidding the claim. | The two details are cut; the rule is unchanged. A corpus-wide pin now fails any answer that describes how League material is printed. |
+| `misnamed-discard`, `joker-discarded` | Carved a joker exception out of "no one may ever call a discarded joker", with no joker source in the provenance. Gate round 15 removed a joker-naming claim as unsupported and it had returned, now cross-referenced from a second entry. Jokers are a never-ship-an-error area. | Both sentences and the cross-reference are removed, so the rule stands unqualified. Pinned. |
+
+Two more of the same two-sided-block shape, and one invented place name:
+
+- `hold-or-wait` blocked on `NAMING`, which contains "out loud", while
+  `passing-on-a-discard` blocked the same questions from the other side, so "do I have to
+  say call out loud before I take the tile" reached no entry. The naming block now stands
+  down on a spoken-claim question.
+- `picking-ahead`'s answer describes discarding out of turn but its `requires` held only
+  the picking verbs, so "is my hand dead if I discard out of turn" fell to the generic
+  dead-hand entry and lost the payment consequence.
+- "how does payment work in mahjong" answered "Nothing reviewed matches near Mahjong yet."
+  The game is now rejected as a place name, the same way pronouns are.

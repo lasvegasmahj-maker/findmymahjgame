@@ -498,8 +498,11 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
       /\bcourtesy pass\b/i,
       JOKER_PASS,
     ],
-    // Three-handed play has its own Charleston rule; see three-player-procedure.
-    blocks: [THREE_PLAYER_SEATS],
+    // Three-handed play has its own Charleston rule, but three-player-procedure itself
+    // refuses anything naming another topic, so this block stands down there. Otherwise
+    // "can I pass a joker if there are only three of us" loses both entries and gets no
+    // answer at all, where this one says a joker may never be passed.
+    blocks: [(q: string) => THREE_PLAYER_SEATS.test(q) && !OTHER_TOPIC.test(q)],
     keywords: ["charleston", "passing"],
     approved_answer:
       "The Charleston is the tile passing that happens before play begins. In the first Charleston, every player passes 3 tiles right, then 3 across, then 3 left; this first round is required. If all four players agree, a second Charleston follows: 3 left, 3 across, 3 right. On the last pass of each Charleston you may pass blind, taking tiles from the pass coming to you without looking at them. Afterward, you and the player across from you may make an optional courtesy pass of up to 3 tiles. You may never pass a joker in the Charleston.",
@@ -684,8 +687,8 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     ],
     keywords: ["players", "people", "how many players"],
     // A seats-of-three question is three-player-procedure's; this entry answers the
-    // plain count. The two give opposite answers on whether the League covers 3.
-    blocks: [THREE_PLAYER_SEATS],
+    // plain count. Stands down where that entry also refuses, so neither leaves a hole.
+    blocks: [(q: string) => THREE_PLAYER_SEATS.test(q) && !OTHER_TOPIC.test(q)],
     approved_answer:
       "American mahjong is built for 4 players. The League's rulebook also covers playing with 3, covering the deal and the fact that there is no Charleston, so you are not inventing a format when a fourth cannot make it.",
     ruleset: RULESET,
@@ -840,7 +843,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [JOKER, DISCARDED],
     blocks: [JOKER_EXCHANGE, JOKER_PASS, /\bpairs?\b/i, MISNAMED],
     approved_answer:
-      "You may discard a joker on your turn, but once a joker is discarded it is out of the game. No one may call a discarded joker for any reason, not for an exposure and not for mahjong, and it cannot be picked up later through a joker exchange. One exception sits outside this rule: if you throw a joker but name it as an ordinary tile, the misnamed discard rules govern what happens, not this one.",
+      "You may discard a joker on your turn, but once a joker is discarded it is out of the game. No one may call a discarded joker for any reason, not for an exposure and not for mahjong, and it cannot be picked up later through a joker exchange.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "research_verified",
@@ -942,7 +945,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     keywords: ["misnamed", "wrong name"],
     requires: [MISNAMED],
     approved_answer:
-      "Name every discard aloud as you place it face up, because the correct name is what makes the tile claimable. When your tile repeats the discard just before it, the League accepts saying same. If you say the wrong name, fix it with words only: state the correct name of the tile you actually threw. Never swap tiles, even if the tile you named by mistake sits in your hand. Once you correct the name and nobody has acted on the error, play continues with no penalty and any player may claim the tile normally. A call made on the wrong name does not stand. If that player only said call, correct the name and play on, with no penalty to anyone. If that player already laid tiles down on the wrong name, the exposure is invalid and their hand is dead for that deal, and you owe nothing. If a player declares mahjong based on the wrong name, the deal ends there: you alone pay that player 4 times the value of the hand, and the other two players pay nothing. That penalty applies even when the tile you threw was really a joker, because the claim rests on what you said. That is the one case where a discarded joker matters to a claim; otherwise no one may ever call a discarded joker. If two players declare mahjong at once, one on the wrong name and one needing the tile you actually threw, the player who needs the actual tile wins. If nobody catches the misname before the next player picks and racks, the chance to claim that tile is gone and nobody pays a penalty. Watch each discard with your eyes, not just your ears.",
+      "Name every discard aloud as you place it face up, because the correct name is what makes the tile claimable. When your tile repeats the discard just before it, the League accepts saying same. If you say the wrong name, fix it with words only: state the correct name of the tile you actually threw. Never swap tiles, even if the tile you named by mistake sits in your hand. Once you correct the name and nobody has acted on the error, play continues with no penalty and any player may claim the tile normally. A call made on the wrong name does not stand. If that player only said call, correct the name and play on, with no penalty to anyone. If that player already laid tiles down on the wrong name, the exposure is invalid and their hand is dead for that deal, and you owe nothing. If a player declares mahjong based on the wrong name, the deal ends there: you alone pay that player 4 times the value of the hand, and the other two players pay nothing. If two players declare mahjong at once, one on the wrong name and one needing the tile you actually threw, the player who needs the actual tile wins. If nobody catches the misname before the next player picks and racks, the chance to claim that tile is gone and nobody pays a penalty. Watch each discard with your eyes, not just your ears.",
     ruleset: RULESET,
     varies_by_house: false,
     source: "owner_approved",
@@ -1043,7 +1046,18 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
       HOLD_WAIT_ASK,
       /\b(tile|discard|call|calls|claim|play|game|turn)\b/i,
     ],
-    blocks: [CHARLESTON_WORD, BLIND_PASS, MISNAMED, CONTACT_SENSE, DECLINE_CUE, new RegExp(`${NAMING.source}[^.?!]{0,20}\\b(tile|discard)s?\\b`, "i")],
+    blocks: [
+      CHARLESTON_WORD,
+      BLIND_PASS,
+      MISNAMED,
+      CONTACT_SENSE,
+      DECLINE_CUE,
+      // Naming your own discard is naming-discards' rule, but NAMING also holds "out
+      // loud", which is exactly what a spoken-claim question asks about, so it stands
+      // down there rather than leaving the question with no entry at all.
+      (q: string) =>
+        new RegExp(`${NAMING.source}[^.?!]{0,20}\\b(tile|discard)s?\\b`, "i").test(q) && !SPOKEN_CLAIM.test(q),
+    ],
     approved_answer:
       "Priority does not turn on which word you pick. The League does ask you to say call, take, or I want that when you actually claim the tile, and it lets you say hold or wait first while you decide. So after you say hold and make up your mind, say call before you take the tile. The one thing you may never do is reach in silently, because you have to speak your claim out loud. Two separate things settle it. Priority decides who is entitled to the tile: a claim for mahjong beats a claim for an exposure, and when two players want it for the same reason the player whose turn comes next gets preference. Commitment decides when the tile becomes yours: you own the call once you place the tile on top of your rack or expose tiles from your hand. Until you do one of those, you may change your mind, return the tile, and draw from the wall instead. Put those together and the common table argument disappears. If you are next in turn and you say hold, the table should give you a reasonable moment, and another player should not expose ahead of you. You lose that tile by going quiet, because a player later in turn order who calls it and then racks it or exposes tiles has finished a claim you never finished. You also lose it if someone claims it for mahjong, because mahjong outranks an exposure. The whole window closes for everybody once the next player racks the tile they picked, discards and names a tile, starts a joker exchange, or declares mahjong.",
     ruleset: RULESET,
@@ -1098,10 +1112,10 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     topic: "Picking ahead",
     question_patterns: [PICK_VERB, AHEAD],
     keywords: ["pick ahead", "out of turn", "draw early"],
-    requires: [PICK_VERB, AHEAD],
+    requires: [new RegExp(`${PICK_VERB.source}|\\bdiscard(s|ed|ing)?\\b`, "i"), AHEAD],
     blocks: [CHARLESTON_WORD, BLIND_PASS],
     approved_answer:
-      "Wait for the player before you to discard, and wait a beat in case someone calls it, before you touch the wall. The first rule on the back of the card bars picking or looking ahead, printed in capitals. Under League rules, drawing out of turn makes your hand dead. That is the standard rule and it sets no condition about how quickly the table catches you. You stop picking and discarding for the rest of the deal and still pay the winner. Your hand is already dead, but still put the tile back in the exact spot it came from, because the wall has to stay intact for everyone else and hiding it somewhere else in the wall causes its own trouble. Discarding before you pick from the wall kills your hand the same way. If someone claims your out-of-turn discard for mahjong, the deal stops, you pay the winner 4 times the value of the hand, and the other two players pay nothing. Play then picks up to the right of the last action and keeps moving right, so a player your slip skipped does not get that turn back. One thing this is not: picking correctly on your own turn and having a valid call interrupt you. That is an interrupted pick, the tile goes back in its spot, and nobody's hand is dead. Two points to settle with your group. Many teachers, social tables, and tournament directors let a player off when someone stops them before they rack or look at the tile; that is house practice or director practice, not a League rule. And on whether an out-of-turn discard can still be claimed for an exposure, League answers have been reported both ways, so that one is unsettled and your table should agree on it.",
+      "Wait for the player before you to discard, and wait a beat in case someone calls it, before you touch the wall. The back of the card bars picking or looking ahead. Under League rules, drawing out of turn makes your hand dead. That is the standard rule and it sets no condition about how quickly the table catches you. You stop picking and discarding for the rest of the deal and still pay the winner. Your hand is already dead, but still put the tile back in the exact spot it came from, because the wall has to stay intact for everyone else and hiding it somewhere else in the wall causes its own trouble. Discarding before you pick from the wall kills your hand the same way. If someone claims your out-of-turn discard for mahjong, the deal stops, you pay the winner 4 times the value of the hand, and the other two players pay nothing. Play then picks up to the right of the last action and keeps moving right, so a player your slip skipped does not get that turn back. One thing this is not: picking correctly on your own turn and having a valid call interrupt you. That is an interrupted pick, the tile goes back in its spot, and nobody's hand is dead. Two points to settle with your group. Many teachers, social tables, and tournament directors let a player off when someone stops them before they rack or look at the tile; that is house practice or director practice, not a League rule. And on whether an out-of-turn discard can still be claimed for an exposure, League answers have been reported both ways, so that one is unsettled and your table should agree on it.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note:
@@ -1170,7 +1184,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     question_patterns: [CHARLESTON_WORD, STOP_OR_AGREE],
     keywords: ["stop", "charleston", "second charleston", "optional"],
     requires: [new RegExp(`${CHARLESTON_WORD.source}|\\bpass(es|ed|ing)?\\b`, "i"), STOP_OR_AGREE],
-    blocks: [BLIND_PASS, COURTESY, JOKER, DISCARDED, THREE_PLAYER_SEATS],
+    blocks: [BLIND_PASS, COURTESY, JOKER, DISCARDED, (q: string) => THREE_PLAYER_SEATS.test(q) && !OTHER_TOPIC.test(q)],
     approved_answer:
       "The first Charleston, three passes, is required and cannot be stopped once it begins. The second Charleston happens only if all four players agree, which is the same rule as saying any one player may stop it before it starts, without giving a reason. Once the second Charleston is under way, it continues to the end. A courtesy pass can still be offered after a stop.",
     ruleset: RULESET,

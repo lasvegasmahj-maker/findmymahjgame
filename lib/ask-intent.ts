@@ -30,7 +30,7 @@ const PLACE_NAME = /^[A-Za-z0-9 .,'-]+$/;
 const STOP_TAIL =
   /\b(today|tonight|tomorrow|this week(end)?|next week(end)?|morning|afternoon|evening|night|please|thanks?)\b/gi;
 
-const PRONOUN_HEAD = /^(us|them|they|you|me|him|her|it|our|their|my|your)\b/i;
+const PRONOUN_HEAD = /^(us|them|they|you|me|him|her|it|our|their|my|your|mahjong|mahj|maj|mah jong+)\b/i;
 
 function extractLocation(q: string): string | null {
   const zip = q.match(/\b(\d{5})\b/);
