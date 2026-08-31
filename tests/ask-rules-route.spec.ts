@@ -232,7 +232,7 @@ test.describe("/ask page: clarification UI", () => {
     await options.filter({ hasText: "It would complete mahjong" }).click();
     await expect(status).toContainText("Any discard that completes your mahjong may be called");
     await expect(page.getByTestId("home-ask-clarify")).toHaveCount(0);
-    await expect(status.getByRole("link", { name: "Ask a follow-up on the Ask page" })).toHaveAttribute("href", "/ask?q=Can%20I%20call%20that%20tile%3F");
+    await expect(status.getByRole("link", { name: "Open this answer on the Ask page" })).toHaveAttribute("href", "/ask?q=Can%20I%20call%20that%20tile%3F");
   });
 
   test("Never mind cancels a pending clarification", async ({ page }) => {

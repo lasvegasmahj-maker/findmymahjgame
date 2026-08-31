@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test:e2e": "playwright test",
-    "test:e2e:mobile": "PW_MOBILE=1 playwright test --project=mobile-chromium"
+    "test:e2e:mobile": "PW_MOBILE=1 playwright test --project=mobile-chromium",
+    "test:e2e:webkit": "PW_WEBKIT=1 playwright test --project=mobile-safari"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.103.3",

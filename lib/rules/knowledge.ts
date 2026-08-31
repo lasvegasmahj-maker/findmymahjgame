@@ -57,6 +57,7 @@ const VERIFIED = "2026-08-22" as const;
 const VERIFIED_REVIEW = "2026-08-26" as const;
 const VERIFIED_WORDING = "2026-08-29" as const;
 const VERIFIED_AUDIT = "2026-08-30" as const;
+const VERIFIED_WALL_GAME = "2026-08-31" as const;
 // Same date as the audit, kept separate so a later audit pass does not silently restamp
 // the entries the owner personally decided.
 const OWNER_DECIDED = "2026-08-30" as const;
@@ -214,16 +215,20 @@ export function blindReadsAsPlace(question: string): boolean {
   );
 }
 
-// Seats only, and it must be seats: a bare "only 3" means three tiles in a
-// Charleston question, so an explicit seat noun is required.
+// Seats only. A bare "only 3" means three tiles in a Charleston question, so a seat
+// noun is required rather than a bare number.
 const THREE_PLAYER_SEATS =
   /\b(three|3)[- ](player|handed|person)\b|\b(three|3) (people|players|of us)\b|\bplay(ing)? with (just )?(three|3)\b|\bonly (three|3) (of us|people|players)\b|\b(missing|without) a (fourth|4th)\b/i;
 const WRONG_COUNT =
-  /\b(wrong number|wrong count|miscount\w*|too many tiles|too few tiles|(have|has|holding|had|counted|only got|left with|short|stuck with|ended up with) [^.?!]{0,10}12 tiles|(too many|an extra|one too many|ended up with|stuck with) [^.?!]{0,10}14 tiles|short a tile|missing a tile|extra tile(?!\s+sets?\b)|one too many|one too few|short one)\b/i;
+  /\b(wrong number|wrong count|miscount\w*|too many tiles|too few tiles|(have|has|holding|had|counted|only got|left with|short|stuck with|ended up with) [^.?!]{0,10}12 tiles|(too many|an extra|one too many|ended up with|stuck with) [^.?!]{0,10}14 tiles|short a tile|missing a tile|extra tile(?!\s+sets?\b)|one too many|one too few|short one tile)\b/i;
 // Turning a tile down. "do I have to say anything if I do not want it" is a question
 // about declining, not about how a claim is spoken.
 const DECLINE_CUE =
   /\b(do ?n[o']?t want|do not want|dont want|not want|pass on|passing on|passed on|skip|skipping|ignore|decline|declining|let it go|leave it|not take|do ?n[o']?t need|do not need)\b/i;
+// Holding your hand while someone checks a mahjong. HOLD_WAIT deliberately excludes the
+// rack sense, so this needs naming outright or it reaches nothing.
+const HOLD_FOR_CHECK =
+  /\b(hold|keep)\b[^.?!]{0,24}\b(hand|hands|tiles)\b[^.?!]{0,30}\b(mahjong|maj|call|called|check|checked|verified)\b/i;
 // Asking where to play is not asking how to deal.
 const DIRECTORY_ASK =
   /\b(where|near|nearby|find|looking for|join|club|clubs|group|groups|venue|venues|teacher|teachers|lesson|lessons|class|classes|learn)\b/i;
@@ -249,6 +254,7 @@ const HOLD_WAIT_ASK =
   /\b(call|calls|called|claim|claims|count|counts|mean|means|legal|legally|stop|stops|priority|say|says|saying|said|shout|shouted|allowed|same as|instead of)\b/i;
 const SETTLEMENT =
   /\b(pay|pays|paid|paying|payment|payments|settle|settles|settled|settlement|owe|owes|collect|collects|value|double|throw(n)? in|threw in|toss(ed)? in)\b/i;
+const SETTLEMENT_OR_HOLD = new RegExp(`${SETTLEMENT.source}|${HOLD_FOR_CHECK.source}`, "i");
 // Only the deal's final discard, never the most recent one: "her last discard finishes my
 // pung" is an ordinary calling question and must not reach the end-of-wall answer.
 const FINAL_DISCARD_SCENE =
@@ -661,6 +667,9 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     id: "wall-game",
     topic: "Wall game (no winner)",
     question_patterns: [
+      // "who deals after a wall game" belongs here: the dealing entry only covers the
+      // opening deal and never says who becomes East next.
+      /\b(who|which player)\b[^.?!]{0,30}\b(deals?|is east|becomes east|deal again)\b/i,
       /wall game/i,
       /(nobody|no one|no body) (wins|won|declared|declares|got|gets) ?(mahjong|maj)?/i,
       /run(s|ning)? out of tiles/i,
@@ -679,7 +688,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     // courtesies-vs-rules. Pending Shauna's sign-off it is not her wording, so it does
     // not carry her stamp and it shows the review badge.
     source: "research_verified",
-    last_verified: VERIFIED_AUDIT,
+    last_verified: VERIFIED_WALL_GAME,
     confidence: "high",
     classification: "standard_nmjl_rule",
     provenance: researched(
@@ -997,9 +1006,14 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
   {
     id: "mahjong-in-error-settlement",
     topic: "Settlement after a false mahjong",
-    question_patterns: [MAHJONG_CUE, ERROR_CUE, SETTLEMENT],
+    question_patterns: [
+      SETTLEMENT_OR_HOLD,MAHJONG_CUE, ERROR_CUE, SETTLEMENT],
     keywords: ["mahjong", "error", "pay", "settle"],
-    requires: [MAHJONG_CUE, ERROR_CUE, SETTLEMENT],
+    requires: [
+      new RegExp(`${MAHJONG_CUE.source}|${HOLD_FOR_CHECK.source}`, "i"),
+      new RegExp(`${ERROR_CUE.source}|${HOLD_FOR_CHECK.source}`, "i"),
+      SETTLEMENT_OR_HOLD,
+    ],
     // A misname settlement is misnamed-discard's rule, not this one; the two
     // state opposite payers, so this must not win a misname question.
     blocks: [MISNAMED],
@@ -1023,8 +1037,9 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     keywords: ["three player", "three handed", "3 players"],
     requires: [THREE_PLAYER_SEATS],
     // retrieve() ranks specificity above score, so one `requires` here outranked all 18
-    // entries that have none. A question that merely happens to mention three of us is
-    // about whatever noun it names, so those nouns take it back.
+    // entries that have none, and a question that merely mentions three of us is about
+    // whatever noun it names. Requiring a procedure word instead was tried and lost
+    // "we have three players is that ok", which carries none.
     blocks: [SETTLEMENT, SCORING_ASK, PAYMENT, OTHER_TOPIC, DIRECTORY_ASK],
     approved_answer:
       "American mahjong seats 4 players, and the League's rulebook covers playing with 3. Build all 4 walls as usual with the full 152 tiles and leave one seat empty. Deal only to the three players, and the empty seat gets nothing. The deal ends with East holding 14 tiles and the other two holding 13. League publications describe the final pickup in two slightly different orders, and both reach those counts. Under League rules there is no Charleston with three players, so this is not a table preference. East opens with a discard, and play runs like the 4-player game. Anything beyond this is a table choice, such as an invented Charleston for three or a ghost hand dealt to the empty seat.",
@@ -1135,7 +1150,16 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     topic: "Picking ahead",
     question_patterns: [PICK_VERB, AHEAD],
     keywords: ["pick ahead", "out of turn", "draw early"],
-    requires: [new RegExp(`${PICK_VERB.source}|\\bdiscard(s|ed|ing)?\\b`, "i"), AHEAD],
+    // The discard branch takes only the out-of-turn senses. AHEAD also holds a bare
+    // "early" and "too soon", so pairing it with a plain discard verb answered "when
+    // should I discard my flowers, early or late" with the dead-hand penalty.
+    requires: [
+      new RegExp(
+        `${PICK_VERB.source}|\\bdiscard(s|ed|ing)?\\b(?=[^.?!]{0,30}\\b(out of turn|before (my|your|their|her|his) turn|not (my|your|their) turn)\\b)`,
+        "i",
+      ),
+      AHEAD,
+    ],
     blocks: [CHARLESTON_WORD, BLIND_PASS],
     approved_answer:
       "Wait for the player before you to discard, and wait a beat in case someone calls it, before you touch the wall. The back of the card bars picking or looking ahead. Under League rules, drawing out of turn makes your hand dead. That is the standard rule and it sets no condition about how quickly the table catches you. You stop picking and discarding for the rest of the deal and still pay the winner. Your hand is already dead, but still put the tile back in the exact spot it came from, because the wall has to stay intact for everyone else and hiding it somewhere else in the wall causes its own trouble. Discarding before you pick from the wall kills your hand the same way. If someone claims your out-of-turn discard for mahjong, the deal stops, you pay the winner 4 times the value of the hand, and the other two players pay nothing. Play then picks up to the right of the last action and keeps moving right, so a player your slip skipped does not get that turn back. One thing this is not: picking correctly on your own turn and having a valid call interrupt you. That is an interrupted pick, the tile goes back in its spot, and nobody's hand is dead. Two points to settle with your group. Many teachers, social tables, and tournament directors let a player off when someone stops them before they rack or look at the tile; that is house practice or director practice, not a League rule. And on whether an out-of-turn discard can still be claimed for an exposure, League answers have been reported both ways, so that one is unsettled and your table should agree on it.",
@@ -1173,8 +1197,8 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     keywords: ["how many tiles", "hand", "rack"],
     requires: [HAND_SIZE],
     // "How many do I hold" is this entry's. A count that has already gone wrong is the
-    // count entry's, which answers both sides of East's first discard.
-    blocks: [DEAD, JOKER, WRONG_COUNT, /\bpairs?\b|\bsingles?\b|\bexpos|\bdealer\b|\beast\b/i],
+    // count entry's, and holding your hand while a call is checked is a third question.
+    blocks: [DEAD, JOKER, WRONG_COUNT, HOLD_FOR_CHECK, /\bpairs?\b|\bsingles?\b|\bexpos|\bdealer\b|\beast\b/i],
     approved_answer:
       "You hold 13 tiles between turns. When you draw or call, you have 14; after you discard, you are back to 13. A finished mahjong is 14 tiles. Count quietly whenever you are unsure, because the wrong number of tiles once play has begun makes a hand dead.",
     ruleset: RULESET,

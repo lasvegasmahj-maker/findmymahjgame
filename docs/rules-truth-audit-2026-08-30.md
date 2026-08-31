@@ -685,3 +685,17 @@ Four warnings from the same round, all the two-sided-block shape or a missing si
   invented town called Turn What Happens. Both senses now have a signal.
 - `PAYMENT` gained collect, settlement and their forms, which also closes the backlog item
   where "how do payments work when someone wins" could not reach `payments-basics`.
+
+### Gate 36: FAIL, one blocker, fixed
+
+| File | Defect | Fix |
+|---|---|---|
+| `picking-ahead` | Widening its `requires` to accept a discard verb paired that verb with the whole of `AHEAD`, which holds a bare "early" and "too soon". So six ordinary timing and strategy questions were answered with the out-of-turn penalty: "when should I discard my flowers, early or late" came back "your hand is dead and you still pay the winner". The widening was made one gate earlier to fix a real gap, and it opened a worse one. | The discard branch takes only the out-of-turn senses, through a lookahead. All six phrasings and all four out-of-turn phrasings are pinned. |
+| `mahjong-in-error-settlement`, `hand-size` | "can I hold my tiles while she checks the mahjong" was answered "You hold 13 tiles between turns", and two sibling phrasings reached no entry at all, while the answer that opens "Everyone should hold their hands until someone checks the call" sat one entry away. `HOLD_WAIT` deliberately excludes the rack sense, so this needed naming outright. | `HOLD_FOR_CHECK` routes the family to the entry that answers it; `hand-size` yields on the same cue. Pinned, asserting the entry and the sentence, not just the topic. |
+| `wall-game` | The correction that justified editing owner copy was unreachable from three of the four ways a player asks for it: "who deals after a wall game" went to the `dealing` entry, which only covers the opening deal and never says who becomes East. | Deal-rotation phrasings now reach `wall-game`, and its `last_verified` carries the date of the edit rather than the day before it. Pinned. |
+| `WRONG_COUNT` | A bare "short one" matched "I am short one player", so a seat shortage could reach the redeal-and-dead-hand rule. Not user-visible today because those questions route to the directory, but one topic change away from being. | Tightened to "short one tile". Pinned both ways. |
+
+Also: two comments explained the design by naming `THREE_PLAYER` and `THREE_PLAYER_HOW`,
+which no longer exist, so they describe the rejected shape instead; the home card's link
+says "Open this answer on the Ask page", which is what it does now that /ask auto-answers;
+and `pnpm test:e2e:webkit` exists alongside `pnpm test:e2e:mobile`.

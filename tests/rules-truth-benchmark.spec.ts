@@ -1179,6 +1179,67 @@ test.describe("publish fidelity", () => {
     for (const [q, id] of cases) expect(lookupRule({ question: q }).entry_id, q).toBe(id);
   });
 
+  test("discard timing is a strategy question, not an out-of-turn penalty", () => {
+    // AHEAD holds a bare "early" and "too soon", so pairing it with a plain discard verb
+    // answered "when should I discard my flowers, early or late" with "your hand is dead
+    // and you still pay the winner".
+    const cases: Array<[string, string]> = [
+      ["when should I discard my flowers, early or late", "flowers"],
+      ["is discarding early a good strategy", "hand-choice-strategy"],
+      ["should I discard early in the hand", "calling-discard"],
+      ["is it better to discard singles early", "calling-discard"],
+      ["should I discard dangerous tiles early", "calling-discard"],
+      ["is it rude to discard too soon after someone calls", "calling-discard"],
+    ];
+    for (const [q, id] of cases) expect(lookupRule({ question: q }).entry_id, q).toBe(id);
+    for (const q of [
+      "I discarded out of turn what happens",
+      "is my hand dead if I discard out of turn",
+      "I drew out of turn is my hand dead",
+      "I picked early is my hand dead",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("picking-ahead");
+    }
+  });
+
+  test("holding your hand while a call is checked reaches the rule that says so", () => {
+    for (const q of [
+      "can I hold my tiles while she checks the mahjong",
+      "should we hold our hands until the mahjong is verified",
+      "can everyone hold their hand until the call is checked",
+      "should I hold my hand when someone calls mahjong",
+    ]) {
+      const r = lookupRule({ question: q });
+      expect(r.entry_id, q).toBe("mahjong-in-error-settlement");
+      expect(r.answer, q).toMatch(/hold their hands until someone checks the call/i);
+    }
+    // ...and the tile-count question is still the tile-count question.
+    for (const q of ["how many tiles do I hold", "do I have 13 or 14 tiles"]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("hand-size");
+    }
+  });
+
+  test("who deals after a wall game reaches the entry that answers it", () => {
+    // Correcting the note was pointless while three of the four natural phrasings went
+    // to the dealing entry, which only covers the opening deal.
+    for (const q of [
+      "who deals after a wall game",
+      "who is east next after a wall game",
+      "after a wall game who deals",
+      "does the same person deal again after a wall game",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("wall-game");
+    }
+    expect(lookupRule({ question: "who deals first" }).entry_id).toBe("dealing");
+  });
+
+  test("being short a player is not being short a tile", () => {
+    for (const q of ["I am short one player", "we are short one for tuesday"]) {
+      expect(lookupRule({ question: q }).entry_id, q).not.toBe("wrong-tile-count-before-play");
+    }
+    expect(lookupRule({ question: "I am short one tile" }).entry_id).toBe("wrong-tile-count-before-play");
+  });
+
   test("holding your hand and discarding out of turn reach the rules path", () => {
     // Neither sense had a signal, so both ran a directory search, one of them against an
     // invented town called Turn What Happens.

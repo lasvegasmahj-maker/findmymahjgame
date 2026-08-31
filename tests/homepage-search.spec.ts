@@ -59,7 +59,7 @@ test.describe("homepage search card", () => {
     await expect(status.getByText("Found 4 listings near Dallas", { exact: false })).toBeVisible();
     expect(posted).toEqual({ q: "Where can I play near Dallas?" });
     await expect(status.locator("ul li")).toHaveCount(3);
-    await expect(status.getByRole("link", { name: "Ask a follow-up on the Ask page" })).toHaveAttribute(
+    await expect(status.getByRole("link", { name: "Open this answer on the Ask page" })).toHaveAttribute(
       "href",
       "/ask?q=Where%20can%20I%20play%20near%20Dallas%3F"
     );
