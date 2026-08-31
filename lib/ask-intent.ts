@@ -1,4 +1,4 @@
-import { blindReadsAsPlace, BLIND_PASS, HAND_CLOSED, RULES_TOPIC_SIGNALS, RULES_TOPIC_SIGNALS_CONDITIONAL, VARIANT_RE, placeAfterPrep } from "@/lib/rules/knowledge";
+import { blindReadsAsPlace, BLIND_PASS, HAND_CLOSED, RULES_TOPIC_SIGNALS, RULES_TOPIC_SIGNALS_CONDITIONAL, VARIANT_RE, CONTACT_SENSE, placeAfterPrep } from "@/lib/rules/knowledge";
 import { normalizeQuestion, spellfix } from "@/lib/rules/lookup";
 import { DAY_NAMES, type DayName, type TimeOfDay } from "@/lib/schedule";
 import { RADIUS_OPTIONS, type RadiusMiles } from "@/lib/geo";
@@ -185,8 +185,8 @@ const CONDITIONAL_RULES_SIGNALS: RegExp[] = [
   ...RULES_TOPIC_SIGNALS_CONDITIONAL,
   /\bhow many of each\b/i,
   /\b(three|3) of us\b[^.?!]{0,40}\b(pass|passing|charleston|deal|dealt|redeal|tiles each|how many tiles)\b/i,
-  /\b(redeal|re-?deal)\b|\b(12|14) tiles\b|\bwrong number of tiles\b|\bshort a tile\b|\bextra tile\b(?!\s+sets?\b)/i,
-  /\b(hold|wait)\b(?!\s+(a |an |the |my |your |our |her |his |their )?(spot|seat|place|table|room))[^.?!]{0,30}\b(call|claim|tile|discard|priority|count|counts|mean)\b|\b(call|claim|tile|discard|priority)\b[^.?!]{0,30}\b(hold|wait)\b(?!\s+(a |an |the |my |your |our |her |his |their )?(spot|seat|place|table|room))/i,
+  /\bre-?deal\b|\b(12|14) tiles\b|\bwrong number of tiles\b|\bshort a tile\b|\bextra tile\b(?!\s+sets?\b)/i,
+  /\b(hold|wait)\b(?!\s+(a |an |the |my |your |our |her |his |their )?(spot|seat|place|table|room))[^.?!]{0,30}\b(call|claim|tile|discard|priority|count|counts|mean)\b(?![^.?!]{0,12}\b(back|ahead|first)\b)|\b(call|claim|tile|discard|priority)\b[^.?!]{0,30}\b(hold|wait)\b(?!\s+(a |an |the |my |your |our |her |his |their )?(spot|seat|place|table|room))/i,
   /\bcold wall\b|\bhot wall\b|\b(final|last) discard\b[^.?!]{0,40}\b(wall|deal|game|exposure|mahjong)\b|\b(wall|deal)\b[^.?!]{0,40}\b(final|last) discard\b/i,
   /\bblanks?\b(?! (check|page|space|form))/i,
   /\btournament (rules?|play|director)\b/i,
@@ -204,7 +204,7 @@ const CONDITIONAL_RULES_SIGNALS: RegExp[] = [
 const MAHJ_VOCAB =
   /\b(tiles?|hands?|discards?|discarded|discarding|walls?|card|charleston|jokers?|mahjong|mahj|maj|pungs?|kongs?|quints?|sextets?|expos\w*|melds?|racks?|deal|dealer|dealt|east|turns?|passing|win|wins|winning|won|bams?|craks?|dots?|winds?|dragons?|flowers?|soap|rules?|rule ?book|scoring|pays?|paid|dead|call|calls|called|calling|play|playing|players?|three[- ]handed|on the card|blanks?|pass|passes|redeal)\b/i;
 const DIRECTORY_NOUNS =
-  /\b(groups|games|clubs|teachers?|instructors?|lessons?|classes|events|tournaments|venues|studios|meetups?|leagues|retreats|cruises|directory|listings?|website|near|nearby|zip|miles?|downtown|fourth|seat|spot|waitlist|reserve|reservation|show up|looking for|sign up|register)\b/i;
+  /\b(groups|games|clubs|teachers?|instructors?|lessons?|classes|events|tournaments|venues?|studios?|meetups?|leagues|retreats|cruises|directory|listings?|website|near|nearby|zip|miles?|downtown|fourth|seat|spot|waitlist|reserve|reservation|show up|looking for|sign up|register)\b/i;
 const COMMERCE_RE =
   /\b(buy|buying|purchase|store|shop|for sale|price|prices|cost|costs|sell|sells|order|amazon|membership|fee|fees|sets? for|credit|debit|checkout)\b/i;
 
@@ -218,11 +218,18 @@ export function detectAskTopic(raw: string): AskTopic {
     return detectAskTopic(q.replace(/\bblind(\s+[A-Za-z]+)?\b/gi, ""));
   }
 
+  // "wait for a call back about lessons" is a phone call, not a claim. Only a mahjong noun
+  // in the same sentence can pull a contact question onto the rules path.
+  if (CONTACT_SENSE.test(q) && !/\b(tile|tiles|discard|discards|joker|jokers|mahjong|maj|charleston|exposure|exposures|rack|wall|card)\b/i.test(q)) {
+    return "directory";
+  }
+
   const questionForm = /\b(what|how|why|when|can|could|should|is|are|do|does|work|mean)\b/i.test(q);
   // The weak nouns (rules, rack, discard, deal) only signal a rules question when the
   // sentence actually asks something. "Any good deal on lessons in Naples" is commerce.
   const weakRulesNoun = /\b(rules?|racks?|discard(s|ing)?|deal(t|ing)?|dealer)\b/i.test(q);
-  const plainContext = MAHJ_VOCAB.test(q) && !DIRECTORY_NOUNS.test(q) && !COMMERCE_RE.test(q) && !placeAfterPrep(q);
+  const plainContext =
+    MAHJ_VOCAB.test(q) && !DIRECTORY_NOUNS.test(q) && !COMMERCE_RE.test(q) && !CONTACT_SENSE.test(q) && !placeAfterPrep(q);
   const conditional = CONDITIONAL_RULES_SIGNALS.some((re) => re.test(q)) && plainContext;
   // "riichi rules for pon" is a rules question even without a question word.
   const variantAsk = VARIANT_RE.test(q) && (questionForm || plainContext);

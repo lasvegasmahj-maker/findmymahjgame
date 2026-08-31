@@ -13,7 +13,16 @@ export function AnswerText({ text, className }: { text: string; className?: stri
       <p style={{ fontSize: "1.1rem", color: "var(--navy)", fontWeight: 600, textAlign: "center", lineHeight: 1.55 }}>{text}</p>
     );
   }
-  const sentences = text.split(/(?<=[.!?])\s+/);
+  const sentences: string[] = [];
+  let buf = "";
+  for (const part of text.split(/(\s+)/)) {
+    buf += part;
+    if (/[.!?]["')\]]?\s*$/.test(part)) {
+      sentences.push(buf);
+      buf = "";
+    }
+  }
+  if (buf) sentences.push(buf);
   const paras: string[] = [];
   let current: string[] = [];
   for (const s of sentences) {

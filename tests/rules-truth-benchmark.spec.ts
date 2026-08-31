@@ -163,6 +163,8 @@ const CASES: Case[] = [
   A("joker pair?", "joker-in-pair"),
   A("blind pass?", "charleston-blind-pass"),
   A("wall game?", "wall-game"),
+  A("is a cold wall a real rule", "last-tile-of-wall"),
+  A("what is a hot wall", "last-tile-of-wall"),
   A("courtesy pass?", "courtesy-pass"),
   A("dead hand?", "dead-hand"),
   A("so like, my friend says you can't call for a pair, is that true", "calling-for-pair"),
@@ -314,6 +316,9 @@ test.describe("directory questions stay directory questions", () => {
       "I have an extra tile set to donate",
       "do people talk or play silently",
       "do I have to say anything before I play",
+      "how long do I wait for a call back about lessons",
+      "do I announce myself or just call the venue",
+      "do I have to wait long to get a call back",
     ]) {
       expect(detectAskTopic(q), q).toBe("directory");
     }
@@ -421,6 +426,8 @@ test.describe("corpus invariants", () => {
     }
   });
 
+  // The owner_question mechanism stays available for the next unresolved ruling; this
+  // asserts only that nothing is waiting on one today.
   test("no rules question is left waiting on the instructor", () => {
     expect(RULES_KNOWLEDGE.filter((e) => e.provenance.evidence === "owner_question_pending").map((e) => e.id)).toEqual([]);
     expect(RULES_KNOWLEDGE.filter((e) => /instructor is confirming/.test(e.approved_answer)).map((e) => e.id)).toEqual([]);

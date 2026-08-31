@@ -85,7 +85,7 @@ function researched(ref: string, year?: number): Provenance {
 function ownerApproved(ref: string, year?: number): Provenance {
   return {
     source_type: "owner_approved",
-    source_title: "Owner approved 2026-08-30 on the researched basis below (certified American mahjong instructor)",
+    source_title: `Owner approved ${OWNER_DECIDED} on the researched basis below (certified American mahjong instructor)`,
     source_ref: ref,
     ...(year ? { source_year: year } : {}),
     owner_review_required: false,
@@ -135,7 +135,7 @@ export const TWO_PLAYERS =
   /\b(both|two (players|people|of us)|more than one|same (tile|discard)|at the same time|simultaneous(ly)?|who gets|who has priority|priority|first dibs|hold|wait)\b/i;
 const TWO_PLAYERS_ASK = new RegExp(`${CLAIM_VERB.source}|\\b(want|wants|wanted|need|needs|declare|declares|mahjong|maj|tile|discard|mean|means|meaning|say|saying|said|shout|announce)\\b`, "i");
 export const OWN_DISCARD =
-  /\b(my own discard|own discard|tile i (just )?(discarded|threw|put down)|discard i (just )?(made|threw)|call back|take back|take it back|i (just )?(discarded|threw) (it|a tile|the tile)|my discard|what i (just )?(discarded|threw))\b/i;
+  /\b(my own discard|own discard|tile i (just )?(discarded|threw|put down)|discard i (just )?(made|threw)|call (it |that |the tile |my discard )?back\b(?=[^.?!]{0,24}\b(tile|discard)\b)|take back|take it back|i (just )?(discarded|threw) (it|a tile|the tile)|my discard|what i (just )?(discarded|threw))\b/i;
 const NAMING = /\b(name|names|naming|named|announce|announcing|call out|say (the|its|the tile'?s?) name|tile name|say same|saying same|say aloud|out loud|aloud)\b/i;
 const TIMING =
   /\b(when|before|after|during|timing|turn|my turn|own turn|right away|immediately|as soon as|first|then|order)\b/i;
@@ -178,7 +178,7 @@ const OFFICIAL =
 const STRATEGY =
   /\b(strategy|strategies|tips?|advice|best way|should i (pick|choose|play|keep|go for|aim for)|which hand should|what hand should|how do i (pick|choose|decide on) (a|my) hand|good hand to)\b/i;
 const LAST_OF_WALL =
-  /\b((last|final) (tile|discard|few tiles)|wall (runs|is|gets) (out|empty|gone|done)|run(s|ning)? out of tiles|no (more )?tiles? left|end of the wall|out of tiles)\b/i;
+  /\b((last|final) (tile|discard|few tiles)|(cold|hot) wall|wall (runs|is|gets) (out|empty|gone|done)|run(s|ning)? out of tiles|no (more )?tiles? left|end of the wall|out of tiles)\b/i;
 
 // "Blind Pass", "Blind River", and "Blind Bay" are real places. "Blind" reads as a
 // place name when a location word introduces it, when a geographic suffix follows
@@ -219,6 +219,8 @@ const WRONG_TILE_GIVEN =
 const EXCHANGE_CONTEXT =
   /\b(exchang\w+|redeem\w*|swap\w*|trad(e|ed|ing)|for (my|the|a|his|her) joker|took (my|the|her|his) joker|gave me)\b/i;
 const HOLD_WAIT = /\b(hold|wait)\b(?!\s+(a |an |the |my |your |our |her |his |their )?(spot|seat|place|table|room))/i;
+export const CONTACT_SENSE =
+  /\bcall\s+(back|ahead|first|the\s+(teacher|instructor|studio|venue|club|shop|store|number|office))\b|\b(phone call|voicemail|email|call\s+(me|you|us|them)\s+back)\b/i;
 const HOLD_WAIT_ASK =
   /\b(call|calls|called|claim|claims|count|counts|mean|means|legal|legally|stop|stops|priority|say|says|saying|said|shout|shouted|allowed|same as|instead of)\b/i;
 const SETTLEMENT =
@@ -226,7 +228,7 @@ const SETTLEMENT =
 // Only the deal's final discard, never the most recent one: "her last discard finishes my
 // pung" is an ordinary calling question and must not reach the end-of-wall answer.
 const FINAL_DISCARD_SCENE =
-  /\b(last|final) (discard|tile)\b(?=[^.?!]{0,40}\b(wall|deal|game|end|empty|left)\b)|\b(wall|deal|game|end|empty)\b[^.?!]{0,40}\b(last|final) (discard|tile)\b|\bwall is (empty|gone|out|used up)\b|\bwall runs out\b|\bno tiles left\b|\bout of tiles\b|\bend of the wall\b|\bnothing left to draw\b/i;
+  /\b(cold|hot) wall\b|\b(last|final) (discard|tile)\b(?=[^.?!]{0,40}\b(wall|deal|game|end|empty|left)\b)|\b(wall|deal|game|end|empty)\b[^.?!]{0,40}\b(last|final) (discard|tile)\b|\bwall is (empty|gone|out|used up)\b|\bwall runs out\b|\bno tiles left\b|\bout of tiles\b|\bend of the wall\b|\bnothing left to draw\b/i;
 
 // Shared by the route, the Ask box, and the clarification engine so they cannot drift.
 export const VARIANT_RE =
@@ -978,7 +980,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
       HOLD_WAIT_ASK,
       /\b(tile|discard|call|calls|claim|play|game|turn)\b/i,
     ],
-    blocks: [CHARLESTON_WORD, BLIND_PASS, MISNAMED, new RegExp(`${NAMING.source}[^.?!]{0,20}\\b(tile|discard)s?\\b`, "i")],
+    blocks: [CHARLESTON_WORD, BLIND_PASS, MISNAMED, CONTACT_SENSE, new RegExp(`${NAMING.source}[^.?!]{0,20}\\b(tile|discard)s?\\b`, "i")],
     approved_answer:
       "Priority does not turn on which word you pick. The League does ask you to say call, take, or I want that when you actually claim the tile, and it lets you say hold or wait first while you decide. So after you say hold and make up your mind, say call before you take the tile. The one thing you may never do is reach in silently, because you have to speak your claim out loud. Two separate things settle it. Priority decides who is entitled to the tile: a claim for mahjong beats a claim for an exposure, and when two players want it for the same reason the player whose turn comes next gets preference. Commitment decides when the tile becomes yours: you own the call once you place the tile on top of your rack or expose tiles from your hand. Until you do one of those, you may change your mind, return the tile, and draw from the wall instead. Put those together and the common table argument disappears. If you are next in turn and you say hold, the table should give you a reasonable moment, and another player should not expose ahead of you. You lose that tile by going quiet, because a player later in turn order who calls it and then racks it or exposes tiles has finished a claim you never finished. You also lose it if someone claims it for mahjong, because mahjong outranks an exposure. The whole window closes for everybody once the next player racks the tile they picked, discards and names a tile, starts a joker exchange, or declares mahjong.",
     ruleset: RULESET,
@@ -1258,7 +1260,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     requires: [LAST_OF_WALL],
     blocks: [HAND_CLOSED],
     approved_answer:
-      "League rules do not change as the wall gets short. While any tiles remain in the wall, you may call a discard for an exposure or for mahjong, right down to the last tile. A table that bans calls near the end plays a house rule, often called a cold wall. Groups define it differently, since some bar only exposure calls and others bar every claim, and no League rulebook or bulletin we found carves out an exception for a short wall. Anyone may still claim the very last discard of the deal for mahjong. On whether you may instead call that final discard only to make an exposure, we found no published League ruling either way, so agree at your table how you will handle it until the League settles it. If the last tile of the wall is drawn and discarded and no one declares mahjong, the hand ends with no winner and no one pays.",
+      "League rules do not change as the wall gets short. While any tiles remain in the wall, you may call a discard for an exposure or for mahjong, right down to the last tile. A table that bans calls near the end plays a house rule, often called a cold wall. Groups define it differently, since some bar only exposure calls and others bar every claim. A hot wall is the matching house rule at the other end, penalizing a player who throws the winning tile late in the deal. No League rulebook or bulletin we found carves out an exception for a short wall, so neither one is a League rule. Anyone may still claim the very last discard of the deal for mahjong. On whether you may instead call that final discard only to make an exposure, we found no published League ruling either way, so agree at your table how you will handle it until the League settles it. If the last tile of the wall is drawn and discarded and no one declares mahjong, the hand ends with no winner and no one pays.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note:
