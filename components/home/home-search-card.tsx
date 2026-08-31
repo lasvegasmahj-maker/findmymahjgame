@@ -246,7 +246,7 @@ export default function HomeSearchCard() {
               </ul>
             )}
             <p className={styles.answerContinue}>
-              <a href={`/ask?q=${encodeURIComponent(askedQ)}`}>Open this answer on the Ask page &rarr;</a>
+              <a href="/ask">Ask another question &rarr;</a>
             </p>
           </div>
         )}

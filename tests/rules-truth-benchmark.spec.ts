@@ -1203,16 +1203,19 @@ test.describe("publish fidelity", () => {
   });
 
   test("holding your hand while a call is checked reaches the rule that says so", () => {
+    // A mahjong cue is still required, so the entry cannot be reached by the hold cue
+    // alone and take a settlement question it was not asked.
     for (const q of [
       "can I hold my tiles while she checks the mahjong",
       "should we hold our hands until the mahjong is verified",
-      "can everyone hold their hand until the call is checked",
       "should I hold my hand when someone calls mahjong",
     ]) {
       const r = lookupRule({ question: q });
       expect(r.entry_id, q).toBe("mahjong-in-error-settlement");
       expect(r.answer, q).toMatch(/hold their hands until someone checks the call/i);
     }
+    // Without a mahjong word it clarifies rather than answering with a tile count.
+    expect(lookupRule({ question: "can everyone hold their hand until the call is checked" }).entry_id).not.toBe("hand-size");
     // ...and the tile-count question is still the tile-count question.
     for (const q of ["how many tiles do I hold", "do I have 13 or 14 tiles"]) {
       expect(lookupRule({ question: q }).entry_id, q).toBe("hand-size");
@@ -1238,6 +1241,27 @@ test.describe("publish fidelity", () => {
       expect(lookupRule({ question: q }).entry_id, q).not.toBe("wrong-tile-count-before-play");
     }
     expect(lookupRule({ question: "I am short one tile" }).entry_id).toBe("wrong-tile-count-before-play");
+  });
+
+  test("an ordinary last discard is not the end of the wall", () => {
+    // The wall-context guard existed but gated nothing, so "can I call the last tile she
+    // threw" was answered with the cold-wall house rule.
+    for (const q of [
+      "can I call the last tile she threw",
+      "can I take the last tile someone threw",
+      "can I claim the last tile that was thrown",
+      "her last discard finishes my pung can I call it",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).not.toBe("last-tile-of-wall");
+    }
+    for (const q of [
+      "can I call the last tile of the wall for an exposure",
+      "the wall is down to the last tile can I still call",
+      "what is a cold wall",
+      "what happens at the end of the wall",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("last-tile-of-wall");
+    }
   });
 
   test("holding your hand and discarding out of turn reach the rules path", () => {

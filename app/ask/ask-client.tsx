@@ -35,13 +35,13 @@ const EXAMPLES = [
 ];
 
 export default function AskClient() {
-  // Prefill from /ask?q=... (the homepage "Ask a follow-up on the Ask page" link).
   const searchParams = useSearchParams();
   const [q, setQ] = useState(() => (searchParams.get("q") || "").slice(0, 200));
   const [busy, setBusy] = useState(false);
   const [resp, setResp] = useState<AskResponse | null>(null);
-  // The home card's "Ask a follow-up on the Ask page" link promised the rest of the answer and
-  // landed on an empty form, so a question arriving in the URL answers itself.
+  // A question in the URL answers itself, so a shared /ask?q= link is not an empty form.
+  // The home card does not build one: it already has the answer, and re-asking would
+  // double-count a launch metric and spend a second rate-limit token.
   const asked = useRef(false);
 
   useEffect(() => {

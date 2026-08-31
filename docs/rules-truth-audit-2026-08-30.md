@@ -9,19 +9,21 @@ remain for the owner. Source policy: docs/rules-sources.md.
 ## Summary
 
 - Canonical rules audited: 55 entries in lib/rules/knowledge.ts. After the owner's decisions of
-  2026-08-30, 33 are owner-approved and 22 remain research-verified pending review.
+  2026-08-30, 32 are owner-approved and 23 remain research-verified pending review.
   No entry defers to the instructor any more.
 - Classification: 47 STANDARD NMJL RULE, 4 NMJL CLARIFICATION, 1 TOURNAMENT RULE,
   1 HOUSE/OPTIONAL RULE, 1 ETIQUETTE, 1 STRATEGY.
 - Provenance coverage: 55/55 entries carry ruleset, topic, classification, source type,
   source title, last-verified date, owner-review flag, and evidence status; every research
   entry also carries a cross-check reference and a year. No source text is stored.
-- Owner review required: 22 entries (every entry the owner has not yet approved).
-- Owner-approved wording: preserved verbatim with two exceptions, both corrected on 2026-08-30, both
-  restamped research_verified with owner review required, so each shows the review badge until Shauna
-  signs off. `courtesies-vs-rules` named who deals after a wall game as a local custom, which the
-  rulebook settles. `players-count` told a three-handed table to agree its own format, which owner
-  decision #6 says the League already publishes. Everything else flagged for the owner is listed
+- Owner review required: 23 entries (every entry the owner has not yet approved).
+- Owner-approved wording: preserved verbatim with three exceptions, two corrected on 2026-08-30 and
+  one on 2026-08-31, all three restamped research_verified with owner review required, so each shows
+  the review badge until Shauna signs off. `courtesies-vs-rules` named who deals after a wall game as
+  a local custom, which the rulebook settles. `players-count` told a three-handed table to agree its
+  own format, which owner decision #6 says the League already publishes. `wall-game` carried the same
+  dealer claim as `courtesies-vs-rules` in its house note. All three are one fact: after a wall game
+  the deal passes to East's right, and no one pays. Everything else flagged for the owner is listed
   below, not edited in.
 
 ## Owner-approved entries: claims, classification, flags
@@ -71,7 +73,7 @@ remain for the owner. Source policy: docs/rules-sources.md.
 | `winning-mahjong` | STANDARD NMJL RULE | owner approved | Find My Mahj owner approval (certified American mahjong instructor) | 2026-08-22 |
 | `annual-card` | STANDARD NMJL RULE | owner approved | Find My Mahj owner approval (certified American mahjong instructor) | 2026-08-22 |
 | `the-wall` | STANDARD NMJL RULE | owner approved | Find My Mahj owner approval (certified American mahjong instructor) | 2026-08-22 |
-| `wall-game` | STANDARD NMJL RULE | owner approved | Find My Mahj owner approval (certified American mahjong instructor) | 2026-08-22 |
+| `wall-game` | STANDARD NMJL RULE | research_verified | Owner-approved apart from the house note corrected 2026-08-31; owner review required | 2026-08-31 |
 | `players-count` | STANDARD NMJL RULE | research_verified | Owner-approved apart from the three-player sentence and house note corrected 2026-08-30; owner review required | 2026-08-30 |
 | `courtesies-vs-rules` | ETIQUETTE | research_verified | Owner-approved apart from one example corrected 2026-08-30; owner review required | 2026-08-30 |
 | `dead-hand` | STANDARD NMJL RULE | owner approved | Find My Mahj owner approval (certified American mahjong instructor) | 2026-08-22 |
@@ -699,3 +701,12 @@ Also: two comments explained the design by naming `THREE_PLAYER` and `THREE_PLAY
 which no longer exist, so they describe the rejected shape instead; the home card's link
 says "Open this answer on the Ask page", which is what it does now that /ask auto-answers;
 and `pnpm test:e2e:webkit` exists alongside `pnpm test:e2e:mobile`.
+
+### Gate 37: FAIL, one blocker, fixed
+
+| File | Defect | Fix |
+|---|---|---|
+| `last-tile-of-wall` | The entry gated on the bare `LAST_OF_WALL`, whose first alternative matches any "last tile". The wall-context guard existed as `FINAL_DISCARD_SCENE` and carried the comment saying exactly this must not happen, but it was wired only into scoring, never into the gate. So "can I call the last tile she threw" was answered with the cold-wall and hot-wall house-rule text, where main had correctly asked for a clarification. | Gated on `FINAL_DISCARD_SCENE`. The genuine end-of-wall phrasings still reach it; the four ordinary calling phrasings are pinned out of it. |
+| `mahjong-in-error-settlement` | All three of its `requires` had become satisfiable by the hold-for-check cue alone, so any "hold your hand while the mahjong is checked" phrasing scored specificity 3 and took a settlement answer it was not asked for. | A mahjong cue is required again; the hold cue can substitute for the error and settlement cues only. |
+| `components/home/home-search-card.tsx` | The card already shows the whole answer, and its link re-asked the same question on /ask, so the ordinary journey logged two `ask_submitted` events and spent two rate-limit tokens for one question. Ask volume is a launch metric. | The link goes to a clean /ask and reads "Ask another question". The /ask?q= auto-answer stays, because that is what makes a shared link work. |
+| `docs/rules-sources.md`, audit summary and provenance table | The source policy still said owner-approved answers are never reworded, while this branch has corrected three. Counts read 33/22 against a corpus of 32/23, and the `wall-game` row still showed owner-approved. | The policy documents the path actually followed and names the three entries. Counts and the row corrected. |

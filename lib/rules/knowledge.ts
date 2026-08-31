@@ -1007,10 +1007,10 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     id: "mahjong-in-error-settlement",
     topic: "Settlement after a false mahjong",
     question_patterns: [
-      SETTLEMENT_OR_HOLD,MAHJONG_CUE, ERROR_CUE, SETTLEMENT],
+      SETTLEMENT_OR_HOLD, MAHJONG_CUE, ERROR_CUE],
     keywords: ["mahjong", "error", "pay", "settle"],
     requires: [
-      new RegExp(`${MAHJONG_CUE.source}|${HOLD_FOR_CHECK.source}`, "i"),
+      MAHJONG_CUE,
       new RegExp(`${ERROR_CUE.source}|${HOLD_FOR_CHECK.source}`, "i"),
       SETTLEMENT_OR_HOLD,
     ],
@@ -1058,7 +1058,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     topic: "Wrong tile count",
     // Reached by the count alone. The answer covers both sides of East's first discard,
     // so a player who does not mention timing still gets the whole rule instead of one
-    // half of it from a neighbouring entry.
+    // half of it from a neighboring entry.
     question_patterns: [WRONG_COUNT],
     keywords: ["wrong number", "12 tiles", "redeal"],
     requires: [WRONG_COUNT],
@@ -1394,7 +1394,10 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     topic: "The last tiles of the wall",
     question_patterns: [LAST_OF_WALL, FINAL_DISCARD_SCENE],
     keywords: ["last tile", "wall runs out"],
-    requires: [LAST_OF_WALL],
+    // Gated on the wall-context matcher, not the bare one. LAST_OF_WALL's first
+    // alternative matches any "last tile", so "can I call the last tile she threw" is an
+    // ordinary calling question that must not reach the end-of-wall answer.
+    requires: [FINAL_DISCARD_SCENE],
     blocks: [HAND_CLOSED],
     approved_answer:
       "League rules do not change as the wall gets short. While any tiles remain in the wall, you may call a discard for an exposure or for mahjong, right down to the last tile. A table that bans calls near the end plays a house rule, often called a cold wall. Groups define it differently, since some bar only exposure calls and others bar every claim. A hot wall is the matching house rule at the other end, penalizing a player who throws the winning tile late in the deal. No League rulebook or bulletin we found carves out an exception for a short wall, so neither one is a League rule. Anyone may still claim the very last discard of the deal for mahjong. On whether you may instead call that final discard only to make an exposure, we found no published League ruling either way, so agree at your table how you will handle it until the League settles it. If the last tile of the wall is drawn and discarded and no one declares mahjong, the hand ends with no winner and no one pays.",
