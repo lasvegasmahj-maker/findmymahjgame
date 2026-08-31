@@ -135,7 +135,7 @@ export const TWO_PLAYERS =
   /\b(both|two (players|people|of us)|more than one|same (tile|discard)|at the same time|simultaneous(ly)?|who gets|who has priority|priority|first dibs|hold|wait)\b/i;
 const TWO_PLAYERS_ASK = new RegExp(`${CLAIM_VERB.source}|\\b(want|wants|wanted|need|needs|declare|declares|mahjong|maj|tile|discard|mean|means|meaning|say|saying|said|shout|announce)\\b`, "i");
 export const OWN_DISCARD =
-  /\b(my own discard|own discard|tile i (just )?(discarded|threw|put down)|discard i (just )?(made|threw)|call (it |that |the tile |my discard )?back\b(?=[^.?!]{0,24}\b(tile|discard)\b)|take back|take it back|i (just )?(discarded|threw) (it|a tile|the tile)|my discard|what i (just )?(discarded|threw))\b/i;
+  /\b(my own discard|own discard|my own throw|tile i (just )?(discarded|threw|put down)|discard i (just )?(made|threw)|call (it |that |the tile |my discard )?back\b(?=[^.?!]{0,24}\b(tile|discard)\b)|take back|take it back|i (just )?(discarded|threw) (it|a tile|the tile)|my discard|what i (just )?(discarded|threw))\b/i;
 const NAMING = /\b(name|names|naming|named|announce|announcing|call out|say (the|its|the tile'?s?) name|tile name|say same|saying same|say aloud|out loud|aloud)\b/i;
 const TIMING =
   /\b(when|before|after|during|timing|turn|my turn|own turn|right away|immediately|as soon as|first|then|order)\b/i;
@@ -206,14 +206,10 @@ export function blindReadsAsPlace(question: string): boolean {
   );
 }
 
-const THREE_PLAYER =
-  /\b(three|3)[- ](player|handed|person)\b|\b(three|3) (people|players|of us)\b|\bplay(ing)? with (just )?(three|3)\b|\bonly (three|3)\b(?!\s+(tiles?|passes?|of them)\b)|\bmissing a (fourth|4th)\b|\bwithout a (fourth|4th)\b/i;
-// Seats only. THREE_PLAYER also matches a bare "only 3", which in a Charleston
-// question means three tiles, not three players.
+// Seats only, and it must be seats: a bare "only 3" means three tiles in a
+// Charleston question, so an explicit seat noun is required.
 const THREE_PLAYER_SEATS =
   /\b(three|3)[- ](player|handed|person)\b|\b(three|3) (people|players|of us)\b|\bplay(ing)? with (just )?(three|3)\b|\bonly (three|3) (of us|people|players)\b|\b(missing|without) a (fourth|4th)\b/i;
-const THREE_PLAYER_HOW =
-  /\b(procedure|how|deal|deals|dealt|dealing|set ?up|start|starts|walls?|charleston|tiles?|rules?|official|work|works|count|counts|pass|passes|passing|play|still)\b/i;
 const WRONG_COUNT =
   /\b(wrong number|wrong count|miscount|too many tiles|too few tiles|12 tiles|(too many|extra|an extra|holding|ended up with|i have|ive got|i've got|stuck with) [^.?!]{0,10}14 tiles|short a tile|missing a tile|extra tile(?!\s+sets?\b)|one too many|one too few|short one)\b/i;
 const BEFORE_PLAY =
@@ -227,7 +223,7 @@ const HOLD_WAIT = /\b(hold|wait)\b(?!\s+(a |an |the |my |your |our |her |his |th
 // deal, play, pass, wait) are deliberately absent: those are exactly what makes a
 // contact question look like a claim, so they cannot be what rescues one.
 export const MAHJ_ONLY_NOUN =
-  /\b(tiles?|discards?|discarded|discarding|jokers?|mahjong|mahj|maj|charleston|pungs?|kongs?|quints?|sextets?|exposures?|expos(e|es|ed|ing)|melds?|racks?|walls?|bams?|craks?|dots?|dragons?|flowers?|soap|blanks?|card|redeal)\b/i;
+  /\b(tiles?|discards?|discarded|discarding|jokers?|mahjong|mahj|maj|charleston|pungs?|kongs?|quints?|sextets?|exposures?|expos(e|es|ed|ing)|melds?|racks?|walls?|threw|thrown|throw(s|ing)?|bams?|craks?|dots?|dragons?|flowers?|soap|blanks?|card|redeal)\b/i;
 export const CONTACT_SENSE =
   /\bcall\s+(back|the\s+(teacher|instructor|studio|venue|club|shop|store|number|office))\b|\bcall\s+ahead\s+(to|and)\b|\b(phone call|voicemail|call\s+(me|you|us|them)\s+back)\b|\bemail\s+(me|us|you|them|the\s+(teacher|instructor|studio|venue|club|shop|store|office))\b/i;
 const HOLD_WAIT_ASK =
@@ -676,16 +672,24 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     // plain count. The two give opposite answers on whether the League covers 3.
     blocks: [THREE_PLAYER_SEATS],
     approved_answer:
-      "American mahjong is built for 4 players. Many groups adapt it when only 3 can play, but the standard game seats 4.",
+      "American mahjong is built for 4 players. The League's rulebook also covers playing with 3, so a short table is not left to invent a format.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note:
-      "Adaptations for 3 players vary from table to table; agree on the format before you start.",
-    source: SOURCE,
-    last_verified: VERIFIED,
+      "Only what goes beyond the League's three-handed procedure is a table choice.",
+    // Owner-approved apart from the three-player sentence and house note, which
+    // Claude corrected on 2026-08-30: they invited a table to agree its own
+    // three-handed format, which owner decision #6 (three-player-procedure) says
+    // the League already settles. Pending Shauna's sign-off this is not her
+    // wording, so it does not carry her stamp and it shows the review badge.
+    source: "research_verified",
+    last_verified: VERIFIED_AUDIT,
     confidence: "high",
     classification: "standard_nmjl_rule",
-    provenance: OWNER,
+    provenance: researched(
+      "Owner-approved entry with the three-player sentence corrected to match owner decision #6: League rulebook 2024 p.26 publishes a three-handed procedure; located and cross-checked via Mahj Life wiki articles 102, 188, 226",
+      2024,
+    ),
   },
   {
     id: "courtesies-vs-rules",

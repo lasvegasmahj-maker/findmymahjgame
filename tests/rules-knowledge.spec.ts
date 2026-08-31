@@ -430,9 +430,21 @@ test.describe("synthesis digit guard", () => {
     expect(synthesisDigitGuard(approved, "The set has 152 tiles.")).toBe(false);
   });
 
-  test("accepts output whose digits all appear in the input", () => {
-    expect(synthesisDigitGuard(approved, "East starts with 14 tiles and everyone else starts with 13.")).toBe(true);
-    expect(synthesisDigitGuard(approved, "East is the dealer and draws first.")).toBe(true);
+  // Contract tightened 2026-08-31 to sequence equality, so an invented or dropped
+  // number is caught. It is a tripwire, not the protection: no digit-level check can
+  // catch a count being reattached to the wrong thing, because the swap invents no
+  // token and drops none. That class is handled upstream by eligibleForRephrase,
+  // which keeps any answer containing a number away from the model entirely.
+  test("rejects output that drops a number the approved answer states", () => {
+    expect(synthesisDigitGuard(approved, "East is the dealer and draws first.")).toBe(false);
+    expect(synthesisDigitGuard(approved, "Each player starts with 13 tiles.")).toBe(false);
+  });
+
+  test("accepts a reword that keeps every number attached to the same thing", () => {
+    expect(
+      synthesisDigitGuard(approved, "Every player is dealt 13 tiles; East, who deals, is dealt 14."),
+    ).toBe(true);
+    expect(synthesisDigitGuard(approved, approved)).toBe(true);
   });
 });
 

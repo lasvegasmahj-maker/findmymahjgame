@@ -11,12 +11,22 @@ const MODEL = "claude-haiku-4-5-20251001";
 
 const MONTH_RE = /\b(january|february|march|april|june|july|august|september|october|november|december)\b|\b(in|every|each|late|early|mid) may\b/i;
 
+// An answer that states a count is not eligible for rephrasing. No token-level check can
+// catch a number being reattached to the wrong thing: "East holds 14 and the others 13"
+// rewritten as "East holds 13 and the others 14" invents no digit, drops none, and keeps
+// them in the same order, so it defeats any guard that inspects the digits alone. Tile
+// counts are the facts the site can least afford to get wrong, so those answers ship
+// verbatim rather than being guarded after the fact.
+export function eligibleForRephrase(approved: string): boolean {
+  if (/\d/.test(approved)) return false;
+  // A partial rewrite of a long rule loses content, and costs more latency than it is worth.
+  return approved.length <= 900;
+}
+
 export async function rephraseApprovedAnswer(approved: string, question: string): Promise<string> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return approved;
-  // A long rules answer costs more latency to rephrase than the rephrase is worth, and a
-  // partial rewrite of a long rule loses content, so it ships verbatim.
-  if (approved.length > 900) return approved;
+  if (!eligibleForRephrase(approved)) return approved;
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",

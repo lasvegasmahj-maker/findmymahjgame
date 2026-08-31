@@ -1,7 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { RULES_KNOWLEDGE } from "../lib/rules/knowledge";
-import { lookupRule, type RulesLookupResult } from "../lib/rules/lookup";
+import { lookupRule, synthesisDigitGuard, type RulesLookupResult } from "../lib/rules/lookup";
 import { detectAskTopic } from "../lib/ask-intent";
+import { eligibleForRephrase } from "../lib/ask-llm";
 
 // The rules truth benchmark. Every case is classified up front as a CORRECT ANSWER (one
 // or more acceptable entries, each of which states the applicable rule), a
@@ -721,6 +722,59 @@ test.describe("publish fidelity", () => {
     ]) {
       expect(lookupRule({ question: q }).entry_id, q).toBe("own-discard");
     }
+  });
+
+  test("a take-back question reaches the rule however the player names the tile", () => {
+    // The contact guard plus a narrow OWN_DISCARD had knocked the throw phrasings
+    // out of the rules path entirely, and that is the wording a player uses at the
+    // moment it matters.
+    for (const q of [
+      "can I call back what I just threw",
+      "may I call back my own throw",
+      "can I call back what I discarded",
+      "can I call back a tile",
+    ]) {
+      expect(detectAskTopic(q), q).toBe("rules");
+      expect(lookupRule({ question: q }).entry_id, q).toBe("own-discard");
+    }
+  });
+
+  test("the plain player count no longer contradicts the three player rule", () => {
+    // players-count told a short table to agree its own format; owner decision #6
+    // says the League publishes one. Both answers were live at the same time.
+    const pc = RULES_KNOWLEDGE.find((e) => e.id === "players-count")!;
+    expect(pc.approved_answer).not.toMatch(/many groups adapt it/i);
+    expect(pc.approved_answer).toMatch(/rulebook also covers playing with 3/);
+    expect(pc.house_note).not.toMatch(/vary from table to table/i);
+    // The sentence is no longer the owner's, so it must not carry her stamp.
+    expect(pc.source).not.toBe("owner_approved");
+    expect(pc.provenance.owner_review_required).toBe(true);
+  });
+
+  test("no answer that states a count is ever sent to the model", () => {
+    // A rephrase cannot be trusted with a number: reattaching one to the wrong thing
+    // invents no digit and drops none, so no output check can catch it. Every answer
+    // carrying a count ships verbatim instead. These are the CLAUDE.md hard facts.
+    for (const id of [
+      "tile-count",
+      "dealing",
+      "three-player-procedure",
+      "calling-quints-sextets",
+      "payments-basics",
+      "wrong-tile-count-before-play",
+      "players-count",
+      "charleston",
+    ]) {
+      const e = RULES_KNOWLEDGE.find((x) => x.id === id)!;
+      expect(e.approved_answer, id).toMatch(/\d/);
+      expect(eligibleForRephrase(e.approved_answer), id).toBe(false);
+    }
+    for (const e of RULES_KNOWLEDGE) {
+      if (/\d/.test(e.approved_answer)) expect(eligibleForRephrase(e.approved_answer), e.id).toBe(false);
+    }
+    // The digit guard stays as a tripwire for anything that does get rephrased.
+    expect(synthesisDigitGuard("all 152 tiles and 4 walls", "all the tiles and 4 walls")).toBe(false);
+    expect(synthesisDigitGuard("152 tiles", "152 tiles and 12 more")).toBe(false);
   });
 
   test("a rules question that names an email recipient still gets its rule", () => {
