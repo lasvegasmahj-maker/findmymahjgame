@@ -235,14 +235,11 @@ export function lookupRule(input: RulesLookupInput): RulesLookupResult {
   return clarificationResult(toPayload(topicClarification(fixed), question), "no_entry");
 }
 
-// Synthesis guard: a model may only rephrase approved text, so any digit in its output
-// must already exist in the approved input. A new digit means new rule content, and the
-// caller ships the approved text verbatim instead.
+// A rephrase must carry exactly the same numbers in the same order: an invented number is
+// new rule content and a dropped one is a deleted rule. This is a backstop, not the
+// protection. eligibleForRephrase already keeps every answer containing a number away from
+// the model, because no digit-level check can catch a count reattached to a different thing.
 export function synthesisDigitGuard(input: string, output: string): boolean {
-
-  // A unit-tested backstop, not the protection: eligibleForRephrase already keeps every
-  // answer containing a number away from the model, and no digit-level check can catch a
-  // count being reattached to a different thing anyway.
   const before = input.match(/\d+/g) ?? [];
   const after = output.match(/\d+/g) ?? [];
   if (before.length !== after.length) return false;

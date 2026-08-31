@@ -35,12 +35,12 @@ const EXAMPLES = [
 ];
 
 export default function AskClient() {
-  // Prefill from /ask?q=... (the homepage "Continue on the Ask page" link).
+  // Prefill from /ask?q=... (the homepage "Ask a follow-up on the Ask page" link).
   const searchParams = useSearchParams();
   const [q, setQ] = useState(() => (searchParams.get("q") || "").slice(0, 200));
   const [busy, setBusy] = useState(false);
   const [resp, setResp] = useState<AskResponse | null>(null);
-  // The home card's "Continue on the Ask page" link promised the rest of the answer and
+  // The home card's "Ask a follow-up on the Ask page" link promised the rest of the answer and
   // landed on an empty form, so a question arriving in the URL answers itself.
   const asked = useRef(false);
 

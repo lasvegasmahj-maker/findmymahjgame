@@ -687,7 +687,7 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     // plain count. The two give opposite answers on whether the League covers 3.
     blocks: [THREE_PLAYER_SEATS],
     approved_answer:
-      "American mahjong is built for 4 players. The League's rulebook also covers playing with 3, so the core of the game is settled even when a fourth cannot make it.",
+      "American mahjong is built for 4 players. The League's rulebook also covers playing with 3, covering the deal and the fact that there is no Charleston, so you are not inventing a format when a fourth cannot make it.",
     ruleset: RULESET,
     varies_by_house: true,
     house_note:

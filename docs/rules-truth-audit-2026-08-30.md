@@ -558,3 +558,75 @@ task with the routing diff as its acceptance test, not a change to make on the w
 | `lib/ask-intent.ts` | `plainContext` excluded any contact phrase without the mahjong-noun rescue the guard twenty lines above it uses, so an unambiguous rules question wrapped in a contact phrase was demoted: "email me the rule about blanks" lost its answer, and "call me back with the hands on the card" stopped reaching the card copyright refusal. | The rescue is mirrored. Both directions pinned, including the refusal. |
 | `lib/ask-intent.ts` | `DIRECTORY_NOUNS` had been widened to singular `venues?|studios?`, so naming the room you play in suppressed every conditional rules signal: "our studio uses blanks is that allowed" became a directory search. The two probes that motivated the widening are handled by the contact guard, not by this list. | Reverted to plural. Pinned. |
 | `app/ask/ask-client.tsx` | "Continue on the Ask page" carried the question in the URL but the page only prefilled the box, so the link promised the rest of an answer and delivered an empty form. | A question arriving in the URL answers itself. |
+
+### Gate 33: PASS, no blockers, clean routing diff
+
+The reviewer ran the routing diff over 288 player-phrased questions against a worktree of
+origin/main, covering every matcher this branch touched, the neighbours that share their
+words, ordinary questions that are not about the changed rules, and directory traffic.
+70 answers changed. Every one is an improvement or neutral, and no question that answered
+correctly on main answers worse now. Three changes are deliberate trade-offs, each pinned:
+a bare "call back" goes to the directory, a Charleston question from a three-handed table
+is answered by the three-player rule, and an exposure call near a short wall is answered
+by `last-tile-of-wall` rather than the generic calling entry.
+
+Polish applied in this round: the `synthesisDigitGuard` header still described the subset
+rule the body stopped implementing; the home card's link read "Continue on the Ask page"
+when /ask now answers the same question itself, so it says "Ask a follow-up"; and
+`players-count` said "the core of the game is settled", which tells a player nothing, so
+it names what is settled.
+
+### The rephrase path is doubly dormant
+
+Worth stating plainly for whoever finds the switch later. `ASK_REPHRASE_ENABLED=1` AND
+`ANTHROPIC_API_KEY` are both required, neither is set, and `eligibleForRephrase` admits
+2 of the 55 entries (`annual-card` and `naming-discards`). Every answer carrying a number,
+a consequence or a negation is exempt by construction. Flipping the switch is close to a
+no-op and is not a way to turn a model on for rules answers.
+
+### Left for Shauna, not edited in
+
+1. **Sign-off on two corrected sentences.** `players-count` and `courtesies-vs-rules`
+   carried her verbatim wording; one sentence in each was corrected because it stated a
+   League-settled point as a table custom. Both are restamped `research_verified` and both
+   now show "Our instructor is reviewing this answer" until she approves the replacement.
+2. **The 14 entries stamped on her 2026-08-30 decisions.** Their provenance says she
+   approved the ruling on the researched basis, which is accurate, but the published prose
+   is Claude's and the badge is off. If she has not read the published wording, those
+   entries should carry the badge too. This is the one honesty question the branch cannot
+   settle on its own.
+3. **`picking-ahead`**: "The first rule on the back of the card bars picking or looking
+   ahead, printed in capitals." Ordinal position and letter case on a printed card cannot
+   come from the secondary sources in its provenance, and this branch publishes the policy
+   that forbids the claim. Confirm from a card in hand, or cut the two details.
+4. **`misnamed-discard`**: the sentence carving a joker exception out of "no one may ever
+   call a discarded joker". Its provenance names no joker source, and a joker-naming claim
+   was pulled twice in earlier rounds as unsupported.
+5. **Duplicated house notes** on `payments-basics` and `picking-ahead`, and the
+   `last-tile-of-wall` wording that grants a call "right down to the last tile" and then
+   calls the final discard unsettled. All owner-approved text.
+6. **Home card length.** It shows the whole rule, which is the safe state. Clipping was
+   tried and reverted because it hid the half of the rule that carries the penalty. If she
+   wants the hero shorter, the right shape is a "show the full rule" disclosure that keeps
+   everything reachable, not a truncation.
+7. **"5 tile Quint" and "6 tile Sextet"** want hyphens.
+
+### Post-launch backlog
+
+- `retrieve()` ranks specificity above score, so one `requires` beats any amount of keyword
+  evidence. Every entry-level guard in this branch works around that. Reordering the
+  comparator addresses the class, with the routing diff as its acceptance test.
+- `BREAK_CUE` in `answer-text.tsx` matches literal sentence openers from the corpus, so a
+  reword silently loses a paragraph break. Author the breaks in the content instead.
+- One answer renders in four type treatments across the two surfaces and the 400-character
+  threshold. Settle on one.
+- `extractLocation` still lets an article-led noun phrase through ("near The Class").
+  Rejecting `^(the|a|an)` would also reject The Villages, a real town full of players, so
+  this needs the resolver, not a regex.
+- `payments-basics` is unreachable from "how do payments work": MAHJ_VOCAB has pays and
+  paid but not payment or payments.
+- The card copyright refusal is never reached when a question routes to the directory.
+  Pre-existing and unchanged by this branch; the fix is to run the guard in the route
+  ahead of the topic branch.
+- The sentence splitter treats any period-terminated token as a sentence end, so a future
+  answer containing "p. 26" would split mid-sentence.

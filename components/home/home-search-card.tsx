@@ -246,7 +246,7 @@ export default function HomeSearchCard() {
               </ul>
             )}
             <p className={styles.answerContinue}>
-              <a href={`/ask?q=${encodeURIComponent(askedQ)}`}>Continue on the Ask page &rarr;</a>
+              <a href={`/ask?q=${encodeURIComponent(askedQ)}`}>Ask a follow-up on the Ask page &rarr;</a>
             </p>
           </div>
         )}
