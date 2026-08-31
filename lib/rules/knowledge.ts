@@ -219,7 +219,7 @@ export function blindReadsAsPlace(question: string): boolean {
 const THREE_PLAYER_SEATS =
   /\b(three|3)[- ](player|handed|person)\b|\b(three|3) (people|players|of us)\b|\bplay(ing)? with (just )?(three|3)\b|\bonly (three|3) (of us|people|players)\b|\b(missing|without) a (fourth|4th)\b/i;
 const WRONG_COUNT =
-  /\b(wrong number|wrong count|miscount|too many tiles|too few tiles|(have|has|holding|had|counted|only got|left with|short|stuck with|ended up with) [^.?!]{0,10}12 tiles|(too many|an extra|one too many|ended up with|stuck with) [^.?!]{0,10}14 tiles|short a tile|missing a tile|extra tile(?!\s+sets?\b)|one too many|one too few|short one)\b/i;
+  /\b(wrong number|wrong count|miscount\w*|too many tiles|too few tiles|(have|has|holding|had|counted|only got|left with|short|stuck with|ended up with) [^.?!]{0,10}12 tiles|(too many|an extra|one too many|ended up with|stuck with) [^.?!]{0,10}14 tiles|short a tile|missing a tile|extra tile(?!\s+sets?\b)|one too many|one too few|short one)\b/i;
 // Turning a tile down. "do I have to say anything if I do not want it" is a question
 // about declining, not about how a claim is spoken.
 const DECLINE_CUE =

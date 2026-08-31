@@ -549,3 +549,12 @@ means one `requires` beats any amount of keyword evidence. Every fix here works 
 at the entry level. Reordering the comparator would address the class rather than the
 instances, but it changes every route in the corpus, so it is a deliberate post-launch
 task with the routing diff as its acceptance test, not a change to make on the way out.
+
+### Gate 32: FAIL, one blocker, fixed
+
+| File | Defect | Fix |
+|---|---|---|
+| `WRONG_COUNT` | The matcher carried the bare stem `miscount`, so "miscounted", "miscounting" and "miscounts", which is what a player actually types, never matched. The block on `dead-hand` therefore never fired and its flat "a hand is dead when a player holds the wrong number of tiles" won the question, which is the opposite of the rule before East's first discard. The gate 27 row above claims to have closed exactly this contradiction; it closed it for one phrasing. | `miscount\w*`. Every inflection pinned, plus the Charleston phrasing. |
+| `lib/ask-intent.ts` | `plainContext` excluded any contact phrase without the mahjong-noun rescue the guard twenty lines above it uses, so an unambiguous rules question wrapped in a contact phrase was demoted: "email me the rule about blanks" lost its answer, and "call me back with the hands on the card" stopped reaching the card copyright refusal. | The rescue is mirrored. Both directions pinned, including the refusal. |
+| `lib/ask-intent.ts` | `DIRECTORY_NOUNS` had been widened to singular `venues?|studios?`, so naming the room you play in suppressed every conditional rules signal: "our studio uses blanks is that allowed" became a directory search. The two probes that motivated the widening are handled by the contact guard, not by this list. | Reverted to plural. Pinned. |
+| `app/ask/ask-client.tsx` | "Continue on the Ask page" carried the question in the URL but the page only prefilled the box, so the link promised the rest of an answer and delivered an empty form. | A question arriving in the URL answers itself. |

@@ -217,7 +217,7 @@ const CONDITIONAL_RULES_SIGNALS: RegExp[] = [
 const MAHJ_VOCAB =
   /\b(tiles?|hands?|discards?|discarded|discarding|walls?|card|charleston|jokers?|mahjong|mahj|maj|pungs?|kongs?|quints?|sextets?|expos\w*|melds?|racks?|deal|dealer|dealt|east|turns?|passing|win|wins|winning|won|bams?|craks?|dots?|winds?|dragons?|flowers?|soap|rules?|rule ?book|scoring|pays?|paid|dead|call|calls|called|calling|play|playing|players?|three[- ]handed|on the card|blanks?|pass|passes|redeal)\b/i;
 const DIRECTORY_NOUNS =
-  /\b(groups|games|clubs|teachers?|instructors?|lessons?|classes|events|tournaments|venues?|studios?|meetups?|leagues|retreats|cruises|directory|listings?|website|near|nearby|zip|miles?|downtown|fourth|seat|spot|waitlist|reserve|reservation|show up|looking for|sign up|register)\b/i;
+  /\b(groups|games|clubs|teachers?|instructors?|lessons?|classes|events|tournaments|venues|studios|meetups?|leagues|retreats|cruises|directory|listings?|website|near|nearby|zip|miles?|downtown|fourth|seat|spot|waitlist|reserve|reservation|show up|looking for|sign up|register)\b/i;
 const COMMERCE_RE =
   /\b(buy|buying|purchase|store|shop|for sale|price|prices|cost|costs|sell|sells|order|amazon|membership|fee|fees|sets? for|credit|debit|checkout)\b/i;
 
@@ -248,7 +248,7 @@ export function detectAskTopic(raw: string): AskTopic {
   // sentence actually asks something. "Any good deal on lessons in Naples" is commerce.
   const weakRulesNoun = /\b(rules?|racks?|discard(s|ing)?|deal(t|ing)?|dealer)\b/i.test(q);
   const plainContext =
-    MAHJ_VOCAB.test(q) && !DIRECTORY_NOUNS.test(q) && !COMMERCE_RE.test(q) && !CONTACT_SENSE.test(q) && !placeAfterPrep(q);
+    MAHJ_VOCAB.test(q) && !DIRECTORY_NOUNS.test(q) && !COMMERCE_RE.test(q) && !(CONTACT_SENSE.test(q) && !MAHJ_ONLY_NOUN.test(q)) && !placeAfterPrep(q);
   const conditional = CONDITIONAL_RULES_SIGNALS.some((re) => re.test(q)) && plainContext;
   // "riichi rules for pon" is a rules question even without a question word.
   const variantAsk = VARIANT_RE.test(q) && (questionForm || plainContext);

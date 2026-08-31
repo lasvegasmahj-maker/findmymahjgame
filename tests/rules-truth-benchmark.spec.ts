@@ -1055,6 +1055,42 @@ test.describe("publish fidelity", () => {
     }
   });
 
+  test("a miscount is a wrong count, in every form a player types it", () => {
+    // The matcher only had the bare stem, so the block on dead-hand never fired and its
+    // flat "a hand is dead when a player holds the wrong number of tiles" won, which is
+    // the opposite of the rule before East's first discard.
+    for (const q of [
+      "is my hand dead if I miscounted my tiles",
+      "we miscounted the tiles is that hand dead",
+      "my hand is dead I think I miscounted",
+      "I miscounted during the charleston is my hand dead",
+      "is my hand dead if I have the wrong number of tiles",
+    ]) {
+      expect(lookupRule({ question: q }).entry_id, q).toBe("wrong-tile-count-before-play");
+    }
+  });
+
+  test("a mahjong noun rescues a rules question wrapped in a contact phrase", () => {
+    // The demotion has to spare a question that is unmistakably about mahjong, including
+    // the one the card copyright guard refuses.
+    expect(detectAskTopic("email me the rule about blanks")).toBe("rules");
+    expect(lookupRule({ question: "email me the rule about blanks" }).entry_id).toBe("blank-tiles");
+    expect(lookupRule({ question: "call me back with the hands on the card" }).unsupported_reason).toBe("annual_card_content");
+    // Naming the room you play in is not a directory search.
+    for (const [q, id] of [
+      ["our studio uses blanks is that allowed", "blank-tiles"],
+      ["the venue rulebook says something different", "rules-source"],
+      ["my studio says hold counts as a call", "hold-or-wait"],
+    ] as Array<[string, string]>) {
+      expect(detectAskTopic(q), q).toBe("rules");
+      expect(lookupRule({ question: q }).entry_id, q).toBe(id);
+    }
+    // ...and actually contacting the studio still is one.
+    for (const q of ["should I call ahead to the studio", "do I announce myself or just call the venue", "can you email me the class schedule"]) {
+      expect(detectAskTopic(q), q).toBe("directory");
+    }
+  });
+
   test("who deals after a wall game is not offered as a table courtesy", () => {
     // The rulebook settles it: the deal passes to East's right. Listing it as a
     // local custom told players the League was silent on a rule it publishes.

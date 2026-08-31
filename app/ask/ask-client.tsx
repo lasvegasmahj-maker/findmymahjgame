@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import type { ClarifyPayload as Clarify } from "@/lib/rules/clarify";
 import { AnswerText } from "@/components/ask/answer-text";
@@ -40,6 +40,19 @@ export default function AskClient() {
   const [q, setQ] = useState(() => (searchParams.get("q") || "").slice(0, 200));
   const [busy, setBusy] = useState(false);
   const [resp, setResp] = useState<AskResponse | null>(null);
+  // The home card's "Continue on the Ask page" link promised the rest of the answer and
+  // landed on an empty form, so a question arriving in the URL answers itself.
+  const asked = useRef(false);
+
+  useEffect(() => {
+    if (asked.current) return;
+    const initial = (searchParams.get("q") || "").slice(0, 200).trim();
+    if (!initial) return;
+    asked.current = true;
+    void ask(initial);
+    // ask is stable for this purpose and re-running on every render would loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   async function ask(question: string, clarify: Clarify | null = null) {
     const query = question.trim();
