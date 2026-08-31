@@ -735,3 +735,27 @@ Also from this round: the wall-game deal-rotation pattern is anchored on the wal
 "who becomes east next" no longer gets an answer framed around a case it did not ask about;
 the home card's dead `askedQ` state and an untracked probe harness inside the typecheck
 surface are deleted.
+
+### Gate 39: PASS, no blockers
+
+Routing diff over 205 player-phrased questions against a worktree of origin/main: 48
+changed, 47 plainly better, one a documented trade ("is the last discard still callable"
+moves from `last-tile-of-wall` to `calling-discard`, which is the cost of the fix that
+stops "can I call the last tile she threw" getting the cold-wall answer; both are correct
+rules answers). Ordinary counts, calls, passes and directory searches all held. tsc clean,
+eslint clean after deleting the dead constant left by the wall-game revert, 964 desktop
+specs and 950 mobile specs passing.
+
+Added to the post-launch backlog from this round, none of them a wrong answer:
+
+- Redeal coverage: `re-?deal` reaches the rules topic but is not in `WRONG_COUNT`, so
+  "someone has 14 tiles do we redeal" reaches `dealing`, whose "East starts with 14" reads
+  as confirming the count rather than answering the question. Adding `\bre-?deal\b` to
+  `WRONG_COUNT` is the fix; it is a matcher widening, and widening a matcher late is what
+  produced blockers in six of the last eight gates, so it waits for a round of its own.
+- `mahjong-in-error-settlement` answers a neutral "do we hold our hands while it is
+  checked" with a settlement lead. The sentence that answers it is in there, third.
+- `PASS_CONTEXT` widened to bare `three|3`, so "can I pass fewer than three" gets the
+  generic clarification instead of the targeted pass-context one. Both are clarifications.
+- `/ask?q=` auto-answers on every load, so a refresh or a bookmarked link spends a
+  rate-limit token and logs an ask. No in-app link builds such a URL any more.

@@ -57,7 +57,6 @@ const VERIFIED = "2026-08-22" as const;
 const VERIFIED_REVIEW = "2026-08-26" as const;
 const VERIFIED_WORDING = "2026-08-29" as const;
 const VERIFIED_AUDIT = "2026-08-30" as const;
-const VERIFIED_WALL_GAME = "2026-08-31" as const;
 // Same date as the audit, kept separate so a later audit pass does not silently restamp
 // the entries the owner personally decided.
 const OWNER_DECIDED = "2026-08-30" as const;
