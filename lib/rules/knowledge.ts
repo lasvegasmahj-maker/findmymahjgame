@@ -133,8 +133,13 @@ const ERROR_CUE =
   /\b(error|mistake|mistakenly|wrong|wrongly|false|falsely|incorrect|invalid|not valid|isn'?t valid|didn'?t have|did not have|by accident|accidentally|premature|too early|oops|bad|botched|busted|penalt(y|ies))\b/i;
 export const MISNAMED =
   /\bmis-?nam(e|ed|es|ing)\b|\bwrong name\b|\bnamed (it|the tile|a tile|my discard|the discard) wrong(ly)?\b|\bcalled it (the )?wrong\b|\bsaid the wrong tile\b|\bwrong tile name\b|\bnamed the wrong\b|\bmisspoke\b|\bcalled (it|the tile|my discard) (a|an) \w+ by mistake\b|\bannounced (it|the tile) (as )?the wrong\b|\bcalled it (a|an) [^.?!]{1,20} but (it was|it's|its|it is)\b|\bsaid [^.?!]{1,15} but (it was|it's|it is)\b|\bnamed it (a|an) [^.?!]{1,20}\bbut\b|\b(called|named|said) it (a|an|the) ?[\w ]{1,14}\bbut (it was|it'?s|its|it is|she|he|they|threw|discarded|actually)\b/i;
-export const TWO_PLAYERS =
-  /\b(both|two (players|people|of us)|more than one|same (tile|discard)|at the same time|simultaneous(ly)?|who gets|who has priority|priority|first dibs|hold|wait)\b/i;
+// "wait for a table" and "hold my tiles" are the queue and the rack, not a claim.
+const HOLD_WAIT =
+  /\b(hold|wait)\b(?!\s+(for\s+)?(a |an |the |my |your |our |her |his |their )?(spot|seat|place|table|room|tiles?|rack|racks?|cards?|hand))/i;
+export const TWO_PLAYERS = new RegExp(
+  `\\b(both|two (players|people|of us)|more than one|same (tile|discard)|at the same time|simultaneous(ly)?|who gets|who has priority|priority|first dibs)\\b|${HOLD_WAIT.source}`,
+  "i",
+);
 const TWO_PLAYERS_ASK = new RegExp(`${CLAIM_VERB.source}|\\b(want|wants|wanted|need|needs|declare|declares|mahjong|maj|tile|discard|mean|means|meaning|say|saying|said|shout|announce)\\b`, "i");
 export const OWN_DISCARD =
   /\b(my own discard|own discard|my own throw|tile i (just )?(discarded|threw|put down)|discard i (just )?(made|threw)|call (it |that |the tile |my discard )?back\b(?=[^.?!]{0,24}\b(tile|discard)\b)|take back|take it back|i (just )?(discarded|threw) (it|a tile|the tile)|my discard|what i (just )?(discarded|threw))\b/i;
@@ -221,7 +226,6 @@ const WRONG_TILE_GIVEN =
   /\b(wrong|incorrect) tile\b|\b(gave|handed|put|swapped|traded|exchanged|returned)\b[^.?!]{0,24}\bwrong\b/i;
 const EXCHANGE_CONTEXT =
   /\b(exchang\w+|redeem\w*|swap\w*|trad(e|ed|ing)|for (my|the|a|his|her) joker|took (my|the|her|his) joker|gave me)\b/i;
-const HOLD_WAIT = /\b(hold|wait)\b(?!\s+(a |an |the |my |your |our |her |his |their )?(spot|seat|place|table|room))/i;
 // Words that can only mean mahjong. Everyday words the game also uses (call, hand,
 // deal, play, pass, wait) are deliberately absent: those are exactly what makes a
 // contact question look like a claim, so they cannot be what rescues one.
@@ -665,10 +669,9 @@ export const RULES_KNOWLEDGE: KnowledgeEntry[] = [
     topic: "Number of players",
     question_patterns: [
       /how many (players|people)/i,
-      /play with (three|3|five|5|two|2)/i,
-      /\b(three|3|five|5|two|2) (people|players|of us)\b/i,
+      /play with (five|5|two|2)/i,
+      /\b(five|5|two|2) (people|players|of us)\b/i,
       /number of players/i,
-      /\b(three|3)[- ](player|person|handed)\b/i,
     ],
     keywords: ["players", "people", "how many players"],
     // A seats-of-three question is three-player-procedure's; this entry answers the

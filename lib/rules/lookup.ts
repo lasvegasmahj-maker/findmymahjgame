@@ -239,8 +239,7 @@ export function lookupRule(input: RulesLookupInput): RulesLookupResult {
 // must already exist in the approved input. A new digit means new rule content, and the
 // caller ships the approved text verbatim instead.
 export function synthesisDigitGuard(input: string, output: string): boolean {
-  // Whole number tokens, not digit characters: "152" and "16" in the input must not license
-  // an invented "12" or "56" in the output.
+
   // A unit-tested backstop, not the protection: eligibleForRephrase already keeps every
   // answer containing a number away from the model, and no digit-level check can catch a
   // count being reattached to a different thing anyway.

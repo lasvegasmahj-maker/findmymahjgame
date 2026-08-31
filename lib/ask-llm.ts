@@ -12,6 +12,9 @@ const MODEL = "claude-haiku-4-5-20251001";
 const CONSEQUENCE_RE =
   /\b(dead hand|hand is dead|goes dead|owes? nothing|pays? nothing|pay(s)? the winner|no penalty|penalt(y|ies)|disqualif\w+|beats a call|wins over|priority|forfeit\w*)\b/i;
 
+const NEGATION_RE =
+  /\b(never|not|cannot|can'?t|no one|nobody|none|may not|must not|do not|don'?t|does not|doesn'?t|only)\b/i;
+
 const MONTH_RE = /\b(january|february|march|april|june|july|august|september|october|november|december)\b|\b(in|every|each|late|early|mid) may\b/i;
 
 // An answer that states a count is not eligible for rephrasing. No token-level check can
@@ -26,6 +29,9 @@ export function eligibleForRephrase(approved: string): boolean {
   // remaining check is a 70 percent length floor, and at 855 characters that leaves room
   // to drop a whole sentence, which here is the sentence saying who owes nothing.
   if (CONSEQUENCE_RE.test(approved)) return false;
+  // And the same for a rule that hangs on a negation. Dropping one "never" inverts the
+  // answer while staying digit-free, dash-free and inside the length band.
+  if (NEGATION_RE.test(approved)) return false;
   // A partial rewrite of a long rule loses content, and costs more latency than it is worth.
   return approved.length <= 900;
 }
@@ -60,7 +66,9 @@ export async function rephraseApprovedAnswer(approved: string, question: string)
         messages: [
           {
             role: "user",
-            content: `<player_question>\n${question.slice(0, 200)}\n</player_question>\n\n<approved_answer>\n${approved}\n</approved_answer>`,
+            // Angle brackets stripped, or a question can close the tag and supply its
+            // own "approved answer". normalizeQuestion caps and tidies but keeps < and >.
+            content: `<player_question>\n${question.slice(0, 200).replace(/[<>]/g, " ")}\n</player_question>\n\n<approved_answer>\n${approved}\n</approved_answer>`,
           },
         ],
       }),

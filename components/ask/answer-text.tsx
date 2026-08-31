@@ -5,6 +5,7 @@ const LONG = 400;
 // Openers the rules answers use to start a new idea; breaking here keeps a thought whole.
 const BREAK_CUE = /^(Two separate things|One limit applies|One more thing|Amounts:|Who pays:|Jokerless:|Settlement follows|Commitment decides|Put those together|One timing point|Keep this separate|After East|If any player|Anything beyond this|Play then|One thing this is not|Two points to settle)/;
 
+const LABEL_CUE = /^[A-Z][A-Za-z ]{2,20}:/;
 const LONG_STYLE = { fontSize: "1.05rem", color: "var(--navy)", fontWeight: 500, textAlign: "left", lineHeight: 1.6 } as const;
 
 export function splitIntoParagraphs(text: string): string[] {
@@ -20,16 +21,22 @@ export function splitIntoParagraphs(text: string): string[] {
   if (buf.trim()) sentences.push(buf.trim());
   const paras: string[] = [];
   let current: string[] = [];
+  // A single sentence standing alone reads as a stray line, so it joins the paragraph
+  // before it. A label ("Amounts:", "Who pays:") is a heading and keeps its own.
+  const flush = () => {
+    if (!current.length) return;
+    const group = current.join(" ");
+    if (current.length === 1 && paras.length && !LABEL_CUE.test(group)) paras[paras.length - 1] += ` ${group}`;
+    else paras.push(group);
+    current = [];
+  };
   for (const s of sentences) {
-    // A cue only earns its own paragraph once the current one has something in it worth
-    // closing, or a cue landing right after a full group strands a single sentence.
-    if (current.length >= 3 || (current.length >= 2 && BREAK_CUE.test(s))) {
-      paras.push(current.join(" "));
-      current = [];
-    }
+    // A label always starts a paragraph. A prose cue earns one once there is something
+    // worth closing.
+    if (current.length >= 3 || LABEL_CUE.test(s) || (current.length >= 2 && BREAK_CUE.test(s))) flush();
     current.push(s);
   }
-  if (current.length) paras.push(current.join(" "));
+  flush();
   return paras;
 }
 

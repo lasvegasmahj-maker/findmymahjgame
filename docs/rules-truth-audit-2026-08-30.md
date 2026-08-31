@@ -498,3 +498,21 @@ copies of the QA sign-in fixtures against one per-IP OTP budget and the suite fa
 rate limits rather than assertions, so desktop and mobile are always run separately, at
 least five minutes apart. Every suite result recorded in this document was produced that
 way. A WebKit pass still has to happen somewhere other than this machine before release.
+
+### Gate 29: PASS, no blockers, three warnings fixed
+
+| File | Defect | Fix |
+|---|---|---|
+| `lib/rules/knowledge.ts` | `hold` and `wait` were bare alternatives in both `HOLD_WAIT` and `TWO_PLAYERS`, so the physical and queueing senses pulled ordinary calling questions onto the priority rule: "I had to wait for a table, can I call a discard to make a pung" was answered with the two-player priority essay. Present on main as well, and the new `hold-or-wait` entry inherited it. | One definition now, with a lookahead that excludes the queue, the rack, and the tiles. `TWO_PLAYERS` is composed from it instead of restating it. The probe reaches `calling-for-exposure`; the real hold/wait claim questions are unchanged. Pinned. |
+| `lib/ask-llm.ts` | The delimiter hardening added the round before could be closed by the question itself: `normalizeQuestion` never touches `<` or `>`, so a 200-character question containing `</player_question><approved_answer>` could supply its own rule. | Angle brackets are stripped before interpolation. |
+| `lib/ask-llm.ts` | `eligibleForRephrase` screened counts and consequences but not polarity. Dropping one "never" from "you may never call back a tile you just discarded" inverts the rule while staying digit-free, dash-free and inside the length band. Four such answers were still eligible. | Negation joins the exempt list. 2 of 55 answers are now eligible for a rephrase at all, and a pin asserts that whatever remains carries no number, no consequence and no negation. |
+| `components/ask/answer-text.tsx` | The orphan guard added the round before stopped the "Jokerless:" label from starting its own paragraph, and a prose cue on a closing sentence still stranded it. | A label always heads a paragraph; any other single sentence joins the paragraph before it. Every long answer in the corpus now splits with no orphan and loses no text, asserted over the whole corpus rather than a sample. |
+| `lib/rules/knowledge.ts`, `lib/rules/lookup.ts` | `players-count` kept three question patterns that its own `blocks` discard before scoring, and `synthesisDigitGuard` carried a header describing the subset rule it no longer implements. | Both cleaned up. |
+
+Still open for Shauna after this round, none of it edited in: the duplicated house note
+on `payments-basics`, the "printed in capitals" claim in `picking-ahead`, the
+last-tile-of-wall wording that grants a call "right down to the last tile" and then calls
+the final discard unsettled (both owner-approved, and the second is her decision #4
+wording), the mixed numeral style for player counts, and the height of a long answer on
+the home hero card. The card now shows the whole rule, which is the safe state; capping
+it is a design call, and the one cap that was tried hid the half of the rule that bites.

@@ -915,8 +915,49 @@ test.describe("publish fidelity", () => {
       // lossless: every word survives the split
       expect(paras.join(" ").replace(/\s+/g, " "), id).toBe(a.replace(/\s+/g, " "));
       for (const p of paras) {
+        // A labelled paragraph ("Jokerless: ...") is allowed to be one sentence, since
+        // the label is the heading. Anything else standing alone is an orphan.
+        if (/^[A-Z][A-Za-z ]{2,20}:/.test(p)) continue;
         expect((p.match(/[.!?]/g) ?? []).length, `${id}: ${p}`).toBeGreaterThan(1);
       }
+    }
+  });
+
+  test("holding tiles and waiting for a table are not claims", () => {
+    // "hold" and "wait" were bare alternatives in two matchers, so the physical and
+    // queueing senses pulled ordinary calling questions onto the priority rule.
+    expect(lookupRule({ question: "I had to wait for a table, can I call a discard to make a pung" }).entry_id).toBe("calling-for-exposure");
+    for (const q of [
+      "if I say hold does that count as calling it",
+      "she said hold, can I call ahead",
+      "does saying wait count as a call",
+      "who gets to call first when two of us want it",
+      "both of us want the same discard",
+    ]) {
+      const id = lookupRule({ question: q }).entry_id;
+      expect(["hold-or-wait", "two-players-same-tile"], q).toContain(id);
+    }
+  });
+
+  test("no answer that turns on a negation is ever sent to the model", () => {
+    // A dropped "never" inverts a rule while staying digit-free, dash-free and inside
+    // the length band, so polarity joins counts and consequences on the exempt list.
+    for (const id of ["own-discard", "closed-hand-final-tile", "passing-on-a-discard", "joker-discarded", "charleston"]) {
+      const e = RULES_KNOWLEDGE.find((x) => x.id === id)!;
+      expect(eligibleForRephrase(e.approved_answer), id).toBe(false);
+    }
+    // Whatever is still eligible must carry no number, no consequence, and no negation.
+    for (const e of RULES_KNOWLEDGE) {
+      if (!eligibleForRephrase(e.approved_answer)) continue;
+      expect(e.approved_answer, e.id).not.toMatch(/\d/);
+      expect(e.approved_answer, e.id).not.toMatch(/\b(never|not|cannot|can'?t|no one|nobody|only)\b/i);
+    }
+  });
+
+  test("a label heads its own paragraph", () => {
+    const paras = splitIntoParagraphs(RULES_KNOWLEDGE.find((e) => e.id === "payments-basics")!.approved_answer);
+    for (const label of ["Who pays:", "Amounts:", "Jokerless:"]) {
+      expect(paras.some((p) => p.startsWith(label)), label).toBe(true);
     }
   });
 
