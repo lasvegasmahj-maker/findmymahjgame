@@ -118,7 +118,7 @@ test.describe("keyboard operability: /ask", () => {
     expect(box?.height, "example chip height").toBeGreaterThanOrEqual(44);
     await chip.focus();
     await page.keyboard.press("Enter");
-    await expect(page.getByRole("status")).toContainText("No, a joker cannot be used in a pair.");
+    await expect(page.getByRole("log")).toContainText("No, a joker cannot be used in a pair.");
   });
 
   test("an error response is announced via a live region, not just colored text", async ({ page }) => {
@@ -128,7 +128,9 @@ test.describe("keyboard operability: /ask", () => {
     await page.goto("/ask");
     await page.getByLabel("Ask where to play or how to play").fill("test query");
     await page.getByRole("button", { name: "Ask", exact: true }).click();
-    const live = page.getByRole("status");
+    // The thread is a polite live region (role log), so the error turn is announced.
+    const live = page.getByRole("log");
+    await expect(live).toHaveAttribute("aria-live", "polite");
     await expect(live).toContainText("Something went wrong");
   });
 });

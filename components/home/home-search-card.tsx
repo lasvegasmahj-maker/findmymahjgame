@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Search, Sparkles } from "lucide-react";
 import SearchBox from "@/components/home/search-box";
-import type { ClarifyPayload } from "@/lib/rules/clarify";
+import type { ClarifyPayload } from "@/lib/ask-core/engine/clarify.ts";
 import { AnswerText } from "@/components/ask/answer-text";
 import styles from "./home-search-card.module.css";
 
@@ -25,6 +25,7 @@ type AskResponse = {
   ok: boolean;
   answer: string;
   results: Card[];
+  suggestions: Array<{ label: string; href: string }>;
   error?: string;
   clarify?: ClarifyPayload | null;
   pendingReview?: boolean;
@@ -101,21 +102,21 @@ export default function HomeSearchCard() {
       const r = await fetch("/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(clarify ? { q: query, clarify: { id: clarify.id, question: clarify.question } } : { q: query }),
+        body: JSON.stringify(clarify ? { question: query, clarify: { id: clarify.id, question: clarify.question } } : { question: query }),
       });
       const j = await r.json();
-      const next: ClarifyPayload | null = j?.ok ? (j?.topic === "rules" && j?.rules?.clarify?.id ? j.rules.clarify : null) : clarify;
-      setResp({ ok: !!j.ok, answer: j.answer || "", results: j.results ?? [], error: j.error, clarify: next, pendingReview: j?.rules?.evidence === "owner_review_pending" });
+      const next: ClarifyPayload | null = j?.ok ? (j?.topic === "rules" && j?.clarify?.id ? j.clarify : null) : clarify;
+      setResp({ ok: !!j.ok, answer: j.answer || "", results: j.results ?? [], suggestions: Array.isArray(j.suggestions) ? j.suggestions.slice(0, 3) : [], error: j.error, clarify: next, pendingReview: j?.evidence === "owner_review_pending" });
     } catch {
       // Never invent an answer: a failed request shows only this fixed message.
-      setResp({ ok: false, answer: "", results: [], error: "Something went wrong. Try again, or browse the Events page." });
+      setResp({ ok: false, answer: "", results: [], suggestions: [], error: "Something went wrong. Try again, or browse the Events page.", clarify });
     }
     setBusy(false);
   }
 
   function onAskSubmit(e: React.FormEvent) {
     e.preventDefault();
-    submitAsk(q);
+    submitAsk(q, resp?.clarify ?? null);
   }
 
   function onAskChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -186,7 +187,7 @@ export default function HomeSearchCard() {
               </span>
             </div>
             <button type="submit" disabled={busy} className={styles.askBtn}>
-              {busy ? "Searching..." : "Ask"}
+              {busy ? "Searching..." : resp?.clarify ? "Reply" : "Ask"}
             </button>
           </form>
 
@@ -241,6 +242,15 @@ export default function HomeSearchCard() {
                     </li>
                   );
                 })}
+              </ul>
+            )}
+            {resp.suggestions.length > 0 && !resp.clarify && (
+              <ul className={styles.answerList}>
+                {resp.suggestions.map((s) => (
+                  <li key={s.href + s.label}>
+                    <a href={s.href} className={styles.answerLink}>{s.label}</a>
+                  </li>
+                ))}
               </ul>
             )}
             <p className={styles.answerContinue}>

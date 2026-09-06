@@ -57,7 +57,7 @@ test.describe("homepage search card", () => {
 
     const status = page.getByRole("status");
     await expect(status.getByText("Found 4 listings near Dallas", { exact: false })).toBeVisible();
-    expect(posted).toEqual({ q: "Where can I play near Dallas?" });
+    expect(posted).toEqual({ question: "Where can I play near Dallas?" });
     await expect(status.locator("ul li")).toHaveCount(3);
     await expect(status.getByRole("link", { name: "Ask another question" })).toHaveAttribute("href", "/ask");
   });

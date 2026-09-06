@@ -83,7 +83,7 @@ test.describe("Ask route: rules clarification turns", () => {
     expect(second.rules.matched).toBe(true);
     expect(second.rules.entry_id).toBe("calling-for-mahjong");
     expect(second.rules.clarify).toBeUndefined();
-    expect(second.answer).toMatch(/Any discard that completes your mahjong may be called/);
+    expect(second.answer).toMatch(/complete a winning hand|completes your mahjong/i);
     expect(second.answer).toMatch(/discarded joker/);
   });
 
@@ -125,6 +125,8 @@ test.describe("Ask route: rules clarification turns", () => {
     expect(first.rules.clarify.id).toBe("tournament");
     const std = await ask(request, "Standard League play", { id: "tournament", question: q });
     expect(std.rules.entry_id).toBe("charleston-blind-pass");
+    expect(std.kind).toBe("answer");
+    expect(std.label).toBe("standard");
     const typed = await ask(request, "in a tournament", { id: "tournament", question: q });
     expect(typed.rules.entry_id).toBe("tournament-rules");
     const typed2 = await ask(request, "a tournament", { id: "tournament", question: q });
@@ -135,8 +137,12 @@ test.describe("Ask route: rules clarification turns", () => {
     const q = "What happens if my elbow knocks over the rack?";
     const first = await ask(request, q);
     expect(first.rules.clarify.id).toBe("topic");
+    expect(first.clarify.id).toBe("topic");
     expect(first.answer).toMatch(/Which part of the game/);
     expect(first.answer).not.toMatch(/cannot verify/i);
+    const gap = await ask(request, "Something else", { id: "topic", question: q });
+    expect(gap.kind).toBe("gap");
+    expect(gap.answer).toMatch(/logged the topic for our instructor/);
     const again = await ask(request, "???", { id: "topic", question: q });
     expect(again.rules.clarify.id).toBe("topic");
     expect(again.answer).toMatch(/^I want to get this right\. Which part of the game is your question about\? Pick one of the choices below, or type it\./);
@@ -194,21 +200,35 @@ test.describe("/ask page: clarification UI", () => {
   test("the player sees the clarifying question, picks an option, and gets the rule", async ({ page }) => {
     await page.goto("/ask");
     await askOnPage(page, "Can I call that tile?");
-    await expect(page.getByRole("status")).toContainText("Are you calling it to make an exposure, or would it complete mahjong?");
+    const thread = page.getByRole("log");
+    await expect(thread).toContainText("Are you calling it to make an exposure, or would it complete mahjong?");
     const options = page.getByTestId("ask-clarify").getByRole("button").filter({ hasNotText: "Never mind" });
     await expect(options).toHaveCount(2);
     await options.filter({ hasText: "It would complete mahjong" }).click();
-    await expect(page.getByRole("status")).toContainText("Any discard that completes your mahjong may be called");
+    await expect(thread).toContainText(/except a discarded joker|complete a winning hand/);
     await expect(page.getByTestId("ask-clarify")).toHaveCount(0);
   });
 
-  test("a typed reply also resolves the clarification", async ({ page }) => {
+  test("a typed reply also resolves the clarification, and follow-up chips continue the thread", async ({ page }) => {
     await page.goto("/ask");
     await askOnPage(page, "Can I call that tile?");
     await expect(page.getByTestId("ask-clarify")).toBeVisible();
     await expect(page.getByRole("button", { name: "Reply" })).toBeVisible();
     await askOnPage(page, "for an exposure");
-    await expect(page.getByRole("status")).toContainText("group of 3 or more identical tiles");
+    const thread = page.getByRole("log");
+    await expect(thread).toContainText("group of 3 or more identical tiles");
+    const chips = thread.locator("[aria-label='Suggested follow-up questions'] button");
+    expect(await chips.count()).toBeGreaterThanOrEqual(2);
+    await chips.first().click();
+    await expect(thread.locator(".ask-turn-fmg-answer:not(.ask-thinking-fmg)")).toHaveCount(3);
+  });
+
+  test("a pending answer shows the review note; a studio-free directory question shows result cards", async ({ page }) => {
+    await page.goto("/ask");
+    await askOnPage(page, "Can I pick up a discarded joker?");
+    const thread = page.getByRole("log");
+    await expect(thread.locator(".ask-label-fmg").last()).toHaveText("Pending instructor review");
+    await expect(page.getByTestId("ask-pending-review")).toBeVisible();
   });
 
   test("the homepage Ask card lets the player answer a clarification in place", async ({ page }) => {

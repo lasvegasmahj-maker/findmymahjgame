@@ -1,0 +1,36 @@
+name: Ask core parity
+
+# Runs on every pull request and push to main. It refuses a merge when the vendored shared Ask
+# core differs from its lock, is older than Las Vegas Mahjong's main, or when this site's use
+# of the core fails its pure logic checks. The full browser suites need Supabase and run
+# locally (see docs/ask-shared-core.md).
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  checks:
+    name: Vendored Ask core, typecheck, site logic
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Shared Ask core is vendored intact and not stale
+        run: node scripts/ask-core/ask-core-check.mjs
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Site logic (no server, no browser)
+        run: npx playwright test tests/ask-core-site.spec.ts --project=desktop-chromium --reporter=list
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:9
