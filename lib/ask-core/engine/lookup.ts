@@ -36,7 +36,8 @@ import {
 } from "./guards.ts";
 import type { AskLabel } from "./labels.ts";
 import { normalizeQuestion, prepare, spellfix, summarizeForEscalation } from "./normalize.ts";
-import { rankEntries, retrieve, type RetrieveOptions } from "./retrieve.ts";
+import { compareScored, rankEntries, retrieve, type RetrieveOptions } from "./retrieve.ts";
+import { ACCIDENT_SCENE, AMERICAN_RE, VARIANT_RE } from "../corpus/matchers.ts";
 
 export type Turn = {
   role: "user" | "assistant";
@@ -120,12 +121,12 @@ export function mustServeVerbatim(e: CanonicalRule): boolean {
   return isPending(e) || (e.tags?.includes("money") ?? false);
 }
 
-export function lastAnsweredEntry(history: Turn[]): CanonicalRule | undefined {
+export function lastAnsweredEntry(history: Turn[], exclude?: ReadonlySet<string>): CanonicalRule | undefined {
   for (let i = history.length - 1; i >= 0; i--) {
     const t = history[i];
     if (t.role === "assistant" && t.entry_id) {
       const e = entryById(t.entry_id);
-      if (e) return e;
+      if (e && !exclude?.has(e.id)) return e;
     }
   }
   return undefined;
@@ -197,7 +198,7 @@ function retrieveWithContext(fixed: string, history: Turn[], opts: LookupOptions
   const plainRanked = rankEntries(fixed, opts);
   const plain = plainRanked[0] && plainRanked[0].matchLength > 0 ? plainRanked[0].entry : null;
   const candidates = plainRanked.slice(0, 4).map((s) => s.entry);
-  const last = lastAnsweredEntry(history);
+  const last = lastAnsweredEntry(history, opts.exclude);
   const wordCount = fixed.split(" ").filter(Boolean).length;
   const elliptical = Boolean(last) && (ELLIPTICAL_RE.test(fixed) || wordCount <= 5);
   if (!elliptical || !last) return { entry: plain, candidates, elliptical: false, catchAllOnly: false };
@@ -208,9 +209,26 @@ function retrieveWithContext(fixed: string, history: Turn[], opts: LookupOptions
   const term = CATEGORY_CONTEXT[last.category];
   if (!term) return { entry: plain, candidates, elliptical: true, catchAllOnly: false };
   const effective = `${fixed} ${term}`;
+  // "What about a kong?" after a joker rule is the same topic: kong is a word that rule's own
+  // answer uses, so the context term completes the concept the player left out. "What about the
+  // charleston?" names a word the previous answer never uses, and is a real topic switch. Only
+  // in the first case may an entry win on the context term alone, and only from that category.
+  if (continuesTopic(fixed, last)) {
+    const sameTopic = rankEntries(effective, opts).filter((s) => s.entry.category === last.category);
+    if (sameTopic.length) {
+      const top = sameTopic[0].entry;
+      const merged = [top, ...sameTopic.slice(1, 3).map((s) => s.entry), ...candidates].filter((e, i, arr) => arr.findIndex((x) => x.id === e.id) === i).slice(0, 4);
+      return { entry: top, candidates: merged, elliptical: true, catchAllOnly: !plain };
+    }
+  }
   const contextual = rankEntries(effective, { ...opts, bareLength: fixed.length })
     .filter((s) => s.entry.id !== last.id || plainRanked.length === 0)
-    .sort((a, b) => Number(b.entry.category === last.category) - Number(a.entry.category === last.category) || 0);
+    .sort(
+      (a, b) =>
+        b.specificity - a.specificity ||
+        Number(b.entry.category === last.category) - Number(a.entry.category === last.category) ||
+        compareScored(a, b),
+    );
   const top = contextual[0]?.entry ?? null;
   if (top) {
     const merged = [top, ...contextual.slice(1, 4).map((s) => s.entry), ...candidates].filter((e, i, arr) => arr.findIndex((x) => x.id === e.id) === i).slice(0, 4);
@@ -221,14 +239,33 @@ function retrieveWithContext(fixed: string, history: Turn[], opts: LookupOptions
   return { entry: plain, candidates, elliptical: true, catchAllOnly: false };
 }
 
+// Words the previous answer itself uses, minus the ones every answer uses. A follow-up built
+// from them continues that topic rather than starting a new one.
+const TOPIC_STOPWORD =
+  /^(the|a|an|and|or|of|to|in|on|at|is|are|was|were|be|it|its|that|this|those|these|for|with|from|by|as|you|your|i|my|we|our|they|their|she|he|her|his|not|no|yes|can|may|do|does|did|so|if|when|what|which|who|how|why|any|all|one|two|only|but|than|then|there|here|about|after|before|up|down|out|off|over|under|more|most|less|other|same|own|just|also|still|even|never|always|every|each|both|until|while|because|what's|whats|hand|hands|tile|tiles|card|cards|player|players|play|game|games|turn|turns|discard|discards|rule|rules|table|tables|mahjong|maj)$/i;
+
+export function continuesTopic(question: string, last: CanonicalRule): boolean {
+  const vocab = new Set(
+    [last.topic, last.answer, last.house_note ?? "", ...last.questions, ...last.keywords]
+      .join(" ")
+      .toLowerCase()
+      .split(/[^a-z']+/)
+      .filter(Boolean),
+  );
+  return question
+    .toLowerCase()
+    .split(/[^a-z']+/)
+    .some((w) => w.length > 2 && !TOPIC_STOPWORD.test(w) && vocab.has(w));
+}
+
 function handleReply(ctx: ClarifyContext, reply: string, history: Turn[], opts: LookupOptions): LookupResult {
   const original = normalizeQuestion(ctx.question);
-  const resolved = resolveReply({ id: ctx.id, question: spellfix(original) }, reply);
+  const resolved = resolveReply({ id: ctx.id, question: spellfix(original) }, reply, opts.exclude);
   if (!resolved) return lookup({ question: reply, history }, opts);
   if ("option" in resolved) {
     const { option } = resolved;
     const entryId = optionEntryId(option);
-    if (entryId) {
+    if (entryId && !opts.exclude?.has(entryId)) {
       const e = entryById(entryId);
       if (e) return entryResult(e, { history, opts, raw: original, clarifiedBy: ctx.id });
     }
@@ -300,11 +337,17 @@ export function lookup(input: LookupInput, opts: LookupOptions = {}): LookupResu
   if (isSmallTalk(question)) return base("smalltalk", SMALL_TALK, "chat");
 
   const fixed = spellfix(question);
+  // "does hong kong style use a card like ours": the style question comes first, so a player
+  // asking about another game is never met with the card refusal.
+  if (VARIANT_RE.test(fixed) && !AMERICAN_RE.test(fixed)) {
+    const styleAsk = needsClarification(fixed, (q) => retrieve(q, opts) !== null);
+    if (styleAsk?.id === "ruleset") return clarificationResult(toPayload(styleAsk, question));
+  }
   if (isCardContentRequest(fixed)) {
     return base("card_refusal", CARD_REFUSAL, "card", { unsupported_reason: "annual_card_content", followups: CARD_REFUSAL_FOLLOWUPS });
   }
 
-  const last = lastAnsweredEntry(history);
+  const last = lastAnsweredEntry(history, opts.exclude);
   if (last && isWhyFollowup(fixed)) {
     return entryResult(last, { history, opts, raw: question, elliptical: true });
   }
@@ -313,6 +356,11 @@ export function lookup(input: LookupInput, opts: LookupOptions = {}): LookupResu
   if (clarification) return clarificationResult(toPayload(clarification, question));
 
   const found = retrieveWithContext(fixed, history, opts);
+  // An accident at the table (a tile knocked off during the deal, a spilled wall) has no entry.
+  // An entry reached on a noun alone must not answer it; the player picks the topic instead.
+  if (found.entry && !found.entry.requires?.length && ACCIDENT_SCENE.test(fixed)) {
+    return clarificationResult(toPayload(topicClarification(fixed, opts.exclude), question), "no_entry", { summary: summarizeForEscalation(question), reason: "no_entry" });
+  }
   if (found.entry) {
     const r = entryResult(found.entry, { history, opts, raw: question, elliptical: found.elliptical, catchAllOnly: found.catchAllOnly, candidates: found.candidates });
     return twoPart(question, r, history, opts);
@@ -320,7 +368,7 @@ export function lookup(input: LookupInput, opts: LookupOptions = {}): LookupResu
 
   // No entry fits. Offer the closest topics and record the scrubbed topic for the owner now,
   // so the operator queue is a demand signal even when the player then picks a topic.
-  return clarificationResult(toPayload(topicClarification(fixed), question), "no_entry", {
+  return clarificationResult(toPayload(topicClarification(fixed, opts.exclude), question), "no_entry", {
     summary: summarizeForEscalation(question),
     reason: "no_entry",
   });
@@ -329,10 +377,10 @@ export function lookup(input: LookupInput, opts: LookupOptions = {}): LookupResu
 // Whether a typed reply mid-clarification should stay a reply (a clicked label or a short
 // answer to an option) rather than be treated as a new question. Sites use this together with
 // their own "looks like a search" test so a player who changes their mind is not trapped.
-export function replyStaysReply(ctx: ClarifyContext, reply: string, strongSwitch: (q: string) => boolean): boolean {
+export function replyStaysReply(ctx: ClarifyContext, reply: string, strongSwitch: (q: string) => boolean, exclude?: ReadonlySet<string>): boolean {
   const spelled = { id: ctx.id, question: spellfix(normalizeQuestion(ctx.question)) };
   const q = normalizeQuestion(reply);
-  return isExactOption(spelled, q) || (answersOption(spelled, q) && !strongSwitch(q));
+  return isExactOption(spelled, q, exclude) || (answersOption(spelled, q, exclude) && !strongSwitch(q));
 }
 
 export { isExactOption, answersOption } from "./clarify.ts";

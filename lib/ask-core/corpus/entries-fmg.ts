@@ -18,6 +18,15 @@ import {
   HOLD_FOR_CHECK, DIRECTORY_ASK, OTHER_TOPIC, DEALER_EXTRA, WRONG_TILE_GIVEN, EXCHANGE_CONTEXT, CONTACT_SENSE,
   HOLD_WAIT_ASK, SETTLEMENT, SETTLEMENT_OR_HOLD, FINAL_DISCARD_SCENE, placeAfterPrep,
   MAKE_EXPOSURE,
+  BLIND_RULE_SENSE,
+  DEALER_COUNT,
+  SKIPPED_DRAW,
+  DRAGON_SUIT_ASK,
+  CHARLESTON_STOP_ASK,
+  DISCARDED_JOKER_SCENE,
+  DEALT_HAND_SCENE,
+  OTHER_CLAIMER,
+  NO_WINNER_SCENE,
 } from "./matchers.ts";
 
 const SOURCE = "owner_approved" as const;
@@ -116,6 +125,14 @@ export function lvmPending(ref: string): Provenance {
     approved_via: "lvm",
   };
 }
+
+// "put up a kong, did a joker swap, now i think it should have been a pung. can i still change it":
+// a question about changing the exposure, which the joker exchange has locked.
+const CHANGE_EXPOSURE = /\b(change|fix|alter|swap them|should have been)\b[^.?!]{0,20}\b(it|exposure|pung|kong)\b|\bstill change\b|\bshould have been\b/i;
+// The courtesy pass by name or by description (the across swap with the opposite player).
+const COURTESY_ASK = new RegExp(`${COURTESY.source}|\\bacross swap\\b|\\bswap (with|across)\\b[^.?!]{0,20}\\bopposite\\b|\\bopposite (player|swap|exchange)\\b|\\bacross (exchange|trade)\\b`, "i");
+// "nobody threw in": the settlement entry only applies once hands were thrown in.
+const NOBODY_THREW_IN = /\b(nobody|no one|noone|none of (us|them)|no hands? (were|was)|nothing was) (threw|tossed|throw|toss|thrown)\w*( (their |her |his )?(hands?|tiles?))?( in)?\b/i;
 
 export const FMG_ENTRIES: CanonicalRule[] = [
   {
@@ -300,7 +317,8 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     keywords: ["joker", "exchange", "redeem", "swap"],
     requires: [JOKER, JOKER_EXCHANGE],
     // A dead hand's jokers are dead-hand-jokers' rule, which says the opposite.
-    blocks: [DEAD],
+    // Changing an exposure after a joker swap is the exposure entries' rule.
+    blocks: [/\bself[- ]?pick\w*\b|\bfor the money\b|\bfor payment\b|\bcount(s)? as\b[^.?!]{0,20}\b(self|win|mahjong)\b/i, CHANGE_EXPOSURE, DEAD],
     answer:
       "Yes, joker exchange is allowed. When any player has an exposed group on the table that contains a joker, you may, on your own turn, hand over the real tile that joker stands for and take the joker into your hand. You can only redeem a joker from an exposure, never from tiles hidden in another player's hand.",
     varies_by_house: false,
@@ -317,7 +335,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     questions: ["How many tiles does each player start with?"],
     related: ["the-wall","charleston","players-count"],
     topic: "Dealing",
-    question_patterns: [
+    question_patterns: [/\b(east|dealer)\b[^.?!]{0,20}\b(13|14|fourteen|thirteen)\b|\b(13|14) or (13|14)\b/i, 
       /how many tiles.{0,40}(start|deal|dealt|hand)/i,
       /\bstart with\b/i,
       /who (starts|deals|goes first|is east)/i,
@@ -325,6 +343,9 @@ export const FMG_ENTRIES: CanonicalRule[] = [
       /\bdealer\b/i,
     ],
     keywords: ["deal", "dealer", "start with", "east", "first"],
+    blocks: [/\bdice\b|\broll(s|ing|ed)?\b|\bwho('s| is) east (first|for the first)\b|\bdecide who is east\b/i,
+      // Whether East may declare mahjong on the dealt hand is not stated anywhere in the corpus.
+      (q: string) => DEALT_HAND_SCENE.test(q) && MAHJONG_CUE.test(q)],
     answer:
       "Each player starts with 13 tiles, except East, the dealer, who starts with 14. After the Charleston, East opens play by discarding a tile.",
     varies_by_house: false,
@@ -397,7 +418,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     topic: "Closed hand final tile",
     question_patterns: [HAND_CLOSED],
     keywords: ["closed hand", "concealed"],
-    requires: [HAND_CLOSED, CLAIM_VERB],
+    requires: [HAND_CLOSED, new RegExp(`${CLAIM_VERB.source}|\\bdraw it myself\\b|\\bjust got thrown\\b|\\bfinishes (it|my hand)\\b|\\bwant (the|that|this) (discard|tile)\\b`, "i")],
     // "call" also has a naming sense ("what do you call a closed hand?"); that is
     // a definition question, not a claim.
     blocks: [(q: string) => JOKER.test(q) && JOKER_EXCHANGE.test(q), /\bwhat (do|would) (you|we|they) call\b/i],
@@ -419,8 +440,9 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     topic: "Charleston blind pass",
     question_patterns: [BLIND_PASS],
     keywords: ["blind pass"],
-    requires: [BLIND_PASS, PASS_VERB],
-    blocks: [blindReadsAsPlace],
+    requires: [BLIND_PASS, new RegExp(`${PASS_VERB.source}|\\bshove\\w*\\b|\\bstraight (on|through|along)\\b`, "i")],
+    // "Blind Pass FL snowbird group here. on the last right pass can I pass all 3 tiles blind?"
+    blocks: [(q: string) => blindReadsAsPlace(q) && !BLIND_RULE_SENSE.test(q)],
     answer:
       "A blind pass is allowed only on the last pass of each Charleston: First Left and, if a second Charleston is played, Last Right. If you do not want to pass three tiles from your own hand, you may take one, two, or all three tiles being passed to you and pass them onward without looking at them. You still pass three tiles total. A blind pass does not override the rule against passing jokers. Do not knowingly include a joker from your own hand. Tiles you pass on blindly must remain unseen.",
     varies_by_house: false,
@@ -472,6 +494,8 @@ export const FMG_ENTRIES: CanonicalRule[] = [
       /what counts as (a win|mahjong)/i,
     ],
     keywords: ["win", "winning", "declare", "mahjong means"],
+    // Whether East may declare on the dealt hand is not stated anywhere in the corpus.
+    blocks: [(q: string) => DEALT_HAND_SCENE.test(q) && MAHJONG_CUE.test(q)],
     answer:
       "You win by completing a 14 tile hand that exactly matches one of the hands printed on the current National Mah Jongg League card, then declaring mahjong. The 14th tile can come from your own draw or from a called discard.",
     varies_by_house: false,
@@ -488,7 +512,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     questions: ["When does the new card come out?"],
     related: ["last-years-card","card-numbers","winning-mahjong"],
     topic: "The annual NMJL card",
-    question_patterns: [
+    question_patterns: [/\b(new|next) cards? (ship|arrive|release|come out|are out|drop)\b|\btime of year\b[^.?!]{0,20}\bcards?\b/i, 
       /(new|annual|yearly|current|next).{0,15}\bcard\b/i,
       /\bcard\b.{0,25}(come(s)? out|release|publish)/i,
       /when.{0,30}\bcard\b/i,
@@ -517,6 +541,9 @@ export const FMG_ENTRIES: CanonicalRule[] = [
       /how (is|are) the (tiles|wall) (set|built|arranged)/i,
     ],
     keywords: ["wall", "walls"],
+    blocks: [/\bknocked\b|\bfell\b|\bdropped\b|\boff the table\b|\breshuffle\b/i, /\b(nobody|no one|noone) (won|wins|has mahjong)\b|\bwall game\b|\b(ran|runs|running) out\b|\bpay|\bpaid\b|\bowe\b|\bdice\b|\broll(s|ing|ed)?\b|\bwent out on\b/i,
+      // A turn narration ("I picked and she had not discarded") is picking-ahead's rule.
+      /\bhadn'?t (discarded|thrown|gone)\b|\bhas ?n'?t (discarded|thrown)\b|\b(had|has|have) not (discarded|thrown|gone)\b|\b(before|ahead of) (my|it was my|her|his|their) turn\b|\bout of turn\b|\b(peek|peeked|peeking|sneak\w*)\b|\b(discard\w*|threw|thrown)\b[^.?!]{0,24}\bbefore (i|you|she|he|they) (pick|picked|draw|drew)\b|\blook(ing)? ahead\b|\bnext tile in the wall\b/i],
     answer:
       "After all 152 tiles are shuffled face down, each player builds a wall 19 tiles long and 2 tiles high. The four walls together hold the whole set, and every deal and draw comes from the wall.",
     varies_by_house: false,
@@ -533,7 +560,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     questions: ["What is a wall game?"],
     related: ["wall-game-payment","last-tile-of-wall","the-wall"],
     topic: "Wall game (no winner)",
-    question_patterns: [
+    question_patterns: [/\b(nobody|no one|noone) (won|wins|has mahjong|got mahjong|went out)\b|\bwall (ran|runs) out\b/i, 
       // "who deals after a wall game" belongs here: the dealing entry only covers the
       // opening deal and never says who becomes East next.
       // Anchored on the wall game. Unqualified rotation between hands is the dealing
@@ -563,7 +590,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     questions: ["How many players do you need?"],
     related: ["three-player-procedure","dealing","the-wall"],
     topic: "Number of players",
-    question_patterns: [
+    question_patterns: [/\b(min|minimum|max|maximum|fewest|least|most) (number of )?(people|players)\b|\bnumber of (people|players)\b/i, 
       /how many (players|people)/i,
       /play with (three|3|five|5|two|2)/i,
       /\b(three|3|five|5|two|2) (people|players|of us)\b/i,
@@ -640,7 +667,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     // carry the before/after East's first discard timing; this one states it flat.
     blocks: [WRONG_COUNT],
     topic: "Dead hands",
-    question_patterns: [
+    question_patterns: [/\b(i'?m|im|am i|is my hand|my hand is|they said i'?m|called me) dead\b|\bwhat does dead mean\b|\bwhat does (that|it) (even )?mean\b/i, 
       /dead hand/i,
       /declar(e|ed|ing) (a hand |someone )?dead/i,
       /hand (is |goes )?dead/i,
@@ -667,9 +694,9 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     topic: "Calling a discard for mahjong",
     question_patterns: [MAHJONG_CUE, CLAIM_VERB],
     keywords: ["mahjong", "win", "call", "discard"],
-    requires: [CLAIM_VERB, MAHJONG_CUE],
+    requires: [new RegExp(`${CLAIM_VERB.source}|\\b(yell|yells|yelled|shout|shouts|shouted|say|declare|declares|declared|announce|announces) (mahjong|mahj|maj)\\b`, "i"), MAHJONG_CUE],
     // Closed-hand and false-mahjong questions have their own answers.
-    blocks: [HAND_CLOSED, ERROR_CUE, TWO_PLAYERS, OWN_DISCARD, JOKER, MISNAMED],
+    blocks: [DEALT_HAND_SCENE, /\bforgot to (pick|draw)\b|\bwithout (picking|drawing)\b|\b(threw|discarded|tossed) (a|the) joker\b|\bdiscarded joker\b/i, FINAL_DISCARD_SCENE, /\bself[- ]?(pick|draw)\w*\b|\bown (draw|pick)\b|\boff the wall\b|\bfrom the wall\b/i, HAND_CLOSED, ERROR_CUE, TWO_PLAYERS, OWN_DISCARD, JOKER, MISNAMED],
     answer: "Yes. Any player may call a discard to complete a winning hand (mahjong), except a discarded joker, as long as the next player has not yet picked and racked or discarded. A call for mahjong beats any call for an exposure, even one already placed on a rack. If two players call the same tile for mahjong, the player next in turn after the discarder gets it unless the other caller has already racked the tile or exposed.",
     varies_by_house: false,
     approval: "owner_approved",
@@ -688,7 +715,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     question_patterns: [EXPOSURE_CUE, CLAIM_VERB, MAKE_EXPOSURE],
     keywords: ["exposure", "call", "pung", "kong"],
     requires: [CLAIM_VERB, EXPOSURE_CUE],
-    blocks: [HAND_CLOSED, TWO_PLAYERS, OWN_DISCARD, JOKER_EXCHANGE, /\bpairs?\b/i, QUINT_SEXTET, MISNAMED, FINAL_DISCARD_SCENE],
+    blocks: [DISCARDED_JOKER_SCENE, HAND_CLOSED, TWO_PLAYERS, OWN_DISCARD, (q: string) => JOKER_EXCHANGE.test(q) && !CHANGE_EXPOSURE.test(q), /\bpairs?\b/i, QUINT_SEXTET, MISNAMED, FINAL_DISCARD_SCENE],
     answer:
       "You may call a discard to build an exposure when the tiles already in your hand, with jokers allowed, make it a group of 3 or more identical tiles: a Pung, a Kong, or a larger group. Say call, take the tile, and place the whole group face up on top of your rack, then discard. You cannot call a discard to make a pair unless that tile completes your mahjong, and a hand marked concealed cannot call for an exposure at all. The call is committed as soon as the called tile goes on your rack or you expose tiles from your hand. You may fix a mistake in that exposure only until you discard or exchange a joker; after either, it is locked.",
     varies_by_house: false,
@@ -728,7 +755,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     question_patterns: [JOKER, MIXED_GROUP],
     keywords: ["joker", "news", "year", "run"],
     requires: [JOKER, MIXED_GROUP],
-    blocks: [JOKER_EXCHANGE, JOKER_PASS, DISCARDED],
+    blocks: [/\bfirst (left|right)\b|\bcharleston\b|\bwithout looking\b/i, JOKER_EXCHANGE, JOKER_PASS, DISCARDED],
     answer:
       "A joker never stands in for one of the single tiles that make up a mixed group: a run like 1 2 3, a year, NEWS with one of each wind, or any line of singles, even though those groups have 3 or more tiles. In a hand that includes such a group, jokers can still fill that hand's Pungs, Kongs, Quints, or Sextets. The mixed group itself must be built from the real tiles.",
     varies_by_house: false,
@@ -748,8 +775,10 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     topic: "Discarded jokers",
     question_patterns: [JOKER, DISCARDED],
     keywords: ["joker", "discard"],
-    requires: [JOKER, DISCARDED],
-    blocks: [JOKER_EXCHANGE, JOKER_PASS, /\bpairs?\b/i, MISNAMED],
+    // The joker itself was discarded: the two words sit in one clause. "handed her a 4 dot for
+    // the joker in her pung, and I already discarded" is a joker exchange gone wrong.
+    requires: [JOKER, new RegExp(`\\bjokers?\\b[^.?!,;]{0,30}${DISCARDED.source}|${DISCARDED.source}[^.?!,;]{0,30}\\bjokers?\\b`, "i")],
+    blocks: [/\b(zero|no|without) jokers?\b|\bjokerless\b|\bjoker[- ]?free\b/i, JOKER_EXCHANGE, JOKER_PASS, /\bpairs?\b/i, MISNAMED],
     answer: "The card's joker rule says a discarded joker can never be called for mahjong. Whether a discarded joker can be claimed for an exposure is not printed on the card; common table practice treats a discarded joker as out of the hand entirely, so check with your table. Under that practice, the only way to take a joker from the table is a joker exchange from an exposed group on your own turn.",
     varies_by_house: true,
     approval: "research_verified",
@@ -768,7 +797,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     question_patterns: [JOKER_EXCHANGE, TIMING, ERROR_CUE],
     keywords: ["joker", "exchange", "turn"],
     requires: [JOKER, JOKER_EXCHANGE, new RegExp(`${TIMING.source}|${ERROR_CUE.source}|\\b(own|my|your) (rack|exposure)\\b`, "i")],
-    blocks: [DEAD],
+    blocks: [/\bshould have been\b|\bchange (it|the exposure)\b|\bstill change\b/i, DEAD],
     answer:
       "You may exchange a joker only during your own turn, after you have drawn from the wall or called a discard and before you discard. Hand over the tile the joker stands for and take the joker; you may redeem a joker from any exposure on the table, including your own. Once you discard, the chance passes until your next turn. If an exchange puts the wrong tile into an exposure, fix it before the next discard and there is no penalty.",
     varies_by_house: false,
@@ -808,7 +837,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     question_patterns: [TWO_PLAYERS],
     keywords: ["same tile", "both", "hold", "wait", "priority"],
     requires: [TWO_PLAYERS, TWO_PLAYERS_ASK],
-    blocks: [ERROR_CUE, BLIND_PASS, CHARLESTON_WORD],
+    blocks: [/\bhow long\b[^.?!]{0,40}\b(wait|before)\b|\blose the (discard|tile)\b/i, /\bfell\b|\bdropped\b|\bknocked\b|\bface up\b|\bput (the tiles|them|it) up\b|\bright away\b|\bimmediately\b/i, MISNAMED, /\ball the same\b|\bflowers?\b|\b(open|closed|concealed|exposed) hands?\b|\bheard both\b|\bnumbers? on\b/i, ERROR_CUE, BLIND_PASS, CHARLESTON_WORD, DEAD],
     answer:
       "When more than one player wants the same discard, a call for mahjong wins over a call for an exposure. If both want it for the same reason, the player whose turn comes next gets it. Which word you use does not change that order, so hold, wait, and call all carry the same weight for priority, but you still have to say call before you take the tile. A player who hesitates can lose the tile once another player has claimed it and then racked it or exposed tiles.",
     varies_by_house: false,
@@ -830,8 +859,9 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     keywords: ["own discard", "take back"],
     requires: [OWN_DISCARD],
     // Misnaming your own discard is misnamed-discard's rule, which says the
-    // opposite: correct it with words and play continues.
-    blocks: [MISNAMED],
+    // opposite: correct it with words and play continues. A third party claiming the tile
+    // is ordinary calling, and this entry's "No" would read as the wrong answer there.
+    blocks: [/\bhold \d+ tiles?\b|\bhow many tiles\b/i, MISNAMED, (q: string) => OTHER_CLAIMER.test(q) && !/\b(take|get|have|call) (it|that|the tile|my tile|my discard) back\b|\btake back\b/i.test(q)],
     answer:
       "No. You may never call back a tile you just discarded, for any purpose, including mahjong or a joker exchange. Once you have named it or placed it in the discard area, it is available only to the other players.",
     varies_by_house: false,
@@ -851,7 +881,8 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     question_patterns: [NAMING, DISCARDED],
     keywords: ["name", "announce", "discard", "same"],
     requires: [NAMING, new RegExp(`${DISCARDED.source}|\\bsame\\b`, "i")],
-    blocks: [MISNAMED, HAND_CLOSED],
+    // "name my discard" is this entry's own question; only the take-back sense is own-discard's.
+    blocks: [(q: string) => OWN_DISCARD.test(q) && /\b(take|call|get|have) (it |that |the tile |my discard )?back\b|\bown (discard|throw)\b/i.test(q), MISNAMED, HAND_CLOSED],
     answer:
       "Name each tile aloud as you place it face up in the discard area, since naming it is what lets the other players call it. When your discard matches the tile discarded just before it, the League accepts saying same as well as naming the tile.",
     varies_by_house: false,
@@ -890,7 +921,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     question_patterns: [MAHJONG_CUE, ERROR_CUE],
     keywords: ["mahjong", "error", "mistake", "false"],
     requires: [MAHJONG_CUE, ERROR_CUE],
-    blocks: [JOKER_EXCHANGE, MISNAMED, TWO_PLAYERS],
+    blocks: [(q: string) => /\b(can|may) (i|we) (still )?(call|claim|take)\b/i.test(q) && !/\b(declared|said mahjong|called mahjong|blurted|yelled mahjong)\b/i.test(q), OWN_DISCARD, JOKER_EXCHANGE, MISNAMED, TWO_PLAYERS],
     answer:
       "It depends on how far the declaration went. If you only said mahjong and nothing went face up, take it back right away, before anyone else exposes tiles or disturbs a hand; there is no penalty and play continues. If you called a discard for mahjong and racked the tile, or laid down only the one group that tile completes, you may drop the mahjong declaration and keep it as a call for that exposure, then discard to finish your turn. The exposure stays on your rack, and if it fits no hand on the card the other players can declare your hand dead the normal way. That path needs a hand that can make an exposure, so it does not help a hand marked concealed, and a tile you picked yourself gives no such escape. If you put tiles down from behind your rack, your hand is dead and you cannot take the declaration back. Your turn ends without a discard, put the tiles you just showed back behind the sloped part of your rack, and any exposures you made properly earlier stay up, so other players may still redeem jokers from them. If your hand was a concealed hand, every tile returns to your rack and no one can redeem a joker from it. You stop drawing and discarding, and play continues with the player on your right. Anyone who threw in a hand because of your false mahjong is dead too.",
     varies_by_house: false,
@@ -918,7 +949,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     ],
     // A misname settlement is misnamed-discard's rule, not this one; the two
     // state opposite payers, so this must not win a misname question.
-    blocks: [MISNAMED],
+    blocks: [/\b(got|was|were|been) (called|declared) dead\b|\bsince (she|he|they) (is|are) dead\b/i, (q: string) => NOBODY_THREW_IN.test(q) && !/\b(pay|pays|paid|owe|owes|settle|collect|double)\w*\b/i.test(q), MISNAMED],
     answer:
       "Settlement follows from how many hands are left standing. Everyone should hold their hands until someone checks the call, and you cannot take back a hand you threw in, because that hand is dead too. If at least two hands stay intact, play continues and no one pays yet; when someone later wins, the dead players pay along with everyone else, and a wall game means no one pays. If the false call leaves only one intact hand, the deal ends there and the player who declared in error pays that one player double the value of the hand the declarer was attempting, while players who threw in neither pay nor collect. If more than one player declared in error, the last one to do so carries that payment. A player who throws in a hand and wrecks the wall before anyone checks the call pays each player with an intact hand the lowest value printed on the card. One more thing worth knowing: another player who wanted that same claimed tile for mahjong may still take it and win, but a player who wanted it only for an exposure may not.",
     varies_by_house: false,
@@ -945,7 +976,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     // entries that have none, and a question that merely mentions three of us is about
     // whatever noun it names. Requiring a procedure word instead was tried and lost
     // "we have three players is that ok", which carries none.
-    blocks: [SETTLEMENT, SCORING_ASK, PAYMENT, OTHER_TOPIC, DIRECTORY_ASK],
+    blocks: [/\b(second round|first left|majority|second charleston)\b/i, SETTLEMENT, SCORING_ASK, PAYMENT, OTHER_TOPIC, /\b(where|near|nearby|find|looking for|join|sign up)\b|\b(club|group|venue|teacher|lesson|class)s?\b(?=[^.?!]{0,20}\b(near|in|around|at)\b)/i],
     answer:
       "American mahjong seats 4 players, and the League's rulebook covers playing with 3. Build all 4 walls as usual with the full 152 tiles and leave one seat empty. Deal only to the three players, and the empty seat gets nothing. The deal ends with East holding 14 tiles and the other two holding 13. League publications describe the final pickup in two slightly different orders, and both reach those counts. Under League rules there is no Charleston with three players, so this is not a table preference. East opens with a discard, and play runs like the 4-player game. Anything beyond this is a table choice, such as an invented Charleston for three or a ghost hand dealt to the empty seat.",
     varies_by_house: true,
@@ -971,7 +1002,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     keywords: ["wrong number", "12 tiles", "redeal"],
     requires: [WRONG_COUNT],
     // How many tiles a SET contains is tile-count's question, not a count gone wrong.
-    blocks: [DEALER_EXTRA, /\bin (a|the|my|one) set\b|\bin the box\b/i],
+    blocks: [DEALER_EXTRA, DEALER_COUNT, /\bin (a|the|my|one) set\b|\bin the box\b/i],
     answer:
       "Count your tiles before East's first discard. The League treats that discard as the start of the deal, so it is your cutoff for fixing anything. Count again when the Charleston ends, because that is the last easy moment to catch a mistake. If any player holds the wrong number of tiles at that point, the table throws all the hands in, rebuilds the walls, and deals again. No one pays a penalty, because a fresh deal is a reset and not a punishment. One correction escapes that. If the player seated to East's left holds 12 tiles because that player never took a 13th tile during the deal, that player takes the next tile from the wall and play continues, because that tile was rightfully theirs. League answers put this correction on the table from before the Charleston right up to East's first discard. It covers that seat only, and it covers a player who is short, not a player holding too many. After East's first discard, none of this works. A player holding the wrong number of tiles has a dead hand, and no one can fix the count. Another player has to call it, because you never declare your own hand dead, and the dead player still pays the winner of that deal. The habit that prevents almost all of it: everyone counts to 13, East counts to 14, before East discards.",
     varies_by_house: false,
@@ -995,11 +1026,12 @@ export const FMG_ENTRIES: CanonicalRule[] = [
       HOLD_WAIT_ASK,
       /\b(tile|discard|call|calls|claim|play|game|turn)\b/i,
     ],
-    blocks: [
+    blocks: [/\b(put|lay|place|set)\b[^.?!]{0,12}\b(tiles?|them|it) (up|down|out)\b|\bright away\b|\bimmediately\b|\bstraight away\b/i, 
       CHARLESTON_WORD,
       BLIND_PASS,
       MISNAMED,
-      CONTACT_SENSE,
+      // "before I call ahead to the studio: if I say wait, can someone expose before me" is still this rule.
+      (q: string) => CONTACT_SENSE.test(q) && !/\b(say|said|saying|yell|yelled|shout|shouted|call|called|calling) (wait|hold)\b/i.test(q),
       DECLINE_CUE,
       // Naming your own discard is naming-discards' rule, but NAMING also holds "out
       // loud", which is exactly what a spoken-claim question asks about, so it stands
@@ -1030,7 +1062,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     requires: [DEAD, DEAD_DETAIL],
     // A wrong tile count goes to the entry that answers both timings in one place; this
     // one keeps the other ways a hand dies.
-    blocks: [JOKER_EXCHANGE, ERROR_CUE, WRONG_COUNT],
+    blocks: [NO_WINNER_SCENE, JOKER_EXCHANGE, ERROR_CUE, WRONG_COUNT],
     answer:
       "A hand goes dead when it can no longer win, for example when a player holds the wrong number of tiles after East's first discard, draws out of turn, makes an exposure that fits no hand on the card, or exposes tiles for a hand marked concealed. A dead player stops drawing and discarding but still pays the winner of that deal. You do not declare your own hand dead; the other players do. After East's first discard, a wrong tile count cannot be fixed.",
     varies_by_house: true,
@@ -1052,6 +1084,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     question_patterns: [DEAD, JOKER],
     keywords: ["dead", "joker", "exchange"],
     requires: [DEAD, JOKER],
+    blocks: [/\bwho'?s dead\b|\bwhos dead\b|\bnobody noticed\b|\bwrong tile\b/i, MISNAMED],
     answer:
       "Yes, with limits that depend on which exposure the joker sits in. When a hand goes dead, the other players may still redeem jokers from any correct exposure that player made before the hand went dead. Redeem one the normal way, on your own turn, by handing over the real tile that joker stands for. This works even when the hand died for a separate reason, such as holding the wrong number of tiles. The exposure that caused the dead hand works differently: those tiles, jokers included, go back onto the player's rack, so no one can redeem them. A hand marked concealed that exposed tiles in error gives up nothing, because the whole exposed portion returns to the rack. One timing point: if a hand is already dead but nobody has declared it dead yet, even the jokers in the exposure that made it dead are still up for grabs, and they go out of reach only once the table declares the hand dead. The dead player stops drawing, discarding, and exchanging for the rest of that deal, and still pays the winner.",
     varies_by_house: false,
@@ -1102,7 +1135,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     question_patterns: [ORDER],
     keywords: ["order", "turn", "direction", "next"],
     requires: [ORDER],
-    blocks: [CHARLESTON_WORD, ERROR_CUE, TWO_PLAYERS],
+    blocks: [CHARLESTON_WORD, ERROR_CUE, TWO_PLAYERS, SKIPPED_DRAW, PAYMENT],
     answer:
       "East starts the deal by discarding. Turns then move to the right, counterclockwise around the table: East, then South, then West, then North. On your turn you either draw the next tile from the wall or call the most recent discard, then you discard one tile face up and name it. You hold 13 tiles between turns and 14 during your turn.",
     varies_by_house: false,
@@ -1141,9 +1174,9 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     questions: ["What is a courtesy pass?"],
     related: ["charleston-passes","charleston","look-before-pass"],
     topic: "The courtesy pass",
-    question_patterns: [COURTESY],
+    question_patterns: [COURTESY_ASK],
     keywords: ["courtesy pass", "across"],
-    requires: [COURTESY, PASS_VERB],
+    requires: [COURTESY_ASK, new RegExp(`${PASS_VERB.source}|\\b(thing|swap|trade|exchange|round|across|optional)\\b`, "i")],
     answer: "After the charleston ends, whether it stopped after the first left pass or ran through a second charleston, you and the player across from you may make an optional courtesy pass of 0, 1, 2, or 3 tiles. Both players must agree on how many tiles to exchange, and both pass at the same time. Either player can decline.",
     varies_by_house: false,
     approval: "owner_approved",
@@ -1160,10 +1193,11 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     questions: ["Can I stop the Charleston?"],
     related: ["charleston-passes","courtesy-pass","charleston"],
     topic: "Stopping the Charleston",
-    question_patterns: [CHARLESTON_WORD, STOP_OR_AGREE],
+    question_patterns: [CHARLESTON_WORD, CHARLESTON_STOP_ASK],
     keywords: ["stop", "charleston", "second charleston", "optional"],
-    requires: [new RegExp(`${CHARLESTON_WORD.source}|\\bpass(es|ed|ing)?\\b`, "i"), STOP_OR_AGREE],
-    blocks: [BLIND_PASS, COURTESY, JOKER, DISCARDED, (q: string) => THREE_PLAYER_SEATS.test(q) && !OTHER_TOPIC.test(q)],
+    requires: [new RegExp(`${CHARLESTON_WORD.source}|\\bpass(es|ed|ing)?\\b|\\bfirst left\\b|\\bsecond round\\b`, "i"), CHARLESTON_STOP_ASK],
+    // "three of us" beside the stop question is the vote, not three-handed play; the across swap at the end is the courtesy pass.
+    blocks: [BLIND_PASS, COURTESY, JOKER, DISCARDED, (q: string) => THREE_PLAYER_SEATS.test(q) && !OTHER_TOPIC.test(q) && !/\b(second round|first left|majority|stop)\b/i.test(q), /\bacross swap\b|\bopposite\b|\bat the end\b/i],
     answer: "Not during the first charleston. The first charleston (right, across, left) is compulsory. Once the first left pass is done, any player may call to stop; the second charleston (left, across, right) only happens if no one stops it. The courtesy pass still applies either way.",
     varies_by_house: false,
     approval: "owner_approved",
@@ -1212,7 +1246,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     question_patterns: [PAYMENT],
     keywords: ["pay", "double", "score", "jokerless"],
     requires: [PAYMENT],
-    blocks: [ERROR_CUE, MISNAMED, DEAD, TOURNAMENT],
+    blocks: [/\b(cannot|can'?t|couldn'?t|don'?t|never) agree (on|about|over|whether|if|with|what|who|how|when)\b|\bdisputes?\b|\bargu(e|es|ed|ing|ment)\b|\bstalled\b|\b(table|group|everyone|we all|whole table) (agrees?|decides?|wants?) to (skip|ignore|waive|drop|change)\b|\bcan we (skip|ignore|waive|drop|change)\b|\bforgot to (pick|draw)\b|\bwithout (picking|drawing)\b/i, ERROR_CUE, MISNAMED, DEAD, TOURNAMENT],
     equivalents: ["pay-discard-win", "wall-game-payment"],
     answer:
       "The League sets who pays and how much. Your table sets what a point is worth. Who pays: the winner announces the hand and its value, then tells each player what to pay. Win on another player's discard and that discarder pays double the hand's value while the other two players each pay the single value. Pick your own winning tile from the wall and all three players pay double. Completing your hand by redeeming a joker as your last move before declaring counts as a self pick. Jokerless: if your hand could have used jokers and has none when you declare, the value doubles again, and that stacks, so a jokerless win on a discard costs the discarder 4 times the value while the other two pay double. Say the hand is jokerless when you declare, because you lose the bonus if you forget. Hands in the Singles and Pairs group get no jokerless bonus, since their printed value already accounts for it, but the self pick double still applies. A player whose hand went dead still pays the winner. If the wall runs out and nobody declares mahjong, no one wins and no one pays. Amounts: the card prints a value beside each hand, and those values are points. The League does not require you to play for money. Many tables treat a point as a penny, but chips, paper scoring, and playing for nothing are all fine. A wall game kitty, an ante, and any cap on losses are table customs, not League rules. Sanctioned tournaments score differently, so follow the director's rules there.",
@@ -1254,7 +1288,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     question_patterns: [EXPOSURE_WORD],
     keywords: ["exposure", "expose", "rack"],
     requires: [EXPOSURE_WORD],
-    blocks: [CLAIM_VERB, JOKER_EXCHANGE, HAND_CLOSED, DEAD, TWO_PLAYERS],
+    blocks: [/\bknocked\b|\bfell\b|\bdropped\b|\boff the table\b/i, DRAGON_SUIT_ASK, CLAIM_VERB, (q: string) => JOKER_EXCHANGE.test(q) && !CHANGE_EXPOSURE.test(q), HAND_CLOSED, DEAD, TWO_PLAYERS],
     answer:
       "An exposure is a group you called: the discard plus the matching tiles from your hand, placed face up on top of your rack. Only a Pung, Kong, Quint, or Sextet can be exposed, never a pair. You may fix a mistake in an exposure only until you discard or exchange a joker; after either, it is locked, and the only later change is a player redeeming a joker in it. Every exposure must fit one hand on the card, and if your exposures cannot all fit the same hand, your hand is dead. A hand marked concealed makes no exposures.",
     varies_by_house: false,
@@ -1273,8 +1307,8 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     topic: "Reading the card (colors and letters)",
     question_patterns: [CARD_WORD, NOTATION],
     keywords: ["card", "color", "concealed", "exposed", "soap"],
-    requires: [new RegExp(`${CARD_WORD.source}|\\bzero\\b|${CX_LETTERS.source}`, "i"), NOTATION],
-    blocks: [/\b(come(s)? out|release|publish|new card|next card|when)\b/i],
+    requires: [new RegExp(`${CARD_WORD.source}|\\bzero\\b(?![^.?!]{0,12}\\bjokers?\\b)|${CX_LETTERS.source}|\\b[CX] (after|next to|beside|behind) (a|the|each|every) hand\\b|\\b20\\d\\d in it\\b|\\bhas 20\\d\\d\\b`, "i"), NOTATION],
+    blocks: [/\bhow many tiles\b|\bzero jokers\b/i, /\b(come(s)? out|release|publish|new card|next card|when)\b/i],
     answer:
       "On the card, each color stands for a different suit, not a fixed one: a hand shown in a single color uses one suit, and a hand shown in three colors uses three different suits. C after a hand means it must be played concealed; X means exposures are allowed. F stands for a flower, D for a dragon, and the winds appear by their first letters. Jokers are never printed in a hand; they stand in for tiles inside any group of 3 or more identical tiles. In hands that show a year or another number with a zero, the Soap plays the zero.",
     varies_by_house: false,
@@ -1342,7 +1376,9 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     // alternative matches any "last tile", so "can I call the last tile she threw" is an
     // ordinary calling question that must not reach the end-of-wall answer.
     requires: [FINAL_DISCARD_SCENE],
-    blocks: [HAND_CLOSED],
+    // A payment-framed wall question is payments-basics' (FMG) or wall-game-payment's (LVM),
+    // so each site serves the payment wording its own owner decided.
+    blocks: [HAND_CLOSED, (q: string) => NO_WINNER_SCENE.test(q) && /\b(pay|pays|paid|paying|payment|payout|owe|owes|settle|collect)\b/i.test(q) && !CLAIM_VERB.test(q)],
     answer:
       "League rules do not change as the wall gets short. While any tiles remain in the wall, you may call a discard for an exposure or for mahjong, right down to the last tile. A table that bans calls near the end plays a house rule, often called a cold wall. Groups define it differently, since some bar only exposure calls and others bar every claim. A hot wall is the matching house rule at the other end, penalizing a player who throws the winning tile late in the deal. No League rulebook or bulletin we found carves out an exception for a short wall, so neither one is a League rule. Anyone may still claim the very last discard of the deal for mahjong. On whether you may instead call that final discard only to make an exposure, we found no published League ruling either way, so agree at your table how you will handle it until the League settles it. If the last tile of the wall is drawn and discarded and no one declares mahjong, the hand ends with no winner and no one pays.",
     varies_by_house: true,

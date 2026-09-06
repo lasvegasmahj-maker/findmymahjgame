@@ -7,7 +7,7 @@
 import type { CanonicalRule } from "./types.ts";
 import {
   BLIND_PASS, CHARLESTON_WORD, CLAIM_VERB, COURTESY, DEAD, DECLINE_CALL, DISCARDED, EXPOSURE_WORD, JOKER,
-  JOKER_PASS, MAHJONG_CUE, NAMING, OTHER_TOPIC, PASS_VERB, STOP_OR_AGREE, THREE_PLAYER_SEATS,
+  JOKER_PASS, MAHJONG_CUE, NAMING, OTHER_TOPIC, PASS_VERB, STOP_OR_AGREE, THREE_PLAYER_SEATS, CHARLESTON_STOP_ASK, OTHERS_TILES,
 } from "./matchers.ts";
 import { lvmPage, LVM_OWNER_2026_08_29, lvmPending } from "./entries-fmg.ts";
 
@@ -18,7 +18,7 @@ const THREE_HANDED_PLAIN = (q: string) => THREE_PLAYER_SEATS.test(q) && !OTHER_T
 
 const NAMED_PASS = /\b(first|second|third|last|1st|2nd|3rd) (right|across|left)\b/i;
 // The pre-play passing itself: the Charleston by name, a pass verb, or one of the named passes.
-const PASS_ACT = new RegExp(`${CHARLESTON_WORD.source}|${PASS_VERB.source}|${NAMED_PASS.source}`, "i");
+const PASS_ACT = new RegExp(`${CHARLESTON_WORD.source}|${PASS_VERB.source}|${NAMED_PASS.source}|\\b(right|left|across),? (across|left|right),? (then |and )?(left|right|across)\\b|\\bsecond (go )?round\\b`, "i");
 // A pass that was made, never the bare Charleston, so a tile count gone wrong after it stays with the count entry.
 const PASS_MADE = new RegExp(`${PASS_VERB.source}|${NAMED_PASS.source}`, "i");
 // How the passes run: how many, in what order, which direction. A lone named pass ("first left, what is that") is the Charleston definition's.
@@ -32,7 +32,7 @@ const COUNT_OFF =
   /\b(wrong|incorrect|odd|off|different) (number|count|amount)\b|\b(counts?|numbers?) (is|are|was|were) (off|wrong)\b|\b(too many|too few|not enough|fewer|less than (three|3)|more than (three|3)|only (one|two|1|2)|just (one|two|1|2)|(one|two|four|five|1|2|4|5) tiles?|miscount\w*|short(ed)? (a|one|me a) tile|one short|one too many|one too few|forgot (a|one|to pass a) tile|missed a tile|(two|2|four|4) instead of (three|3)|(one|two|four|1|2|4) not (three|3))\b/i;
 // A joker on the move in the Charleston: passed, or sent in a pass direction. A bare "right" or "left" is not a direction.
 const JOKER_PASSED = new RegExp(
-  `${JOKER_PASS.source}|\\bjokers?\\b[^.?!,;]{0,30}\\b((to the|on the|first|second|last) (right|left|across)|across)\\b|\\b((to the|on the|first|second|last) (right|left|across)|across)\\b[^.?!,;]{0,30}\\bjokers?\\b|\\bcharleston\\b[^.?!]{0,60}\\b(hand|hands|give|gives|giving|handing|slide|slip|send|sending)\\b[^.?!,;]{0,30}\\bjokers?\\b|\\b(hand|hands|give|gives|giving|handing|slide|slip|send|sending)\\b[^.?!,;]{0,30}\\bjokers?\\b[^.?!]{0,60}\\bcharleston\\b`,
+  `${JOKER_PASS.source}|\\bjokers?\\b[^.?!,;]{0,30}\\b((to the|on the|first|second|last) (right|left|across)|across)\\b|\\b((to the|on the|first|second|last) (right|left|across)|across)\\b[^.?!,;]{0,30}\\bjokers?\\b|\\bcharleston\\b[^.?!]{0,60}\\b(hand|hands|give|gives|giving|handing|slide|slip|send|sending)\\b[^.?!,;]{0,30}\\bjokers?\\b|\\b(hand|hands|give|gives|giving|handing|slide|slip|send|sending)\\b[^.?!,;]{0,30}\\bjokers?\\b[^.?!]{0,60}\\bcharleston\\b|\\bjokers?\\b[^.?!]{0,40}\\b(my |the |our )?(3|three|2|two|1|one|first|second|last) (across|left|right)\\b|\\b(my |the |our )?(3|three|2|two|1|one|first|second|last) (across|left|right)\\b[^.?!]{0,40}\\bjokers?\\b`,
   "i",
 );
 // The Charleston as the scene of a claim: by name, a passed tile, or the time before East opens.
@@ -72,7 +72,7 @@ export const LVM_CHARLESTON: CanonicalRule[] = [
     ],
     keywords: ["passes", "first charleston", "second charleston", "across"],
     requires: [PASS_ACT, PASS_SEQUENCE_ASK],
-    blocks: [BLIND_PASS, COURTESY, STOP_OR_AGREE, JOKER, THREE_HANDED_PLAIN],
+    blocks: [BLIND_PASS, COURTESY, CHARLESTON_STOP_ASK, JOKER, THREE_HANDED_PLAIN],
     answer:
       "The first charleston has three mandatory passes: first right (3 tiles), first across (3 tiles), and first left (3 tiles). After the first charleston, players may continue into a second charleston with the same three passes in reverse order: second left, second across, last right. The second charleston is optional: once the first left pass is done, any single player may call to stop.",
     varies_by_house: false,
@@ -91,13 +91,13 @@ export const LVM_CHARLESTON: CanonicalRule[] = [
     topic: "Looking at tiles before passing",
     question_patterns: [
       LOOK_VERB,
-      new RegExp(`${LOOK_VERB.source}[^.?!]{0,40}${PASS_VERB.source}|${PASS_VERB.source}[^.?!]{0,40}${LOOK_VERB.source}`, "i"),
+      new RegExp(`(?:${LOOK_VERB.source})[^.?!]{0,40}${PASS_VERB.source}|${PASS_VERB.source}[^.?!]{0,40}(?:${LOOK_VERB.source})`, "i"),
       /\b(allowed|can|may|ok|okay) (to )?(i |you |we )?(look|peek|see)\b/i,
     ],
     keywords: ["look", "peek", "see", "pass"],
     requires: [LOOK_VERB, PASS_ACT],
     // A question naming the blind pass belongs on charleston-blind-pass, which carries the rule that blind tiles stay unseen.
-    blocks: [BLIND_PASS, JOKER, DISCARDED, EXPOSURE_WORD, THREE_HANDED_PLAIN],
+    blocks: [OTHERS_TILES, BLIND_PASS, JOKER, DISCARDED, EXPOSURE_WORD, THREE_HANDED_PLAIN],
     answer:
       "Yes, always. You choose which 3 tiles to pass and you may look at anything in your hand. The blind pass on the first left or last right pass is simply an option to pass 1, 2, or 3 of the tiles you just received without looking at them; you may still look if you prefer.",
     varies_by_house: false,
@@ -116,13 +116,13 @@ export const LVM_CHARLESTON: CanonicalRule[] = [
     topic: "Wrong number of tiles passed",
     question_patterns: [
       COUNT_OFF,
-      new RegExp(`${COUNT_OFF.source}[^.?!]{0,40}${PASS_VERB.source}|${PASS_VERB.source}[^.?!]{0,40}${COUNT_OFF.source}`, "i"),
+      new RegExp(`(?:${COUNT_OFF.source})[^.?!]{0,40}${PASS_VERB.source}|${PASS_VERB.source}[^.?!]{0,40}(?:${COUNT_OFF.source})`, "i"),
       /\b(wrong|bad|botched|messed up|short) pass\b|\bmessed up (a |the |my |our )?pass\b/i,
     ],
     keywords: ["wrong number", "too many", "too few", "only two", "pass"],
     requires: [PASS_MADE, COUNT_OFF],
     // "pass on one tile" is declining a discard during play, not a short pass.
-    blocks: [BLIND_PASS, COURTESY, JOKER, DISCARDED, /\bpass(es|ed|ing)? on (a |the |that |this |my |her |his |their |one |every )?(discard|tile)/i, THREE_HANDED_PLAIN],
+    blocks: [BLIND_PASS, COURTESY, JOKER, (q: string) => DISCARDED.test(q) && !/\bpassed (me )?\d tiles\b|\bkept one\b|\bonly passed\b/i.test(q), /\bpass(es|ed|ing)? on (a |the |that |this |my |her |his |their |one |every )?(discard|tile)/i, THREE_HANDED_PLAIN],
     answer:
       "If a player passes the wrong number of tiles and it is caught before play begins, the pass should be corrected. If it is caught after the first tile is drawn, house rules typically apply. A common remedy is to correct the count if possible, or replay the charleston if necessary.",
     varies_by_house: true,
@@ -192,14 +192,14 @@ export const LVM_CHARLESTON: CanonicalRule[] = [
     topic: "A winning tile passed away",
     question_patterns: [
       TILE_MATTERED,
-      new RegExp(`${PASSED_AWAY.source}[^.?!]{0,40}${TILE_MATTERED.source}|${TILE_MATTERED.source}[^.?!]{0,40}${PASSED_AWAY.source}`, "i"),
+      new RegExp(`(?:${PASSED_AWAY.source})[^.?!]{0,40}(?:${TILE_MATTERED.source})|(?:${TILE_MATTERED.source})[^.?!]{0,40}(?:${PASSED_AWAY.source})`, "i"),
       /\bgave away\b/i,
     ],
     keywords: ["passed", "winning tile", "needed", "gave away", "charleston"],
     // Three concepts, so a pass made by mistake outranks the false-mahjong entry, whose error concept it shares.
     requires: [PASSED_AWAY, TILE_MATTERED, TILE_REF],
     // "can I pass on the winning tile" during play is declining a discard; with the Charleston named it is the owner's own phrasing.
-    blocks: [DISCARDED, JOKER, CLAIM_VERB, TILE_RECEIVED, (q: string) => DECLINE_CALL.test(q) && !CHARLESTON_WORD.test(q), THREE_HANDED_PLAIN],
+    blocks: [DISCARDED, JOKER, (q: string) => CLAIM_VERB.test(q) && !/\b(claim|take|get|call) it back\b/i.test(q), TILE_RECEIVED, (q: string) => DECLINE_CALL.test(q) && !CHARLESTON_WORD.test(q), THREE_HANDED_PLAIN],
     answer:
       "This happens! If you accidentally pass a tile you could have used to win, you simply continue play. Nothing on the card penalizes it; you just do not have that tile anymore.",
     varies_by_house: false,

@@ -8,14 +8,14 @@ import type { CanonicalRule } from "./types.ts";
 import {
   CLAIM_VERB, JOKER, JOKER_EXCHANGE, MAHJONG_CUE, DISCARDED, ERROR_CUE, MISNAMED, TWO_PLAYERS, OWN_DISCARD, DEAD,
   PASS_VERB, CHARLESTON_WORD, PAYMENT, EXPOSURE_WORD, HAND_CLOSED, DECLINE_CALL, DECLINE_CUE, WRONG_COUNT,
-  EXCHANGE_CONTEXT, FINAL_DISCARD_SCENE,
+  EXCHANGE_CONTEXT, FINAL_DISCARD_SCENE, DISCARDED_JOKER_SCENE, OWN_DISCARD as OWN_DISCARD_M, NO_WINNER_SCENE,
 } from "./matchers.ts";
 import { lvmPage, lvmPending } from "./entries-fmg.ts";
 
 // Cause of death only. "when" and "how" need the hand as their subject, or "what does it mean
 // when a hand is declared dead" would read as a cause question.
 const DEAD_CAUSE =
-  /\b(what makes|makes?|causes?|caused|causing|why|reasons?|triggers?|counts? as|qualif(y|ies) as|ways? (a|to|that|your|my)|lead(s|ing)? to|results? in|how (does|do|did|can|could|would) (a |my |your |the |someone'?s |anyone'?s )?hands? (go|become|get|end up|be|turn)|when (is|are|does|would|do|did|can|could|will) (a |my |your |the |someone'?s |his |her |their )?hands? (dead|go|become|get|be|considered|declared|called|ruled)|what (is|are|'s) the (rules?|ways?|reasons?|things?)|what (can|could|would) (make|kill|cause)|kills?|illegal|render\w*)\b/i;
+  /\b(what makes|makes?|making|causes?|caused|causing|why|reasons?|triggers?|counts? as|qualif(y|ies) as|ways? (a|to|that|your|my)|lead(s|ing)? to|results? in|how (does|do|did|can|could|would) (a |my |your |the |someone'?s |anyone'?s )?hands? (go|become|get|end up|be|turn)|when (is|are|does|would|do|did|can|could|will) (a |my |your |the |someone'?s |his |her |their )?hands? (dead|go|become|get|be|considered|declared|called|ruled)|what (is|are|'s) the (rules?|ways?|reasons?|things?)|what (can|could|would) (make|kill|cause)|kills?|illegal|render\w*)\b/i;
 const DEAD_PAY =
   /\b(pay|pays|paid|paying|payment|payments|payout|owe|owes|owed|owing|money|settle|settles|settled|settlement|chip in|cough up|fork over|on the hook|off the hook|liable|exempt|excused|get out of paying|penny|pennies|quarters?|dollars?|cost|costs|winner|(someone|somebody|another player|other player|she|he|they|anyone) (else )?(wins|won|gets mahjong|declares mahjong|goes out))\b/i;
 const DEAD_PLAY_ON =
@@ -23,7 +23,7 @@ const DEAD_PLAY_ON =
 // A named accuser or a passive with got/was/were. "is declared dead" stays out so "what does it
 // mean when a hand is declared dead" keeps its definition answer.
 const CALLED_DEAD_ACT =
-  /\b(call|calls|called|calling|declare|declares|declared|declaring|say|says|said|saying|rule|rules|ruled|deem\w*|pronounce\w*|accus\w+|challeng\w+)\b[^.?!]{0,20}\b(me|my hand|my hands|i am|i'm|im|us|our hands?|you|your hand|him|her|them|his hand|her hand|their hands?|someone|somebody|someone'?s hand|another player|a hand|a player|player'?s hand|the hand)\b[^.?!]{0,12}\bdead\b|\bdead\b[^.?!]{0,24}\b(challenge\w*|accus\w+)\b|\b(challenge\w*|accus\w+)\b[^.?!]{0,24}\bdead\b|\b(got|was|were|been|being|get|gets|getting|am|are|i'm|im|you're|we're|they're) (wrongly |wrongfully |unfairly |just )?(called|declared|ruled|deemed|pronounced|announced|accused of being|challenged as|made) dead\b|\b(someone|somebody|another player|other player|they|she|he|opponent|the table|everyone|my (friend|partner|neighbor))\b[^.?!]{0,20}\b(call|calls|called|calling|declare|declares|declared|say|says|said|accus\w+|challeng\w+|insist\w*|claim\w*|think\w*)\b[^.?!]{0,20}\b(i|i'm|im|my hand|me|you|your hand)\b[^.?!]{0,10}\bdead\b/i;
+  /\b(said|says|yelled|announced|declared) dead\b|\bpointed at (my|her|his) (rack|hand)\b|\b(call|calls|called|calling|declare|declares|declared|declaring|say|says|said|saying|rule|rules|ruled|deem\w*|pronounce\w*|accus\w+|challeng\w+)\b[^.?!]{0,20}\b(me|my hand|my hands|i am|i'm|im|us|our hands?|you|your hand|him|her|them|his hand|her hand|their hands?|someone|somebody|someone'?s hand|another player|a hand|a player|player'?s hand|the hand)\b[^.?!]{0,12}\bdead\b|\bdead\b[^.?!]{0,24}\b(challenge\w*|accus\w+)\b|\b(challenge\w*|accus\w+)\b[^.?!]{0,24}\bdead\b|\b(got|was|were|been|being|get|gets|getting|am|are|i'm|im|you're|we're|they're) (wrongly |wrongfully |unfairly |just )?(called|declared|ruled|deemed|pronounced|announced|accused of being|challenged as|made) dead\b|\b(someone|somebody|another player|other player|they|she|he|opponent|the table|everyone|my (friend|partner|neighbor))\b[^.?!]{0,20}\b(call|calls|called|calling|declare|declares|declared|say|says|said|accus\w+|challeng\w+|insist\w*|claim\w*|think\w*)\b[^.?!]{0,20}\b(i|i'm|im|my hand|me|you|your hand)\b[^.?!]{0,10}\bdead\b/i;
 const CALLED_DEAD_SCENE =
   /\b(what happens|what now|then what|now what|what (do|should|can) (i|we) do|what does (that|it) mean|is that (right|legal|allowed|fair)|if|when|after|once|got|was|were|been|just|someone|somebody|another player|other player|they|she|he|opponent|the table|everyone|my (friend|partner|neighbor)|can|could|may|allowed|able|permitted|the player (next to|beside|across from|to my|on my))\b|\baccus\w+|\bchalleng\w+/i;
 const EXPOSURE_GROUP = new RegExp(
@@ -31,13 +31,13 @@ const EXPOSURE_GROUP = new RegExp(
   "i",
 );
 const EXPOSURE_MISTAKE = new RegExp(
-  `${ERROR_CUE.source}|\\b(fix|fixed|fixing|correct|corrected|correcting|undo|undid|save|saved|saving|catch|caught|meant to|didn'?t mean|did not mean|supposed to be|shouldn'?t have|should not have|not (a |the )?(right|correct|valid|legal)|isn'?t (a |the )?(right|correct|valid|legal)|doesn'?t (fit|match|go with|work)|does not (fit|match|go with|work)|don'?t (fit|match)|do not (fit|match)|can'?t (fit|match)|cannot (fit|match)|fits? (no|any) hand|fits? nothing|doesn'?t fit anything|does not fit anything|matches nothing|goes with nothing|no hand|misread|misplaced|mixed up|mis-?expos\\w*)\\b`,
+  `${ERROR_CUE.source}|\\b(fix|fixed|fixing|correct|corrected|correcting|undo|undid|save|saved|saving|catch|caught|meant to|didn'?t mean|did not mean|supposed to be|shouldn'?t have|should not have|not (a |the )?(right|correct|valid|legal)|isn'?t (a |the )?(right|correct|valid|legal)|should have been|should be a|actually needs?|needs? (3|three|a|the) \w+ (instead|not)|doesn'?t (fit|match|go with|work)|does not (fit|match|go with|work)|don'?t (fit|match)|do not (fit|match)|can'?t (fit|match)|cannot (fit|match)|fits? (no|any) hand|fits? nothing|doesn'?t fit anything|does not fit anything|matches nothing|goes with nothing|no hand|misread|misplaced|mixed up|mis-?expos\\w*)\\b`,
   "i",
 );
 const TWO_DEAD =
-  /\b(two|2|both|multiple|more than one|several|a couple of|three|3) (players|people|of us|of them|hands|dead)\b[^.?!,;]{0,30}\bdead\b|\b(two|2|both|multiple|more than one|several|three|3) (players|people|of us|of them|hands) (are|were|go|went|got|get|become|became|have|had|end up|ended up|with) (a )?dead\b|\bdead\b[^.?!,;]{0,30}\b(two|2|both|multiple|more than one|several|three|3) (players|people|of us|of them|hands)\b|\b(two|2|both|multiple|three|3) dead\b|\bdead (too|as well|also)\b|\b(another|second|other|other'?s) (player'?s?|person'?s?|hand) (is|goes|went|gets|got|becomes?|became|has gone|also) (also |too )?dead\b|\b(another|second|third) dead hand\b|\bmore than one dead\b|\bmultiple dead\b|\bonly (two|2|one|1) (players?|people|of us) (left|remain\w*|still (in|playing|alive))\b/i;
+  /\b(me and|i and) (the )?(player|lady|guy|person|one|woman|man)\b[^.?!]{0,40}\bboth\b[^.?!]{0,20}\bdead\b|\bboth (got|were|are|was) (called|declared) dead\b|\b(two|2|both|multiple|more than one|several|a couple of|three|3) (players|people|of us|of them|hands|dead)\b[^.?!,;]{0,30}\bdead\b|\b(two|2|both|multiple|more than one|several|three|3) (players|people|of us|of them|hands) (are|were|go|went|got|get|become|became|have|had|end up|ended up|with) (a )?dead\b|\bdead\b[^.?!,;]{0,30}\b(two|2|both|multiple|more than one|several|three|3) (players|people|of us|of them|hands)\b|\b(two|2|both|multiple|three|3) dead\b|\bdead (too|as well|also)\b|\b(another|second|other|other'?s) (player'?s?|person'?s?|hand) (is|goes|went|gets|got|becomes?|became|has gone|also) (also |too )?dead\b|\b(another|second|third) dead hand\b|\bmore than one dead\b|\bmultiple dead\b|\bonly (two|2|one|1) (players?|people|of us) (left|remain\w*|still (in|playing|alive))\b/i;
 const WIN_OR_VALID_HAND = new RegExp(
-  `${MAHJONG_CUE.source}|\\b(valid|legal|legit|legitimate|acceptable|genuine|complete|completed|winning|real) hands?\\b|\\bhands? (is|be|was|isn'?t|is not|be considered|counts?|counted|qualif\\w+) (as )?(a |an )?(valid|legal|legit|legitimate|acceptable|genuine|complete|real|good|mahjong|win)\\b`,
+  `${MAHJONG_CUE.source}|\\bmatch(es)? (the card|a hand on the card|the card line|the line|the hand exactly)\\b|\\bclose enough\\b|\\b(valid|legal|legit|legitimate|acceptable|genuine|complete|completed|winning|real) hands?\\b|\\bhands? (is|be|was|isn'?t|is not|be considered|counts?|counted|qualif\\w+) (as )?(a |an )?(valid|legal|legit|legitimate|acceptable|genuine|complete|real|good|mahjong|win)\\b`,
   "i",
 );
 const VALIDITY =
@@ -51,7 +51,7 @@ const DISCARD_SOURCE = new RegExp(
   "i",
 );
 const SELF_DRAW =
-  /\bself[- ]?drawn?\b|\b(my|your|their|her|his) own (draw|pick|tile)\b|\bown draw\b|\bdraw(s|n|ing)? (it|the tile|the last tile|the final tile|the winning tile|(my|your) (last|final|winning) tile|the tile (i|you|she|he|they) need) (myself|yourself|herself|himself|themselves|from the wall|off the wall)\b|\b(win|wins|won|winning|mahjong|go out|going out) (off|from|on|by drawing from) the wall\b|\bfrom the wall\b[^.?!,;]{0,30}\b(win|wins|won|winning|mahjong|complete\w*|finish\w*|go out)\b|\b(pick|picks|picked|picking|draw|draws|drew|drawn|drawing)\b[^.?!,;]{0,20}\b(winning|final|mahjong|14th|fourteenth) tile\b|\b(winning|final|mahjong|14th|fourteenth) tile\b[^.?!,;]{0,20}\b(from the wall|off the wall|myself|yourself|on (my|your) (own )?(turn|draw|pick))\b|\b(pick|picks|picked|picking|draw|draws|drew|drawn|drawing|take|takes|took|taking)\b[^.?!,;]{0,24}\b(myself|yourself|herself|himself|themselves)\b|\b(pick|picks|picked|picking|draw|draws|drew|drawn|drawing)\b[^.?!,;]{0,12}\b(my|your|her|his|their|the) (own |last |final |winning |mahjong |14th |fourteenth )?tile\b[^.?!,;]{0,30}\b(win|wins|won|winning|mahjong|go out|complete\w*|finish\w*)\b|\b(pick|picks|picked|picking|draw|draws|drew|drawn|drawing)\b[^.?!,;]{0,12}\b(my|your|her|his|their|the) (last|final|winning|mahjong|14th|fourteenth) tile\b|\bpicked? it (myself|yourself)\b|\bdraw (my|your) own\b|\bwithout (calling|a call|a discard)\b/i;
+  /\bself[- ]?drawn?\b|\b(my|your|their|her|his) own (winning |mahjong |last |final )?(draw|pick|tile)\b|\bown draw\b|\bdraw(s|n|ing)? (it|the tile|the last tile|the final tile|the winning tile|(my|your) (last|final|winning) tile|the tile (i|you|she|he|they) need) (myself|yourself|herself|himself|themselves|from the wall|off the wall)\b|\b(win|wins|won|winning|mahjong|go out|going out) (off|from|on|by drawing from) the wall\b|\bfrom the wall\b[^.?!,;]{0,30}\b(win|wins|won|winning|mahjong|complete\w*|finish\w*|go out)\b|\b(pick|picks|picked|picking|draw|draws|drew|drawn|drawing)\b[^.?!,;]{0,20}\b(winning|final|mahjong|14th|fourteenth) tile\b|\b(winning|final|mahjong|14th|fourteenth) tile\b[^.?!,;]{0,20}\b(from the wall|off the wall|myself|yourself|on (my|your) (own )?(turn|draw|pick))\b|\b(pick|picks|picked|picking|draw|draws|drew|drawn|drawing|take|takes|took|taking)\b[^.?!,;]{0,24}\b(myself|yourself|herself|himself|themselves)\b|\b(pick|picks|picked|picking|draw|draws|drew|drawn|drawing)\b[^.?!,;]{0,12}\b(my|your|her|his|their|the) (own |last |final |winning |mahjong |14th |fourteenth )?tile\b[^.?!,;]{0,30}\b(win|wins|won|winning|mahjong|go out|complete\w*|finish\w*)\b|\b(pick|picks|picked|picking|draw|draws|drew|drawn|drawing)\b[^.?!,;]{0,12}\b(my|your|her|his|their|the) (last|final|winning|mahjong|14th|fourteenth) tile\b|\bpicked? it (myself|yourself)\b|\bdraw (my|your) own\b|\bwithout (calling|a call|a discard)\b/i;
 const SELF_PICK_WORD = /\bself[- ]?pick\w*\b/i;
 const SELF_DRAW_ANY = new RegExp(`${SELF_DRAW.source}|${SELF_PICK_WORD.source}`, "i");
 const WIN_OR_SELF_PICK = new RegExp(`${MAHJONG_CUE.source}|${SELF_PICK_WORD.source}`, "i");
@@ -59,6 +59,8 @@ const WIN_OR_SELF_PICK = new RegExp(`${MAHJONG_CUE.source}|${SELF_PICK_WORD.sour
 const NO_WIN_SCENE = /\b(nobody|no one|noone|no body|none of us) (wins|won|goes out|went out|has mahjong|gets mahjong|declares? mahjong)\b|\bwall games?\b|\bkitty\b|\bante\b|\bquarters?\b|\bpenn(y|ies)\b/i;
 // "is my call dead" is a lost call (call-window), not a dead hand.
 const CALL_IS_DEAD = /\b(call|calls|claim|claims)\b[^.?!,;]{0,10}\b(is|was|are|were)? ?dead\b/i;
+// "i already discarded. can i swap them": a question about changing the exposure, not a joker exchange.
+const CHANGE_AFTER = /\b(already|after i) discarded\b|\bcan i (still )?(change|swap|fix)\b|\bshould have been\b|\bstill change\b/i;
 const FALSE_CUE = new RegExp(`${ERROR_CUE.source}|\\b(fake|phony|bogus|erroneous|mis-?call\\w*)\\b`, "i");
 const FALSE_MAHJONG_DEF =
   /\bwhat (is|'s|are|does|do you mean by|do they mean by) (a |an |the |it |called )?(false|wrong|bad|mistaken|incorrect|invalid|fake|phony|bogus|premature|erroneous|mis-?called) (mahjong|maj|mahj|win|call|declaration|declare)\b|\b(false|bad|wrong|incorrect|invalid|fake|bogus|erroneous|premature|mistaken) (mahjong|maj|mahj|win|call|declaration)\b[^.?!]{0,12}\b(mean|means|meaning|defin\w+|explain\w*|is what|what is|what'?s that)\b|\b(mean|means|meaning|defin\w+|definition of|explain\w*|term for|word for|what do you call|what is it called|what'?s it called)\b[^.?!]{0,30}\b(false|bad|wrong|incorrect|invalid|fake|bogus|premature|mistaken|by mistake|in error) (mahjong|maj|mahj|win|call|declaration)\b|\bwhat (do you|does one|do they|do people|would you) call it when\b|\bwhat is it called when\b|\bwhat'?s it called when\b|\bis there a (name|term|word) for\b/i;
@@ -70,7 +72,7 @@ const DECLARED = /\b(declar\w+|call|calls|called|calling|claim|claims|claimed|cl
 // Retracting a tile, not a declaration: that is own-discard's rule.
 const TAKE_BACK_TILE =
   /\b(take|took|taking|call|called|calling|get|got|have) (it |that |this |the |my |a )?back\b[^.?!]{0,6}\b(a |the |my |that |this )?(discard|tile|throw)s?\b|\b(discard|tile|throw)s? back\b|\btile i (just )?(discarded|threw|put down)\b|\bdiscard i (just )?(made|threw)\b|\bi (just )?(discarded|threw|put down|tossed)\b|\b(my|own) (own )?(discard|throw)\b|\bwhat i (just )?(discarded|threw)\b/i;
-const OWN_HAND_SELF = /\b(my|your|his|her|their) own\b|\bmyself\b|\byourself\b/i;
+const OWN_HAND_SELF = /\b(my|your|his|her|their) own\b|\bmyself\b|\byourself\b|\b(say|call|declare) (i'?m|im|i am|myself|my own hand) dead\b/i;
 const WHO_MAY = /\bwho (can|may|gets to|is allowed to|should|has the right to)\b/i;
 // A cause question that names the exposure mistake belongs to the triggers list.
 const DEAD_CAUSE_ASK = (q: string) => DEAD.test(q) && DEAD_CAUSE.test(q);
@@ -106,7 +108,7 @@ export const LVM_DEADWIN: CanonicalRule[] = [
     question_patterns: [DEAD, DEAD_PAY],
     keywords: ["dead", "pay", "winner", "owe"],
     requires: [DEAD, DEAD_PAY],
-    blocks: [TWO_DEAD, JOKER, MISNAMED, CALL_IS_DEAD],
+    blocks: [NO_WINNER_SCENE, TWO_DEAD, JOKER, MISNAMED, CALL_IS_DEAD],
     answer:
       "Yes. A player whose hand is declared dead must still pay the winner if someone else wins. Their hand being dead does not excuse them from payment obligations for the rest of that game.",
     varies_by_house: false,
@@ -126,7 +128,7 @@ export const LVM_DEADWIN: CanonicalRule[] = [
     question_patterns: [DEAD, DEAD_PLAY_ON],
     keywords: ["dead", "draw", "continue", "sit out"],
     requires: [DEAD, DEAD_PLAY_ON],
-    blocks: [TWO_DEAD, JOKER, WRONG_COUNT, ERROR_CUE, EXPOSURE_WORD, MISNAMED, DEAD_PAY, CALL_IS_DEAD],
+    blocks: [/\bout of turn\b|\bfrom earlier\b/i, TWO_DEAD, JOKER, WRONG_COUNT, ERROR_CUE, EXPOSURE_WORD, MISNAMED, DEAD_PAY, CALL_IS_DEAD],
     answer:
       "No. Once a hand is declared dead, that player does not draw or discard for the rest of the hand. They sit out until the next hand begins.",
     varies_by_house: false,
@@ -146,7 +148,8 @@ export const LVM_DEADWIN: CanonicalRule[] = [
     question_patterns: [CALLED_DEAD_ACT, DEAD],
     keywords: ["dead", "called", "challenge"],
     requires: [DEAD, CALLED_DEAD_ACT, CALLED_DEAD_SCENE],
-    blocks: [JOKER, WRONG_COUNT, OWN_HAND_SELF, WHO_MAY],
+    // Two dead hands at once is two-dead-hands' question.
+    blocks: [/\bwhat does (that|it|dead) (even )?mean\b|\bwhat is a dead hand\b|\bmeaning\b/i, TWO_DEAD, JOKER, WRONG_COUNT, OWN_HAND_SELF, WHO_MAY],
     answer:
       "Calling another player's hand dead is a formal challenge, so be sure you are right before you make it. Once a hand is declared dead, that player does not draw or discard for the rest of the hand. They sit out until the next hand begins. A player whose hand is declared dead must still pay the winner if someone else wins.",
     varies_by_house: true,
@@ -167,7 +170,7 @@ export const LVM_DEADWIN: CanonicalRule[] = [
     question_patterns: [EXPOSURE_GROUP, EXPOSURE_MISTAKE],
     keywords: ["expos", "wrong", "mistake", "incorrect", "fix", "correct"],
     requires: [EXPOSURE_GROUP, EXPOSURE_MISTAKE],
-    blocks: [MISNAMED, JOKER_EXCHANGE, EXCHANGE_CONTEXT, HAND_CLOSED, TWO_PLAYERS, DEAD_CAUSE_ASK],
+    blocks: [DISCARDED_JOKER_SCENE, (q: string) => OWN_DISCARD_M.test(q) && !/\b(exposure|exposed|pung|kong|quint|sextet|group|set)\b/i.test(q), MISNAMED, (q: string) => JOKER_EXCHANGE.test(q) && !CHANGE_AFTER.test(q), (q: string) => EXCHANGE_CONTEXT.test(q) && !CHANGE_AFTER.test(q), HAND_CLOSED, TWO_PLAYERS, DEAD_CAUSE_ASK],
     answer:
       "Sometimes. You may change the number and type of tiles in an exposure right up until you discard, so an exposure mistake caught before your discard can simply be fixed. Once you have discarded, an incorrect exposure makes the hand dead, and a hand with the wrong number of tiles is dead as soon as it is noticed. The key is catching it immediately.",
     varies_by_house: false,
@@ -227,7 +230,7 @@ export const LVM_DEADWIN: CanonicalRule[] = [
     question_patterns: [WIN_CUE, DISCARD_SOURCE],
     keywords: ["win", "discard", "someone else"],
     requires: [WIN_CUE, DISCARD_SOURCE],
-    blocks: [CLAIM_VERB, OWN_DISCARD, JOKER, HAND_CLOSED, ERROR_CUE, MISNAMED, PAYMENT, FINAL_DISCARD_SCENE, TWO_PLAYERS, DECLINE_CALL, DECLINE_CUE, DEAD, CHARLESTON_WORD, NO_WIN_SCENE],
+    blocks: [/\b(next player|next person)\b[^.?!]{0,30}\b(reaching|picked|racked|drew|already)\b|\btoo late\b|\bstill get it\b/i, CLAIM_VERB, OWN_DISCARD, JOKER, HAND_CLOSED, ERROR_CUE, MISNAMED, PAYMENT, FINAL_DISCARD_SCENE, TWO_PLAYERS, DECLINE_CALL, DECLINE_CUE, DEAD, CHARLESTON_WORD, NO_WIN_SCENE],
     answer:
       "Yes. You can win by calling a discarded tile (other than a joker) from any other player to complete your hand. This is called a 'discard win.' You declare mahjong, expose your full winning hand, and collect payment.",
     varies_by_house: false,

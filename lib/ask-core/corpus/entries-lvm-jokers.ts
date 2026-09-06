@@ -47,7 +47,7 @@ const SINGLES_AND_PAIRS = /\bsingles?\b ?(and|&|n|'n'|plus|\+) ?\bpairs?\b|\bsin
 // League-attributed payments entry in the shared corpus (see the adjudication conflict).
 const JOKER_ANY = /\bjoker/i;
 const JOKER_FREE_TERM =
-  /\bjoker[- ]?free\b|\bjokerfree\b|\bjokerless\b|\bfree of jokers\b|\b(without|with no|with zero|zero|no) jokers?\b(?=[^.?!]{0,40}\b(pay|pays|paid|worth|double|doubles|bonus|extra|more|value|points?)\b)|\b(pay|pays|paid|worth|double|doubles|bonus|extra|more)\b[^.?!]{0,40}\b(without|with no|with zero|zero|no) jokers?\b/i;
+  /\bjoker[- ]?free\b|\bjokerfree\b|\bjokerless\b|\bfree of jokers\b|\b(without|with no|with zero|zero|no) jokers?\b(?=[^?!]{0,80}\b(pay|pays|paid|worth|double|doubles|bonus|extra|more|value|points?|owe|owes|owed)\b)|\b(pay|pays|paid|worth|double|doubles|bonus|extra|more)\b[^?!]{0,60}\b(without|with no|with zero|zero|no) jokers?\b/i;
 const BEYOND_ASK = /\b(beyond|besides|other than|apart from|in addition to|on top of|any other|what else|anything else|triple[sd]?|tripling)\b/i;
 
 // Jokers making up the rest of a called group.
@@ -167,7 +167,7 @@ export const LVM_JOKERS: CanonicalRule[] = [
     requires: [JOKER_ANY, JOKER_FREE_TERM],
     // Multipliers beyond joker-free, dead hands, misnames, wall games, tournaments, and the
     // exchange itself each have their own entry.
-    blocks: [BEYOND_ASK, DEAD, MISNAMED, TOURNAMENT, JOKER_EXCHANGE, JOKER_PASS, /\bwall games?\b/i],
+    blocks: [/\b(forgot|forget|forgetting|didn'?t (say|announce|declare|call)|failed to (say|announce))\b/i, /\b(skip|skipping|waive|waiving|ignore|drop|dropping|not (use|play|do|count))\b[^.?!]{0,30}\b(double|bonus|jokerless|joker[- ]?free)\b|\b(table|group|everyone|we all|whole table) (agrees?|decides?|wants?) to\b/i, BEYOND_ASK, DEAD, MISNAMED, TOURNAMENT, JOKER_EXCHANGE, JOKER_PASS, /\bwall games?\b/i],
     answer:
       "A joker-free hand is any complete mahjong hand that contains zero jokers. These hands pay double from all three players, meaning you collect twice the normal amount. This applies to self-drawn wins too. The one exception is Singles and Pairs hands, which never use jokers and do not get the doubling.",
     varies_by_house: false,
@@ -195,7 +195,7 @@ export const LVM_JOKERS: CanonicalRule[] = [
     requires: [CLAIM_VERB, JOKER, JOKER_FILLS],
     // A joker taken from an exposure, a thrown joker, a pair, a mixed group, a mahjong call, a
     // concealed hand, a mistake, and a contested tile are each another entry's rule.
-    blocks: [
+    blocks: [/\bno jokers?\b|\bwithout (a )?jokers?\b|\bzero jokers\b|\b(realized|realised|meant to|change|changed|add (the|a|my) joker to|fix|alter|not discarded yet|haven'?t discarded)\b|\b(later|afterwards|next turn)\b|\bsextets?\b|\bblock of (5|6|five|six)\b/i, 
       JOKER_EXCHANGE, DISCARDED_JOKER, JOKER_PASS, DEAD, /\bpairs?\b/i, MIXED_GROUP, MAHJONG_CUE, HAND_CLOSED, ERROR_CUE,
       MISNAMED, OWN_DISCARD, SAME_TILE_CALLERS, CHARLESTON_WORD,
     ],

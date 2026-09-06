@@ -232,7 +232,7 @@ export async function POST(req: NextRequest) {
     // the search, not a forced rules reply. A clicked label, or a short reply that answers an
     // option ("in a tournament" reads as a place to the search parser), stays a reply.
     if (clarify && question) {
-      const keep = replyStaysReply(clarify, question, (q) => STRONG_SEARCH_CUE.test(q) || placeAfterPrep(q));
+      const keep = replyStaysReply(clarify, question, (q) => STRONG_SEARCH_CUE.test(q) || placeAfterPrep(q), EXCLUDE);
       if (!keep && looksLikeDirectorySearch(question) && classifyTopic(question, { discoverySignal: FMG_SITE.discoverySignal }) === "other") clarify = null;
     }
     const cancelled = cancelPhrase(question);
@@ -247,14 +247,15 @@ export async function POST(req: NextRequest) {
     if (topic !== "directory") {
       rules = lookup({ question, history, clarify }, opts);
       served = { answer: rules.answer, label: rules.label, kind: rules.kind, entry_id: rules.entry?.id, followups: rules.followups, clarify: rules.clarify, year_note: rules.year_note };
-      if (rules.escalation && rules.kind === "gap") void logRulesGap(rules.escalation);
-      else if (rules.escalation && rules.kind === "clarify" && rules.clarify?.id === "topic") void logRulesGap(rules.escalation);
+      // One unmatched question, one queue row: the core attaches an escalation both when the
+      // topic clarification is offered and again when the player confirms Something else.
+      if (topic === "rules" && rules.escalation && rules.kind === "gap") void logRulesGap(rules.escalation);
 
       const consultModel = topic === "rules" && isModelEnabled() && modelEligible(rules, question) && limits.modelPerMinute.check("global") && limits.modelPerDay.check("global");
       if (consultModel) {
         const options = rules.entry ? buildFollowups(rules.entry, askedEntryIds(history), 6, opts) : rules.followups;
         const m = await composeWithModel(
-          { question, history, candidates: rules.candidates, followupOptions: options, preferred: rules.entry?.id },
+          { question, history, candidates: rules.candidates, followupOptions: options, preferred: rules.entry?.id, exclude: EXCLUDE },
           { client: anthropicClient, site: { helperName: FMG_SITE.helperName, siteHost: FMG_SITE.siteHost }, model: modelName(), log: (e) => console.info(JSON.stringify(e)) },
         );
         if (m?.kind === "answer") {
