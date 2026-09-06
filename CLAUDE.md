@@ -33,7 +33,8 @@ Non-negotiable. When any other instruction conflicts with this section, this sec
 - All outbound content (pages, emails, JSON-LD schema) is cross-checked against its source before going live.
 
 ### Pre-push safety gate
-- This repo pushes straight to main and Vercel auto-deploys, so there is no review between push and live. Before every `git push`, run the gate: `npx tsc --noEmit` clean, then the Technical and Brand reviewer workflows (.claude/workflows/), and only push if both pass. About 90 seconds after deploy, smoke-check the key routes for 200s. See the "Pre-push gate" section below.
+- Production deploys are CLI-only from a clean main checkout (`npx vercel deploy --prod --yes`); a merge does not deploy. Before every push, run the gate: `npx tsc --noEmit` clean, `node scripts/ask-core/ask-core-check.mjs` clean, then the Technical and Brand reviewer workflows (.claude/workflows/), and only push if all pass. About 90 seconds after deploy, smoke-check the key routes for 200s.
+- The rules corpus and Ask engine are the shared package mahj-ask-core vendored under `lib/ask-core/`. Never edit it here; see `docs/ask-shared-core.md`.
 
 ## Posture
 

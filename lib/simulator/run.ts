@@ -6,8 +6,8 @@ import { buildGroups, blockKey, type MatchCandidate } from "@/lib/match/engine";
 import { triageReport } from "@/lib/safety/triage";
 import { notify } from "@/lib/notifications/notify";
 import { track, hostRecordClass } from "@/lib/analytics/events";
-import { lookupRule } from "@/lib/rules/lookup";
-import { detectAskTopic } from "@/lib/ask-intent";
+import { classifyTopic, coreIdentity, lookup } from "@/lib/ask-core/index.ts";
+import { FMG_SITE } from "@/lib/ask-site";
 import { isBillingConfigured } from "@/lib/billing/stripe";
 import { readRevenueMetrics } from "@/lib/billing/metrics";
 import { readTruthMetrics } from "@/lib/data-trust";
@@ -314,11 +314,13 @@ export async function runLaunchSimulation(supabase: SupabaseClient): Promise<Sim
 
     // 7. Ask
     try {
-      const joker = lookupRule({ question: "Can I use a joker in a pair?" });
-      if (!joker.matched || joker.confidence !== "high") throw new Error("rules lookup did not match a known high-confidence answer");
-      if (detectAskTopic("Where can I play near Dallas?") !== "directory") throw new Error("directory intent misrouted");
-      if (detectAskTopic("How does the Charleston work?") !== "rules") throw new Error("rules intent misrouted");
-      push("Ask", "PASS", "rules answered, directory and rules intents routed correctly");
+      const joker = lookup({ question: "Can I use a joker in a pair?" });
+      if (joker.kind !== "answer" || joker.entry?.id !== "joker-in-pair" || joker.entry.confidence !== "high") throw new Error("rules lookup did not match a known high-confidence answer");
+      const hooks = { discoverySignal: FMG_SITE.discoverySignal };
+      if (classifyTopic("Where can I play near Dallas?", hooks) !== "other") throw new Error("directory intent misrouted");
+      if (classifyTopic("How does the Charleston work?", hooks) !== "rules") throw new Error("rules intent misrouted");
+      const core = coreIdentity();
+      push("Ask", "PASS", `shared core ${core.core_version} (${core.entries} rules, ${core.pending} pending review) answered and routed correctly`);
     } catch (e) {
       push("Ask", "FAIL", e instanceof Error ? e.message : "unknown");
     }

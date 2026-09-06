@@ -12,6 +12,7 @@
     "test:e2e:webkit": "PW_WEBKIT=1 playwright test --project=mobile-safari"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.121.0",
     "@supabase/supabase-js": "^2.103.3",
     "@vercel/analytics": "^2.0.1",
     "lucide-react": "^1.8.0",

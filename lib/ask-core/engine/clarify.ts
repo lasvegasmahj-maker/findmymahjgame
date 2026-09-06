@@ -1,5 +1,11 @@
+// The clarification engine. A rules question that cannot be answered correctly without one
+// more fact enters a clarification turn instead of a guess or a refusal. The server keeps no
+// state: the response carries the original question and a clarification id, the client sends
+// both back with the player's reply, and the reply resolves to an entry. Ported from Find My
+// Mahj lib/rules/clarify.ts at cb87d4c; behavior unchanged.
+
+import { RULES_KNOWLEDGE, resolveId } from "../corpus/entries.ts";
 import {
-  RULES_KNOWLEDGE,
   CLAIM_VERB,
   EXPOSURE_CUE,
   HAND_CLOSED,
@@ -11,12 +17,10 @@ import {
   TWO_PLAYERS,
   VARIANT_RE,
   AMERICAN_RE,
-} from "./knowledge";
-
-// The clarification engine. A rules question that cannot be answered correctly without
-// one more fact enters a clarification turn instead of a guess or a refusal. The server
-// keeps no state: the response carries the original question and a clarification id,
-// the client sends both back with the player's reply, and the reply resolves to an entry.
+  HOLD_WAIT,
+  NAMING,
+  THREE_PLAYER_SEATS,
+} from "../corpus/matchers.ts";
 
 export type ClarifyOption = {
   key: string;
@@ -46,19 +50,32 @@ const NEGATION = /\b(no|nope|not|don'?t|never|isn'?t)\b/i;
 const VARIANT_NAMES: Record<string, string> = {
   riichi: "Riichi", japanese: "Japanese", chinese: "Chinese", "hong kong": "Hong Kong", hongkong: "Hong Kong", cantonese: "Cantonese",
   sichuan: "Sichuan", taiwanese: "Taiwanese", korean: "Korean", filipino: "Filipino", singapore: "Singapore", singaporean: "Singaporean",
-  mcr: "MCR", "zung jung": "Zung Jung", zungjung: "Zung Jung",
+  mcr: "MCR", "zung jung": "Zung Jung", zungjung: "Zung Jung", shanghai: "Shanghai", "wright patterson": "Wright-Patterson", "wright-patterson": "Wright-Patterson", wrightpatterson: "Wright-Patterson", siamese: "Siamese",
 };
 const TOURNAMENT_RE = /\btournaments?\b/i;
+// A question ABOUT tournaments (how their rules differ, what a director may do) is the
+// tournament-rules entry's, not a rule asked for tournament play.
+const TOURNAMENT_SUBJECT =
+  /\btournaments? (follow|use|have|make up|invent|run|score|differ|are different|play by|go by)\b|\bdirectors? (can|may|get to|allowed to|invent|make up|make us)\b|\btournament (rules?|directors?|play)\b[^.?!]{0,30}\b(differ|different|invent|make up|allowed|can|may|official|league|book|vs|versus|compared|same)\b|\bcan (a|the) (tournament )?directors?\b|\b(what|how) (is|are) (a |the )?tournaments? (rules?|different|scored|run)\b|\bhow do tournaments? (work|differ|score)\b|\bwhat('s| is) different about tournaments?\b/i;
 const TOURNAMENT_PHRASE = /\b(in|at|during|for|under|with) (a |the |our |my )?tournaments?( rules| play)?\b|\btournaments?( rules| play)?\b/gi;
 const PASS_VERB = /\bpass(es|ed|ing)?\b/i;
-const PASS_CONTEXT = /\b(charleston|blind|courtesy|jokers?|tiles?|right|left|across|discards?|first|second|last|round|before|start|starts|begins?|the game|explain|how|rules?|passing|three|3|players?|handed)\b/i;
+// The disambiguating word has to sit near "pass"; "at the studio game last night I asked can I
+// pass and nobody knew" is still the bare question.
+// A bare "last" or "first" is not a pass ("last night I asked"); a named pass is. "pass on this
+// one" stays ambiguous (a Charleston pass or declining a discard), so the demonstratives are out.
+const PASS_CONTEXT_WORDS =
+  "charleston|blind|courtesy|jokers?|tiles?|right|left|across|discards?|(first|second|third|last) (right|left|across|pass(es)?|charleston|round)|round|before|start|starts|begins?|explain|how|rules?|passing|three|3|players?|handed|on (a|the|my|her|his|their|every)|what('s| is)|whats|define|definition|meaning|go out|win|winning|won|mahjong|maj|(tile|one) (i|you|we|she|he|they) (need|needed|wanted)";
+const PASS_CONTEXT = new RegExp(`\\bpass(es|ed|ing)?\\b[^.?!]{0,24}\\b(${PASS_CONTEXT_WORDS})\\b|\\b(${PASS_CONTEXT_WORDS})\\b[^.?!]{0,24}\\bpass(es|ed|ing)?\\b`, "i");
 const DEMONSTRATIVE_TILE =
   /\b(that|this) (tile|discard|one)\b|\b(call|claim|take|grab|have) (it|that|this)\b|\bwhat (she|he|they|someone) (just )?(threw|discarded|put down|tossed)\b|\b(her|his|their|the) (last |latest |most recent )?discard\b|\bthe tile (she|he|they|someone) (just )?(threw|discarded|put down|tossed)\b|\bthe tile (i|you) (need|want)\b/i;
 const OWN_HAND = /\b(my|this|our|the) hand\b/i;
+// The call must be asked about, not narrated: "someone called the discard before I looked" is a story.
+const QUESTION_CLAIM = /\b(can|may|could|should|allowed|ok|okay|legal|is it|am i)\b[^.?!]{0,20}\b(call|claim|take|grab|have|pick up|get)\b/i;
+const HAND_TYPE_CUE = /\b(expos(e|ure|ures|ed)|pungs?|kongs?|quints?|sextets?|meld|build|stuff|things|anything|tiles|discards)\b/i;
 const HAND_TYPE_WORD = /\b(open|closed|concealed|exposed)\b/i;
 const HAND_TYPE_LETTER = /\b[CX]\b/i;
 const PURPOSE_CUE = new RegExp(`${MAHJONG_CUE.source}|${EXPOSURE_CUE.source}|\\bpairs?\\b|\\bsingles?\\b`, "i");
-const OTHER_SPECIFIC = /\b(own discard|call back|take back|both|two (players|people|of us)|same (tile|discard)|hold|wait|blind|charleston|courtesy|wall|dead|error|mistake|wrong|misnam)\b/i;
+const OTHER_SPECIFIC = /\b(own discard|call back|take back|both|two (players|people|of us)(?! ago)|same (tile|discard)|blind|charleston|courtesy|wall|dead|error|mistake|wrong|misnam|ago|earlier|previous|older|turns? back|a while back)\b/i;
 
 function stripTournament(q: string): string {
   return q.replace(TOURNAMENT_PHRASE, " ").replace(/\s+/g, " ").replace(/\s([,.?!])/g, "$1").trim();
@@ -68,6 +85,9 @@ function stripVariant(q: string): string {
   const cleaned = q.replace(VARIANT_RE, " ").replace(/\s+/g, " ").replace(/\s([,.?!])/g, "$1").trim();
   return AMERICAN_RE.test(cleaned) ? cleaned : `In American mahjong, ${cleaned}`;
 }
+
+export const VARIANT_SCOPE_ANSWER =
+  "I can only verify American mahjong rules, the National Mah Jongg League style, so I will not guess at another style's rules. If you also play American mahjong, ask me the same question about it and I will answer.";
 
 export const CLARIFICATIONS: Clarification[] = [
   {
@@ -92,18 +112,8 @@ export const CLARIFICATIONS: Clarification[] = [
     id: "hand-type",
     prompt: "Is that hand marked C for concealed or X for exposed on the card?",
     options: [
-      {
-        key: "concealed",
-        label: "C, concealed",
-        match: /\b(c|concealed|closed|conceal)\b/i,
-        entry: "closed-hand-final-tile",
-      },
-      {
-        key: "exposed",
-        label: "X, exposed",
-        match: /\b(x|exposed|open|expose)\b/i,
-        entry: "calling-for-exposure",
-      },
+      { key: "concealed", label: "C, concealed", match: /\b(c|concealed|closed|conceal)\b/i, entry: "closed-hand-final-tile" },
+      { key: "exposed", label: "X, exposed", match: /\b(x|exposed|open|expose)\b/i, entry: "calling-for-exposure" },
     ],
   },
   {
@@ -119,9 +129,8 @@ export const CLARIFICATIONS: Clarification[] = [
       {
         key: "other",
         label: "No, another style",
-        match: /\b(no|nope|not|other|another|different|riichi|japanese|chinese|hong ?kong|cantonese|sichuan|taiwanese|korean|filipino|singapor(e|ean)|mcr|zung ?jung)\b/i,
-        answer:
-          "I can only verify American mahjong rules, the National Mah Jongg League style, so I will not guess at another style's rules. If you also play American mahjong, ask me the same question about it and I will answer.",
+        match: /\b(no|nope|not|other|another|different|riichi|japanese|chinese|hong ?kong|cantonese|sichuan|taiwanese|korean|filipino|singapor(e|ean)|mcr|zung ?jung|shanghai)\b/i,
+        answer: VARIANT_SCOPE_ANSWER,
       },
     ],
   },
@@ -135,30 +144,15 @@ export const CLARIFICATIONS: Clarification[] = [
         match: /\b(standard|nmjl|league|regular|normal|home|everyday|usual|ordinary|not (a )?tournament)\b/i,
         rewrite: stripTournament,
       },
-      {
-        key: "tournament",
-        label: "A tournament's rules",
-        match: /\b(tournaments?|event|director|competition)\b/i,
-        entry: "tournament-rules",
-      },
+      { key: "tournament", label: "A tournament's rules", match: /\b(tournaments?|event|director|competition)\b/i, entry: "tournament-rules" },
     ],
   },
   {
     id: "pass-context",
     prompt: "Do you mean passing tiles in the Charleston, or passing on a discard during play?",
     options: [
-      {
-        key: "charleston",
-        label: "Passing tiles in the Charleston",
-        match: /\b(charleston|tiles?|before|start|first|second)\b/i,
-        entry: "charleston",
-      },
-      {
-        key: "play",
-        label: "Passing on a discard during play",
-        match: /\b(discards?|during|play|call|after|skip|decline)\b/i,
-        entry: "passing-on-a-discard",
-      },
+      { key: "charleston", label: "Passing tiles in the Charleston", match: /\b(charleston|tiles?|before|start|first|second)\b/i, entry: "charleston" },
+      { key: "play", label: "Passing on a discard during play", match: /\b(discards?|during|play|call|after|skip|decline)\b/i, entry: "passing-on-a-discard" },
     ],
   },
 ];
@@ -174,14 +168,22 @@ const TOPIC_GROUPS: Array<{ key: string; label: string; match: RegExp; entry: st
 
 const SOMETHING_ELSE_KEY = "other";
 const SOMETHING_ELSE_LABEL = "Something else";
+
+// The honest gap answer. A legitimate rules question that reaches no entry is escalated to the
+// owner, never guessed at and never met with a bare refusal.
 export const GAP_ANSWER =
   "Thanks, that one is not in our verified American mahjong rules yet, so I will not guess at it. I have logged the topic for our instructor to research and add. Until then, check the National Mah Jongg League's rulebook, and where the League has a rule, follow it over a table custom.";
 
 function specificEntryLikely(q: string): boolean {
   return (
-    HAND_CLOSED.test(q) || JOKER.test(q) || JOKER_EXCHANGE.test(q) || OTHER_SPECIFIC.test(q) ||
+    HAND_CLOSED.test(q) || JOKER.test(q) || JOKER_EXCHANGE.test(q) || OTHER_SPECIFIC.test(q) || HOLD_WAIT.test(q) || NAMING.test(q) ||
     OWN_DISCARD.test(q) || MISNAMED.test(q) || TWO_PLAYERS.test(q)
   );
+}
+
+export function variantName(q: string): string {
+  const raw = (q.match(VARIANT_RE)?.[0] ?? "").toLowerCase();
+  return VARIANT_NAMES[raw] ?? (raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : "another style of");
 }
 
 // Which clarification a fresh question needs, if any. Ordered so the narrowest context
@@ -189,38 +191,37 @@ function specificEntryLikely(q: string): boolean {
 export function needsClarification(question: string, matchesAfterTournamentStrip: (q: string) => boolean): Clarification | null {
   const q = question;
   if (VARIANT_RE.test(q) && !AMERICAN_RE.test(q)) {
-    const raw = (q.match(VARIANT_RE)?.[0] ?? "").toLowerCase();
-    const variant = VARIANT_NAMES[raw] ?? (raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : "another style of");
     const base = CLARIFICATIONS.find((c) => c.id === "ruleset")!;
     return {
       ...base,
-      prompt: `That sounds like it may be about ${variant} style mahjong. I can only verify American mahjong rules, the National Mah Jongg League style. Did you mean American mahjong?`,
+      prompt: `That sounds like it may be about ${variantName(q)} style mahjong. I can only verify American mahjong rules, the National Mah Jongg League style. Did you mean American mahjong?`,
     };
   }
-  if (TOURNAMENT_RE.test(q)) {
+  if (TOURNAMENT_RE.test(q) && !TOURNAMENT_SUBJECT.test(q)) {
     const stripped = stripTournament(q);
     if (stripped !== q && matchesAfterTournamentStrip(stripped)) return CLARIFICATIONS.find((c) => c.id === "tournament")!;
   }
-  if (CLAIM_VERB.test(q) && DEMONSTRATIVE_TILE.test(q) && !PURPOSE_CUE.test(q) && !specificEntryLikely(q)) {
+  if (CLAIM_VERB.test(q) && DEMONSTRATIVE_TILE.test(q) && QUESTION_CLAIM.test(q) && !PURPOSE_CUE.test(q) && !specificEntryLikely(q)) {
     return CLARIFICATIONS.find((c) => c.id === "call-purpose")!;
   }
-  if (CLAIM_VERB.test(q) && EXPOSURE_CUE.test(q) && OWN_HAND.test(q) && !HAND_TYPE_WORD.test(q) && !HAND_TYPE_LETTER.test(q) && !MAHJONG_CUE.test(q) && !specificEntryLikely(q)) {
+  if (CLAIM_VERB.test(q) && HAND_TYPE_CUE.test(q) && OWN_HAND.test(q) && !HAND_TYPE_WORD.test(q) && !HAND_TYPE_LETTER.test(q) && !MAHJONG_CUE.test(q) && !/\bpairs?\b/i.test(q) && !specificEntryLikely(q)) {
     return CLARIFICATIONS.find((c) => c.id === "hand-type")!;
   }
-  if (PASS_VERB.test(q) && !PASS_CONTEXT.test(q) && !specificEntryLikely(q)) {
+  // Three at the table is three-player-procedure's question (no Charleston with three).
+  if (PASS_VERB.test(q) && !PASS_CONTEXT.test(q) && !THREE_PLAYER_SEATS.test(q) && !specificEntryLikely(q)) {
     return CLARIFICATIONS.find((c) => c.id === "pass-context")!;
   }
   return null;
 }
 
-// Never a bare refusal: a rules question that matched nothing is offered the closest
-// topics, keyword hits first, broad groups filling in.
-export function topicClarification(question: string): Clarification {
+// Never a bare refusal: a rules question that matched nothing is offered the closest topics,
+// keyword hits first, broad groups filling in.
+export function topicClarification(question: string, exclude?: ReadonlySet<string>): Clarification {
   const lower = question.toLowerCase();
-  const hits = RULES_KNOWLEDGE.filter((e) => e.source !== "owner_question" && e.keywords.some((k) => lower.includes(k)))
+  const hits = RULES_KNOWLEDGE.filter((e) => e.approval !== "owner_question" && !exclude?.has(e.id) && e.keywords.some((k) => lower.includes(k)))
     .slice(0, 3)
     .map((e) => ({ key: e.id, label: e.topic, match: new RegExp(`^${escapeRe(e.topic)}$|^${escapeRe(e.id)}$`, "i"), entry: e.id }));
-  const groups = TOPIC_GROUPS.filter((g) => !hits.some((h) => h.entry === g.entry))
+  const groups = TOPIC_GROUPS.filter((g) => !exclude?.has(g.entry) && !hits.some((h) => h.entry === g.entry))
     .slice(0, Math.max(0, 5 - hits.length))
     .map((g) => ({ key: g.key, label: g.label, match: new RegExp(`^${escapeRe(g.label)}$|${g.match.source}`, "i"), entry: g.entry }));
   return {
@@ -238,14 +239,14 @@ function escapeRe(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-export function isExactOption(ctx: ClarifyContext, reply: string): boolean {
-  const c = ctx.id === "topic" ? topicClarification(ctx.question) : CLARIFICATIONS.find((x) => x.id === ctx.id);
+export function isExactOption(ctx: ClarifyContext, reply: string, exclude?: ReadonlySet<string>): boolean {
+  const c = ctx.id === "topic" ? topicClarification(ctx.question, exclude) : CLARIFICATIONS.find((x) => x.id === ctx.id);
   const t = reply.trim().toLowerCase();
   return !!c && c.options.some((o) => o.label.toLowerCase() === t || o.key.toLowerCase() === t);
 }
 
-export function answersOption(ctx: ClarifyContext, reply: string): boolean {
-  const r = resolveReply(ctx, reply);
+export function answersOption(ctx: ClarifyContext, reply: string, exclude?: ReadonlySet<string>): boolean {
+  const r = resolveReply(ctx, reply, exclude);
   return !!r && "option" in r;
 }
 
@@ -253,10 +254,10 @@ export function toPayload(c: Clarification, question: string): ClarifyPayload {
   return { id: c.id, prompt: c.prompt, question, options: c.options.map((o) => ({ key: o.key, label: o.label })) };
 }
 
-// The topic clarification is rebuilt from the original question so its options are
-// identical to the ones the player saw; the server stores nothing between turns.
-export function resolveReply(ctx: ClarifyContext, reply: string): { option: ClarifyOption; clarification: Clarification } | { clarification: Clarification } | null {
-  const clarification = ctx.id === "topic" ? topicClarification(ctx.question) : CLARIFICATIONS.find((c) => c.id === ctx.id);
+// The topic clarification is rebuilt from the original question so its options are identical
+// to the ones the player saw; the server stores nothing between turns.
+export function resolveReply(ctx: ClarifyContext, reply: string, exclude?: ReadonlySet<string>): { option: ClarifyOption; clarification: Clarification } | { clarification: Clarification } | null {
+  const clarification = ctx.id === "topic" ? topicClarification(ctx.question, exclude) : CLARIFICATIONS.find((c) => c.id === ctx.id);
   if (!clarification) return null;
   const trimmed = reply.trim();
   const exact = clarification.options.find((o) => o.label.toLowerCase() === trimmed.toLowerCase() || o.key.toLowerCase() === trimmed.toLowerCase());
@@ -264,9 +265,6 @@ export function resolveReply(ctx: ClarifyContext, reply: string): { option: Clar
   // Option words are loose on purpose ("mahjong", "play"), so only a short reply may match
   // them; a whole new question typed mid-clarification is handled as a question.
   if (trimmed.split(/\s+/).length > 6) return { clarification };
-  // A negated reply ("no, not American") belongs to the "other" option even though the word
-  // it negates matches the other side; otherwise the longer, more specific match wins, and a
-  // tie means the reply restated the whole question, so ask again.
   const negs = [...trimmed.matchAll(new RegExp(NEGATION.source, "gi"))];
   if (negs.length) {
     // "no, not American" answers the style question; a "no" in a topic reply does not.
@@ -286,4 +284,9 @@ export function resolveReply(ctx: ClarifyContext, reply: string): { option: Clar
     .sort((a, b) => b.len - a.len);
   if (scored.length === 1 || (scored.length > 1 && scored[0].len > scored[1].len)) return { option: scored[0].o, clarification };
   return { clarification };
+}
+
+// Option entries name canonical ids; an alias in an old client payload still resolves.
+export function optionEntryId(option: ClarifyOption): string | undefined {
+  return option.entry ? resolveId(option.entry) : undefined;
 }
