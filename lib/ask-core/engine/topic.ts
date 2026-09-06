@@ -28,7 +28,7 @@ import { isCardContentRequest } from "./guards.ts";
 
 export type AskTopic = "rules" | "mixed" | "other";
 
-// The only rules signal a telephone phrase can trip by accident: "call back" and "take back"
+// The only rules signal a phone-call phrase can trip by accident: "call back" and "take back"
 // mean the discard at the table and the callback in the lobby.
 const TAKE_BACK_RE = /\b(my own discard|own discard|call back|take back|take it back)\b/i;
 
@@ -196,12 +196,16 @@ const MAHJ_CORE = /\b(mahjong|mahj|maj|mah ?jongg?|charleston|pungs?|kongs?|quin
 // how to call tiles before joining open play": what a course covers, or what a player needs
 // before booking one. A rules word here names the syllabus, not the question.
 const COURSE_CONTENT =
-  /\b(class|classes|course|courses|lessons?|workshop|mahj ?\d{3})\b[^.?!]{0,40}\b(cover|covers|teach|teaches|taught|deals? with|includes?|go(es)? over)\b|\b(is|are) (the |a |this |that |your )?(class|course|lessons?|workshop|mahj ?\d{3})\b[^.?!]{0,20}\babout\b|\b(cover|covers|teach|teaches|taught|includes?)\b[^.?!]{0,24}\b(class|classes|course|lessons?|workshop)\b|\bwhich (class|course|lesson|workshop)\b|\bdo i need to know\b[^.?!]{0,40}\b(before|to) (join|joining|book|booking|start|starting|attend|attending|sign|come|coming|take)\b/i;
+  /\b(class|classes|course|courses|lessons?|workshop|mahj ?\d{3})\b[^.?!]{0,40}\b(cover|covers|teach|teaches|taught|deals? with|includes?|go(es)? over)\b|\b(is|are) (the |a |this |that |your )?(class|course|lessons?|workshop|mahj ?\d{3})\b[^.?!]{0,20}\babout\b|\b(cover|covers|teach|teaches|taught|includes?)\b[^.?!]{0,24}\b(class|classes|course|lessons?|workshop)\b|\bwhich (class|course|lesson|workshop)\b|\bdo i need to know\b[^.?!]{0,40}\b(before|to) (i |you |we )?(join|joining|book|booking|start|starting|attend|attending|sign|come|coming|take|taking)\b/i;
 const CHARLESTON_PLACE = /\bcharleston,? (sc|s\.c\.|south carolina|wv|west virginia)\b|\b(trip|vacation|visit|visiting|flights?|hotels?) [^.?!]{0,20}\bcharleston\b|\bcharleston\b[^.?!]{0,20}\b(trip|vacation|hotels?|flights?|weather)\b/i;
 // Shopping and pricing: "where can I buy a set", "how much is the card at your shop".
 const COMMERCE_VERB = /\b(buy|buying|purchase|purchasing|order(ed|ing)? (a|an|the|one|new|online|from|more)|shop for|for sale|in stock|carry|stock|sell|sells|selling|cost|costs|charging|charge for|price|prices|priced|discount|coupon|large print)\b|\$\s?\d/i;
 const COMMERCE_OBJECT = /\b(set|sets|tiles|card|cards|rack|racks|mat|mats|case|bag|book|books|lessons?|class|classes|shop|store|amazon|large print|copy)\b/i;
-const RULE_ASK_FORM = /\b(can|may|should|allowed|supposed|able) (i|we|you|she|he|they)\b[^.?!]{0,30}\b(call|pass|exchange|swap|declare|discard|expose|redeem|use|play|pick|draw|claim|win)\b/i;
+// Naming the rule itself: "what is the rule about flowers", "is that a rule".
+const EXPLICIT_RULE_ASK =
+  /\b(what|which) (is|are) the rules?\b|\bthe rules? (about|for|on|regarding|with)\b|\bis (that|this|it) (a|the) rule\b|\bwhat does the rule say\b|\b(is|are) (the|a|an) (white|red|green) dragons?\b|\bis (the|a|an) [\w ]{0,12}\b(the )?(soap|dragon|joker|flower|wind)\b|\bwhich (dragon|suit|tile|wind|flower)\b/i;
+const RULE_ASK_FORM =
+  /\b((can|may|should|could|must|allowed|supposed|able) (i|we|you|she|he|they)|(i|we|you|she|he|they) (can|may|should|could|must))\b[^.?!]{0,30}\b(call|pass|exchange|swap|declare|discard|expose|redeem|use|play|pick|draw|claim|win)\b/i;
 // Strong signals that are only a tile or phase noun; beside a discovery cue they describe the
 // search ("kids class near me, jokers and all"), not a rules question.
 const NOUN_ONLY_SIGNALS = new Set<string>([
@@ -256,10 +260,10 @@ function loneTileNounFragment(q: string): boolean {
 export const SHARED_DISCOVERY_RE = /\bnear\b(?!\s+(the\s+)?(end|start|beginning|middle|close|finish|wall|last|final)\b)|\b\d{5}\b|\b(nearby|in my area)\b|\bwhere can i (play|find|go|buy|get)\b|\bfind (a|an|me)\b|\blooking for (a|an|some|any) (game|games|group|groups|teacher|teachers|lesson|lessons|class|classes|club|clubs|place|players?|partner|fourth|table|studio|instructor)\b|\bwant to (join|play with)\b|\bjust moved\b|\bwhere (do|can) (i|we) (sign up|register)\b|\bsign(ing)? up\b|\bregister\b|\blessons? (for|in|near|at)\b|\bclasses (for|in|near)\b|\b(?:any|find|know of) (?:a |an |some |any |good |beginner |kids )?(?:teachers?|instructors?|lessons?|classes|class|groups?|games?|clubs?|studios?|venues?)\b|\b(?:is|are) there (?:a |an |any |some )?(?:teachers?|instructors?|lessons?|classes|class|clubs?|studios?|venues?|groups?)\b|\b(?:is|are) there (?:a |an |any )?games? (?:going|tonight|today|this|near|in|at|on|tomorrow)\b/i;
 export const PLACE_STATE_RE = /\b(in|near|around) [A-Z][a-z]+,? [A-Z]{2}\b|\b[Ww]ho teaches\b/;
 const DIRECTORY_NOUN_PLACE_RAW =
-  /\b([Gg]roups?|[Gg]ames?|[Cc]lubs?|[Tt]eachers?|[Ii]nstructors?|[Cc]lass(es)?|[Ll]essons?|[Ss]tudios?|[Vv]enues?|[Mm]eetups?|[Ll]eagues?|[Tt]ournaments?) (in|near|around|at) ([A-Z][a-z]+)/;
+  /\b([Gg]roups?|[Gg]ames?|[Cc]lubs?|[Tt]eachers?|[Ii]nstructors?|[Cc]lass(es)?|[Ll]essons?|[Ss]tudios?|[Vv]enues?|[Mm]eetups?|[Ll]eagues?|[Tt]ournaments?)\b[^.?!]{0,40}\b(in|near|around|at) ([A-Z][a-z]+)/;
 export function directoryNounPlace(q: string): boolean {
   const m = DIRECTORY_NOUN_PLACE_RAW.exec(q);
-  return !!m && !STYLE_WORD.test(m[4]);
+  return !!m && !STYLE_WORD.test(m[m.length - 1]);
 }
 
 export type TopicHooks = {
@@ -318,7 +322,10 @@ export function classifyTopic(raw: string, hooks: TopicHooks = {}): AskTopic {
   if (!discoveryAsk) return "rules";
   // A discovery question whose only rules signals are tile or phase nouns is a search.
   const matchedStrong = RULES_SIGNAL_RES.filter((re) => re.test(q));
-  if (matchedStrong.length && matchedStrong.every((re) => NOUN_ONLY_SIGNALS.has(String(re))) && !conditional && !variantAsk) return "other";
+  // An explicit permission question about a game action, or a question that names the rule
+  // itself, is a rules question however the sentence is dressed.
+  const explicitRulesAsk = RULE_ASK_FORM.test(q) || EXPLICIT_RULE_ASK.test(q);
+  if (matchedStrong.length && matchedStrong.every((re) => NOUN_ONLY_SIGNALS.has(String(re))) && !conditional && !variantAsk && !explicitRulesAsk) return "other";
   // A discovery question with only an everyday-word rules signal is a discovery question;
   // "do I need to call ahead for open play" is about the studio, not about declining a call.
   // A named mahjong style counts as strong: "where can I play riichi in Austin" stays mixed so

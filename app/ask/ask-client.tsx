@@ -202,7 +202,9 @@ function AskThread() {
       done = window.sessionStorage.getItem(`fmg-ask-auto:${initial}`) === "1";
       window.sessionStorage.setItem(`fmg-ask-auto:${initial}`, "1");
     } catch {}
-    if (!done) void ask(initial, null, true);
+    // Deferred a tick: the ask marks the thread busy, and starting that render pass from
+    // inside the effect body cascades an extra render before the first paint.
+    if (!done) queueMicrotask(() => void ask(initial, null, true));
     // ask is stable for this purpose and re-running on every render would loop.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);

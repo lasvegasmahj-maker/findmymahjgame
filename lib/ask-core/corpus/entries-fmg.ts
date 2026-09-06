@@ -318,7 +318,10 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     requires: [JOKER, JOKER_EXCHANGE],
     // A dead hand's jokers are dead-hand-jokers' rule, which says the opposite.
     // Changing an exposure after a joker swap is the exposure entries' rule.
-    blocks: [/\bself[- ]?pick\w*\b|\bfor the money\b|\bfor payment\b|\bcount(s)? as\b[^.?!]{0,20}\b(self|win|mahjong)\b/i, CHANGE_EXPOSURE, DEAD],
+    blocks: [/\bself[- ]?pick\w*\b|\bfor the money\b|\bfor payment\b|\bcount(s)? as\b[^.?!]{0,20}\b(self|win|mahjong)\b/i,
+      // Once mahjong is declared the exchange window is closed; the timing entry says so.
+      /\b(once|after) (mahjong|maj|the mahjong) (is|has been|was|been)? ?(declared|called)\b|\bafter (someone|anyone|she|he|they) (declared|called) (mahjong|maj)\b/i,
+      CHANGE_EXPOSURE, DEAD],
     answer:
       "Yes, joker exchange is allowed. When any player has an exposed group on the table that contains a joker, you may, on your own turn, hand over the real tile that joker stands for and take the joker into your hand. You can only redeem a joker from an exposure, never from tiles hidden in another player's hand.",
     varies_by_house: false,
@@ -543,7 +546,7 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     keywords: ["wall", "walls"],
     blocks: [/\bknocked\b|\bfell\b|\bdropped\b|\boff the table\b|\breshuffle\b/i, /\b(nobody|no one|noone) (won|wins|has mahjong)\b|\bwall game\b|\b(ran|runs|running) out\b|\bpay|\bpaid\b|\bowe\b|\bdice\b|\broll(s|ing|ed)?\b|\bwent out on\b/i,
       // A turn narration ("I picked and she had not discarded") is picking-ahead's rule.
-      /\bhadn'?t (discarded|thrown|gone)\b|\bhas ?n'?t (discarded|thrown)\b|\b(had|has|have) not (discarded|thrown|gone)\b|\b(before|ahead of) (my|it was my|her|his|their) turn\b|\bout of turn\b|\b(peek|peeked|peeking|sneak\w*)\b|\b(discard\w*|threw|thrown)\b[^.?!]{0,24}\bbefore (i|you|she|he|they) (pick|picked|draw|drew)\b|\blook(ing)? ahead\b|\bnext tile in the wall\b/i],
+      /\bhadn'?t (discarded|thrown|gone)\b|\bhas ?n'?t (discarded|thrown)\b|\b(had|has|have) not (discarded|thrown|gone)\b|\b(before|ahead of) (my|it was my|her|his|their) turn\b|\bout of turn\b|\b(peek|peeked|peeking|sneak\w*)\b|\b(discard\w*|threw|thrown)\b[^.?!]{0,24}\bbefore (i|you|she|he|they) (pick|picked|draw|drew)\b|\blook(ing)? ahead\b|\bnext tile in the wall\b|\b(only |just )?(two|three|four|five|a few|\d+) tiles? (left|remaining)\b/i],
     answer:
       "After all 152 tiles are shuffled face down, each player builds a wall 19 tiles long and 2 tiles high. The four walls together hold the whole set, and every deal and draw comes from the wall.",
     varies_by_house: false,
@@ -861,7 +864,10 @@ export const FMG_ENTRIES: CanonicalRule[] = [
     // Misnaming your own discard is misnamed-discard's rule, which says the
     // opposite: correct it with words and play continues. A third party claiming the tile
     // is ordinary calling, and this entry's "No" would read as the wrong answer there.
-    blocks: [/\bhold \d+ tiles?\b|\bhow many tiles\b/i, MISNAMED, (q: string) => OTHER_CLAIMER.test(q) && !/\b(take|get|have|call) (it|that|the tile|my tile|my discard) back\b|\btake back\b/i.test(q)],
+    blocks: [/\bhold \d+ tiles?\b|\bhow many tiles\b/i,
+      // Taking back a call or an exposure is not taking back a discard.
+      (q: string) => /\btake (it |that |my )?back\b|\bget it back\b/i.test(q) && /\b(call|called|calling|claim|exposure|pung|kong|quint|sextet)\b/i.test(q) && !/\bdiscard/i.test(q),
+      MISNAMED, (q: string) => OTHER_CLAIMER.test(q) && !/\b(take|get|have|call) (it|that|the tile|my tile|my discard) back\b|\btake back\b/i.test(q)],
     answer:
       "No. You may never call back a tile you just discarded, for any purpose, including mahjong or a joker exchange. Once you have named it or placed it in the discard area, it is available only to the other players.",
     varies_by_house: false,

@@ -10,8 +10,11 @@ import { mentionedYear } from "./normalize.ts";
 // happens to mention the card, is answered from the corpus. Union of both sites' matchers,
 // rewritten after the held-out set showed the old "hands ... card" proximity rule refusing
 // legitimate notation questions and missing reworded content requests.
+// Conversational verbs. "Tell me about dead hands" is a rules question; "tell me the hands on
+// the 2026 card" is the card. Like the teaching verbs they need an anchor before they count.
+const CONVERSATIONAL_VERB = /\b(show|shows|send|sends|give|gives|read|reads|tell|tells|share|shares|post|text|write)\b/i;
 const CONTENT_VERB =
-  /\b(list|lists|listing|show|shows|send|sends|give|gives|read|reads|tell|tells|type|types|copy|copies|print|prints|paste|pastes|summari[sz]e|summary|translate|translates|spell|write (out|down|up)|output|dump|recite|go through|goes through|walk (me|us) through|share|shares|post|text|scan|photo|photograph|screenshot|verbatim|word for word|reproduce|quote|dictate|enumerate|repeat|append|attach|tabulate|jot (them|the hands|the lines) down|write (them|the hands|the lines) down|put [^.?!]{0,10}(in|into) a (table|list|spreadsheet|grid|chart))\b/i;
+  /\b(list|lists|listing|type|types|copy|copies|print|prints|paste|pastes|summari[sz]e|summary|translate|translates|spell|write (out|down|up)|output|dump|recite|go through|goes through|walk (me|us) through|share|shares|post|text|scan|photo|photograph|screenshot|verbatim|word for word|reproduce|quote|dictate|enumerate|repeat|append|attach|tabulate|jot (them|the hands|the lines) down|write (them|the hands|the lines) down|put [^.?!]{0,10}(in|into) a (table|list|spreadsheet|grid|chart))\b/i;
 const CARD_THING = /\b(cards?|hands?|lines?|categor(y|ies)|sections?|hand list|line values?)\b/i;
 const SECTION_NAME =
   /\b(13579|2468|369|consecutive run|any like numbers?|winds? (and |& |-)?dragons?|quints?|singles? (and |& |-)?pairs?|year|lucky|addition|multiplication|13\s?579|2\s?468)\b/i;
@@ -81,6 +84,10 @@ const CARD_COMMERCE = /\bat (your|the|a) (shop|store)\b|\bdo you (carry|sell|sto
 
 // "Explain the hands on the 2026 card" is the card; "a teacher who explains hands" is a
 // lesson. Tested only when the card, a section, a printed hand or a year is also present.
+const CONVERSATIONAL_CARD_THING = new RegExp(
+  `(?:${CONVERSATIONAL_VERB.source})[^.?!]{0,40}${CARD_THING.source}|${CARD_THING.source}[^.?!]{0,40}(?:${CONVERSATIONAL_VERB.source})`,
+  "i",
+);
 const TEACHING_CARD_THING = new RegExp(
   `(?:${TEACHING_VERB.source})[^.?!]{0,40}${CARD_THING.source}|${CARD_THING.source}[^.?!]{0,40}(?:${TEACHING_VERB.source})`,
   "i",
@@ -105,6 +112,7 @@ export function isCardContentRequest(fixed: string): boolean {
   if (MEANING_ASK.test(fixed) && !contentVerb && !VALUE_ASK.test(fixed) && !SPECIFIC_HAND.test(fixed) && !handsSubject) return false;
   if (PAYMENT_EXEMPT.test(fixed) && !SPECIFIC_HAND.test(fixed) && !contentVerb) return false;
   if (anchored && TEACHING_CARD_THING.test(fixed)) return true;
+  if ((anchored || ALL_HANDS.test(fixed)) && CONVERSATIONAL_CARD_THING.test(fixed)) return true;
   return CARD_CONTENT_RES.some((re) => re.test(fixed));
 }
 

@@ -14,10 +14,20 @@ const FMG = (process.env.FMG_URL || "https://findmymahjgame.com").replace(/\/$/,
 const LVM = (process.env.LVM_URL || "https://www.lasvegasmahj.com").replace(/\/$/, "");
 const probes = process.argv.includes("--probes");
 
-async function getJson(url, init) {
-  const res = await fetch(url, { ...init, signal: AbortSignal.timeout(20000) });
-  if (!res.ok) throw new Error(`${url} -> ${res.status}`);
-  return res.json();
+// Both sites rate limit Ask (30 a minute per address). A probe battery run straight after a
+// deploy can meet that limit, so a 429 waits and retries rather than ending the run.
+async function getJson(url, init, tries = 4) {
+  for (let attempt = 1; ; attempt++) {
+    const res = await fetch(url, { ...init, signal: AbortSignal.timeout(20000) });
+    if (res.ok) return res.json();
+    if (res.status === 429 && attempt < tries) {
+      const wait = Number(res.headers.get("retry-after")) * 1000 || 20000 * attempt;
+      console.log(`  rate limited by ${new URL(url).host}, waiting ${Math.round(wait / 1000)}s`);
+      await new Promise((r) => setTimeout(r, wait));
+      continue;
+    }
+    throw new Error(`${url} -> ${res.status}`);
+  }
 }
 
 const [fmg, lvm] = await Promise.all([getJson(`${FMG}/api/ask/version`), getJson(`${LVM}/api/ask/version`)]);

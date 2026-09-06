@@ -173,7 +173,9 @@ export function summarizeForEscalation(question: string): string {
   const named = midSentenceCapitals(String(question || ""));
   const words = String(question || "")
     // An introduction is never part of the rule question.
-    .replace(/\b(my name is|this is|i am|i'm|im)\b[^.?!,]{0,40}/gi, " ")
+    .replace(/\b(my name is|this is|i am|i'm|im|i asked|asked|per|according to)\b(\s+\w+){0,3}/gi, " ")
+    // "the Green Table club", "our Sun City Anthem group": the words in front of a venue noun.
+    .replace(/\b(\w+\s+){1,3}(club|group|league|studio|centre|center|hall|lounge|room)\b/gi, " ")
     // Emails, obfuscated emails ("jane at gmail dot com"), links, handles, and digits go first.
     .replace(/[\w.+-]+@[\w-]+(\.[\w-]+)+/g, " ")
     .replace(/\b[\w.+-]+\s+at\s+[\w-]+\s+dot\s+[a-z]{2,}\b/gi, " ")
