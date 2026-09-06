@@ -42,7 +42,9 @@ test.describe("hero cards", () => {
     await expect(charlestonChip).toBeVisible();
 
     await jokerChip.click();
-    expect(posted).toEqual({ q: "Can I use a joker in a pair?" });
+    // The card posts the shared contract's field name; app/api/ask/route.ts still accepts `q`
+    // from older clients.
+    expect(posted).toEqual({ question: "Can I use a joker in a pair?" });
     await expect(page.getByRole("status").getByText("A joker can stand in for any tile in a pair.")).toBeVisible();
   });
 

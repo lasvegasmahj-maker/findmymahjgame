@@ -100,6 +100,9 @@ test.describe("keyboard operability: /ask", () => {
     const input = page.getByLabel("Ask where to play or how to play");
     await input.focus();
     await expect(input).toBeFocused();
+    // Submit is disabled until there is a question, so it joins the tab order once it can act.
+    await expect(page.getByRole("button", { name: "Ask", exact: true })).toBeDisabled();
+    await input.fill("can I use a joker in a pair");
     await page.keyboard.press("Tab");
     await expect(page.getByRole("button", { name: "Ask", exact: true })).toBeFocused();
     await page.keyboard.press("Tab");

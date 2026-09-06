@@ -250,7 +250,7 @@ test.describe("/ask page: clarification UI", () => {
     expect(colors.color, "chip text must not vanish on its background").not.toBe(colors.bg);
     expect(colors.color).not.toBe("rgb(255, 255, 255)");
     await options.filter({ hasText: "It would complete mahjong" }).click();
-    await expect(status).toContainText("Any discard that completes your mahjong may be called");
+    await expect(status).toContainText("Any player may call a discard to complete a winning hand");
     await expect(page.getByTestId("home-ask-clarify")).toHaveCount(0);
     await expect(status.getByRole("link", { name: "Ask another question" })).toHaveAttribute("href", "/ask");
   });
@@ -261,6 +261,6 @@ test.describe("/ask page: clarification UI", () => {
     await expect(page.getByTestId("ask-clarify")).toBeVisible();
     await page.getByRole("button", { name: "Never mind" }).click();
     await expect(page.getByTestId("ask-clarify")).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Ask" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Ask", exact: true })).toBeVisible();
   });
 });
